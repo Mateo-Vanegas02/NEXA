@@ -24,7 +24,7 @@ TensorFlow no cabe en una Lambda de 512 MB: la mediadora lanza con `ecs:RunTask`
 (IP pública en las subredes por defecto, sin NAT) y la tarea solo existe mientras entrena (unos minutos). Orden:
 1. Actualizar `nexa-00-cuenta` (el usuario de GitHub puede subir también a `nexa-entrenamiento`).
 2. Crear `nexa-40-ml-entrenamiento` (exporta cluster, tarea, subredes, security group y roles).
-3. Rama `app`: Actions → Imagen entrenamiento → Run workflow (sube `:latest` a ECR).
+3. Actions → Imagen entrenamiento → Run workflow (workflow en `main`, construye `ml/` de la rama `app` y sube `:latest` a ECR).
 4. Subir `mediadora.zip` v2 a `s3://nexa-ml-<cuenta>/codigo/` y actualizar `nexa-30-ml-prediccion` con `VersionCodigo=2`
    (ya importa los valores de `nexa-40`, por eso va después).
 
