@@ -69,39 +69,104 @@ body {
     letter-spacing: -0.5px;
 }
 
-.rating-container p {
+.rating-container .rating-sub {
     font-size: 15px;
     color: var(--text-secondary);
-    margin-bottom: 30px;
+    margin-bottom: 18px;
     line-height: 1.5;
 }
 
 .stars {
-    margin: 20px 0;
-    font-size: 2.5rem;
-    color: var(--text-secondary);
-    cursor: pointer;
+    margin: 12px 0 4px;
     display: flex;
     justify-content: center;
-    gap: 12px;
+    gap: clamp(4px, 2vw, 12px);
 }
 
-.stars i {
+.star {
+    background: none;
+    border: none;
+    padding: 4px;
+    font-size: clamp(2rem, 9vw, 2.5rem);
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 8px;
     transition: var(--transition);
 }
 
-.stars i:hover {
-    transform: scale(1.2);
+.star:hover {
+    transform: scale(1.15);
     color: var(--nexa-cyan);
-    filter: drop-shadow(0 0 8px var(--nexa-glow));
 }
 
-.stars i.fas {
+.star:focus-visible,
+.factor:focus-visible,
+.rating-omitir:focus-visible,
+#submitRating:focus-visible {
+    outline: 2px solid var(--nexa-cyan);
+    outline-offset: 3px;
+}
+
+.star .fas {
     color: var(--nexa-cyan);
     filter: drop-shadow(0 0 6px var(--nexa-glow));
 }
 
-.stars i.far {
+.nota-texto {
+    min-height: 1.4em;
+    margin-bottom: 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--nexa-cyan);
+}
+
+.factores {
+    text-align: left;
+    margin-bottom: 18px;
+}
+
+.factores h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--text-primary);
+}
+
+.factores-lista {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.factor {
+    background: rgba(0, 196, 255, 0.04);
+    border: 1px solid var(--nexa-border);
+    color: var(--text-primary);
+    padding: 9px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.factor:hover {
+    border-color: var(--nexa-cyan);
+}
+
+.factor.activo {
+    background: var(--nexa-cyan);
+    border-color: var(--nexa-cyan);
+    color: var(--nexa-ink);
+    font-weight: 600;
+}
+
+.factor[hidden] {
+    display: none;
+}
+
+.factores-ayuda {
+    margin-top: 8px;
+    font-size: 12px;
     color: var(--text-secondary);
 }
 
@@ -112,8 +177,8 @@ textarea {
     border: 1px solid var(--nexa-border);
     border-radius: 10px;
     resize: vertical;
-    min-height: 120px;
-    margin-bottom: 25px;
+    min-height: 100px;
+    margin-bottom: 12px;
     font-size: 14px;
     color: var(--text-primary);
     transition: var(--transition);
@@ -131,7 +196,20 @@ textarea::placeholder {
     opacity: 0.5;
 }
 
-button {
+.rating-error {
+    min-height: 1.2em;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: #ff8a80;
+}
+
+.rating-acciones {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#submitRating {
     background: rgba(0, 196, 255, 0.08);
     border: 1px solid var(--nexa-border);
     color: var(--nexa-cyan);
@@ -146,28 +224,57 @@ button {
     width: 100%;
 }
 
-button:hover:not(:disabled) {
+#submitRating:hover:not(:disabled) {
     background: var(--nexa-cyan);
     color: var(--nexa-ink);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 196, 255, 0.4);
 }
 
-button:active:not(:disabled) {
-    transform: translateY(0);
-}
-
-button:disabled {
-    opacity: 0.3;
+#submitRating:disabled {
+    opacity: 0.35;
     cursor: not-allowed;
 }
 
-/* Responsive */
+.rating-omitir {
+    display: block;
+    padding: 12px;
+    border-radius: 10px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.rating-omitir:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 @media (max-width: 600px) {
     .rating-container {
-        padding: 30px 20px;
+        padding: 28px 18px;
     }
-    .stars {
-        font-size: 2rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rating-container,
+    .star,
+    .factor,
+    #submitRating {
+        animation: none;
+        transition: none;
     }
 }

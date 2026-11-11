@@ -178,6 +178,27 @@ class ServicioAccesoTest {
     }
 
     @Test
+    void guardaLosFactoresDeQuienCalificaEnOrdenDelCatalogo() {
+        servicioService.calificarServicio("s1", "pasajero", 2.0, "tarde",
+                java.util.List.of("LLEGADA_TARDE", "ACEPTACION_LENTA", "LLEGADA_TARDE"), pasajeroId.toString());
+        assertEquals(java.util.List.of("ACEPTACION_LENTA", "LLEGADA_TARDE"), servicio.getFactoresConductor());
+        assertEquals(2.0, servicio.getCalificacionConductor());
+    }
+
+    @Test
+    void unFactorQueContradiceLaNotaODeOtroRolDa400() {
+        for (java.util.List<String> malos : java.util.List.of(
+                java.util.List.of("LLEGADA_TARDE"),        // negativo con 5 estrellas
+                java.util.List.of("ESPERA_EN_EL_PUNTO"),   // es del conductor
+                java.util.List.of("NO_EXISTE"))) {
+            ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> servicioService
+                    .calificarServicio("s1", "pasajero", 5.0, "", malos, pasajeroId.toString()));
+            assertEquals(HttpStatus.BAD_REQUEST, estado(e));
+        }
+        verify(servicioRepository, never()).save(any());
+    }
+
+    @Test
     void elPasajeroDelViajeSiPuedeCalificar() {
         assertNotNull(servicioService.calificarServicio("s1", "pasajero", 4.5, "bien", pasajeroId.toString()));
         assertEquals(4.5, servicio.getCalificacionConductor());

@@ -214,7 +214,7 @@ public class ControllerPasajero {
 
             return ResponseEntity.ok(
                     servicioService.calificarServicio(servicioId, "pasajero", calificacion, comentarios,
-                            pasajero.getIdString()));
+                            datosCalificacion.factores(), pasajero.getIdString()));
         } catch (ResponseStatusException e) {
             return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
         } catch (Exception e) {

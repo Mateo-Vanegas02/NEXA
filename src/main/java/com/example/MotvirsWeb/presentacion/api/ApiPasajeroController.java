@@ -208,7 +208,7 @@ public class ApiPasajeroController {
             Double calificacion = datos.calificacion();
             String comentarios = datos.comentarios() != null ? datos.comentarios() : "";
             return ResponseEntity.ok(servicioService.calificarServicio(
-                    servicioId, "pasajero", calificacion, comentarios, pasajero.getIdString()));
+                    servicioId, "pasajero", calificacion, comentarios, datos.factores(), pasajero.getIdString()));
         } catch (ResponseStatusException e) {
             return ResponseEntity.status(e.getStatusCode()).body(Map.of("error", e.getReason()));
         } catch (Exception e) {

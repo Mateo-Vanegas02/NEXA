@@ -61,9 +61,9 @@ class SolicitudViajeRequestTest {
 
     @Test
     void calificacionFueraDeRangoSeRechaza() {
-        assertTrue(validador.validate(new CalificacionRequest(4.5, "ok")).isEmpty());
-        assertTrue(validador.validate(new CalificacionRequest(null, "solo comentario")).isEmpty());
-        assertEquals(Set.of("La calificación debe estar entre 0 y 5"), mensajes(new CalificacionRequest(5.5, null)));
-        assertEquals(Set.of("La calificación debe estar entre 0 y 5"), mensajes(new CalificacionRequest(-1.0, null)));
+        assertTrue(validador.validate(new CalificacionRequest(4.5, "ok", null)).isEmpty());
+        assertTrue(validador.validate(new CalificacionRequest(null, "solo comentario", null)).isEmpty());
+        assertEquals(Set.of("La calificación debe estar entre 0 y 5"), mensajes(new CalificacionRequest(5.5, null, null)));
+        assertEquals(Set.of("La calificación debe estar entre 0 y 5"), mensajes(new CalificacionRequest(-1.0, null, null)));
     }
 }

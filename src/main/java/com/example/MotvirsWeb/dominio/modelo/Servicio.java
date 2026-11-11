@@ -58,6 +58,10 @@ public class Servicio {
     private String comentariosConductor;
     private Double calificacionPasajero;
     private String comentariosPasajero;
+    /** Factores que marcó el pasajero sobre el conductor y el viaje (códigos de {@code FactoresCalificacion}). */
+    private java.util.List<String> factoresConductor;
+    /** Factores que marcó el conductor sobre el pasajero. */
+    private java.util.List<String> factoresPasajero;
 
     // ── Sistema de niveles ──
     /** "PASAJERO" o "CONDUCTOR"; null en servicios anteriores al sistema. */

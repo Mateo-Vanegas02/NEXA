@@ -26,6 +26,8 @@ class VisibilidadServicioTest {
         viaje.setComentariosConductor("buen viaje");
         viaje.setCalificacionPasajero(2.0);           // la puso el conductor al pasajero
         viaje.setComentariosPasajero("no estaba en el punto");
+        viaje.setFactoresConductor(java.util.List.of("LLEGO_A_TIEMPO"));
+        viaje.setFactoresPasajero(java.util.List.of("ESPERA_EN_EL_PUNTO"));
         viaje.setXpGanadoConductor(40);
         viaje.setXpGanadoPasajero(25);
         viaje.setCargoNotaPago("nota del admin");
@@ -45,6 +47,8 @@ class VisibilidadServicioTest {
         assertEquals("no estaba en el punto", v.getComentariosPasajero());
         assertNull(v.getCalificacionConductor(), "no ve lo que le puso el pasajero");
         assertNull(v.getComentariosConductor());
+        assertEquals(java.util.List.of("ESPERA_EN_EL_PUNTO"), v.getFactoresPasajero());
+        assertNull(v.getFactoresConductor(), "no ve los factores que marcó el pasajero");
         assertEquals(2.0, v.getCalificacionPromedio(), "el promedio no puede delatar la del otro");
     }
 
@@ -55,6 +59,8 @@ class VisibilidadServicioTest {
         assertEquals("buen viaje", v.getComentariosConductor());
         assertNull(v.getCalificacionPasajero(), "no ve lo que le puso el conductor");
         assertNull(v.getComentariosPasajero());
+        assertEquals(java.util.List.of("LLEGO_A_TIEMPO"), v.getFactoresConductor());
+        assertNull(v.getFactoresPasajero(), "no ve los factores que marcó el conductor");
         assertEquals(4.0, v.getCalificacionPromedio());
     }
 

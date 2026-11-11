@@ -22,6 +22,7 @@ import com.example.MotvirsWeb.dominio.modelo.Conductor;
 import com.example.MotvirsWeb.dominio.modelo.EstadoServicio;
 import com.example.MotvirsWeb.dominio.modelo.Pasajero;
 import com.example.MotvirsWeb.dominio.modelo.Servicio;
+import com.example.MotvirsWeb.dominio.regla.FactoresCalificacion;
 import com.example.MotvirsWeb.dominio.regla.ModeloTarifa;
 import com.example.MotvirsWeb.dominio.regla.PuntoGeo;
 import com.example.MotvirsWeb.dominio.regla.RegistroLlegada;
@@ -590,6 +591,12 @@ public class ServicioServiceImpl implements ServicioService {
     @Override
     public Map<String, Object> calificarServicio(String servicioId, String rol,
             Double calificacion, String comentarios, String usuarioId) {
+        return calificarServicio(servicioId, rol, calificacion, comentarios, List.of(), usuarioId);
+    }
+
+    @Override
+    public Map<String, Object> calificarServicio(String servicioId, String rol,
+            Double calificacion, String comentarios, List<String> factores, String usuarioId) {
         Servicio servicio = buscarServicio(servicioId);
         org.bson.types.ObjectId participante = "pasajero".equals(rol)
                 ? (servicio.getPasajero() != null ? servicio.getPasajero().getId() : null)
@@ -611,20 +618,29 @@ public class ServicioServiceImpl implements ServicioService {
         if (comentarios != null && comentarios.length() > 500) {
             comentarios = comentarios.substring(0, 500);
         }
-        return calificarServicio(servicioId, rol, calificacion, comentarios);
+        List<String> elegidos;
+        try {
+            elegidos = FactoresCalificacion.normalizar(rol, calificacion, factores);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+        return calificarServicio(servicioId, rol, calificacion, comentarios, elegidos);
     }
 
     @Override
     public Map<String, Object> calificarServicio(String servicioId, String rol,
-            Double calificacion, String comentarios) {
+            Double calificacion, String comentarios, List<String> factores) {
         Servicio servicio = buscarServicio(servicioId);
+        List<String> guardar = factores == null || factores.isEmpty() ? null : List.copyOf(factores);
 
         if ("pasajero".equals(rol)) {
             servicio.setCalificacionConductor(calificacion);
             servicio.setComentariosConductor(comentarios);
+            servicio.setFactoresConductor(guardar);
         } else if ("conductor".equals(rol)) {
             servicio.setCalificacionPasajero(calificacion);
             servicio.setComentariosPasajero(comentarios);
+            servicio.setFactoresPasajero(guardar);
         } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Rol inválido: " + rol);

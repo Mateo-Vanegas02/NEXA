@@ -11,7 +11,7 @@ import java.util.List;
  * pasa por aquí: se devuelve una copia y la entidad guardada no se toca.
  *
  * <ul>
- *   <li><b>Calificaciones:</b> cada uno ve solo la que él puso. El conductor no ve lo que le puso el pasajero y
+ *   <li><b>Calificaciones:</b> cada uno ve solo la que él puso (nota, comentario y factores). El conductor no ve lo que le puso el pasajero y
  *       el pasajero no ve lo que le puso el conductor.</li>
  *   <li><b>Deuda:</b> el conductor no ve que al viaje se le suma una deuda del pasajero; ve un solo monto a
  *       cobrar. El detalle de la deuda solo lo ve el pasajero (la suya) y el administrador.</li>
@@ -31,6 +31,7 @@ public final class VisibilidadServicio {
         Servicio v = copiar(original);
         v.setCalificacionConductor(null);
         v.setComentariosConductor(null);
+        v.setFactoresConductor(null);
         // Un solo monto: lo que debe recibir en efectivo (tarifa + deuda cobrada con este viaje, si la hay)
         long deuda = 0;
         if (original.getEstado() == EstadoServicio.FINALIZADO) {
@@ -54,6 +55,7 @@ public final class VisibilidadServicio {
         Servicio v = copiar(original);
         v.setCalificacionPasajero(null);
         v.setComentariosPasajero(null);
+        v.setFactoresPasajero(null);
         v.setXpGanadoConductor(0);
         return v;
     }

@@ -85,6 +85,13 @@ public interface ServicioService {
             Double calificacion, String comentarios, String usuarioId);
 
     /**
+     * Igual que {@link #calificarServicio(String, String, Double, String, String)} con los factores elegidos
+     * (códigos de {@code FactoresCalificacion} para ese rol; 400 si alguno no existe o contradice la nota).
+     */
+    Map<String, Object> calificarServicio(String servicioId, String rol,
+            Double calificacion, String comentarios, java.util.List<String> factores, String usuarioId);
+
+    /**
      * Retorna el historial FINALIZADO del conductor, con filtros opcionales.
      */
     List<Servicio> obtenerHistorialConductor(Conductor conductor, String fecha, String pasajero);
@@ -142,5 +149,5 @@ public interface ServicioService {
      * @param rol "conductor" o "pasajero"
      */
     Map<String, Object> calificarServicio(String servicioId, String rol,
-            Double calificacion, String comentarios);
+            Double calificacion, String comentarios, java.util.List<String> factores);
 }

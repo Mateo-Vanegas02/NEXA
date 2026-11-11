@@ -10,7 +10,9 @@ import org.springframework.web.bind.annotation.*;
 import com.example.MotvirsWeb.dominio.repositorio.ServicioRepository;
 import com.example.MotvirsWeb.dominio.modelo.Servicio;
 
-import java.security.Principal;
+import com.example.MotvirsWeb.dominio.regla.FactoresCalificacion;
+
+import java.util.List;
 
 /**
  * Controller HTTP para calificaciones post-viaje.
@@ -57,6 +59,11 @@ public class ControllerRating {
             nombreOtro = servicio.getConductor().getNombre();
         }
         model.addAttribute("nombreOtro", nombreOtro);
+        // Factores para marcar (los del modelo de satisfacción) y a dónde vuelve con «Ahora no».
+        model.addAttribute("factores", "pasajero".equals(rol) || "conductor".equals(rol)
+                ? FactoresCalificacion.catalogo(rol) : List.of());
+        model.addAttribute("notaSatisfecho", FactoresCalificacion.NOTA_SATISFECHO);
+        model.addAttribute("urlPanel", "conductor".equals(rol) ? "/conductor/panel" : "/pasajero/panel");
 
         return "rating";
     }
@@ -67,6 +74,7 @@ public class ControllerRating {
             @RequestParam String servicioId,
             @RequestParam Double calificacion,
             @RequestParam(required = false) String comentarios,
+            @RequestParam(required = false) List<String> factores,
             @RequestParam String rol,
             Authentication authentication) {
 
@@ -81,7 +89,8 @@ public class ControllerRating {
             throw new RuntimeException("Rol no autorizado para esta calificación");
         }
 
-        servicioService.calificarServicio(servicioId, rol, calificacion, comentarios, idUsuario(authentication));
+        servicioService.calificarServicio(servicioId, rol, calificacion, comentarios, factores,
+                idUsuario(authentication));
 
         return "pasajero".equals(rol)
                 ? "redirect:/pasajero/panel"
