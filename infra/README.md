@@ -1,12 +1,15 @@
 # Infraestructura de NEXA en AWS (us-east-2)
 
+El código del modelo (TensorFlow, Lambda) vive en la rama `app`, carpeta `ml/`; aquí solo está la infraestructura.
+
 Plantillas de CloudFormation, una pila por fase. Se cargan desde la consola
 (CloudFormation → Create stack → Upload a template file). Nada de esto guarda secretos.
 
 | Pila | Plantilla | Qué crea | Estado |
 |---|---|---|---|
 | `nexa-00-cuenta` | `cloudformation/00-cuenta.yml` | Usuario IAM `nexa-github-deploy` con permisos mínimos para desplegar | creada (10 nov.) |
-| `nexa-10-web` | `cloudformation/10-web.yml` | EC2 t3.small (Amazon Linux 2023, Docker, 2 GB de swap), IP fija, security group 80/443, rol del servidor y repositorio ECR `nexa-backend` | creada (10 nov.): IP `18.227.59.40`, prueba en `https://18-227-59-40.sslip.io` |
+| `nexa-10-web` | `cloudformation/10-web.yml` | EC2 t3.small (Amazon Linux 2023, Docker, 2 GB de swap), IP fija, security group 80/443, rol del servidor y repositorio ECR `nexa-backend` | creada (10 nov.): IP `18.227.59.40`, web desplegada en `https://18-227-59-40.sslip.io` (11 nov.) |
+| `nexa-20-ml-datos` | `cloudformation/20-ml-datos.yml` | Bucket S3 privado `nexa-ml-<cuenta>` (exportaciones, modelos) y tabla DynamoDB `nexa-entrenamientos` | por crear |
 
 Hecho a mano en la consola: presupuesto `nexa-mensual` (USD 30, alertas por correo) y los parámetros de
 Parameter Store `/nexa/prod/*` (web) y `/nexa/ml/MONGODB_URI` (entrenamiento), cargados por el dueño de la cuenta.
