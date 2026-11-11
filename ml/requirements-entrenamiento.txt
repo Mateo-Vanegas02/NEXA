@@ -1,0 +1,6 @@
+# Imagen de la tarea de entrenamiento (ECS Fargate, linux/amd64). boto3 para S3, DynamoDB y Parameter Store.
+tensorflow-cpu==2.21.0
+ai-edge-litert==2.3.0
+numpy>=2.0,<3
+pymongo>=4.8,<5
+boto3>=1.35,<2

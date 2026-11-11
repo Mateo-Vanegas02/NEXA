@@ -88,10 +88,11 @@ def _compilar(modelo: keras.Model, y_ent: np.ndarray) -> keras.Model:
     return modelo
 
 
-def entrenar(modelo: keras.Model, x_ent, y_ent, x_val, y_val, epocas: int = 300) -> keras.callbacks.History:
+def entrenar(modelo: keras.Model, x_ent, y_ent, x_val, y_val, epocas: int = 300,
+             callbacks: list | None = None) -> keras.callbacks.History:
     parada = keras.callbacks.EarlyStopping(monitor="val_loss", patience=25, restore_best_weights=True)
     return modelo.fit(x_ent, y_ent, validation_data=(x_val, y_val), epochs=epocas, batch_size=64,
-                      callbacks=[parada], verbose=0)
+                      callbacks=[parada, *(callbacks or [])], verbose=0)
 
 
 def a_tflite(modelo: keras.Model) -> bytes:

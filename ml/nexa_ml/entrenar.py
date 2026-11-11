@@ -3,7 +3,6 @@
 Ejemplos:
     python -m nexa_ml.entrenar --mongo-uri "$NEXA_MONGO_URI" --base nexa --salida artefactos/
     python -m nexa_ml.entrenar --json viajes.json --salida artefactos/
-    python -m nexa_ml.entrenar --sinteticos 3000 --salida artefactos/ --permitir-pocos-datos
 """
 from __future__ import annotations
 
@@ -63,7 +62,11 @@ def _evaluar(y: np.ndarray, p: np.ndarray, umbrales: list[float] | None = None) 
     return salida, elegidos
 
 
-def ejecutar(viajes: list[dict], salida: Path, permitir_pocos_datos: bool = False, fuente: str = "") -> dict:
+def ejecutar(viajes: list[dict], salida: Path, permitir_pocos_datos: bool = False, fuente: str = "",
+             callbacks: dict | None = None, extra: dict | None = None) -> dict:
+    """Entrena la red y la regresión logística de referencia y deja en `salida` el .keras, el .tflite y
+    `metadatos.json`. `callbacks`: por nombre de modelo, callbacks de Keras extra (progreso, cancelar).
+    `extra`: si se pasa, se llena con la red, el conjunto y la partición (para calcular los factores)."""
     from . import modelo as mod  # TensorFlow solo se carga al entrenar
 
     conjunto = datos.construir(viajes)
@@ -78,7 +81,7 @@ def ejecutar(viajes: list[dict], salida: Path, permitir_pocos_datos: bool = Fals
                "regresion_logistica": mod.regresion_logistica(x_ent, y_ent)}
     umbrales_red = None
     for nombre, m in modelos.items():
-        historia = mod.entrenar(m, x_ent, y_ent, x_val, y_val)
+        historia = mod.entrenar(m, x_ent, y_ent, x_val, y_val, callbacks=(callbacks or {}).get(nombre))
         validacion, umbrales = _evaluar(y_val, m.predict(x_val, verbose=0))
         prueba, _ = _evaluar(y_pru, m.predict(x_pru, verbose=0), umbrales)
         resultados[nombre] = {"epocas": len(historia.history["loss"]), "validacion": validacion, "prueba": prueba}
@@ -126,6 +129,9 @@ def ejecutar(viajes: list[dict], salida: Path, permitir_pocos_datos: bool = Fals
         "diferencia_max_tflite_vs_keras": diferencia,
     }
     (salida / "metadatos.json").write_text(json.dumps(metadatos, indent=2, ensure_ascii=False), encoding="utf-8")
+    if extra is not None:
+        extra.update(red=red, conjunto=conjunto,
+                     particion={"entrenamiento": (x_ent, y_ent), "validacion": (x_val, y_val), "prueba": (x_pru, y_pru)})
     return metadatos
 
 
@@ -138,6 +144,7 @@ def _comparar_tflite(ruta: Path, red, x: np.ndarray) -> float:
     diferencia = float(np.max(np.abs(Predictor(ruta).probabilidades(x) - red.predict(x, verbose=0))))
     if diferencia > 1e-4:
         raise RuntimeError(f"El modelo TFLite difiere de Keras en {diferencia:.2e}")
+    return diferencia
     return round(diferencia, 8)
 
 
@@ -146,7 +153,6 @@ def main(argv: list[str] | None = None) -> int:
     fuente = parser.add_mutually_exclusive_group(required=True)
     fuente.add_argument("--mongo-uri", default=None, help="URI de MongoDB (mejor por la variable NEXA_MONGO_URI)")
     fuente.add_argument("--json", help="Archivo exportado con mongoexport (arreglo o JSON por líneas)")
-    fuente.add_argument("--sinteticos", type=int, help="Genera N viajes sintéticos (solo pruebas)")
     parser.add_argument("--base", default=os.environ.get("NEXA_MONGO_BASE", "nexa"))
     parser.add_argument("--salida", type=Path, default=Path("artefactos"))
     parser.add_argument("--permitir-pocos-datos", action="store_true")
@@ -154,9 +160,6 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.json:
         viajes, origen = datos.desde_json(args.json), f"json:{Path(args.json).name}"
-    elif args.sinteticos:
-        from .sinteticos import generar
-        viajes, origen = generar(args.sinteticos), "SINTETICOS"
     else:
         viajes, origen = datos.desde_mongo(args.mongo_uri, args.base), f"mongo:{args.base}"
 

@@ -48,12 +48,9 @@ class ApiSatisfaccionRepository implements SatisfaccionRepository {
       ModeloInfo.fromJson(await _get('/modelo'));
 
   @override
-  Future<String> entrenar({bool demo = false}) async {
+  Future<String> entrenar() async {
     try {
-      final r = await _dio.post<Map<String, dynamic>>(
-        '/entrenamientos',
-        queryParameters: demo ? {'demo': true} : null,
-      );
+      final r = await _dio.post<Map<String, dynamic>>('/entrenamientos');
       return r.data?['id'] as String? ?? '';
     } catch (e) {
       throw AppException.from(e);
@@ -111,7 +108,7 @@ class SatisfaccionNoConfigurada implements SatisfaccionRepository {
   Future<ModeloInfo> modelo() => Future.error(_error);
 
   @override
-  Future<String> entrenar({bool demo = false}) => Future.error(_error);
+  Future<String> entrenar() => Future.error(_error);
 
   @override
   Future<Entrenamiento> entrenamiento(String id) => Future.error(_error);

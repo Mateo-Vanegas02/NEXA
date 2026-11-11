@@ -11,7 +11,7 @@ import jwt
 import pytest
 
 from nexa_ml import satisfaccion as sat
-from nexa_ml.sinteticos import generar
+from generador_viajes import generar
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lambda_fn"))
 mediadora = importlib.import_module("mediadora")
@@ -59,7 +59,7 @@ class NubeFalsa:
     def modelo_publicado(self):
         if not self.publicado:
             return None, None, None
-        meta = {"modo": "demo", "entrenadoEn": "2026-11-08T02:14:00-05:00", "datos": {"viajes": 478},
+        meta = {"modo": "real", "entrenadoEn": "2026-11-08T02:14:00-05:00", "datos": {"viajes": 478},
                 "umbrales": {"satisfaccion_pasajero": 0.45, "satisfaccion_conductor": 0.5},
                 "resultados": {"red_neuronal": {"prueba": {"satisfaccion_pasajero": {"evaluable": True, "pr_auc": 0.4}}}},
                 "supera_bases": {"satisfaccion_pasajero": False}}
@@ -122,7 +122,7 @@ def llamar(n, *a, **k):
 
 @pytest.fixture
 def viajes_recientes():
-    viajes = generar(400)
+    viajes = generar(1200)
     # Los sintéticos empiezan en agosto de 2026: se corren para que terminen hoy.
     from nexa_ml.caracteristicas import a_fecha
 
@@ -145,7 +145,7 @@ def test_sin_token_401_y_no_admin_403(viajes_recientes):
 def test_resumen_observado(viajes_recientes):
     estado, r = llamar(NubeFalsa(viajes_recientes), "GET", "/resumen")
     assert estado == 200
-    assert r["modo"] == "demo" and r["riesgoTotal"] == 0 and r["factorPrincipal"] is None
+    assert r["modo"] == "sin_modelo" and r["riesgoTotal"] == 0 and r["factorPrincipal"] is None
     assert 0 < r["pasajero"]["satisfechosPct"] <= 100
     assert r["pasajero"]["calificaciones"] > 0 and 0 < r["pasajero"]["tasaRespuestaPct"] <= 100
     assert 1 <= len(r["tendencia"]) <= 12
@@ -176,9 +176,11 @@ def test_modelo_publicado_factores_y_riesgo(viajes_recientes):
 
 def test_entrenar_cancelar_y_conflicto(viajes_recientes):
     n = NubeFalsa(viajes_recientes)
-    estado, r = llamar(n, "POST", "/entrenamientos", {"demo": "true"})
-    assert estado == 202 and n.lanzados[0]["demo"] is True
-    assert llamar(n, "POST", "/entrenamientos", {"demo": "true"})[1]["error"] == "entrenamiento_en_curso"
+    assert n.conteos_notas()["pasajero"]["calificaciones"] >= 300
+    estado, r = llamar(n, "POST", "/entrenamientos", {"demo": "true"})  # demo se ignora: siempre real
+    assert estado == 202 and "demo" not in n.lanzados[0]
+    assert n.entrenamientos()[0]["modo"] == "real"
+    assert llamar(n, "POST", "/entrenamientos")[1]["error"] == "entrenamiento_en_curso"
     _, e = llamar(n, "GET", f"/entrenamientos/{r['id']}")
     assert e["estado"] == "EN_COLA" and set(e["pasos"]) == set(sat.PASOS)
     assert llamar(n, "DELETE", f"/entrenamientos/{r['id']}")[0] == 204
@@ -187,16 +189,16 @@ def test_entrenar_cancelar_y_conflicto(viajes_recientes):
     assert m["historial"][0]["estado"] == "CANCELADO" and m["entrenamientoActivo"] is None
 
 
-def test_entrenar_real_sin_datos_queda_en_historial(viajes_recientes):
+def test_entrenar_sin_datos_queda_en_historial_aunque_pida_demo(viajes_recientes):
     n = NubeFalsa(viajes_recientes[:50])
-    estado, r = llamar(n, "POST", "/entrenamientos")
+    estado, r = llamar(n, "POST", "/entrenamientos", {"demo": "true"})
     assert estado == 422 and r["error"] == "datos_insuficientes"
     assert n.entrenamientos()[0]["estado"] == "DATOS_INSUFICIENTES"
 
 
 def test_sin_entrenadora_desplegada_503(viajes_recientes):
     n = NubeFalsa(viajes_recientes, entrenadora=False)
-    estado, r = llamar(n, "POST", "/entrenamientos", {"demo": "true"})
+    estado, r = llamar(n, "POST", "/entrenamientos")
     assert estado == 503 and n.entrenamientos()[0]["estado"] == "FALLIDO"
 
 

@@ -24,7 +24,9 @@ class _MockSinModelo extends MockSatisfaccionRepository {
 
   @override
   Future<ModeloInfo> modelo() async =>
-      ModeloInfo.fromJson(FixturesSatisfaccion.modelo(version: null));
+      ModeloInfo.fromJson(
+        FixturesSatisfaccion.modelo(version: null, datosSuficientes: false),
+      );
 }
 
 List<Override> _overrides({MockSatisfaccionRepository? repo}) => [
@@ -45,7 +47,7 @@ Future<void> _asentar(WidgetTester t) async {
 void main() {
   setUpAll(iniciarFormatos);
 
-  testWidgets('resumen: indicadores, aviso demo y accesos', (t) async {
+  testWidgets('resumen: indicadores y accesos con modelo real', (t) async {
     usarTamano(t, const Size(390, 844));
     await t.pumpWidget(
       envolver(const ResumenScreen(), overrides: _overrides()),
@@ -54,7 +56,7 @@ void main() {
     expect(find.text('Satisfacción'), findsOneWidget);
     expect(find.text('86 %'), findsOneWidget);
     expect(find.text('79 %'), findsOneWidget);
-    expect(find.textContaining('Modo demo.'), findsOneWidget);
+    expect(find.textContaining('Sin modelo todavía.'), findsNothing);
     expect(find.text('Califica el 41 %'), findsOneWidget);
     expect(find.text('Tendencia semanal'), findsOneWidget);
     expect(find.text('Viajes en riesgo'), findsOneWidget);
@@ -105,7 +107,7 @@ void main() {
     expect(find.text('Entrenar ahora'), findsOneWidget);
     expect(find.text('Domingos · 02:00'), findsOneWidget);
     await t.scrollUntilVisible(find.text('Historial'), 200);
-    expect(find.text('Publicado (demo)'), findsOneWidget);
+    expect(find.text('Publicado'), findsOneWidget);
     expect(find.text('Faltan datos'), findsOneWidget);
   });
 

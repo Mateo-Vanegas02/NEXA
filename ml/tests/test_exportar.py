@@ -2,7 +2,7 @@ import numpy as np
 
 from nexa_ml import caracteristicas as car
 from nexa_ml import datos, exportar
-from nexa_ml.sinteticos import generar
+from generador_viajes import generar
 
 
 def test_exporta_lo_mismo_que_usa_el_entrenamiento():

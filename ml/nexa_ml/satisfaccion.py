@@ -192,7 +192,7 @@ def modelo(actual: Mapping[str, Any] | None, meta: Mapping[str, Any] | None, dat
 
 
 def modo_de(meta: Mapping[str, Any] | None) -> str:
-    return "real" if meta and meta.get("modo") == "real" else "demo"
+    return "real" if meta and meta.get("modo") == "real" else "sin_modelo"
 
 
 # --------------------------------------------------------------------------- factores
@@ -367,12 +367,13 @@ def nuevo_id(momento: datetime | None = None) -> str:
     return "e-" + (momento or ahora()).astimezone(ZONA).strftime("%Y%m%d-%H%M%S")
 
 
-def registro_inicial(ident: str, origen: str, demo: bool, momento: datetime | None = None) -> dict:
+def registro_inicial(ident: str, origen: str, momento: datetime | None = None) -> dict:
+    """Registro EN_COLA de un entrenamiento. Siempre con viajes reales (no hay modo demo)."""
     return {
         "id": ident, "tipo": "entrenamiento", "fecha": (momento or ahora()).isoformat(timespec="seconds"),
         "origen": origen, "estado": "EN_COLA", "progresoPct": 0, "epoca": None, "epocas": None,
         "pasos": {p: "pendiente" for p in PASOS}, "detalleExportar": None, "mensaje": None,
-        "terminaEstimado": None, "version": None, "modo": "demo" if demo else "real", "cancelar": False,
+        "terminaEstimado": None, "version": None, "modo": "real", "cancelar": False,
     }
 
 
@@ -389,7 +390,7 @@ def vista_entrenamiento(r: Mapping[str, Any]) -> dict:
 
 def vista_historial(r: Mapping[str, Any]) -> dict:
     return {"id": r["id"], "fecha": r.get("fecha"), "origen": r.get("origen", "manual"),
-            "version": _entero(r.get("version")), "estado": r.get("estado"), "modo": r.get("modo", "demo"),
+            "version": _entero(r.get("version")), "estado": r.get("estado"), "modo": "real",
             "mensaje": r.get("mensaje")}
 
 

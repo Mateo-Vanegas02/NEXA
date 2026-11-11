@@ -518,9 +518,9 @@
   "satPeriodo30": "30 días",
   "satPeriodo90": "90 días",
   "satPeriodoRango": "Rango",
-  "satDemoTitulo": "Modo demo.",
-  "satDemoTexto": "Las predicciones usan datos sintéticos hasta tener 300 calificaciones por lado. Las cifras de satisfacción sí son reales.",
-  "satDemoFactores": "La importancia de los factores sale del modelo de demostración. Las curvas usan las calificaciones reales.",
+  "satSinModeloTitulo": "Sin modelo todavía.",
+  "satSinModeloTexto": "Las cifras de satisfacción son reales. Los factores y los viajes en riesgo aparecen después del primer entrenamiento con viajes reales.",
+  "satSinModeloFactores": "Aún no hay un modelo entrenado con viajes reales: entrénalo en Modelo. Las curvas usan las calificaciones reales.",
   "satPasajerosSatisfechos": "Pasajeros satisfechos",
   "satConductoresSatisfechos": "Conductores satisfechos",
   "satSinCalificaciones": "Sin calificaciones",
@@ -640,7 +640,6 @@
       }
     }
   },
-  "satDemo": "Demo",
   "satEntrenadoInfo": "Entrenado el {fecha} · {viajes} viajes · {variables} variables",
   "@satEntrenadoInfo": {
     "placeholders": {
@@ -662,7 +661,7 @@
   "satNoSupera": "No supera",
   "satMetricaNota": "PR-AUC sobre el 15 % de viajes más recientes. Mientras la red no supere a la regresión, el panel lo advierte.",
   "satEntrenarAhora": "Entrenar ahora",
-  "satEntrenarDemoNota": "Sin datos suficientes: se entrena con datos sintéticos (demo).",
+  "satEntrenarFaltanDatos": "Se podrá entrenar cuando haya suficientes calificaciones reales.",
   "satEntrenamientoEnCurso": "Hay un entrenamiento en curso",
   "satVer": "Ver",
   "satProgramado": "Entrenamiento programado",
@@ -707,7 +706,6 @@
   "satManual": "Manual",
   "satProgramadoCorto": "Programado",
   "satEstPublicado": "Publicado",
-  "satEstPublicadoDemo": "Publicado (demo)",
   "satEstSinPublicar": "Guardado sin publicar",
   "satEstSinDatosNuevos": "Sin datos nuevos",
   "satEstFaltanDatos": "Faltan datos",
@@ -774,7 +772,7 @@
   "satFinFallido": "El entrenamiento falló",
   "satFinCancelado": "Entrenamiento cancelado",
   "satSinDatosTitulo": "Aún no hay datos para entrenar",
-  "satMinimoDatos": "La red necesita al menos {calificaciones} calificaciones y {no} \"no\" por lado. Mientras tanto se muestran las cifras reales y el modelo de demostración.",
+  "satMinimoDatos": "La red necesita al menos {calificaciones} calificaciones y {no} \"no\" por lado. Mientras tanto se muestran las cifras reales de satisfacción.",
   "@satMinimoDatos": {
     "placeholders": {
       "calificaciones": {

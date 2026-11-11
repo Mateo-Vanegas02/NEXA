@@ -1,4 +1,5 @@
-"""Viajes SINTÉTICOS para pruebas, demostraciones y el entregable académico. No son datos reales de NEXA.
+"""Viajes FALSOS solo para las pruebas (pytest). No están en el paquete nexa_ml: ni la entrenadora, ni la Lambda,
+ni los comandos pueden entrenar con ellos. No son datos reales de NEXA.
 
 El dinero sigue las reglas reales de `modelo-nexa.properties` (modelo v2.3):
   - tarifa base = max(4.000, redondeo a 100 de 3.000 + 1.200·km)

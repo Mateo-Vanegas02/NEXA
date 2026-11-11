@@ -58,11 +58,16 @@ nexa_ml/
   inferencia.py       predicción con LiteRT (ai-edge-litert), sin TensorFlow
   exportar.py         dataset en CSV / ARFF tal como lo ve el modelo (Excel, WEKA, entregable)
   metricas.py         ROC-AUC, PR-AUC, umbral (NumPy)
-  sinteticos.py       viajes FALSOS para pruebas (dinero con las reglas reales de modelo-nexa.properties)
+  satisfaccion.py     reglas puras del panel del admin (resumen, factores, riesgo, programación)
+  nube.py             acceso a SSM, Atlas, S3, DynamoDB, Scheduler y ECS
+  entrenadora.py      trabajo de entrenamiento de Fargate (python -m nexa_ml.entrenadora)
 lambda_fn/
+  mediadora.py        Lambda nexa-satisfaccion (API del panel)
+  construir_mediadora.sh  arma mediadora.zip
   handler.py          función AWS Lambda
   construir.sh        arma lambda.zip (Python 3.13, x86_64)
-tests/                19 pruebas (pytest)
+Dockerfile.entrenamiento  imagen de la entrenadora (la sube a ECR el workflow imagen-entrenamiento.yml)
+tests/                pruebas (pytest); generador_viajes.py crea viajes FALSOS solo para ellas
 ```
 
 ## Uso
@@ -88,8 +93,9 @@ Si no hay datos suficientes, el comando termina con código 2 y no exporta nada.
 Exportar el dataset (una fila por viaje, 25 variables y las dos clases SI/NO/?):
 `python -m nexa_ml.exportar --mongo-uri "$NEXA_MONGO_URI" --csv dataset.csv --arff dataset.arff`
 
-Con datos sintéticos (solo para ver que todo corre):
-`python -m nexa_ml.entrenar --sinteticos 3000 --salida artefactos/ --permitir-pocos-datos`
+**Solo datos reales.** Ningún comando, ni la Lambda, ni la entrenadora pueden entrenar con viajes inventados:
+el generador de viajes falsos vive en `tests/` y solo lo usan las pruebas. Sin los mínimos (300 calificaciones y
+30 «no» por lado) el entrenamiento termina en `DATOS_INSUFICIENTES`.
 
 ## Lambda mediadora `nexa-satisfaccion` (panel del admin en la app)
 
@@ -97,13 +103,25 @@ Con datos sintéticos (solo para ver que todo corre):
 `/factores`, `/riesgo`, `/modelo`, `POST /entrenamientos`, `GET`/`DELETE /entrenamientos/{id}` y `PUT /programacion`.
 Valida el JWT de la web (HS256, `JWT_SECRET` de Parameter Store, rol ADMIN), lee Atlas con el usuario de solo lectura,
 el modelo publicado de S3 (`modelos/actual.json` → `modelos/vN/`) y la programación e historial de DynamoDB. No entrena:
-invoca de forma asíncrona la Lambda `nexa-entrenamiento`. Reglas puras en `nexa_ml/satisfaccion.py`; acceso a la nube en
+lanza la tarea de ECS Fargate `nexa-entrenamiento` (`ecs:RunTask`, IP pública, sin NAT). El parámetro `demo` del
+contrato se ignora: siempre es con viajes reales. Reglas puras en `nexa_ml/satisfaccion.py`; acceso a la nube en
 `nexa_ml/nube.py`; pruebas sin nube en `tests/test_mediadora.py`.
 
 ```bash
 ./lambda_fn/construir_mediadora.sh     # deja mediadora.zip (≈ 38 MB) para subir a s3://nexa-ml-<cuenta>/codigo/
 ```
-Infraestructura: `infra/cloudformation/30-ml-prediccion.yml` en la rama `main`.
+Infraestructura: `infra/cloudformation/30-ml-prediccion.yml` y `40-ml-entrenamiento.yml` en la rama `main`.
+
+## Entrenadora (ECS Fargate)
+
+TensorFlow no cabe en una Lambda de 512 MB, así que el entrenamiento corre como tarea de Fargate (1 vCPU, 4 GB) que
+solo existe mientras entrena (unos minutos, centavos de dólar). `python -m nexa_ml.entrenadora --id <id>` (o
+`ENTRENAMIENTO_ID`) avanza el registro de DynamoDB: EXPORTANDO → ENTRENANDO → COMPARANDO → PUBLICANDO →
+PUBLICADO | GUARDADO_SIN_PUBLICAR (también DATOS_INSUFICIENTES, CANCELADO, FALLIDO). Lee Atlas con el usuario de solo
+lectura (`/nexa/ml/MONGODB_URI`), sube `modelos/vN/{modelo.tflite,metadatos.json,factores.json}` y mueve
+`modelos/actual.json`. El primer modelo real se publica siempre; los siguientes solo si su PR-AUC no empeora más de
+0,005 (salvo `PUBLICAR_SOLO_SI_MEJORA=false`). La imagen la construye a mano `.github/workflows/imagen-entrenamiento.yml`
+(Actions → Imagen entrenamiento → Run workflow) cada vez que cambie `ml/nexa_ml/**`.
 
 **Desfase de 5 h:** los viajes guardados en Azure antes del arreglo de zona horaria tienen `solicitadoEn` 5 h antes;
 `caracteristicas.solicitado_corregido` lo corrige (espera hasta la aceptación entre 300 y 330 min) en vez de descartarlos.

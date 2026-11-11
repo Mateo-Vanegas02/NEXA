@@ -18,6 +18,16 @@ import '../helpers.dart';
 
 final _hoy = DateTime(2026, 11, 8, 10);
 
+/// Mock con menos de los mínimos de calificaciones reales.
+class _SinDatos extends MockSatisfaccionRepository {
+  _SinDatos() : super(retardo: Duration.zero);
+
+  @override
+  Future<ModeloInfo> modelo() async => ModeloInfo.fromJson(
+    FixturesSatisfaccion.modelo(datosSuficientes: false),
+  );
+}
+
 MockSatisfaccionRepository _mock() =>
     MockSatisfaccionRepository(reloj: () => _hoy, retardo: Duration.zero);
 
@@ -42,7 +52,7 @@ void main() {
   group('modelos del contrato v0.1', () {
     test('resumen', () {
       final r = Resumen.fromJson(FixturesSatisfaccion.resumen());
-      expect(r.demo, isTrue);
+      expect(r.sinModelo, isFalse);
       expect(r.pasajero.satisfechosPct, 86);
       expect(r.conductor.variacionPts, -2);
       expect(r.conductor.tasaRespuestaPct, 41);
@@ -80,7 +90,7 @@ void main() {
       expect(m.version, 3);
       expect(m.pasajero.supera, isFalse);
       expect(m.conductor.regresionPrAuc, 0.41);
-      expect(m.datos.suficientes, isFalse);
+      expect(m.datos.suficientes, isTrue);
       expect(m.datos.minimoCalificaciones, 300);
       expect(m.programacion.frecuencia, Frecuencia.semanal);
       expect(m.programacion.dias, {DiaSemana.dom});
@@ -262,8 +272,8 @@ void main() {
         ),
       });
       final r = repo(a);
-      expect(await r.entrenar(demo: true), 'e-1');
-      expect(a.llamadas.first.uri.queryParameters['demo'], 'true');
+      expect(await r.entrenar(), 'e-1');
+      expect(a.llamadas.first.uri.queryParameters, isEmpty);
       final e = await r.entrenamiento('e-1');
       expect(e.estado, EstadoEntrenamiento.entrenando);
       expect(e.pasos[PasoEntrenamiento.exportar], EstadoPaso.hecho);
@@ -338,7 +348,7 @@ void main() {
       expect((await c.read(factoresProvider.future)).lado, Lado.conductor);
     });
 
-    test('sin datos suficientes entrena en modo demo', () async {
+    test('entrena con datos reales; un segundo a la vez da 409', () async {
       final repo = _mock();
       final c = _contenedor(repo: repo);
       await c.read(modeloProvider.future);
@@ -370,6 +380,16 @@ void main() {
       final m = await c.read(modeloProvider.future);
       expect(m.version, 4);
       expect(m.historial.first.estado, EstadoEntrenamiento.publicado);
+    });
+
+    test('sin datos suficientes no entrena (422), nunca con sintéticos', () async {
+      final repo = _SinDatos();
+      final c = _contenedor(repo: repo);
+      await c.read(modeloProvider.future);
+      await expectLater(
+        c.read(modeloProvider.notifier).entrenar(),
+        throwsA(isA<AppException>().having((e) => e.statusCode, 's', 422)),
+      );
     });
 
     test('cancelar detiene el entrenamiento', () async {

@@ -9,7 +9,7 @@ abstract final class FixturesSatisfaccion {
   static Json resumen() => {
     'desde': '2026-10-09',
     'hasta': '2026-11-08',
-    'modo': 'demo',
+    'modo': 'real',
     'pasajero': {
       'satisfechosPct': 86.0,
       'variacionPts': 3.0,
@@ -60,7 +60,7 @@ abstract final class FixturesSatisfaccion {
   static Json factores(Lado lado) => lado == Lado.pasajero
       ? {
           'lado': 'pasajero',
-          'modo': 'demo',
+          'modo': 'real',
           'version': 3,
           'importancia': [
             for (final (v, e, p) in const [
@@ -115,7 +115,7 @@ abstract final class FixturesSatisfaccion {
         }
       : {
           'lado': 'conductor',
-          'modo': 'demo',
+          'modo': 'real',
           'version': 3,
           'importancia': [
             for (final (v, e, p) in const [
@@ -185,7 +185,7 @@ abstract final class FixturesSatisfaccion {
     };
     return {
       'umbral': 0.45,
-      'modo': 'demo',
+      'modo': 'real',
       'total': 7,
       'viajes': [
         viaje(
@@ -268,19 +268,23 @@ abstract final class FixturesSatisfaccion {
     };
   }
 
-  static Json modelo({bool datosSuficientes = false, int? version = 3}) => {
+  static Json modelo({bool datosSuficientes = true, int? version = 3}) => {
     'version': version,
     'entrenadoEn': version == null ? null : '2026-11-08T02:14:00-05:00',
     'viajes': version == null ? 0 : 478,
     'variables': 25,
-    'modo': 'demo',
+    'modo': 'real',
     'metricas': {
       'pasajero': {'redPrAuc': 0.40, 'regresionPrAuc': 0.43, 'supera': false},
       'conductor': {'redPrAuc': 0.32, 'regresionPrAuc': 0.41, 'supera': false},
     },
     'datos': {
-      'pasajero': {'calificaciones': 112, 'no': 9},
-      'conductor': {'calificaciones': 34, 'no': 3},
+      'pasajero': datosSuficientes
+          ? {'calificaciones': 412, 'no': 48}
+          : {'calificaciones': 112, 'no': 9},
+      'conductor': datosSuficientes
+          ? {'calificaciones': 336, 'no': 41}
+          : {'calificaciones': 34, 'no': 3},
       'minimos': {'calificaciones': 300, 'no': 30},
       'suficientes': datosSuficientes,
     },
@@ -305,7 +309,7 @@ abstract final class FixturesSatisfaccion {
               'origen': 'programado',
               'version': 3,
               'estado': 'PUBLICADO',
-              'modo': 'demo',
+              'modo': 'real',
             },
             {
               'id': 'e-20261107-2130',
@@ -328,7 +332,7 @@ abstract final class FixturesSatisfaccion {
 }
 
 /// Repositorio simulado (`USE_MOCKS=true`). El entrenamiento avanza un paso
-/// cada vez que se consulta, para ver la pantalla "Entrenando" en la demo.
+/// cada vez que se consulta, para ver la pantalla "Entrenando" sin servidor.
 class MockSatisfaccionRepository implements SatisfaccionRepository {
   MockSatisfaccionRepository({
     DateTime Function()? reloj,
@@ -373,7 +377,7 @@ class MockSatisfaccionRepository implements SatisfaccionRepository {
   }
 
   @override
-  Future<String> entrenar({bool demo = false}) async {
+  Future<String> entrenar() async {
     await _espera();
     if (_activoId != null) {
       throw const AppException(
@@ -382,7 +386,7 @@ class MockSatisfaccionRepository implements SatisfaccionRepository {
         statusCode: 409,
       );
     }
-    if (!demo && !_modelo.datos.suficientes) {
+    if (!(await modelo()).datos.suficientes) {
       throw const AppException(
         ErrorKind.validacion,
         'Aún no hay datos suficientes para entrenar.',
@@ -394,7 +398,7 @@ class MockSatisfaccionRepository implements SatisfaccionRepository {
     return _activoId = 'e-mock-${_reloj().millisecondsSinceEpoch}';
   }
 
-  /// Secuencia de la demo: exportar → entrenar (4 consultas) → comparar → publicar.
+  /// Secuencia simulada: exportar → entrenar (4 consultas) → comparar → publicar.
   static const _secuencia = [
     (EstadoEntrenamiento.exportando, 5, 0),
     (EstadoEntrenamiento.entrenando, 24, 12),
@@ -467,7 +471,7 @@ class MockSatisfaccionRepository implements SatisfaccionRepository {
         'origen': 'manual',
         'version': v,
         'estado': 'PUBLICADO',
-        'modo': 'demo',
+        'modo': 'real',
       },
       ...(j['historial'] as List<Object?>),
     ];

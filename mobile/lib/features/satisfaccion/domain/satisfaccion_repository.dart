@@ -11,9 +11,9 @@ abstract interface class SatisfaccionRepository {
 
   Future<ModeloInfo> modelo();
 
-  /// Lanza un entrenamiento y devuelve su id. Con [demo] entrena con datos
-  /// sintéticos (cuando aún no hay datos suficientes).
-  Future<String> entrenar({bool demo = false});
+  /// Lanza un entrenamiento con viajes reales y devuelve su id (422 si aún no
+  /// hay datos suficientes, 409 si ya hay uno en curso).
+  Future<String> entrenar();
 
   Future<Entrenamiento> entrenamiento(String id);
 

@@ -279,7 +279,7 @@ class SelectorSegmentado<T> extends StatelessWidget {
 
 enum TipoAviso { aviso, info }
 
-/// Aviso con icono (modo demo, consejos, notas).
+/// Aviso con icono (sin modelo, consejos, notas).
 class AvisoSat extends StatelessWidget {
   const AvisoSat({
     required this.texto,
@@ -292,7 +292,7 @@ class AvisoSat extends StatelessWidget {
   final String texto;
   final TipoAviso tipo;
 
-  /// Texto en negrita al inicio (p. ej. "Modo demo.").
+  /// Texto en negrita al inicio (p. ej. "Sin modelo todavía.").
   final String? negrita;
   final IconData? icono;
 

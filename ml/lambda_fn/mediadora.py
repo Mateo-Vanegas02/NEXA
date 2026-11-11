@@ -5,7 +5,8 @@ el JWT (HS256, mismo `JWT_SECRET` de la web, rol ADMIN) y responde leyendo:
   - MongoDB Atlas (solo lectura) para la satisfacción observada y los datos disponibles,
   - S3 para el modelo publicado (métricas, factores y el .tflite para los viajes en riesgo),
   - DynamoDB para la programación y el historial de entrenamientos.
-No entrena: "Entrenar ahora" y la programación lanzan la Lambda entrenadora de forma asíncrona.
+No entrena: "Entrenar ahora" y la programación lanzan la tarea de entrenamiento en ECS Fargate
+(`nexa_ml.entrenadora`), que usa solo viajes reales: ya no hay entrenamiento con datos sintéticos.
 
 EventBridge Scheduler también la invoca con {"accion": "entrenar_programado"}.
 """
@@ -145,19 +146,19 @@ def get_modelo(n, _q, _cuerpo) -> dict:
 
 
 def post_entrenamientos(n, q: dict, _cuerpo, origen: str = "manual", publicar_solo_si_mejora: bool = True):
-    demo = str(q.get("demo", "")).lower() == "true"
+    # `?demo=true` (contrato v0.2) se ignora: el entrenamiento es siempre con datos reales.
     _, activo = _historial_y_activo(n)
     if activo:
         raise sat.ErrorContrato(409, "entrenamiento_en_curso", "Ya hay un entrenamiento en curso.")
     ident = sat.nuevo_id()
-    registro = sat.registro_inicial(ident, origen, demo)
-    if not demo and not sat.datos_modelo(n.conteos_notas())["suficientes"]:
+    registro = sat.registro_inicial(ident, origen)
+    if not sat.datos_modelo(n.conteos_notas())["suficientes"]:
         registro.update(estado="DATOS_INSUFICIENTES", mensaje="Todavía no hay suficientes calificaciones.")
         n.guardar_entrenamiento(registro)
         raise sat.ErrorContrato(422, "datos_insuficientes",
                                 "Todavía no hay suficientes calificaciones para entrenar con datos reales.")
     n.guardar_entrenamiento(registro)
-    if not n.lanzar_entrenamiento({"id": ident, "demo": demo, "origen": origen,
+    if not n.lanzar_entrenamiento({"id": ident, "origen": origen,
                                    "publicarSoloSiMejora": publicar_solo_si_mejora}):
         registro.update(estado="FALLIDO", mensaje="El entrenamiento todavía no está desplegado en AWS.")
         n.guardar_entrenamiento(registro)
@@ -247,7 +248,7 @@ def entrenar_programado(n) -> dict:
     if p.get("soloConDatosNuevos"):
         nuevos = n.finalizados_desde(n.fin_ultimo_modelo())
         if nuevos < int(p.get("minimoViajesNuevos") or 1):
-            registro = sat.registro_inicial(sat.nuevo_id(), "programado", demo=False)
+            registro = sat.registro_inicial(sat.nuevo_id(), "programado")
             registro.update(estado="SIN_DATOS_NUEVOS",
                             mensaje=f"Solo {nuevos} viajes calificados nuevos (mínimo {p['minimoViajesNuevos']}).")
             n.guardar_entrenamiento(registro)

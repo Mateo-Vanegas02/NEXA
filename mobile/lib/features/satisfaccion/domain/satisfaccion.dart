@@ -25,7 +25,8 @@ List<Json> _lista(Object? v) => [
     if (e is Map<Object?, Object?>) Map<String, dynamic>.from(e),
 ];
 DateTime? _fecha(Object? v) => v is String ? DateTime.tryParse(v) : null;
-bool _demo(Object? v) => v == 'demo';
+/// Sin modelo entrenado con viajes reales todavía (`modo` distinto de `real`).
+bool _sinModelo(Object? v) => v != 'real';
 
 /// Lado de la satisfacción: la nota que pone el pasajero o la que pone el conductor.
 enum Lado {
@@ -84,7 +85,7 @@ class PuntoTendencia {
 @immutable
 class Resumen {
   const Resumen({
-    required this.demo,
+    required this.sinModelo,
     required this.pasajero,
     required this.conductor,
     required this.tendencia,
@@ -93,7 +94,7 @@ class Resumen {
   });
 
   factory Resumen.fromJson(Json j) => Resumen(
-    demo: _demo(j['modo']),
+    sinModelo: _sinModelo(j['modo']),
     pasajero: ResumenLado.fromJson(_obj(j['pasajero'])),
     conductor: ResumenLado.fromJson(_obj(j['conductor'])),
     tendencia: [
@@ -103,8 +104,8 @@ class Resumen {
     factorPrincipal: _strN(_obj(j['factorPrincipal'])['etiqueta']),
   );
 
-  /// `true` si las predicciones salen del modelo de demostración.
-  final bool demo;
+  /// `true` mientras no hay un modelo entrenado con viajes reales: no hay factores ni riesgo.
+  final bool sinModelo;
   final ResumenLado pasajero;
   final ResumenLado conductor;
   final List<PuntoTendencia> tendencia;
@@ -178,7 +179,7 @@ class CurvaFactor {
 class Factores {
   const Factores({
     required this.lado,
-    required this.demo,
+    required this.sinModelo,
     required this.importancia,
     required this.otrosCantidad,
     required this.otrosPesoMaximoPct,
@@ -189,7 +190,7 @@ class Factores {
     final otros = _obj(j['otrosFactores']);
     return Factores(
       lado: Lado.desde(j['lado']),
-      demo: _demo(j['modo']),
+      sinModelo: _sinModelo(j['modo']),
       importancia: [
         for (final f in _lista(j['importancia'])) FactorImportancia.fromJson(f),
       ],
@@ -200,7 +201,7 @@ class Factores {
   }
 
   final Lado lado;
-  final bool demo;
+  final bool sinModelo;
 
   /// Ordenada de mayor a menor peso (la entrega así el servidor).
   final List<FactorImportancia> importancia;
@@ -264,18 +265,18 @@ class ViajeRiesgo {
 class Riesgo {
   const Riesgo({
     required this.umbral,
-    required this.demo,
+    required this.sinModelo,
     required this.viajes,
   });
 
   factory Riesgo.fromJson(Json j) => Riesgo(
     umbral: _dbl(j['umbral']),
-    demo: _demo(j['modo']),
+    sinModelo: _sinModelo(j['modo']),
     viajes: [for (final v in _lista(j['viajes'])) ViajeRiesgo.fromJson(v)],
   );
 
   final double umbral;
-  final bool demo;
+  final bool sinModelo;
   final List<ViajeRiesgo> viajes;
 
   int cuantos(Lado? lado) =>
@@ -558,7 +559,6 @@ class RegistroEntrenamiento {
     required this.fecha,
     required this.programado,
     required this.estado,
-    required this.demo,
     this.version,
     this.mensaje,
   });
@@ -569,7 +569,6 @@ class RegistroEntrenamiento {
     programado: j['origen'] == 'programado',
     version: _intN(j['version']),
     estado: EstadoEntrenamiento.desde(j['estado']),
-    demo: _demo(j['modo']),
     mensaje: _strN(j['mensaje']),
   );
 
@@ -578,14 +577,13 @@ class RegistroEntrenamiento {
   final bool programado;
   final int? version;
   final EstadoEntrenamiento estado;
-  final bool demo;
   final String? mensaje;
 }
 
 @immutable
 class ModeloInfo {
   const ModeloInfo({
-    required this.demo,
+    required this.sinModelo,
     required this.viajes,
     required this.variables,
     required this.pasajero,
@@ -607,7 +605,7 @@ class ModeloInfo {
       entrenadoEn: _fecha(j['entrenadoEn']),
       viajes: _int(j['viajes']),
       variables: _int(j['variables']),
-      demo: _demo(j['modo']),
+      sinModelo: _sinModelo(j['modo']),
       pasajero: MetricaLado.fromJson(_obj(m['pasajero'])),
       conductor: MetricaLado.fromJson(_obj(m['conductor'])),
       datos: DatosModelo.fromJson(_obj(j['datos'])),
@@ -629,7 +627,7 @@ class ModeloInfo {
   final DateTime? entrenadoEn;
   final int viajes;
   final int variables;
-  final bool demo;
+  final bool sinModelo;
   final MetricaLado pasajero;
   final MetricaLado conductor;
   final DatosModelo datos;
@@ -642,7 +640,7 @@ class ModeloInfo {
     entrenadoEn: entrenadoEn,
     viajes: viajes,
     variables: variables,
-    demo: demo,
+    sinModelo: sinModelo,
     pasajero: pasajero,
     conductor: conductor,
     datos: datos,

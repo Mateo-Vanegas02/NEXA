@@ -48,15 +48,19 @@ class Nube:
         e = entorno or os.environ
         self.bucket = e["BUCKET"]
         self.tabla = boto3.resource("dynamodb").Table(e["TABLA"])
-        self.param_jwt = e["PARAM_JWT"]
+        self.param_jwt = e.get("PARAM_JWT", "")
         self.param_mongo = e["PARAM_MONGO"]
         self.base = e.get("MONGO_BASE", "motvirsweb")
-        self.entrenadora = e.get("ENTRENADORA", "")
+        # Tarea de entrenamiento en ECS Fargate (la lanza la mediadora).
+        self.cluster = e.get("CLUSTER", "")
+        self.tarea = e.get("TAREA", "")
+        self.subredes = [s for s in e.get("SUBREDES", "").split(",") if s]
+        self.grupo_seguridad = e.get("GRUPO_SEGURIDAD", "")
         self.rol_programador = e.get("ROL_PROGRAMADOR", "")
         self.mi_arn = e.get("MI_ARN", "")
         self.s3 = boto3.client("s3")
         self.ssm = boto3.client("ssm")
-        self.lambda_ = boto3.client("lambda")
+        self.ecs = boto3.client("ecs")
         self.scheduler = boto3.client("scheduler")
         self._secretos: dict[str, str] = {}
         self._mongo = None
@@ -196,17 +200,35 @@ class Nube:
 
     # ----------------------------------------------------------------- entrenar y programar
     def lanzar_entrenamiento(self, carga: dict) -> bool:
-        """Invoca la Lambda entrenadora de forma asíncrona. False si todavía no está desplegada."""
-        if not self.entrenadora:
+        """Lanza la tarea de entrenamiento en ECS Fargate. False si todavía no está desplegada."""
+        if not (self.cluster and self.tarea and self.subredes and self.grupo_seguridad):
             return False
         try:
-            self.lambda_.invoke(FunctionName=self.entrenadora, InvocationType="Event",
-                                Payload=json.dumps(carga).encode())
-            return True
+            r = self.ecs.run_task(
+                cluster=self.cluster, taskDefinition=self.tarea, launchType="FARGATE", count=1,
+                networkConfiguration={"awsvpcConfiguration": {
+                    "subnets": self.subredes, "securityGroups": [self.grupo_seguridad],
+                    "assignPublicIp": "ENABLED"}},  # sale a internet (Atlas, S3) sin NAT
+                overrides={"containerOverrides": [{"name": "entrenamiento", "environment": [
+                    {"name": "ENTRENAMIENTO_ID", "value": carga["id"]},
+                    {"name": "PUBLICAR_SOLO_SI_MEJORA", "value": str(bool(carga.get("publicarSoloSiMejora", True))).lower()},
+                ]}]},
+                startedBy=carga["id"][:36],
+            )
         except ClientError as e:
-            if e.response["Error"]["Code"] in ("ResourceNotFoundException", "AccessDeniedException"):
+            if e.response["Error"]["Code"] in ("ClusterNotFoundException", "AccessDeniedException",
+                                               "InvalidParameterException"):
                 return False
             raise
+        return bool(r.get("tasks"))
+
+    # ----------------------------------------------------------------- escritura (solo la entrenadora)
+    def subir(self, clave: str, contenido: bytes, tipo: str) -> None:
+        self.s3.put_object(Bucket=self.bucket, Key=clave, Body=contenido, ContentType=tipo)
+
+    def subir_json(self, clave: str, valor: Any) -> None:
+        self.subir(clave, json.dumps(valor, ensure_ascii=False, indent=2, default=str).encode("utf-8"),
+                   "application/json")
 
     def programar(self, p: dict) -> None:
         """Crea, actualiza o apaga el horario `nexa-entrenamiento` de EventBridge Scheduler."""

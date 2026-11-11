@@ -127,12 +127,9 @@ class ModeloController extends AsyncNotifier<ModeloInfo> {
     state = await AsyncValue.guard(() => _repo(ref).modelo());
   }
 
-  /// Lanza un entrenamiento y devuelve su id. Sin datos suficientes entrena en
-  /// modo demo (datos sintéticos), como acordó el equipo.
-  Future<String> entrenar() async {
-    final m = state.value ?? await future;
-    return _repo(ref).entrenar(demo: !m.datos.suficientes);
-  }
+  /// Lanza un entrenamiento con viajes reales y devuelve su id. Sin los
+  /// mínimos de datos el servidor responde 422 (la pantalla deshabilita el botón).
+  Future<String> entrenar() => _repo(ref).entrenar();
 
   Future<void> guardarProgramacion(Programacion p) async {
     final guardada = await _repo(ref).guardarProgramacion(p);

@@ -132,12 +132,12 @@ class _Contenido extends ConsumerWidget {
           NexaButton(
             label: l.satEntrenarAhora,
             icon: Icons.play_arrow_rounded,
-            onPressed: () => _entrenar(context, ref),
+            onPressed: m.datos.suficientes ? () => _entrenar(context, ref) : null,
           ),
           if (!m.datos.suficientes) ...[
             const SizedBox(height: Sp.sm),
             Text(
-              l.satEntrenarDemoNota,
+              l.satEntrenarFaltanDatos,
               textAlign: TextAlign.center,
               style: context.textos.labelSmall?.copyWith(color: context.muted),
             ),
@@ -205,8 +205,6 @@ class _Metricas extends StatelessWidget {
                   style: t.titleSmall?.copyWith(fontWeight: FontWeight.w700),
                 ),
               ),
-              if (m.demo)
-                EtiquetaSat(texto: l.satDemo, color: colorAviso(context)),
             ],
           ),
           const SizedBox(height: Sp.xs),
@@ -364,8 +362,8 @@ Future<void> _guardar(
   final l = AppLocalizations.of(context);
   return switch (r.estado) {
     EstadoEntrenamiento.publicado => (
-      r.demo ? l.satEstPublicadoDemo : l.satEstPublicado,
-      r.demo ? colorAviso(context) : colorOk(context),
+      l.satEstPublicado,
+      colorOk(context),
     ),
     EstadoEntrenamiento.guardadoSinPublicar => (
       l.satEstSinPublicar,

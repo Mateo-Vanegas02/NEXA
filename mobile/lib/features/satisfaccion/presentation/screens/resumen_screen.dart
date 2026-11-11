@@ -121,11 +121,11 @@ class _Contenido extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (r.demo) ...[
+        if (r.sinModelo) ...[
           AvisoSat(
             tipo: TipoAviso.aviso,
-            negrita: l.satDemoTitulo,
-            texto: l.satDemoTexto,
+            negrita: l.satSinModeloTitulo,
+            texto: l.satSinModeloTexto,
           ),
           const SizedBox(height: Sp.md),
         ],

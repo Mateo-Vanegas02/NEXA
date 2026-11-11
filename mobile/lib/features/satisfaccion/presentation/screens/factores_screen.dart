@@ -96,11 +96,11 @@ class _Contenido extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (f.demo) ...[
+        if (f.sinModelo) ...[
           AvisoSat(
             tipo: TipoAviso.aviso,
-            negrita: l.satDemoTitulo,
-            texto: l.satDemoFactores,
+            negrita: l.satSinModeloTitulo,
+            texto: l.satSinModeloFactores,
           ),
           const SizedBox(height: Sp.md),
         ],

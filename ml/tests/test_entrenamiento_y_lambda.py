@@ -9,7 +9,7 @@ import pytest
 
 from nexa_ml import caracteristicas as car
 from nexa_ml import datos, entrenar
-from nexa_ml.sinteticos import generar
+from generador_viajes import generar
 
 RAIZ = Path(__file__).resolve().parents[1]
 

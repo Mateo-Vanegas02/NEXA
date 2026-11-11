@@ -1,0 +1,4 @@
+**
+!requirements-entrenamiento.txt
+!nexa_ml/**
+nexa_ml/__pycache__
