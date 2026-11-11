@@ -1,0 +1,806 @@
+{
+  "@@locale": "es",
+  "appNombre": "NEXA",
+  "reintentar": "Reintentar",
+  "cancelar": "Cancelar",
+  "continuar": "Continuar",
+  "omitir": "Omitir",
+  "empezar": "Empezar",
+  "guardar": "Guardar",
+  "cerrarSesion": "Cerrar sesión",
+  "cargando": "Cargando…",
+  "errorGenerico": "Algo salió mal",
+  "vacioHistorial": "Aún no tienes viajes",
+  "vacioHistorialDetalle": "Cuando completes un viaje aparecerá aquí.",
+  "onb1Titulo": "Pide tu mototaxi",
+  "onb1Texto": "Solicita un viaje en segundos y sigue a tu conductor en el mapa.",
+  "onb2Titulo": "Sube de nivel",
+  "onb2Texto": "Cada viaje te da XP. Desbloquea descuentos, prioridad y más beneficios.",
+  "onb3Titulo": "Viaja con confianza",
+  "onb3Texto": "Conductores verificados, tarifa clara y calificaciones en cada viaje.",
+  "loginTitulo": "Hola de nuevo",
+  "loginSubtitulo": "Entra para pedir o recibir viajes.",
+  "email": "Correo electrónico",
+  "password": "Contraseña",
+  "confirmarPassword": "Confirmar contraseña",
+  "ingresar": "Ingresar",
+  "noTienesCuenta": "¿No tienes cuenta? Regístrate",
+  "yaTienesCuenta": "¿Ya tienes cuenta? Inicia sesión",
+  "registroTitulo": "Crea tu cuenta",
+  "soy": "Quiero usar NEXA como",
+  "rolPasajero": "Pasajero",
+  "rolConductor": "Conductor",
+  "nombreCompleto": "Nombre completo",
+  "telefono": "Teléfono (10 dígitos, empieza con 3)",
+  "crearCuenta": "Crear cuenta",
+  "campoRequerido": "Este campo es obligatorio",
+  "emailInvalido": "Correo electrónico inválido",
+  "passwordCorta": "Mínimo 8 caracteres",
+  "passwordNoCoincide": "Las contraseñas no coinciden",
+  "telefonoInvalido": "Teléfono colombiano inválido",
+  "registroConductorWeb": "El registro de conductores requiere verificación de documentos. Completa el registro en la web de NEXA; la app solo permite crear cuentas de pasajero por ahora.",
+  "navInicio": "Inicio",
+  "navViajes": "Viajes",
+  "navNiveles": "Niveles",
+  "navPerfil": "Perfil",
+  "navGanancias": "Ganancias",
+  "navSolicitudes": "Solicitudes",
+  "adondeVas": "¿A dónde vas?",
+  "destinoHint": "Toca el mapa para elegir el destino",
+  "origenActual": "Tu ubicación",
+  "nombreDestino": "Nombre del destino",
+  "solicitarViaje": "Solicitar viaje",
+  "estimadoTarifa": "Estimado de tarifa",
+  "distancia": "Distancia",
+  "tarifaBase": "Tarifa",
+  "total": "Total",
+  "metodoPago": "Método de pago",
+  "efectivo": "Efectivo",
+  "tarifaEstimadaAviso": "Estimado. El total final lo calcula NEXA al finalizar el viaje.",
+  "buscandoConductor": "Buscando conductor…",
+  "conductorEnCamino": "Tu conductor va en camino",
+  "enViaje": "Viaje en curso",
+  "viajeFinalizado": "Viaje finalizado",
+  "viajeCancelado": "Viaje cancelado",
+  "cancelarViaje": "Cancelar viaje",
+  "calificaTuViaje": "Califica tu viaje",
+  "comentarios": "Comentarios (opcional)",
+  "enviarCalificacion": "Enviar calificación",
+  "gracias": "¡Gracias por calificar!",
+  "historial": "Historial de viajes",
+  "perfil": "Perfil",
+  "estado_SOLICITADO": "Solicitado",
+  "estado_ACEPTADO": "Aceptado",
+  "estado_EN_CURSO": "En curso",
+  "estado_FINALIZADO": "Finalizado",
+  "estado_CANCELADO": "Cancelado",
+  "nivelesTitulo": "Tus niveles",
+  "nivelActual": "Nivel {nombre}",
+  "@nivelActual": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "xpProgreso": "{actual} / {meta} XP",
+  "@xpProgreso": {
+    "placeholders": {
+      "actual": {
+        "type": "int"
+      },
+      "meta": {
+        "type": "int"
+      }
+    }
+  },
+  "nivelMaximo": "Nivel máximo alcanzado",
+  "faltanXp": "Te faltan {xp} XP para el nivel {siguiente}",
+  "@faltanXp": {
+    "placeholders": {
+      "xp": {
+        "type": "int"
+      },
+      "siguiente": {
+        "type": "String"
+      }
+    }
+  },
+  "beneficios": "Beneficios",
+  "beneficioBloqueado": "Se desbloquea en nivel {nivel}",
+  "@beneficioBloqueado": {
+    "placeholders": {
+      "nivel": {
+        "type": "int"
+      }
+    }
+  },
+  "xpGanado": "+{xp} XP",
+  "@xpGanado": {
+    "placeholders": {
+      "xp": {
+        "type": "int"
+      }
+    }
+  },
+  "subisteNivel": "¡Subiste de nivel!",
+  "ahoraEres": "Subiste al nivel {nombre}",
+  "@ahoraEres": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "genial": "¡Genial!",
+  "barraNivelSemantica": "Nivel {nombre}, {porcentaje} por ciento hacia el siguiente nivel",
+  "@barraNivelSemantica": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      },
+      "porcentaje": {
+        "type": "int"
+      }
+    }
+  },
+  "enLinea": "En línea",
+  "fueraDeLinea": "Fuera de línea",
+  "estasEnLinea": "Recibes solicitudes de viaje",
+  "estasFueraDeLinea": "Conéctate para recibir solicitudes",
+  "solicitudesEntrantes": "Solicitudes entrantes",
+  "sinSolicitudes": "No hay solicitudes por ahora",
+  "aceptar": "Aceptar",
+  "rechazar": "Rechazar",
+  "yendoAPasajero": "En camino al pasajero",
+  "iniciarViaje": "Pasajero recogido",
+  "finalizarViaje": "Completar viaje",
+  "viajeActivo": "Viaje activo",
+  "gananciasTitulo": "Ganancias",
+  "gananciaTotal": "Total ganado",
+  "comisionActual": "Comisión actual",
+  "comisionSiguiente": "Comisión siguiente nivel",
+  "requisitosCalidad": "Requisitos de calidad",
+  "bloqueadoCalidad": "Tienes los XP necesarios, pero te falta cumplir la calidad.",
+  "calificacion": "Calificación",
+  "aceptacion": "Aceptación",
+  "cancelacion": "Cancelación",
+  "pendienteTitulo": "Cuenta en revisión",
+  "pendienteTexto": "Un administrador está verificando tus documentos. Te avisaremos cuando tu cuenta esté aprobada; mientras tanto no puedes recibir viajes.",
+  "rechazadoTexto": "Tu solicitud fue rechazada. Contacta a soporte de NEXA.",
+  "conductorNoSoportado": "Tu cuenta de conductor aún no puede iniciar sesión desde la app (pendiente en el backend).",
+  "iniciarSesion": "Iniciar sesión",
+  "solicitaAhora": "Solicita ahora",
+  "registrate": "Regístrate",
+  "homeBadge": "Servicio de MotoTaxis",
+  "homeHero": "Conecta con el movimiento",
+  "homeSubtitulo": "¡Tu destino te espera! Viajes rápidos, seguros y accesibles en dos ruedas.",
+  "servicios": "Servicios",
+  "serviciosSub": "Todo lo que puedes hacer en NEXA",
+  "svcReservaTitulo": "Reserva de viajes",
+  "svcReservaTexto": "Elige destino y tipo de moto en segundos.",
+  "svcRastreoTitulo": "Rastreo en vivo",
+  "svcRastreoTexto": "Sigue a tu conductor en tiempo real.",
+  "svcCalifTitulo": "Calificaciones",
+  "svcCalifTexto": "Califica y comenta cada viaje.",
+  "svcPagosTitulo": "Pagos seguros",
+  "svcPagosTexto": "Efectivo, tarjeta o billetera digital.",
+  "abrirMenu": "Abrir menú",
+  "saludoManana": "Buenos días",
+  "saludoTarde": "Buenas tardes",
+  "saludoNoche": "Buenas noches",
+  "buscadorHint": "¿A dónde vas hoy?",
+  "ahora": "Ahora",
+  "pedirViaje": "Pedir viaje",
+  "historialCorto": "Historial",
+  "viajesRecientes": "Viajes recientes",
+  "verTodo": "Ver todo",
+  "viajesCantidad": "{n} viajes",
+  "@viajesCantidad": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "notificaciones": "Notificaciones",
+  "sinNotificaciones": "No tienes notificaciones nuevas",
+  "aDondeVamos": "¿A dónde vamos?",
+  "origen": "Origen",
+  "miUbicacion": "Mi ubicación",
+  "destino": "Destino",
+  "tiempoEstimado": "Tiempo est.",
+  "minutosValor": "{n} min",
+  "@minutosValor": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "precioSugerido": "Precio sugerido · ajustable",
+  "aumentarPrecio": "Aumentar precio",
+  "disminuirPrecio": "Disminuir precio",
+  "cambiar": "Cambiar",
+  "volver": "Volver",
+  "centrarUbicacion": "Centrar en mi ubicación",
+  "editarDestino": "Editar destino",
+  "viajeEnCursoTitulo": "Viaje en curso",
+  "llegadaEstimada": "Llegada estimada {hora}",
+  "@llegadaEstimada": {
+    "placeholders": {
+      "hora": {
+        "type": "String"
+      }
+    }
+  },
+  "paso_solicitado": "Solicitado",
+  "paso_aceptado": "Aceptado",
+  "paso_en_curso": "En curso",
+  "paso_finalizado": "Finalizado",
+  "placa": "Placa",
+  "viajesCantidadCorto": "{n} viajes",
+  "@viajesCantidadCorto": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "llamar": "Llamar",
+  "mensaje": "Mensaje",
+  "compartir": "Compartir",
+  "compartirTexto": "Voy en un viaje NEXA hacia {destino}. Conductor: {conductor}.",
+  "@compartirTexto": {
+    "placeholders": {
+      "destino": {
+        "type": "String"
+      },
+      "conductor": {
+        "type": "String"
+      }
+    }
+  },
+  "asistenciaRuta": "Asistencia en ruta (SOS)",
+  "sosTitulo": "¿Necesitas ayuda?",
+  "sosTexto": "Llamaremos a la línea de emergencias 123.",
+  "noDisponible": "No disponible para este conductor",
+  "viajeFinalizadoTitulo": "Viaje finalizado",
+  "llegasteDestino": "¡Llegaste a tu destino!",
+  "duracionMin": "{n} min",
+  "@duracionMin": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "calificaExperiencia": "Califica tu experiencia",
+  "comoCalificarias": "¿Cómo calificarías a {nombre}?",
+  "@comoCalificarias": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "calif1": "Muy malo",
+  "calif2": "Malo",
+  "calif3": "Regular",
+  "calif4": "Bueno",
+  "calif5": "Muy bueno",
+  "califDe5": "{texto} - {n} de 5",
+  "@califDe5": {
+    "placeholders": {
+      "texto": {
+        "type": "String"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "etiquetaSegura": "Conducción segura",
+  "etiquetaPuntual": "Puntual",
+  "etiquetaAmable": "Amable",
+  "etiquetaMoto": "Moto en buen estado",
+  "etiquetaCasco": "Casco limpio",
+  "comentarioHint": "Déjanos un comentario opcional…",
+  "omitirPorAhora": "Omitir por ahora",
+  "cerrar": "Cerrar",
+  "tuConductor": "Tu conductor",
+  "metodoTarjeta": "Tarjeta",
+  "metodoBilletera": "Billetera digital",
+  "verDesglose": "Ver desglose",
+  "destinoSeleccionado": "Destino seleccionado",
+  "nombreInvalido": "Solo letras y espacios (3 a 100 caracteres)",
+  "passwordDebil": "Debe incluir mayúscula, minúscula y número",
+  "bienvenidaTitulo": "¡Bienvenido a NEXA!",
+  "bienvenidaNombre": "¡Hola, {nombre}!",
+  "bienvenidaPasajero": "Pide tu mototaxi, sigue tu viaje y sube de nivel con cada recorrido.",
+  "bienvenidaConductor": "Conéctate para recibir solicitudes y mejora tu comisión con cada viaje.",
+  "vamos": "¡Vamos!",
+  "cancelarViajeTitulo": "¿Cancelar el viaje?",
+  "cancelarViajeTexto": "Tu conductor dejará de ir hacia ti.",
+  "mantenerViaje": "Mantener viaje",
+  "cuentaYaExiste": "Ya existe una cuenta con ese correo.",
+  "@bienvenidaNombre": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "puntoEnMapa": "Punto en el mapa",
+  "sinResultados": "Sin resultados. Toca el mapa para elegir el punto.",
+  "usarMiUbicacion": "Usar mi ubicación",
+  "borrar": "Borrar",
+  "origenHint": "Busca el origen o toca el mapa",
+  "buscandoLugares": "Buscando…",
+  "editarPerfil": "Editar perfil",
+  "perfilActualizado": "Perfil actualizado",
+  "cambiarFoto": "Cambiar foto",
+  "tomarFoto": "Tomar foto",
+  "elegirGaleria": "Elegir de la galería",
+  "quitarFoto": "Quitar foto",
+  "fotoActualizada": "Foto actualizada",
+  "fotoQuitada": "Foto eliminada",
+  "registroConductorTitulo": "Registro de conductor",
+  "registroConductorIntro": "Completa tus datos y fotografía tus documentos. Un administrador los revisará y, cuando te aprueben, podrás iniciar sesión.",
+  "registroConductorBoton": "Registrarme como conductor",
+  "seccionDatos": "Tus datos",
+  "seccionVehiculo": "Tu moto",
+  "seccionDocumentos": "Documentos",
+  "licencia": "Número de licencia de conducción",
+  "tarjetaPropiedad": "Número de tarjeta de propiedad",
+  "soat": "Número de SOAT (12 dígitos)",
+  "tecnomecanica": "Número de tecnomecánica",
+  "marca": "Marca",
+  "modelo": "Modelo",
+  "color": "Color",
+  "docLicencia": "Foto de la licencia",
+  "docTarjeta": "Foto de la tarjeta de propiedad",
+  "docSoat": "Foto del SOAT",
+  "docTecno": "Foto de la tecnomecánica",
+  "agregarFoto": "Agregar foto",
+  "fotoLista": "Foto lista · toca para cambiarla",
+  "faltaFoto": "Adjunta la foto de este documento",
+  "enviarSolicitud": "Enviar solicitud",
+  "yaTengoCuenta": "Ya tengo cuenta",
+  "pasoDe": "Paso {n} de {total}",
+  "@pasoDe": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "registroPaso1Sub": "Empecemos con tus datos básicos.",
+  "registroPaso2Titulo": "Elige tu contraseña",
+  "registroPaso2Sub": "La usarás para entrar a tu cuenta.",
+  "docsTitulo": "Tus documentos",
+  "docsListos": "{n} de {total} listos",
+  "@docsListos": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "docsFaltan": "Faltan {n} para enviar tu solicitud.",
+  "@docsFaltan": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "docsCompletos": "Todo listo para enviar tu solicitud.",
+  "pedirNexa": "Pedir NEXA · {precio}",
+  "@pedirNexa": {
+    "placeholders": {
+      "precio": {
+        "type": "String"
+      }
+    }
+  },
+  "pedirNexaSinPrecio": "Pedir NEXA",
+  "tuRuta": "Tu ruta",
+  "fijarEnMapa": "Fijar en el mapa",
+  "resultadosCerca": "Resultados cerca de ti",
+  "buscarLugarHint": "Busca una dirección o un lugar",
+  "tocaMapaDestino": "Toca el mapa para fijar tu destino",
+  "tocaMapaOrigen": "Toca el mapa para fijar tu origen",
+  "nuevaSolicitud": "Nueva solicitud",
+  "faseARecoger": "A recoger",
+  "faseEnPunto": "En el punto",
+  "faseEnViaje": "En viaje",
+  "conectarme": "Conectarme",
+  "desconectarme": "Desconectarme",
+  "buscandoSolicitudes": "Buscando solicitudes…",
+  "gananciaPorViaje": "Ganancia por viaje",
+  "estasAqui": "Estás aquí",
+  "inactividadNota": "Si pasas 90 días sin viajar bajas un nivel.",
+  "statViajes": "viajes",
+  "statCalificacion": "calificación",
+  "statNivel": "nivel",
+  "editarPerfilSub": "Nombre y celular",
+  "ofertaAhora": "Tu oferta ahora",
+  "xpGanado": "Ganaste {n} XP",
+  "@xpGanado": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "ocultarDesglose": "Ocultar desglose",
+  "ahorroNivel": "Tu nivel ahorra {monto}",
+  "@ahorroNivel": {
+    "placeholders": {
+      "monto": {
+        "type": "String"
+      }
+    }
+  },
+  "motoNexa": "Moto NEXA",
+  "nivelDescuento": "Nivel {nivel} · {pct} % de descuento",
+  "@nivelDescuento": {
+    "placeholders": {
+      "nivel": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "int"
+      }
+    }
+  },
+  "solicitudEnviada": "Solicitud enviada",
+  "solicitudEnviadaMsg": "Un administrador revisará tus documentos. Podrás iniciar sesión cuando te aprueben.",
+  "errorFoto": "No se pudo leer la foto. Intenta de nuevo.",
+  "licenciaInvalida": "Debe tener entre 6 y 15 dígitos",
+  "tarjetaInvalida": "Debe tener entre 8 y 15 dígitos",
+  "soatInvalido": "Debe tener 12 dígitos",
+  "tecnoInvalida": "Debe tener entre 6 y 15 dígitos",
+  "placaInvalida": "La placa debe tener 6 caracteres (ej: ABC123)",
+  "textoInvalido": "Valor no válido",
+  "regPlaca": "Placa (ej: ABC123)",
+  "descuentoNivel": "Descuento por nivel",
+  "cargoPendiente": "Cargo pendiente por cancelación",
+  "aceptoCargo": "Acepto que este cargo se cobre con mi viaje",
+  "cotizando": "Calculando el precio…",
+  "tarifaServidorAviso": "Precio calculado por NEXA según la ruta por calles. Lo pagas al terminar el viaje.",
+  "recargoEspera": "Recargo por espera",
+  "extraVoluntario": "Extra voluntario",
+  "extraTitulo": "¿Tarda en llegar un conductor?",
+  "extraTexto": "Suma un extra voluntario para que tu solicitud llegue antes a los conductores.",
+  "deudaAnterior": "Cargo anterior",
+  "errorCotizar": "No se pudo calcular el precio. Intenta de nuevo.",
+  "llegueAlPunto": "Llegué al punto de recogida",
+  "esperandoPasajero": "Esperando al pasajero",
+  "distanciaPasajero": "Distancia del pasajero a la recogida",
+  "cobraAlPasajero": "Cobra al pasajero",
+  "viajeTerminado": "Viaje finalizado",
+  "finalizarAntesTitulo": "¿Finalizar antes del destino?",
+  "finalizarAntesTexto": "Aún no llegas al destino. Si finalizas ahora, el cobro será según lo recorrido.",
+  "finalizarDeTodosModos": "Finalizar de todos modos",
+  "cancelarViajeConductorTitulo": "¿Cancelar este viaje?",
+  "cancelarViajeConductorTexto": "El pasajero será avisado de la cancelación.",
+  "pasajeroCancelo": "El pasajero canceló el viaje.",
+  "saldoConNexa": "Saldo con NEXA",
+  "cobradoEfectivo": "Cobrado en efectivo",
+  "gananciaPeriodo": "Ganado",
+  "cargosAFavor": "Cargos a tu favor",
+  "viajesPeriodo": "Viajes",
+  "debesANexa": "Debes a NEXA",
+  "nexaTeDebe": "NEXA te debe",
+  "sinUbicacion": "No pudimos obtener tu ubicación. Activa el GPS e inténtalo de nuevo.",
+  "ultimos30Dias": "Últimos 30 días",
+  "listo": "Listo",
+  "ventajasActuales": "Tus ventajas actuales",
+  "descuentoViajes": "Descuento en tus viajes",
+  "prioridadRecogida": "Prioridad de recogida",
+  "sinVentajas": "Sube de nivel para ganar descuento y prioridad en tus viajes.",
+  "adminRol": "Administrador",
+  "adminConductores": "Conductores",
+  "adminProximamente": "Próximamente",
+  "adminProximamenteDetalle": "Por ahora esta sección está en la web del administrador.",
+  "satEyebrow": "Admin · Redes neuronales",
+  "satTitulo": "Satisfacción",
+  "satVerModelo": "Ver el modelo",
+  "satPeriodo7": "7 días",
+  "satPeriodo30": "30 días",
+  "satPeriodo90": "90 días",
+  "satPeriodoRango": "Rango",
+  "satDemoTitulo": "Modo demo.",
+  "satDemoTexto": "Las predicciones usan datos sintéticos hasta tener 300 calificaciones por lado. Las cifras de satisfacción sí son reales.",
+  "satDemoFactores": "La importancia de los factores sale del modelo de demostración. Las curvas usan las calificaciones reales.",
+  "satPasajerosSatisfechos": "Pasajeros satisfechos",
+  "satConductoresSatisfechos": "Conductores satisfechos",
+  "satSinCalificaciones": "Sin calificaciones",
+  "satVariacion": "{valor} pts vs. período anterior",
+  "@satVariacion": {
+    "placeholders": {
+      "valor": {
+        "type": "String"
+      }
+    }
+  },
+  "satCalifica": "Califica el {pct}",
+  "@satCalifica": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "satTendencia": "Tendencia semanal",
+  "satSemanticaTendencia": "Tendencia semanal. Última semana: pasajeros {pasajero}, conductores {conductor}.",
+  "@satSemanticaTendencia": {
+    "placeholders": {
+      "pasajero": {
+        "type": "String"
+      },
+      "conductor": {
+        "type": "String"
+      }
+    }
+  },
+  "satPasajero": "Pasajero",
+  "satConductor": "Conductor",
+  "satViajesRiesgo": "Viajes en riesgo",
+  "satViajesRiesgoDetalle": "Sin calificar, probable \"no\"",
+  "satFactores": "Factores",
+  "satLoQueMasPesa": "Lo que más pesa: {factor}",
+  "@satLoQueMasPesa": {
+    "placeholders": {
+      "factor": {
+        "type": "String"
+      }
+    }
+  },
+  "satQuePesaMas": "Qué pesa más",
+  "satQuePesaMasDetalle": "Cuánto empeora la predicción si se quita cada factor",
+  "satOtrosFactores": "+ {cantidad} factores más con menos del {peso}",
+  "@satOtrosFactores": {
+    "placeholders": {
+      "cantidad": {
+        "type": "String"
+      },
+      "peso": {
+        "type": "String"
+      }
+    }
+  },
+  "satComoCambia": "Cómo cambia la satisfacción",
+  "satPorTramoPasajero": "% de pasajeros satisfechos por tramo",
+  "satPorTramoConductor": "% de conductores satisfechos por tramo",
+  "satRiesgoIntro": "Viajes sin calificar donde la red predice que la persona no quedó satisfecha. Ordenados por probabilidad.",
+  "satTodos": "Todos",
+  "satConteo": "{etiqueta} · {n}",
+  "@satConteo": {
+    "placeholders": {
+      "etiqueta": {
+        "type": "String"
+      },
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "satViajeTitulo": "Viaje #{id} · {fecha}",
+  "@satViajeTitulo": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      },
+      "fecha": {
+        "type": "String"
+      }
+    }
+  },
+  "satRuta": "{origen} → {destino} · {km} km",
+  "@satRuta": {
+    "placeholders": {
+      "origen": {
+        "type": "String"
+      },
+      "destino": {
+        "type": "String"
+      },
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "satProbNo": "prob. de \"no\"",
+  "satUmbral": "Umbral de alerta: {pct} · se ajusta en el modelo",
+  "@satUmbral": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "satSinRiesgo": "No hay viajes en riesgo",
+  "satSinRiesgoDetalle": "Ningún viaje sin calificar supera el umbral de alerta.",
+  "satModeloEyebrow": "Red neuronal",
+  "satModelo": "Modelo",
+  "satVersionTitulo": "Versión {version} · TensorFlow",
+  "@satVersionTitulo": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "satDemo": "Demo",
+  "satEntrenadoInfo": "Entrenado el {fecha} · {viajes} viajes · {variables} variables",
+  "@satEntrenadoInfo": {
+    "placeholders": {
+      "fecha": {
+        "type": "String"
+      },
+      "viajes": {
+        "type": "String"
+      },
+      "variables": {
+        "type": "String"
+      }
+    }
+  },
+  "satRed": "Red",
+  "satRegresion": "Regresión",
+  "satResultado": "Resultado",
+  "satSupera": "Supera",
+  "satNoSupera": "No supera",
+  "satMetricaNota": "PR-AUC sobre el 15 % de viajes más recientes. Mientras la red no supere a la regresión, el panel lo advierte.",
+  "satEntrenarAhora": "Entrenar ahora",
+  "satEntrenarDemoNota": "Sin datos suficientes: se entrena con datos sintéticos (demo).",
+  "satEntrenamientoEnCurso": "Hay un entrenamiento en curso",
+  "satVer": "Ver",
+  "satProgramado": "Entrenamiento programado",
+  "satCambiar": "Cambiar",
+  "satSinProgramar": "Sin programar: la red solo se entrena cuando lo pidas.",
+  "satProxima": "Próximo: {fecha}",
+  "@satProxima": {
+    "placeholders": {
+      "fecha": {
+        "type": "String"
+      }
+    }
+  },
+  "satProximaDatosNuevos": "Próximo: {fecha} · solo si hay {n} viajes nuevos calificados",
+  "@satProximaDatosNuevos": {
+    "placeholders": {
+      "fecha": {
+        "type": "String"
+      },
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "satTodosLosDias": "Todos los días · {hora}",
+  "@satTodosLosDias": {
+    "placeholders": {
+      "hora": {
+        "type": "String"
+      }
+    }
+  },
+  "satCadaHorasValor": "Cada {horas} h",
+  "@satCadaHorasValor": {
+    "placeholders": {
+      "horas": {
+        "type": "String"
+      }
+    }
+  },
+  "satHistorial": "Historial",
+  "satManual": "Manual",
+  "satProgramadoCorto": "Programado",
+  "satEstPublicado": "Publicado",
+  "satEstPublicadoDemo": "Publicado (demo)",
+  "satEstSinPublicar": "Guardado sin publicar",
+  "satEstSinDatosNuevos": "Sin datos nuevos",
+  "satEstFaltanDatos": "Faltan datos",
+  "satEstFallido": "Falló",
+  "satEstCancelado": "Cancelado",
+  "satEstEnCurso": "En curso",
+  "satProgramarTitulo": "Programar entrenamiento",
+  "satProgramarDetalle": "La red se entrena en la nube y se publica sola si cumple las condiciones.",
+  "satFrecuencia": "Frecuencia",
+  "satDiaria": "Diario",
+  "satSemanal": "Semanal",
+  "satCadaHoras": "Cada N horas",
+  "satDias": "Días",
+  "satDiaLun": "L",
+  "satDiaMar": "M",
+  "satDiaMie": "X",
+  "satDiaJue": "J",
+  "satDiaVie": "V",
+  "satDiaSab": "S",
+  "satDiaDom": "D",
+  "satHoraBogota": "Hora (Bogotá)",
+  "satIntervalo": "Intervalo",
+  "satSoloDatosNuevos": "Solo con datos nuevos",
+  "satSoloDatosNuevosDetalle": "Al menos {n} viajes calificados desde el último",
+  "@satSoloDatosNuevosDetalle": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "satPublicarSiMejora": "Publicar solo si mejora",
+  "satPublicarSiMejoraDetalle": "Si no supera a la versión actual, se guarda sin usarla",
+  "satProgramacionInvalida": "Elige al menos un día.",
+  "satGuardarProgramacion": "Guardar programación",
+  "satProgramacionGuardada": "Programación guardada",
+  "satEntrenandoTitulo": "Entrenando",
+  "satEntrenamientoTitulo": "Entrenamiento",
+  "satEntrenandoRed": "Entrenando la red",
+  "satEnCola": "En cola…",
+  "satEpoca": "Época {epoca} de {epocas}",
+  "@satEpoca": {
+    "placeholders": {
+      "epoca": {
+        "type": "String"
+      },
+      "epocas": {
+        "type": "String"
+      }
+    }
+  },
+  "satPasoExportar": "Exportar viajes",
+  "satPasoEntrenar": "Entrenar la red",
+  "satPasoEntrenarDetalle": "TensorFlow · dos salidas",
+  "satPasoComparar": "Comparar con la regresión",
+  "satPasoPublicar": "Publicar para la app",
+  "satPuedesSalir": "Puedes salir de esta pantalla: el entrenamiento sigue en la nube. El panel muestra la versión actual hasta que se publique la nueva.",
+  "satCancelarEntrenamiento": "Cancelar entrenamiento",
+  "satVolverPanel": "Volver al modelo",
+  "satFinPublicado": "Nueva versión publicada",
+  "satFinSinPublicar": "Se guardó sin publicar",
+  "satFinSinPublicarDetalle": "No superó a la versión actual.",
+  "satFinSinDatosNuevos": "No había datos nuevos",
+  "satFinFallido": "El entrenamiento falló",
+  "satFinCancelado": "Entrenamiento cancelado",
+  "satSinDatosTitulo": "Aún no hay datos para entrenar",
+  "satMinimoDatos": "La red necesita al menos {calificaciones} calificaciones y {no} \"no\" por lado. Mientras tanto se muestran las cifras reales y el modelo de demostración.",
+  "@satMinimoDatos": {
+    "placeholders": {
+      "calificaciones": {
+        "type": "String"
+      },
+      "no": {
+        "type": "String"
+      }
+    }
+  },
+  "satProgresoDatos": "Progreso de los datos",
+  "satCalifPasajeros": "Calificaciones de pasajeros",
+  "satNoPasajeros": "\"No\" de pasajeros",
+  "satCalifConductores": "Calificaciones de conductores",
+  "satNoConductores": "\"No\" de conductores",
+  "satConteoDe": "{actual} / {meta}",
+  "@satConteoDe": {
+    "placeholders": {
+      "actual": {
+        "type": "String"
+      },
+      "meta": {
+        "type": "String"
+      }
+    }
+  },
+  "satConsejoConductores": "Los conductores califican poco. Pedirles la nota al cerrar el viaje acelera el entrenamiento.",
+  "satEntrenarNoDisponible": "Entrenar ahora (no disponible)"
+}

@@ -1,0 +1,706 @@
+<title>Mockups NEXA Dark</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&display=swap">
+<style>
+/* Concepto: lienzo oscuro con las pantallas de 390x844 en filas por flujo, igual que el Figma.
+   Experiencia: mapa primero, una decision por pantalla, precio siempre visible, acciones peligrosas lejos del pulgar.
+   Tokens: mismos nombres y valores de la coleccion "NEXA Dark" de Figma (paleta de la web). */
+:root {
+  --brand-primary: #00C4FF; --brand-primary-dark: #004F78; --brand-secondary: #5EBDDA;
+  --brand-primary-soft: rgba(0,196,255,.12); --brand-glow: rgba(0,196,255,.35);
+  --text-primary: #FFFFFF; --text-secondary: #C9D6E2; --text-muted: #8FA8BA; --text-on-primary: #020A12;
+  --surface-bg: #020A12; --surface-card: #03192E; --surface-raised: #07324F; --surface-glass: rgba(0,26,51,.72);
+  --border: rgba(0,196,255,.18); --border-strong: rgba(0,196,255,.45);
+  --ok: #6EE7A8; --ok-soft: rgba(110,231,168,.14); --danger: #FF8A8A; --danger-soft: rgba(255,138,138,.14);
+  --warn: #FFC857; --warn-soft: rgba(255,200,87,.14); --info-soft: rgba(0,196,255,.14);
+  --map-land: #061A2B; --map-road: #0F3450; --map-road-main: #164565; --map-park: #0A2A2A; --map-water: #052B45;
+  --canvas: #03111C;
+  --font: "Montserrat", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--canvas); color: var(--text-primary); }
+body { font-family: var(--font); margin: 0; padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 64px; }
+h1, h2, h3, p { margin: 0; }
+button { font: inherit; color: inherit; cursor: pointer; }
+
+/* ---------- Lienzo ---------- */
+.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 20px; max-width: 1400px; margin: 0 auto 8px; }
+.top h1 { font-size: 28px; line-height: 1.15; font-weight: 700; text-wrap: balance; }
+.top h1 span { color: var(--brand-primary); }
+.top p { color: var(--text-muted); font-size: 14px; line-height: 1.5; max-width: 66ch; margin-top: 8px; }
+.zoom { display: inline-flex; gap: 4px; padding: 4px; border: 1px solid var(--border); border-radius: 100px; background: var(--surface-card); }
+.zoom button { border: 0; background: transparent; color: var(--text-secondary); padding: 8px 14px; border-radius: 100px; font-size: 12px; font-weight: 600; }
+.zoom button[aria-pressed="true"] { background: var(--brand-primary); color: var(--text-on-primary); box-shadow: 0 0 18px var(--brand-glow); }
+.zoom button:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 2px; }
+.principles { max-width: 1400px; margin: 26px auto 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.pr { background: var(--surface-card); border: 1px solid var(--border); border-radius: 18px; padding: 16px; }
+.pr b { display: block; font-size: 14px; margin-bottom: 6px; color: var(--text-primary); }
+.pr span { font-size: 12.5px; line-height: 1.5; color: var(--text-muted); }
+.pr i { font-style: normal; color: var(--brand-primary); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+.canvas { max-width: 1400px; margin: 0 auto; }
+.flow { margin-top: 44px; }
+.flow > h2 { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+.flow > h2 small { font-size: 12px; font-weight: 600; color: var(--brand-primary); background: var(--info-soft); padding: 4px 10px; border-radius: 100px; }
+.flow > p { color: var(--text-muted); font-size: 13px; margin-top: 6px; max-width: 80ch; line-height: 1.5; }
+.row { display: flex; gap: 80px; overflow-x: auto; padding: 28px 8px; margin-inline: -8px; scrollbar-color: var(--border-strong) transparent; }
+.frame { flex: 0 0 auto; margin: 0; width: 390px; }
+.frame figcaption { margin-top: 18px; font-size: 13px; line-height: 1.5; color: var(--text-secondary); }
+.frame figcaption b { display: block; color: var(--text-primary); font-size: 14px; margin-bottom: 2px; }
+.frame figcaption em { font-style: normal; color: var(--text-muted); font-size: 11px; }
+
+/* ---------- Pantalla ---------- */
+.phone { position: relative; width: 390px; height: 844px; overflow: hidden; border-radius: 36px; background: var(--surface-bg); border: 1px solid var(--border); box-shadow: 0 24px 60px rgba(0,0,0,.55); font-size: 14px; font-weight: 500; line-height: 1.45; display: flex; flex-direction: column; }
+.phone.glowbg { background: radial-gradient(90% 40% at 100% 0%, rgba(0,196,255,.20), transparent 70%), radial-gradient(70% 30% at 0% 100%, rgba(0,79,120,.45), transparent 70%), var(--surface-bg); }
+.sb { flex: 0 0 44px; height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px 0 28px; font-weight: 600; font-size: 14px; position: relative; z-index: 9; }
+.sb.abs { position: absolute; left: 0; right: 0; top: 0; }
+.sb .st { display: flex; gap: 6px; align-items: center; }
+.body { flex: 1; min-height: 0; padding: 0 20px; display: flex; flex-direction: column; position: relative; }
+
+/* ---------- Tipografia (estilos NEXA/* de Figma) ---------- */
+.t-hero { font-size: 36px; line-height: 1.12; font-weight: 700; text-wrap: balance; }
+.t-display { font-size: 28px; line-height: 1.2; font-weight: 700; }
+.t-h1 { font-size: 22px; line-height: 1.25; font-weight: 700; }
+.t-h2 { font-size: 18px; line-height: 1.3; font-weight: 700; }
+.t-title { font-size: 16px; line-height: 1.35; font-weight: 600; }
+.t-bodys { font-size: 14px; font-weight: 600; }
+.t-cap { font-size: 12px; font-weight: 500; line-height: 1.4; }
+.t-caps { font-size: 12px; font-weight: 600; line-height: 1.4; }
+.t-over { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.t-price { font-size: 26px; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.muted { color: var(--text-muted); } .sec { color: var(--text-secondary); } .cy { color: var(--brand-primary); } .okc { color: var(--ok); } .dgc { color: var(--danger); } .wnc { color: var(--warn); }
+.num { font-variant-numeric: tabular-nums; }
+.glowtxt { text-shadow: 0 0 22px var(--brand-glow); }
+
+/* ---------- Iconos ---------- */
+.ic { display: inline-flex; width: var(--s, 20px); height: var(--s, 20px); flex: 0 0 auto; }
+.ic svg { width: 100%; height: 100%; }
+.star { color: var(--text-muted); } .star.f { color: var(--warn); } .star.f svg { fill: currentColor; }
+
+/* ---------- Componentes ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 56px; padding: 0 24px; border-radius: 28px; border: 1.5px solid transparent; font-size: 16px; font-weight: 600; background: transparent; width: 100%; }
+.btn.sm { height: 44px; font-size: 14px; padding: 0 16px; border-radius: 22px; width: auto; }
+.btn-primary { background: var(--brand-primary); color: var(--text-on-primary); box-shadow: 0 0 28px var(--brand-glow); }
+.btn-primary.off { background: var(--surface-raised); color: var(--text-muted); box-shadow: none; }
+.btn-sec { background: var(--surface-glass); color: var(--brand-primary); border-color: var(--border-strong); }
+.btn-ghost { color: var(--text-secondary); }
+.btn-danger { background: var(--danger-soft); color: var(--danger); border-color: rgba(255,138,138,.4); }
+.btn-text { height: 40px; width: auto; color: var(--text-secondary); font-size: 14px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 100px; font-size: 12px; font-weight: 600; line-height: 1.4; white-space: nowrap; }
+.chip.ok { background: var(--ok-soft); color: var(--ok); } .chip.warn { background: var(--warn-soft); color: var(--warn); }
+.chip.danger { background: var(--danger-soft); color: var(--danger); } .chip.info { background: var(--info-soft); color: var(--brand-primary); }
+.chip.neutral { background: var(--surface-raised); color: var(--text-secondary); }
+.chip.glass { background: var(--surface-glass); border: 1px solid var(--border-strong); color: var(--brand-primary); backdrop-filter: blur(12px); padding: 7px 12px; }
+.chip.solid { background: var(--brand-primary); color: var(--text-on-primary); box-shadow: 0 0 16px var(--brand-glow); }
+.card { background: var(--surface-card); border: 1px solid var(--border); border-radius: 22px; }
+.glass { background: var(--surface-glass); border: 1px solid var(--border); backdrop-filter: blur(14px); }
+.neon { border-color: var(--border-strong); box-shadow: 0 0 24px rgba(0,196,255,.18), inset 0 0 28px rgba(0,196,255,.06); }
+.tile { width: 44px; height: 44px; border-radius: 14px; background: var(--info-soft); color: var(--brand-primary); display: grid; place-items: center; flex: 0 0 auto; }
+.tile.lg { width: 60px; height: 60px; border-radius: 18px; }
+.tile.solid { background: var(--brand-primary); color: var(--text-on-primary); box-shadow: 0 0 24px var(--brand-glow); }
+.tile.ok { background: var(--ok-soft); color: var(--ok); } .tile.warn { background: var(--warn-soft); color: var(--warn); } .tile.danger { background: var(--danger-soft); color: var(--danger); }
+.avatar { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; color: var(--text-on-primary); background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary)); flex: 0 0 auto; }
+.avatar.lg { width: 60px; height: 60px; font-size: 18px; } .avatar.xl { width: 96px; height: 96px; font-size: 30px; } .avatar.sm { width: 40px; height: 40px; font-size: 14px; }
+.ring { --p: 58%; --d: 56px; width: var(--d); height: var(--d); border-radius: 50%; padding: 3px; background: conic-gradient(var(--brand-primary) var(--p), rgba(0,196,255,.18) 0); display: grid; place-items: center; box-shadow: 0 0 20px var(--brand-glow); flex: 0 0 auto; }
+.ring .avatar { width: 100%; height: 100%; border: 3px solid var(--surface-bg); }
+.logo { display: block; object-fit: cover; border-radius: 28%; box-shadow: 0 0 0 2px var(--border-strong), 0 0 40px var(--brand-glow); background: #fff; }
+.iconbtn { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-glass); border: 1px solid var(--border); backdrop-filter: blur(12px); position: relative; flex: 0 0 auto; }
+.iconbtn .dot { position: absolute; top: 10px; right: 11px; width: 8px; height: 8px; border-radius: 50%; background: var(--brand-primary); box-shadow: 0 0 8px var(--brand-primary); }
+.iconbtn.big { width: 52px; height: 52px; }
+.field { height: 58px; background: var(--surface-card); border: 1px solid var(--border); border-radius: 18px; display: flex; align-items: center; gap: 12px; padding: 0 16px; }
+.field .col { display: flex; flex-direction: column; min-width: 0; }
+.field .lab { font-size: 11px; color: var(--text-muted); font-weight: 600; line-height: 1.2; }
+.field .val { font-size: 15px; font-weight: 600; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.field.focus { border-color: var(--brand-primary); box-shadow: 0 0 0 3px rgba(0,196,255,.16), 0 0 22px rgba(0,196,255,.2); }
+.field .ic { color: var(--text-muted); } .field.focus .ic { color: var(--brand-primary); }
+.stack { display: flex; flex-direction: column; } .gap4 { gap: 4px; } .gap8 { gap: 8px; } .gap12 { gap: 12px; } .gap16 { gap: 16px; } .gap20 { gap: 20px; }
+.rowf { display: flex; align-items: center; } .between { justify-content: space-between; } .grow { flex: 1; min-width: 0; }
+.bar { height: 8px; border-radius: 100px; background: var(--surface-raised); overflow: hidden; }
+.bar > i { display: block; height: 100%; border-radius: 100px; background: linear-gradient(90deg, var(--brand-primary-dark), var(--brand-primary)); box-shadow: 0 0 12px var(--brand-glow); }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; border-radius: 30px 30px 0 0; background: rgba(3,25,46,.97); border-top: 1px solid var(--border-strong); box-shadow: 0 -14px 40px rgba(0,0,0,.5); padding: 10px 20px 20px; display: flex; flex-direction: column; z-index: 4; }
+.grab { width: 40px; height: 4px; border-radius: 4px; background: var(--border-strong); margin: 0 auto 14px; flex: 0 0 auto; }
+.fnav { position: absolute; left: 20px; right: 20px; bottom: 18px; height: 64px; border-radius: 32px; background: rgba(3,25,46,.88); backdrop-filter: blur(16px); border: 1px solid var(--border-strong); box-shadow: 0 12px 32px rgba(0,0,0,.5), 0 0 24px rgba(0,196,255,.12); display: flex; align-items: center; justify-content: space-around; padding: 0 8px; z-index: 8; }
+.fnav .it { height: 46px; min-width: 46px; border-radius: 23px; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--text-muted); padding: 0 12px; font-size: 13px; font-weight: 600; }
+.fnav .it.on { background: var(--brand-primary); color: var(--text-on-primary); box-shadow: 0 0 20px var(--brand-glow); padding: 0 18px; }
+.map { position: absolute; left: 0; top: 0; width: 390px; display: block; }
+.pin { position: absolute; transform: translate(-50%, -50%); }
+.pin.o { width: 20px; height: 20px; border-radius: 50%; background: var(--surface-bg); border: 4px solid var(--text-primary); box-shadow: 0 0 0 4px rgba(255,255,255,.12); }
+.pin.d { width: 22px; height: 22px; border-radius: 50%; background: var(--brand-primary); border: 4px solid var(--surface-bg); box-shadow: 0 0 0 3px var(--brand-primary), 0 0 28px var(--brand-primary); }
+.pin.m { width: 44px; height: 44px; border-radius: 50%; background: var(--brand-primary); color: var(--text-on-primary); display: grid; place-items: center; box-shadow: 0 0 0 6px rgba(0,196,255,.25), 0 0 30px var(--brand-primary); }
+.pin.mini { width: 28px; height: 28px; border-radius: 50%; background: var(--surface-raised); color: var(--brand-primary); border: 1.5px solid var(--border-strong); display: grid; place-items: center; box-shadow: 0 0 14px rgba(0,196,255,.35); }
+.pin.me { width: 18px; height: 18px; border-radius: 50%; background: var(--brand-primary); border: 3px solid #fff; box-shadow: 0 0 0 10px rgba(0,196,255,.22), 0 0 22px var(--brand-primary); }
+.tag { position: absolute; transform: translate(-50%, -100%); white-space: nowrap; }
+.float { position: absolute; z-index: 5; }
+.pulse { position: absolute; transform: translate(-50%, -50%); border-radius: 50%; border: 2px solid var(--brand-primary); width: 60px; height: 60px; opacity: 0; animation: pulse 3s ease-out infinite; }
+.pulse.b { animation-delay: 1s; } .pulse.c { animation-delay: 2s; }
+@keyframes pulse { 0% { transform: translate(-50%, -50%) scale(.4); opacity: .9; } 100% { transform: translate(-50%, -50%) scale(4.2); opacity: 0; } }
+.dots i { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--brand-primary); margin-left: 4px; animation: blink 1.2s infinite; }
+.dots i:nth-child(2) { animation-delay: .2s; } .dots i:nth-child(3) { animation-delay: .4s; }
+@keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+.step { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; position: relative; font-size: 11px; font-weight: 600; color: var(--text-muted); }
+.step .n { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-raised); position: relative; z-index: 1; }
+.step.done .n { background: var(--brand-primary); color: var(--text-on-primary); }
+.step.now .n { background: var(--surface-bg); border: 2px solid var(--brand-primary); box-shadow: 0 0 14px var(--brand-glow); }
+.step.now .n::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--brand-primary); }
+.step.done, .step.now { color: var(--text-primary); }
+.step::before { content: ""; position: absolute; top: 10px; left: -50%; right: 50%; height: 3px; border-radius: 3px; background: var(--surface-raised); }
+.step:first-child::before { display: none; }
+.step.done::before, .step.now::before { background: var(--brand-primary); box-shadow: 0 0 8px var(--brand-glow); }
+.seg { display: flex; padding: 4px; border-radius: 100px; background: var(--surface-card); border: 1px solid var(--border); }
+.seg span { flex: 1; text-align: center; padding: 11px; border-radius: 100px; font-size: 14px; font-weight: 600; color: var(--text-muted); display: flex; justify-content: center; align-items: center; gap: 8px; }
+.seg span.on { background: var(--brand-primary); color: var(--text-on-primary); box-shadow: 0 0 20px var(--brand-glow); }
+.hr { height: 1px; background: var(--border); border: 0; margin: 0; }
+.check { width: 22px; height: 22px; border-radius: 7px; border: 2px solid var(--brand-primary); display: grid; place-items: center; background: var(--brand-primary); color: var(--text-on-primary); flex: 0 0 auto; box-shadow: 0 0 12px var(--brand-glow); }
+.slide { position: relative; height: 64px; border-radius: 32px; background: var(--brand-primary-soft); border: 1px solid var(--border-strong); display: flex; align-items: center; padding: 6px; overflow: hidden; }
+.slide .h { width: 52px; height: 52px; border-radius: 50%; background: var(--brand-primary); color: var(--text-on-primary); display: grid; place-items: center; box-shadow: 0 0 22px var(--brand-glow); z-index: 1; flex: 0 0 auto; }
+.slide .t { position: absolute; left: 0; right: 0; text-align: center; font-weight: 600; color: var(--brand-primary); font-size: 15px; padding-left: 44px; }
+.plate { padding: 6px 12px; border-radius: 10px; background: #fff; color: var(--text-on-primary); font-weight: 700; letter-spacing: .08em; font-size: 15px; border-bottom: 3px solid #cdd7df; }
+.round { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-raised); border: 1px solid var(--border); color: var(--brand-primary); }
+.li { display: flex; align-items: center; gap: 14px; padding: 12px 0; }
+.li + .li { border-top: 1px solid var(--border); }
+.hlt { color: var(--brand-primary); }
+@media (prefers-reduced-motion: reduce) { .pulse, .dots i { animation: none; opacity: .6; } }
+</style>
+
+<header class="top">
+  <div>
+    <h1>NEXA móvil · <span>rediseño dark v2</span></h1>
+    <p>19 pantallas de 390 × 844, como en tu Figma. Misma paleta oscura con cian neón de la web, ahora con otra experiencia: mapa primero, una decisión por pantalla, precio siempre visible y acciones delicadas lejos del pulgar. Inspirado en lo que funciona en Uber y DiDi, con rasgos propios de NEXA.</p>
+  </div>
+  <div class="zoom" role="group" aria-label="Zoom del lienzo">
+    <button type="button" data-z="0.6" aria-pressed="false">60 %</button>
+    <button type="button" data-z="0.8" aria-pressed="false">80 %</button>
+    <button type="button" data-z="1" aria-pressed="true">100 %</button>
+  </div>
+</header>
+
+<section class="principles" aria-label="Principios de experiencia">
+  <div class="pr"><i>Aprendido</i><b>Mapa primero</b><span>El mapa es la pantalla de inicio y la hoja inferior concentra la acción. Menos pantallas para llegar a pedir un viaje.</span></div>
+  <div class="pr"><i>Aprendido</i><b>Precio dentro del botón</b><span>«Pedir NEXA · $11.910». Nadie descubre el costo al final, y el desglose se abre solo si se necesita.</span></div>
+  <div class="pr"><i>Aprendido</i><b>Deslizar para lo delicado</b><span>«Llegué», «Pasajero recogido» y «Completar» se confirman deslizando. Cancelar queda como texto discreto.</span></div>
+  <div class="pr"><i>Aprendido</i><b>Estado en un vistazo</b><span>Minutos de llegada en grande y la placa visible. Seguridad en un botón flotante, no en un bloque rojo.</span></div>
+  <div class="pr"><i>Propio de NEXA</i><b>Anillo de XP en el avatar</b><span>Tu progreso de nivel rodea tu foto en todas partes, y el ahorro por nivel aparece donde importa: en el precio.</span></div>
+  <div class="pr"><i>Propio de NEXA</i><b>Ruta neón y barra flotante</b><span>El trayecto brilla en cian y la navegación flota sobre el mapa, a un pulgar de distancia.</span></div>
+</section>
+
+<main class="canvas" id="canvas">
+
+<!-- ============================== ACCESO ============================== -->
+<section class="flow" id="acceso">
+  <h2>Acceso <small>4 pantallas</small></h2>
+  <p>Bienvenida con el logo de NEXA, inicio de sesión, registro en pasos cortos y registro de conductor con avance claro.</p>
+  <div class="row">
+
+  <!-- 01 Bienvenida -->
+  <figure class="frame"><div class="phone">
+    <svg class="map" viewBox="0 0 390 560" width="390" height="560" aria-hidden="true" style="opacity:.9"><defs><linearGradient id="fade1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#020A12" stop-opacity="0"/><stop offset=".85" stop-color="#020A12" stop-opacity="1"/></linearGradient><radialGradient id="halo1" cx=".5" cy=".28" r=".55"><stop offset="0" stop-color="#00C4FF" stop-opacity=".30"/><stop offset="1" stop-color="#00C4FF" stop-opacity="0"/></radialGradient><filter id="bl1"><feGaussianBlur stdDeviation="4"/></filter></defs>
+      <rect width="390" height="560" fill="url(#halo1)"/>
+      <g stroke="#0F3450" stroke-width="5" fill="none" stroke-linecap="round"><path d="M-10 120 H400"/><path d="M-10 230 H400"/><path d="M-10 340 H400"/><path d="M60 0 V560"/><path d="M170 0 V560"/><path d="M290 0 V560"/><path d="M340 0 L200 560" stroke-width="3"/></g>
+      <path d="M-10 410 C80 380 120 300 195 296 S320 250 400 170" fill="none" stroke="#00C4FF" stroke-opacity=".35" stroke-width="14" stroke-linecap="round" filter="url(#bl1)"/>
+      <path d="M-10 410 C80 380 120 300 195 296 S320 250 400 170" fill="none" stroke="#00C4FF" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 0"/>
+      <rect width="390" height="560" fill="url(#fade1)"/></svg>
+    <div class="sb abs" data-sb></div>
+    <div class="body" style="padding-top:44px;z-index:2">
+      <div class="stack" style="align-items:center;margin-top:34px;gap:22px">
+        <img class="logo" src="data:image/png;base64,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" width="132" height="132" alt="Logo de NEXA">
+        <div style="text-align:center"><h1 class="t-hero">Muévete rápido.<br><span class="cy glowtxt">Llega seguro.</span></h1><p class="sec" style="margin-top:12px;font-size:14px;line-height:1.55">Mototaxis verificados en toda Cartagena, con el precio claro antes de pedir.</p></div>
+        <div class="rowf gap8" style="flex-wrap:wrap;justify-content:center"><span class="chip glass"><i class="ic" data-i="shield" style="--s:14px"></i>Conductores verificados</span><span class="chip glass"><i class="ic" data-i="cash" style="--s:14px"></i>Pagas en efectivo</span></div>
+      </div>
+      <div class="stack gap12" style="margin-top:auto;padding-bottom:34px">
+        <button class="btn btn-primary" type="button">Empezar <i class="ic" data-i="arrow-right" style="--s:18px"></i></button>
+        <button class="btn btn-sec" type="button">Ya tengo cuenta</button>
+        <div class="t-cap muted" style="text-align:center;margin-top:4px">¿Quieres generar ingresos? <span class="cy t-caps">Conduce con NEXA</span></div>
+      </div>
+    </div>
+  </div><figcaption><b>01 · Bienvenida</b>Logo real de NEXA como icono con brillo, una sola promesa y dos acciones claras. <em>390 × 844</em></figcaption></figure>
+
+  <!-- 02 Login -->
+  <figure class="frame"><div class="phone glowbg">
+    <div class="sb" data-sb></div>
+    <div class="body">
+      <div class="rowf" style="height:52px"><span class="iconbtn"><i class="ic" data-i="arrow-left"></i></span></div>
+      <div class="stack" style="align-items:center;gap:16px;margin-top:4px;text-align:center">
+        <img class="logo" src="data:image/png;base64,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" width="72" height="72" alt="Logo de NEXA">
+        <div><div class="t-display">Hola de nuevo</div><div class="sec" style="margin-top:6px">Entra para pedir o recibir viajes.</div></div>
+      </div>
+      <div class="rowf gap12" style="margin-top:22px;padding:12px 14px;border-radius:16px;background:var(--warn-soft);border:1px solid rgba(255,200,87,.35)">
+        <i class="ic wnc" data-i="alert"></i><div class="t-cap sec" style="line-height:1.4"><b class="wnc">Cuenta pendiente de aprobación.</b> Podrás entrar cuando un administrador revise tus documentos.</div>
+      </div>
+      <div class="stack gap12" style="margin-top:18px">
+        <div class="field focus"><i class="ic" data-i="mail"></i><div class="col"><span class="lab">Correo electrónico</span><span class="val">carlos.mendoza@correo.com</span></div></div>
+        <div class="field"><i class="ic" data-i="lock"></i><div class="col"><span class="lab">Contraseña</span><span class="val">••••••••••</span></div></div>
+        <div class="rowf" style="justify-content:flex-end"><span class="t-caps cy">¿Olvidaste tu contraseña?</span></div>
+      </div>
+      <div class="stack gap12" style="margin-top:auto;padding-bottom:34px">
+        <button class="btn btn-primary" type="button">Continuar <i class="ic" data-i="arrow-right" style="--s:18px"></i></button>
+        <div class="t-cap sec" style="text-align:center">¿Primera vez en NEXA? <span class="cy t-caps">Crea tu cuenta</span></div>
+      </div>
+    </div>
+  </div><figcaption><b>02 · Iniciar sesión</b>Dos campos y una acción. El aviso de cuenta pendiente es una franja, no una tarjeta pesada. <em>390 × 844</em></figcaption></figure>
+
+  <!-- 03 Registro -->
+  <figure class="frame"><div class="phone">
+    <div class="sb" data-sb></div>
+    <div class="body">
+      <div class="rowf gap12" style="height:52px"><span class="iconbtn"><i class="ic" data-i="arrow-left"></i></span><div class="grow"></div><span class="t-caps muted">Paso 1 de 2</span></div>
+      <div class="bar" style="margin-top:4px"><i style="width:50%"></i></div>
+      <div style="margin-top:22px"><div class="t-display">Crea tu cuenta</div><div class="sec" style="margin-top:6px">Empecemos con tus datos básicos.</div></div>
+      <div class="seg" style="margin-top:20px"><span class="on"><i class="ic" data-i="user" style="--s:18px"></i>Pasajero</span><span><i class="ic" data-i="moto" style="--s:18px"></i>Conductor</span></div>
+      <div class="stack gap12" style="margin-top:18px">
+        <div class="field focus"><i class="ic" data-i="user"></i><div class="col"><span class="lab">Nombre completo</span><span class="val">Frank Salcedo</span></div></div>
+        <div class="field"><i class="ic" data-i="phone"></i><span class="chip neutral">+57</span><div class="col"><span class="lab">Celular</span><span class="val">300 123 4567</span></div></div>
+        <div class="field"><i class="ic" data-i="mail"></i><div class="col"><span class="lab">Correo electrónico</span><span class="val">frank@correo.com</span></div></div>
+      </div>
+      <div class="t-cap muted" style="margin-top:12px;line-height:1.5">En el siguiente paso eliges tu contraseña. Usamos tu celular para avisarte del viaje.</div>
+      <div class="stack gap12" style="margin-top:auto;padding-bottom:34px">
+        <button class="btn btn-primary" type="button">Continuar <i class="ic" data-i="arrow-right" style="--s:18px"></i></button>
+        <div class="t-cap sec" style="text-align:center">¿Ya tienes cuenta? <span class="cy t-caps">Inicia sesión</span></div>
+      </div>
+    </div>
+  </div><figcaption><b>03 · Registro (paso 1 de 2)</b>Se pide menos por pantalla; la contraseña y sus reglas van en el paso 2. <em>390 × 844</em></figcaption></figure>
+
+  <!-- 04 Registro conductor -->
+  <figure class="frame"><div class="phone">
+    <div class="sb" data-sb></div>
+    <div class="body">
+      <div class="rowf gap12" style="height:52px"><span class="iconbtn"><i class="ic" data-i="arrow-left"></i></span><div class="grow"></div><span class="t-caps muted">Paso 3 de 3</span></div>
+      <div class="rowf gap16" style="margin-top:6px;gap:16px"><div class="ring" style="--p:75%;--d:64px"><div class="avatar" style="background:var(--surface-card);color:var(--brand-primary);font-size:16px">3/4</div></div><div class="grow"><div class="t-h1">Tus documentos</div><div class="t-cap sec" style="margin-top:2px">Falta 1 para enviar tu solicitud.</div></div></div>
+      <div class="card" style="margin-top:18px;padding:4px 16px">
+        <div class="li"><span class="tile ok"><i class="ic" data-i="idcard"></i></span><div class="grow"><div class="t-bodys">Licencia de conducción</div><div class="t-cap muted">N.º 1045872310</div></div><span class="chip ok"><i class="ic" data-i="check" style="--s:12px"></i>Lista</span></div>
+        <div class="li"><span class="tile ok"><i class="ic" data-i="file"></i></span><div class="grow"><div class="t-bodys">Tarjeta de propiedad</div><div class="t-cap muted">N.º 90417735</div></div><span class="chip ok"><i class="ic" data-i="check" style="--s:12px"></i>Lista</span></div>
+        <div class="li"><span class="tile ok"><i class="ic" data-i="shield"></i></span><div class="grow"><div class="t-bodys">SOAT</div><div class="t-cap muted">N.º 301245870911</div></div><span class="chip ok"><i class="ic" data-i="check" style="--s:12px"></i>Lista</span></div>
+        <div class="li"><span class="tile danger"><i class="ic" data-i="camera"></i></span><div class="grow"><div class="t-bodys">Tecnomecánica</div><div class="t-cap dgc">Adjunta la foto de este documento</div></div><span class="chip danger">Pendiente</span></div>
+      </div>
+      <div class="rowf gap12" style="margin-top:14px"><button class="btn btn-sec sm" type="button" style="flex:1"><i class="ic" data-i="camera" style="--s:16px"></i>Tomar foto</button><button class="btn btn-sec sm" type="button" style="flex:1"><i class="ic" data-i="upload" style="--s:16px"></i>Galería</button></div>
+      <div class="t-cap muted" style="margin-top:10px;text-align:center">Cada foto pesa máximo 5 MB. Un administrador las revisa.</div>
+      <div class="stack gap8" style="margin-top:auto;padding-bottom:34px"><button class="btn btn-primary off" type="button">Enviar solicitud</button><div class="t-cap wnc" style="text-align:center">Completa la tecnomecánica para continuar</div></div>
+    </div>
+  </div><figcaption><b>04 · Registro de conductor</b>Avance visible (3 de 4), estado por documento y el botón se activa solo al terminar. <em>390 × 844</em></figcaption></figure>
+
+  </div>
+</section>
+
+<!-- ============================== PASAJERO ============================== -->
+<section class="flow" id="pasajero">
+  <h2>Pasajero <small>8 pantallas</small></h2>
+  <p>De abrir la app a calificar: el mapa lidera, el precio siempre se ve y el estado del viaje se entiende de un vistazo.</p>
+  <div class="row">
+
+  <!-- 05 Home mapa -->
+  <figure class="frame"><div class="phone">
+    <div class="map-slot" data-h="520" data-labels="Bocagrande@70,120;Av. San Martín@210,205;Centro Histórico@250,330"></div>
+    <div class="sb abs" data-sb></div>
+    <div class="float rowf between" style="left:20px;right:20px;top:54px"><div class="rowf gap12 glass" style="padding:6px 16px 6px 6px;border-radius:30px"><div class="ring" style="--p:58%;--d:46px"><div class="avatar" style="font-size:14px">FS</div></div><div><div class="t-caps">Buenas noches, Frank</div><div class="t-cap cy" style="font-weight:600">Nivel 3 · 3 % de descuento</div></div></div><span class="iconbtn"><i class="ic" data-i="bell"></i><span class="dot"></span></span></div>
+    <span class="pin mini" style="left:96px;top:250px"><i class="ic" data-i="moto" style="--s:15px"></i></span><span class="pin mini" style="left:300px;top:180px"><i class="ic" data-i="moto" style="--s:15px"></i></span><span class="pin mini" style="left:240px;top:330px"><i class="ic" data-i="moto" style="--s:15px"></i></span>
+    <span class="pin me" style="left:170px;top:285px"></span>
+    <span class="chip glass float" style="left:20px;top:400px"><i class="ic" data-i="moto" style="--s:14px"></i>3 motos cerca · llegan en 2 min</span>
+    <span class="iconbtn float" style="right:20px;top:386px"><i class="ic cy" data-i="locate"></i></span>
+    <div class="sheet" style="top:446px;padding-bottom:0">
+      <div class="grab"></div>
+      <div class="rowf gap12 card neon" style="height:60px;border-radius:22px;padding:0 8px 0 18px"><i class="ic cy" data-i="search" style="--s:22px"></i><span class="grow t-title" style="font-weight:600">¿A dónde vas?</span><span class="chip neutral" style="padding:8px 12px"><i class="ic" data-i="clock" style="--s:14px"></i>Ahora</span></div>
+      <div class="rowf gap8" style="margin-top:14px"><span class="chip neutral" style="padding:9px 14px"><i class="ic" data-i="home" style="--s:15px"></i>Casa</span><span class="chip neutral" style="padding:9px 14px"><i class="ic" data-i="school" style="--s:15px"></i>Universidad</span><span class="chip info" style="padding:9px 14px"><i class="ic" data-i="plus" style="--s:15px"></i>Agregar</span></div>
+      <div class="t-over muted" style="margin:18px 0 2px">Recientes</div>
+      <div class="li" style="padding:10px 0"><span class="tile" style="width:40px;height:40px;border-radius:12px"><i class="ic" data-i="clock" style="--s:18px"></i></span><div class="grow"><div class="t-bodys">Centro Comercial Plaza</div><div class="t-cap muted">Cra. 17 #25-10 · 4,6 km</div></div><span class="t-bodys num sec">$8.910</span></div>
+      <div class="li" style="padding:10px 0"><span class="tile" style="width:40px;height:40px;border-radius:12px"><i class="ic" data-i="clock" style="--s:18px"></i></span><div class="grow"><div class="t-bodys">Universidad de Cartagena</div><div class="t-cap muted">Campus Piedra de Bolívar · 3,1 km</div></div><span class="t-bodys num sec">$6.400</span></div>
+    </div>
+    <div class="fnav" data-nav="pasajero" data-on="0"></div>
+  </div><figcaption><b>05 · Inicio del pasajero</b>El mapa es el inicio. Un buscador grande, lugares guardados y recientes con su precio. El nivel vive en el anillo del avatar. <em>390 × 844</em></figcaption></figure>
+
+  <!-- 06 Elegir destino -->
+  <figure class="frame"><div class="phone">
+    <div class="sb" data-sb></div>
+    <div class="body">
+      <div class="rowf between" style="height:52px"><span class="iconbtn"><i class="ic" data-i="x"></i></span><span class="t-title">Tu ruta</span><span style="width:44px"></span></div>
+      <div class="card" style="padding:6px 16px;margin-top:4px">
+        <div class="rowf gap12" style="height:52px"><span style="width:12px;height:12px;border-radius:50%;border:3px solid #fff;flex:0 0 auto"></span><div class="grow"><div class="t-cap muted">Origen</div><div class="t-bodys">Mi ubicación · Cra. 17 #25-10</div></div></div>
+        <div style="margin-left:5px;height:12px;border-left:2px dotted var(--border-strong)"></div>
+        <div class="rowf gap12" style="height:52px"><span style="width:12px;height:12px;border-radius:4px;background:var(--brand-primary);box-shadow:0 0 10px var(--brand-primary);flex:0 0 auto"></span><div class="grow"><div class="t-cap muted">Destino</div><div class="t-bodys"><span class="cy">Cast</span><span style="border-left:2px solid var(--brand-primary);margin-left:1px"></span></div></div><i class="ic muted" data-i="x" style="--s:18px"></i></div>
+      </div>
+      <div class="rowf gap8" style="margin-top:14px"><span class="chip info" style="padding:9px 14px"><i class="ic" data-i="map" style="--s:15px"></i>Fijar en el mapa</span><span class="chip neutral" style="padding:9px 14px"><i class="ic" data-i="home" style="--s:15px"></i>Casa</span><span class="chip neutral" style="padding:9px 14px"><i class="ic" data-i="school" style="--s:15px"></i>Universidad</span></div>
+      <div class="t-over muted" style="margin:20px 0 4px">Resultados cerca de ti</div>
+      <div class="stack">
+        <div class="li"><span class="tile"><i class="ic" data-i="pin"></i></span><div class="grow"><div class="t-bodys"><span class="hlt">Cast</span>illo de San Felipe</div><div class="t-cap muted">Cra. 17 · Barrio Torices</div></div><span class="t-cap muted num">3,8 km</span></div>
+        <div class="li"><span class="tile"><i class="ic" data-i="pin"></i></span><div class="grow"><div class="t-bodys"><span class="hlt">Cast</span>illogrande</div><div class="t-cap muted">Bocagrande · Av. San Martín</div></div><span class="t-cap muted num">6,1 km</span></div>
+        <div class="li"><span class="tile"><i class="ic" data-i="clock"></i></span><div class="grow"><div class="t-bodys"><span class="hlt">Cast</span>illo Plaza</div><div class="t-cap muted">Reciente · Centro Comercial</div></div><span class="t-cap muted num">4,6 km</span></div>
+        <div class="li"><span class="tile"><i class="ic" data-i="pin"></i></span><div class="grow"><div class="t-bodys"><span class="hlt">Cast</span>año Residencias</div><div class="t-cap muted">Manga · Cl. 24</div></div><span class="t-cap muted num">2,9 km</span></div>
+      </div>
+    </div>
+  </div><figcaption><b>06 · Elegir destino</b>Pantalla nueva: ruta con origen y destino, resultados mientras escribes y atajo a «Fijar en el mapa». <em>390 × 844</em></figcaption></figure>
+
+  <!-- 07 Confirmar -->
+  <figure class="frame"><div class="phone">
+    <div class="map-slot" data-h="360" data-route="M80 290 V200 H230 V108 H300" data-labels="Bocagrande@70,120;Manga@250,250"></div>
+    <div class="sb abs" data-sb></div>
+    <span class="iconbtn float" style="left:20px;top:54px"><i class="ic" data-i="arrow-left"></i></span>
+    <span class="pin o" style="left:80px;top:290px"></span><span class="pin d" style="left:300px;top:108px"></span>
+    <span class="tag chip glass" style="left:300px;top:86px"><b>C.C. Plaza</b></span>
+    <span class="chip glass float" style="left:106px;top:158px"><i class="ic" data-i="clock" style="--s:13px"></i>12 min · 4,6 km</span>
+    <div class="sheet" style="top:322px">
+      <div class="grab"></div>
+      <div class="card neon rowf gap12" style="padding:14px 16px;border-radius:24px"><span class="tile solid" style="width:52px;height:52px"><i class="ic" data-i="moto" style="--s:28px"></i></span><div class="grow"><div class="t-title">Moto NEXA</div><div class="t-cap okc" style="font-weight:600">Llega en 3 min</div></div><div style="text-align:right"><div class="t-h1 cy num glowtxt">$11.910</div><div class="t-cap muted">Efectivo</div></div></div>
+      <div class="rowf gap8" style="margin-top:12px;flex-wrap:wrap"><span class="chip info"><i class="ic" data-i="percent" style="--s:12px"></i>Tu nivel 3 ahorra $90</span><span class="chip neutral">Ver desglose <i class="ic" data-i="chevron-down" style="--s:12px"></i></span></div>
+      <div class="rowf gap12" style="margin-top:12px;padding:12px 14px;border-radius:16px;background:var(--warn-soft);border:1px solid rgba(255,200,87,.35)"><span class="check"><i class="ic" data-i="check" style="--s:14px"></i></span><div class="t-cap sec" style="line-height:1.4">Incluye <b class="wnc num">$3.000</b> de un cargo anterior por cancelación. Lo acepto.</div></div>
+      <div class="rowf gap12" style="margin-top:12px"><span class="tile" style="width:40px;height:40px;border-radius:12px"><i class="ic" data-i="cash" style="--s:20px"></i></span><div class="grow"><div class="t-cap muted">Método de pago</div><div class="t-bodys">Efectivo</div></div><span class="t-caps cy">Cambiar</span></div>
+      <button class="btn btn-primary" type="button" style="margin-top:auto">Pedir NEXA · $11.910</button>
+    </div>
+  </div><figcaption><b>07 · Confirmar viaje</b>Una sola opción de vehículo, el precio dentro del botón y el ahorro por nivel a la vista. Desglose bajo demanda. <em>390 × 844</em></figcaption></figure>
+
+  <!-- 08 Buscando -->
+  <figure class="frame"><div class="phone">
+    <div class="map-slot" data-h="380" data-labels="Bocagrande@60,100;Centro@270,290"></div>
+    <div class="sb abs" data-sb></div>
+    <span class="pulse" style="left:195px;top:190px"></span><span class="pulse b" style="left:195px;top:190px"></span><span class="pulse c" style="left:195px;top:190px"></span>
+    <span class="pin me" style="left:195px;top:190px"></span>
+    <span class="pin mini" style="left:110px;top:130px"><i class="ic" data-i="moto" style="--s:15px"></i></span><span class="pin mini" style="left:290px;top:250px"><i class="ic" data-i="moto" style="--s:15px"></i></span><span class="pin mini" style="left:260px;top:120px"><i class="ic" data-i="moto" style="--s:15px"></i></span>
+    <div class="sheet" style="top:340px">
+      <div class="grab"></div>
+      <div class="t-h1">Buscando tu NEXA<span class="dots"><i></i><i></i><i></i></span></div>
+      <div class="t-cap sec" style="margin-top:4px">Avisamos a 4 conductores cerca de ti.</div>
+      <div class="bar" style="margin-top:14px"><i style="width:34%"></i></div>
+      <div class="card" style="margin-top:18px;padding:16px">
+        <div class="t-bodys">¿Quieres que te acepten más rápido?</div><div class="t-cap muted" style="margin-top:2px">Suma un extra voluntario a tu oferta.</div>
+        <div class="rowf gap8" style="margin-top:12px"><span class="chip neutral" style="flex:1;justify-content:center;padding:11px">+$500</span><span class="chip solid" style="flex:1;justify-content:center;padding:11px">+$1.000</span><span class="chip neutral" style="flex:1;justify-content:center;padding:11px">+$2.000</span></div>
+        <div class="rowf between t-cap" style="margin-top:12px"><span class="sec">Tu oferta ahora</span><span class="t-bodys cy num">$12.910</span></div>
+      </div>
+      <div class="rowf gap12" style="margin-top:14px;padding:0 4px"><span style="width:12px;height:12px;border-radius:4px;background:var(--brand-primary);box-shadow:0 0 10px var(--brand-primary)"></span><div class="grow"><div class="t-cap muted">Destino</div><div class="t-bodys">Centro Comercial Plaza</div></div><span class="t-cap muted">Efectivo</span></div>
+      <button class="btn btn-text dgc" type="button" style="margin:auto auto 0">Cancelar solicitud</button>
+    </div>
+  </div><figcaption><b>08 · Buscando conductor</b>Calma y foco: radar, avance y un solo control opcional (el extra). Cancelar queda discreto para evitar toques accidentales. <em>390 × 844</em></figcaption></figure>
+
+  <!-- 09 En camino -->
+  <figure class="frame"><div class="phone">
+    <div class="map-slot" data-h="400" data-route="M80 340 V260 H200 V180 H300 V100" data-done="M80 340 V260 H200 V200" data-labels="Bocagrande@60,120;Manga@250,300"></div>
+    <div class="sb abs" data-sb></div>
+    <span class="pin o" style="left:80px;top:340px"></span><span class="pin d" style="left:300px;top:100px"></span>
+    <span class="pin m" style="left:200px;top:206px"><i class="ic" data-i="moto" style="--s:22px"></i></span>
+    <span class="iconbtn float" style="right:20px;top:54px;border-color:var(--border-strong)"><i class="ic cy" data-i="shield"></i></span>
+    <div class="sheet" style="top:380px;padding-top:10px">
+      <div class="grab" style="margin-bottom:10px"></div>
+      <div class="rowf between"><div><div class="t-display num">4 min</div><div class="t-cap sec" style="margin-top:2px">Tu conductor llega a las 6:58 p. m.</div></div><span class="chip ok"><i class="ic" data-i="navigation" style="--s:12px"></i>En camino</span></div>
+      <div class="bar" style="margin-top:12px"><i style="width:72%"></i></div>
+      <div class="rowf gap12" style="margin-top:16px"><div class="ring" style="--p:80%;--d:56px"><div class="avatar">CM</div></div><div class="grow"><div class="t-title">Carlos Mendoza</div><div class="t-cap muted rowf gap4"><i class="ic star f" data-i="star" style="--s:12px"></i>4,8 · Nivel 4 · Yamaha FZ</div></div><span class="plate">ABC 12D</span></div>
+      <div class="rowf" style="margin-top:16px;justify-content:space-around;text-align:center"><div class="stack" style="align-items:center;gap:6px"><span class="round"><i class="ic" data-i="phone" style="--s:22px"></i></span><span class="t-caps">Llamar</span></div><div class="stack" style="align-items:center;gap:6px"><span class="round"><i class="ic" data-i="message" style="--s:22px"></i></span><span class="t-caps">Mensaje</span></div><div class="stack" style="align-items:center;gap:6px"><span class="round"><i class="ic" data-i="share" style="--s:22px"></i></span><span class="t-caps">Compartir viaje</span></div></div>
+      <div class="rowf gap12 card" style="margin-top:auto;padding:12px 14px;border-radius:18px"><span style="width:12px;height:12px;border-radius:4px;background:var(--brand-primary);box-shadow:0 0 10px var(--brand-primary)"></span><div class="grow"><div class="t-cap muted">Destino</div><div class="t-bodys">Centro Comercial Plaza</div></div><div style="text-align:right"><div class="t-bodys num">$11.910</div><div class="t-cap muted">Efectivo</div></div></div>
+    </div>
+  </div><figcaption><b>09 · Conductor en camino</b>Los minutos en grande, la placa a la vista y la seguridad en un botón flotante. Sin bloques rojos permanentes. <em>390 × 844</em></figcaption></figure>
+
+  <!-- 10 Calificación -->
+  <figure class="frame"><div class="phone glowbg">
+    <div class="sb" data-sb></div>
+    <div class="body">
+      <div class="rowf" style="height:52px;justify-content:flex-end"><span class="iconbtn"><i class="ic" data-i="x"></i></span></div>
+      <div class="stack" style="align-items:center;text-align:center;gap:10px;margin-top:-4px">
+        <span class="tile solid" style="width:64px;height:64px;border-radius:50%"><i class="ic" data-i="check" style="--s:32px"></i></span>
+        <div class="t-display">Llegaste a C.C. Plaza</div>
+        <div class="rowf gap8 sec t-cap"><span class="num">14 min</span>·<span class="num">4,6 km</span>·<span class="t-bodys num" style="color:var(--text-primary)">$11.910</span>·<span>Efectivo</span></div>
+        <span class="chip neutral">Ver recibo <i class="ic" data-i="chevron-down" style="--s:12px"></i></span>
+      </div>
+      <div class="card" style="margin-top:22px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
+        <div class="rowf gap12"><span class="avatar">CM</span><div style="text-align:left"><div class="t-title">¿Cómo estuvo Carlos?</div><div class="t-cap muted">Tu opinión mejora los viajes de todos.</div></div></div>
+        <div class="rowf gap8"><i class="ic star f" data-i="star" style="--s:38px"></i><i class="ic star f" data-i="star" style="--s:38px"></i><i class="ic star f" data-i="star" style="--s:38px"></i><i class="ic star f" data-i="star" style="--s:38px"></i><i class="ic star" data-i="star" style="--s:38px"></i></div>
+        <div class="rowf gap8" style="flex-wrap:wrap;justify-content:center"><span class="chip info"><i class="ic" data-i="check" style="--s:12px"></i>Puntual</span><span class="chip info"><i class="ic" data-i="check" style="--s:12px"></i>Amable</span><span class="chip neutral">Moto limpia</span><span class="chip neutral">Conducción segura</span></div>
+      </div>
+      <div class="rowf gap12 card neon" style="margin-top:14px;padding:12px 16px"><span class="tile solid" style="width:40px;height:40px;border-radius:50%;font-weight:700">+18</span><div class="grow"><div class="t-bodys">Ganaste 18 XP</div><div class="bar" style="margin-top:6px"><i style="width:66%"></i></div></div><span class="t-caps cy">Nivel 3</span></div>
+      <div class="stack gap8" style="margin-top:auto;padding-bottom:34px"><button class="btn btn-primary" type="button">Enviar calificación</button><button class="btn btn-text" type="button" style="margin:0 auto">Omitir por ahora</button></div>
+    </div>
+  </div><figcaption><b>10 · Calificación</b>Un momento de cierre: resumen corto, estrellas grandes, etiquetas al elegir y el XP ganado como recompensa. <em>390 × 844</em></figcaption></figure>
+
+  <!-- 11 Niveles -->
+  <figure class="frame"><div class="phone glowbg">
+    <div class="sb" data-sb></div>
+    <div class="body">
+      <div class="rowf gap12" style="height:52px"><span class="iconbtn"><i class="ic" data-i="arrow-left"></i></span><span class="t-h1">Tus niveles</span></div>
+      <div class="stack" style="align-items:center;gap:8px;margin-top:6px;text-align:center">
+        <div style="position:relative;width:128px;height:128px"><svg viewBox="0 0 128 128" width="128" height="128"><circle cx="64" cy="64" r="56" fill="none" stroke="var(--surface-raised)" stroke-width="10"/><circle cx="64" cy="64" r="56" fill="none" stroke="var(--brand-primary)" stroke-width="10" stroke-linecap="round" stroke-dasharray="351.9" stroke-dashoffset="148" transform="rotate(-90 64 64)" style="filter:drop-shadow(0 0 8px var(--brand-primary))"/></svg><div style="position:absolute;inset:0;display:grid;place-items:center"><div><div class="t-hero cy glowtxt" style="line-height:1">3</div><div class="t-over muted" style="font-size:10px">NIVEL</div></div></div></div>
+        <div class="t-title num">812 / 1.400 XP</div><div class="t-cap sec">Te faltan <b class="num">587 XP</b> para el nivel 4</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">
+        <div class="card" style="padding:14px"><span class="tile" style="width:36px;height:36px;border-radius:12px"><i class="ic" data-i="percent" style="--s:18px"></i></span><div class="t-h1 cy num" style="margin-top:10px">3 %</div><div class="t-cap muted">de descuento en cada viaje</div></div>
+        <div class="card" style="padding:14px"><span class="tile ok" style="width:36px;height:36px;border-radius:12px"><i class="ic" data-i="zap" style="--s:18px"></i></span><div class="t-h1 okc num" style="margin-top:10px">25 s</div><div class="t-cap muted">de prioridad de recogida</div></div>
+      </div>
+      <div class="t-over muted" style="margin:18px 0 6px">Escalera de niveles</div>
+      <div class="stack" style="position:relative;padding-left:4px">
+        <div style="position:absolute;left:19px;top:14px;bottom:14px;border-left:2px solid var(--border-strong)"></div>
+        <div class="rowf gap16" style="height:44px;gap:16px"><span class="check" style="border-radius:50%;width:30px;height:30px;z-index:1"><i class="ic" data-i="check" style="--s:14px"></i></span><div class="grow t-bodys">Nivel 2 <span class="muted t-cap num">· 270 XP</span></div><span class="t-caps cy num">2 %</span></div>
+        <div class="rowf gap16" style="height:44px;gap:16px"><span class="tile solid" style="width:30px;height:30px;border-radius:50%;z-index:1"><i class="ic" data-i="moto" style="--s:16px"></i></span><div class="grow t-bodys">Nivel 3 <span class="cy t-cap">· estás aquí</span></div><span class="t-caps cy num">3 %</span></div>
+        <div class="rowf gap16" style="height:44px;gap:16px"><span style="width:30px;height:30px;border-radius:50%;background:var(--surface-raised);display:grid;place-items:center;z-index:1;color:var(--text-muted)"><i class="ic" data-i="lock" style="--s:14px"></i></span><div class="grow t-bodys sec">Nivel 4 <span class="muted t-cap num">· 1.400 XP</span></div><span class="t-caps muted num">4 %</span></div>
+        <div class="rowf gap16" style="height:44px;gap:16px"><span style="width:30px;height:30px;border-radius:50%;background:var(--surface-raised);display:grid;place-items:center;z-index:1;color:var(--text-muted)"><i class="ic" data-i="lock" style="--s:14px"></i></span><div class="grow t-bodys sec">Nivel 5 <span class="muted t-cap num">· 2.160 XP</span></div><span class="t-caps muted num">5 % + favoritos</span></div>
+      </div>
+      <div class="rowf gap8 muted t-cap" style="margin-top:auto;padding-bottom:32px"><i class="ic" data-i="clock" style="--s:14px"></i>Si pasas 90 días sin viajar bajas un nivel.</div>
+    </div>
+  </div><figcaption><b>11 · Niveles</b>Modelo v2.3 contado como un camino: dónde estás, qué ganas hoy y qué desbloqueas. <em>390 × 844</em></figcaption></figure>
+
+  <!-- 12 Perfil -->
+  <figure class="frame"><div class="phone glowbg">
+    <div class="sb" data-sb></div>
+    <div class="body">
+      <div class="rowf between" style="height:52px"><span class="t-h1">Perfil</span><span class="iconbtn"><i class="ic" data-i="logout" style="--s:18px"></i></span></div>
+      <div class="stack" style="align-items:center;gap:10px;margin-top:4px">
+        <div style="position:relative"><div class="ring" style="--p:58%;--d:112px"><div class="avatar xl" style="font-size:32px">FS</div></div><span class="tile solid" style="position:absolute;right:0;bottom:2px;width:36px;height:36px;border-radius:50%;border:3px solid var(--surface-bg)"><i class="ic" data-i="camera" style="--s:16px"></i></span></div>
+        <div style="text-align:center"><div class="t-h1">Frank Salcedo</div><div class="t-cap muted">frank@correo.com · desde oct. 2026</div></div>
+      </div>
+      <div class="card rowf" style="margin-top:20px;padding:14px 0;text-align:center"><div class="grow"><div class="t-h2 num">28</div><div class="t-cap muted">viajes</div></div><div style="width:1px;height:32px;background:var(--border)"></div><div class="grow"><div class="t-h2 num rowf gap4" style="justify-content:center"><i class="ic star f" data-i="star" style="--s:16px"></i>4,9</div><div class="t-cap muted">calificación</div></div><div style="width:1px;height:32px;background:var(--border)"></div><div class="grow"><div class="t-h2 cy num">3</div><div class="t-cap muted">nivel</div></div></div>
+      <div class="card" style="margin-top:16px;padding:4px 16px">
+        <div class="li"><span class="tile" style="width:40px;height:40px;border-radius:12px"><i class="ic" data-i="user" style="--s:18px"></i></span><div class="grow"><div class="t-bodys">Datos personales</div><div class="t-cap muted">Nombre y celular</div></div><i class="ic muted" data-i="chevron-right"></i></div>
+        <div class="li"><span class="tile" style="width:40px;height:40px;border-radius:12px"><i class="ic" data-i="camera" style="--s:18px"></i></span><div class="grow"><div class="t-bodys">Foto de perfil</div><div class="t-cap muted">Cámara, galería o quitar</div></div><i class="ic muted" data-i="chevron-right"></i></div>
+        <div class="li"><span class="tile" style="width:40px;height:40px;border-radius:12px"><i class="ic" data-i="trophy" style="--s:18px"></i></span><div class="grow"><div class="t-bodys">Mis niveles</div><div class="t-cap muted">3 % de descuento activo</div></div><i class="ic muted" data-i="chevron-right"></i></div>
+      </div>
+      <button class="btn btn-text dgc" type="button" style="margin:14px auto 0">Cerrar sesión</button>
+    </div>
+    <div class="fnav" data-nav="pasajero" data-on="3"></div>
+  </div><figcaption><b>12 · Perfil</b>Foto con el anillo de nivel, tres cifras clave y una lista simple. Editar cada dato abre su propia hoja. <em>390 × 844</em></figcaption></figure>
+
+  </div>
+</section>
+
+<!-- ============================== CONDUCTOR ============================== -->
+<section class="flow" id="conductor">
+  <h2>Conductor <small>4 pantallas</small></h2>
+  <p>Mapa con un botón grande para conectarse, solicitud que ocupa la pantalla con cuenta regresiva, y confirmaciones deslizando.</p>
+  <div class="row">
+
+  <!-- 13 Home conductor -->
+  <figure class="frame"><div class="phone">
+    <div class="map-slot" data-h="844" data-labels="Bocagrande@70,140;Av. Venezuela@220,260;Centro Histórico@240,470;Manga@80,600"></div>
+    <div class="sb abs" data-sb></div>
+    <div class="float rowf between" style="left:20px;right:20px;top:54px"><span class="chip glass" style="padding:10px 14px;font-size:13px"><span style="width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok)"></span>En línea</span><span class="chip glass" style="padding:10px 14px;font-size:13px;color:var(--text-primary)"><i class="ic cy" data-i="cash" style="--s:15px"></i><b class="num">$48.300</b> hoy</span></div>
+    <span class="pulse" style="left:195px;top:380px"></span><span class="pulse b" style="left:195px;top:380px"></span>
+    <span class="pin m" style="left:195px;top:380px"><i class="ic" data-i="navigation" style="--s:20px"></i></span>
+    <div class="sheet" style="top:560px">
+      <div class="grab"></div>
+      <div class="rowf between"><div><div class="t-h2">Buscando solicitudes<span class="dots"><i></i><i></i><i></i></span></div><div class="t-cap muted" style="margin-top:2px">Te avisamos cuando haya una cerca.</div></div></div>
+      <div class="rowf" style="margin-top:14px;text-align:center"><div class="grow"><div class="t-h2 num">6</div><div class="t-cap muted">viajes hoy</div></div><div style="width:1px;height:30px;background:var(--border)"></div><div class="grow"><div class="t-h2 num rowf gap4" style="justify-content:center"><i class="ic star f" data-i="star" style="--s:15px"></i>4,8</div><div class="t-cap muted">calificación</div></div><div style="width:1px;height:30px;background:var(--border)"></div><div class="grow"><div class="t-h2 cy num">4</div><div class="t-cap muted">nivel</div></div></div>
+    </div>
+    <span class="float" style="left:50%;top:508px;transform:translateX(-50%);width:84px;height:84px;border-radius:50%;background:var(--brand-primary);color:var(--text-on-primary);display:grid;place-items:center;box-shadow:0 0 0 8px rgba(0,196,255,.2),0 0 36px var(--brand-primary);z-index:6"><i class="ic" data-i="power" style="--s:34px"></i></span>
+    <div class="fnav" data-nav="conductor" data-on="0"></div>
+  </div><figcaption><b>13 · Panel del conductor</b>Un botón grande para conectarse, ganancias del día a la vista y estado claro. <em>390 × 844</em></figcaption></figure>
+
+  <!-- 14 Solicitud -->
+  <figure class="frame"><div class="phone">
+    <div class="map-slot" data-h="844" data-route="M195 380 V300 H280 V200" data-labels="Bocagrande@70,140;Centro@250,420"></div>
+    <div class="sb abs" data-sb></div>
+    <div style="position:absolute;inset:0;background:rgba(2,10,18,.55);z-index:3"></div>
+    <span class="pin me" style="left:195px;top:380px;z-index:3"></span><span class="pin d" style="left:280px;top:200px;z-index:3"></span>
+    <div class="sheet" style="top:250px;padding-top:12px;z-index:6;background:rgba(3,25,46,.98)">
+      <div class="grab"></div>
+      <div class="rowf between"><div><div class="t-over cy">Nueva solicitud</div><div class="t-h1" style="margin-top:2px">Marta Ríos</div><div class="t-cap muted rowf gap4"><i class="ic star f" data-i="star" style="--s:12px"></i>4,9 · Nivel 2</div></div>
+        <div style="position:relative;width:76px;height:76px"><svg viewBox="0 0 76 76" width="76" height="76"><circle cx="38" cy="38" r="33" fill="none" stroke="var(--surface-raised)" stroke-width="6"/><circle cx="38" cy="38" r="33" fill="none" stroke="var(--brand-primary)" stroke-width="6" stroke-linecap="round" stroke-dasharray="207.3" stroke-dashoffset="62" transform="rotate(-90 38 38)" style="filter:drop-shadow(0 0 5px var(--brand-primary))"/></svg><div style="position:absolute;inset:0;display:grid;place-items:center" class="t-h1 num">24</div></div></div>
+      <div class="card neon rowf between" style="margin-top:16px;padding:14px 18px"><div><div class="t-cap muted">Cobras en efectivo</div><div class="t-price cy glowtxt" style="font-size:34px">$10.000</div></div><span class="chip warn"><i class="ic" data-i="zap" style="--s:12px"></i>+$1.000 extra</span></div>
+      <div class="rowf gap8" style="margin-top:12px"><span class="chip neutral"><i class="ic" data-i="navigation" style="--s:12px"></i>Recoges en 3 min · 0,8 km</span><span class="chip neutral"><i class="ic" data-i="route" style="--s:12px"></i>Viaje 3,2 km · 9 min</span></div>
+      <div class="stack" style="margin-top:16px;gap:0">
+        <div class="rowf gap12" style="height:46px"><span style="width:12px;height:12px;border-radius:50%;border:3px solid #fff;flex:0 0 auto"></span><div class="grow t-bodys">Bocagrande · Cra. 3 #8-22</div></div>
+        <div style="margin-left:5px;height:10px;border-left:2px dotted var(--border-strong)"></div>
+        <div class="rowf gap12" style="height:46px"><span style="width:12px;height:12px;border-radius:4px;background:var(--brand-primary);box-shadow:0 0 10px var(--brand-primary);flex:0 0 auto"></span><div class="grow t-bodys">Castillo San Felipe</div></div>
+      </div>
+      <div class="stack gap8" style="margin-top:auto"><button class="btn btn-primary" type="button">Aceptar</button><button class="btn btn-text" type="button" style="margin:0 auto">Ahora no</button></div>
+    </div>
+  </div><figcaption><b>14 · Solicitud entrante</b>Pantalla nueva: toma el foco con cuenta regresiva, lo que ganas en grande y la ruta en dos líneas. <em>390 × 844</em></figcaption></figure>
+
+  <!-- 15 Viaje activo -->
+  <figure class="frame"><div class="phone">
+    <div class="map-slot" data-h="400" data-route="M60 340 V270 H178 V210" data-done="M60 340 V270 H178 V222" data-labels="Bocagrande@60,120"></div>
+    <div class="sb abs" data-sb></div>
+    <span class="pulse" style="left:200px;top:196px"></span><span class="pulse b" style="left:200px;top:196px"></span>
+    <span class="pin o" style="left:200px;top:196px;border-color:var(--brand-primary)"></span>
+    <span class="pin m" style="left:178px;top:236px;width:38px;height:38px"><i class="ic" data-i="moto" style="--s:20px"></i></span>
+    <div class="float rowf gap12 glass" style="left:20px;right:20px;top:54px;border-radius:20px;padding:12px 14px;border-color:var(--border-strong)"><span class="tile ok" style="width:38px;height:38px"><i class="ic" data-i="check" style="--s:20px"></i></span><div class="grow"><div class="t-bodys">Ya estás en el punto</div><div class="t-cap muted">Laura está a 12 m de la recogida</div></div></div>
+    <div class="sheet" style="top:376px">
+      <div class="grab" style="margin-bottom:12px"></div>
+      <div class="rowf" style="margin-bottom:14px"><div class="step done"><span class="n"><i class="ic" data-i="check" style="--s:12px"></i></span>A recoger</div><div class="step now"><span class="n"></span>En el punto</div><div class="step"><span class="n"></span>En viaje</div></div>
+      <div class="rowf gap12"><div class="ring" style="--p:92%;--d:52px"><div class="avatar" style="font-size:14px">LG</div></div><div class="grow"><div class="t-title">Laura Gómez</div><div class="t-cap muted rowf gap4"><i class="ic star f" data-i="star" style="--s:12px"></i>4,9 · Bocagrande → Castillo San Felipe</div></div><span class="round" style="width:48px;height:48px"><i class="ic" data-i="phone" style="--s:20px"></i></span><span class="round" style="width:48px;height:48px"><i class="ic" data-i="message" style="--s:20px"></i></span></div>
+      <div class="card neon rowf between" style="margin-top:14px;padding:12px 16px"><div><div class="t-cap muted">Cobras en efectivo</div><div class="t-price cy glowtxt">$11.910</div></div><span class="chip neutral"><i class="ic" data-i="cash" style="--s:13px"></i>Efectivo</span></div>
+      <div class="stack gap8" style="margin-top:auto"><div class="slide"><span class="h"><i class="ic" data-i="arrow-right" style="--s:22px"></i></span><span class="t">Desliza: Pasajero recogido</span></div><button class="btn btn-text dgc" type="button" style="margin:0 auto">Cancelar viaje</button></div>
+    </div>
+  </div><figcaption><b>15 · Viaje activo</b>Las acciones delicadas se confirman deslizando. Un solo monto a cobrar y el pasajero a un toque. <em>390 × 844</em></figcaption></figure>
+
+  <!-- 16 Ganancias -->
+  <figure class="frame"><div class="phone glowbg">
+    <div class="sb" data-sb></div>
+    <div class="body" style="gap:14px">
+      <div class="rowf between" style="height:50px"><span class="t-h1">Ganancias</span></div>
+      <div class="seg" style="padding:3px"><span style="padding:8px">Hoy</span><span style="padding:8px">Semana</span><span class="on" style="padding:8px">30 días</span></div>
+      <div class="card neon" style="padding:18px"><div class="t-cap muted">Ganado</div><div class="t-hero cy num glowtxt" style="font-size:38px">$482.300</div><div class="t-cap okc" style="margin-top:2px">38 viajes · mejor día: sábado</div>
+        <svg viewBox="0 0 310 56" width="100%" height="56" style="margin-top:10px"><g fill="var(--brand-primary-dark)"><rect x="0" y="34" width="14" height="22" rx="4"/><rect x="24" y="26" width="14" height="30" rx="4"/><rect x="48" y="38" width="14" height="18" rx="4"/><rect x="72" y="20" width="14" height="36" rx="4"/><rect x="96" y="30" width="14" height="26" rx="4"/><rect x="120" y="14" width="14" height="42" rx="4"/><rect x="144" y="24" width="14" height="32" rx="4"/><rect x="168" y="36" width="14" height="20" rx="4"/><rect x="192" y="18" width="14" height="38" rx="4"/><rect x="216" y="28" width="14" height="28" rx="4"/><rect x="240" y="10" width="14" height="46" rx="4"/></g><rect x="264" y="4" width="14" height="52" rx="4" fill="var(--brand-primary)" style="filter:drop-shadow(0 0 6px var(--brand-primary))"/><rect x="288" y="22" width="14" height="34" rx="4" fill="var(--brand-primary-dark)"/></svg></div>
+      <div class="card" style="padding:14px 16px"><div class="rowf between"><span class="t-title">Saldo con NEXA</span><span class="chip warn">Por pagar</span></div>
+        <div class="stack gap8 num" style="font-size:13px;margin-top:10px"><div class="rowf between"><span class="sec">Cobrado en efectivo</span><span>$540.000</span></div><div class="rowf between"><span class="sec">Ganado</span><span>$482.300</span></div><div class="rowf between"><span class="sec">Cargos a tu favor</span><span class="okc">$3.000</span></div></div>
+        <hr class="hr" style="margin:10px 0"><div class="rowf between"><span class="t-bodys">Debes a NEXA</span><span class="t-h2 wnc num">$54.700</span></div></div>
+      <div class="t-bodys" style="margin-top:2px">Últimos viajes</div>
+      <div class="card" style="padding:2px 16px"><div class="li" style="padding:10px 0"><span class="tile" style="width:40px;height:40px;border-radius:12px"><i class="ic" data-i="route" style="--s:18px"></i></span><div class="grow"><div class="t-bodys">Laura Gómez</div><div class="t-cap muted">Hoy · 6:58 p. m.</div></div><span class="t-bodys num cy">$9.650</span></div><div class="li" style="padding:10px 0"><span class="tile" style="width:40px;height:40px;border-radius:12px"><i class="ic" data-i="route" style="--s:18px"></i></span><div class="grow"><div class="t-bodys">Marta Ríos</div><div class="t-cap muted">Hoy · 4:20 p. m.</div></div><span class="t-bodys num cy">$8.100</span></div></div>
+    </div>
+    <div class="fnav" data-nav="conductor" data-on="1"></div>
+  </div><figcaption><b>16 · Ganancias y saldo</b>Periodo a un toque, cifra principal grande y el saldo con NEXA sin comisión ni deudas del pasajero. <em>390 × 844</em></figcaption></figure>
+
+  </div>
+</section>
+
+<!-- ============================== ADMINISTRADOR ============================== -->
+<section class="flow" id="admin">
+  <h2>Administrador <small>3 pantallas</small></h2>
+  <p>Versión móvil del panel: indicadores con barras y dona, consulta de conductores aprobados y rechazados (la verificación es solo web) y saldos con NEXA.</p>
+  <div class="row">
+
+  <!-- 17 Resumen admin -->
+  <figure class="frame"><div class="phone glowbg">
+    <div class="sb" data-sb></div>
+    <div class="body" style="gap:12px">
+      <div class="rowf between" style="height:48px"><div><div class="t-over cy">Administrador</div><div class="t-h1">Resumen</div></div><span class="iconbtn"><i class="ic" data-i="bell"></i><span class="dot"></span></span></div>
+      <div class="seg" style="padding:3px"><span style="padding:8px">Hoy</span><span class="on" style="padding:8px">7 días</span><span style="padding:8px">30 días</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="card neon" style="padding:12px 14px"><div class="t-cap muted">Viajes</div><div class="t-h1 cy num glowtxt">1.248</div><div class="t-cap okc num">▲ 12 % vs. previa</div></div>
+        <div class="card" style="padding:12px 14px"><div class="t-cap muted">Comisión NEXA</div><div class="t-h1 num">$3,2 M</div><div class="t-cap okc num">▲ 8 %</div></div>
+        <div class="card" style="padding:12px 14px"><div class="t-cap muted">Conductores en línea</div><div class="t-h1 num">86</div><div class="t-cap muted num">de 214 aprobados</div></div>
+        <div class="card" style="padding:12px 14px"><div class="t-cap muted">Pasajeros nuevos</div><div class="t-h1 num">214</div><div class="t-cap okc num">▲ 21 %</div></div>
+      </div>
+      <div class="card" style="padding:14px 16px">
+        <div class="rowf between"><span class="t-bodys">Viajes por día</span><span class="t-cap muted">Mejor día: sábado</span></div>
+        <div class="rowf" style="height:128px;align-items:flex-end;gap:6px;margin-top:10px"><div class="stack" style="align-items:center;gap:6px;flex:1;justify-content:flex-end"><i style="display:block;width:70%;height:44px;border-radius:8px 8px 4px 4px;background:var(--brand-primary-dark)"></i><span class="t-cap muted" style="font-size:11px">L</span></div><div class="stack" style="align-items:center;gap:6px;flex:1;justify-content:flex-end"><i style="display:block;width:70%;height:54px;border-radius:8px 8px 4px 4px;background:var(--brand-primary-dark)"></i><span class="t-cap muted" style="font-size:11px">M</span></div><div class="stack" style="align-items:center;gap:6px;flex:1;justify-content:flex-end"><i style="display:block;width:70%;height:41px;border-radius:8px 8px 4px 4px;background:var(--brand-primary-dark)"></i><span class="t-cap muted" style="font-size:11px">M</span></div><div class="stack" style="align-items:center;gap:6px;flex:1;justify-content:flex-end"><i style="display:block;width:70%;height:63px;border-radius:8px 8px 4px 4px;background:var(--brand-primary-dark)"></i><span class="t-cap muted" style="font-size:11px">J</span></div><div class="stack" style="align-items:center;gap:6px;flex:1;justify-content:flex-end"><i style="display:block;width:70%;height:75px;border-radius:8px 8px 4px 4px;background:var(--brand-primary-dark)"></i><span class="t-cap muted" style="font-size:11px">V</span></div><div class="stack" style="align-items:center;gap:6px;flex:1;justify-content:flex-end"><span class="t-caps cy num" style="font-size:11px">212</span><i style="display:block;width:70%;height:85px;border-radius:8px 8px 4px 4px;background:linear-gradient(180deg,var(--brand-primary),var(--brand-primary-dark));box-shadow:0 0 14px var(--brand-glow)"></i><span class="t-cap muted" style="font-size:11px">S</span></div><div class="stack" style="align-items:center;gap:6px;flex:1;justify-content:flex-end"><i style="display:block;width:70%;height:60px;border-radius:8px 8px 4px 4px;background:var(--brand-primary-dark)"></i><span class="t-cap muted" style="font-size:11px">D</span></div></div>
+      </div>
+      <div class="card rowf gap16" style="padding:14px 16px;gap:16px">
+        <div style="position:relative;width:104px;height:104px;flex:0 0 auto"><svg viewBox="0 0 120 120" width="104" height="104"><g fill="none" stroke-width="16" transform="rotate(-90 60 60)"><circle cx="60" cy="60" r="48" stroke="var(--brand-primary)" stroke-dasharray="235.2 301.6" style="filter:drop-shadow(0 0 6px var(--brand-primary))"/><circle cx="60" cy="60" r="48" stroke="var(--danger)" stroke-dasharray="42.2 301.6" stroke-dashoffset="-238"/><circle cx="60" cy="60" r="48" stroke="var(--warn)" stroke-dasharray="24.1 301.6" stroke-dashoffset="-283"/></g></svg><div style="position:absolute;inset:0;display:grid;place-items:center;text-align:center"><div><div class="t-h2 num">78 %</div><div class="t-cap muted" style="font-size:10px">viajes</div></div></div></div>
+        <div class="grow stack gap8"><span class="t-bodys">Estado de viajes</span>
+          <div class="rowf gap8 t-cap"><i style="width:10px;height:10px;border-radius:50%;background:var(--brand-primary)"></i><span class="grow sec">Completados</span><b class="num">973</b></div>
+          <div class="rowf gap8 t-cap"><i style="width:10px;height:10px;border-radius:50%;background:var(--danger)"></i><span class="grow sec">Cancelados</span><b class="num">175</b></div>
+          <div class="rowf gap8 t-cap"><i style="width:10px;height:10px;border-radius:50%;background:var(--warn)"></i><span class="grow sec">En curso</span><b class="num">100</b></div></div>
+      </div>
+    </div>
+    <div class="fnav" data-nav="admin" data-on="0"></div>
+  </div><figcaption><b>17 · Resumen del administrador</b>Cuatro indicadores, barras por día con el mejor día resaltado y dona con el estado de los viajes. <em>390 × 844</em></figcaption></figure>
+
+  <!-- 18 Conductores -->
+  <figure class="frame"><div class="phone">
+    <div class="sb" data-sb></div>
+    <div class="body" style="gap:12px">
+      <div class="rowf between" style="height:48px"><div><div class="t-over cy">Administrador</div><div class="t-h1">Conductores</div></div><span class="iconbtn"><i class="ic" data-i="search"></i></span></div>
+      <div class="seg" style="padding:3px"><span class="on" style="padding:8px 4px;font-size:13px;white-space:nowrap">Aprobados (214)</span><span style="padding:8px 4px;font-size:13px;white-space:nowrap">Rechazados (9)</span></div>
+      <div class="rowf gap12" style="padding:10px 14px;border-radius:16px;background:var(--info-soft);border:1px solid var(--border)"><i class="ic cy" data-i="shield" style="--s:18px"></i><div class="t-cap sec" style="line-height:1.4">La revisión de solicitudes se hace en el <b class="cy">panel web</b>. Aquí solo consultas el resultado.</div></div>
+      <div class="card neon" style="padding:14px 16px">
+        <div class="rowf gap12"><span class="avatar">CM</span><div class="grow"><div class="t-title">Carlos Mendoza</div><div class="t-cap muted">Yamaha FZ · ABC 12D</div></div><span class="chip ok"><i class="ic" data-i="check" style="--s:12px"></i>Aprobado</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px"><div class="rowf gap8 card" style="padding:10px;border-radius:14px"><span class="tile ok" style="width:32px;height:32px;border-radius:10px"><i class="ic" data-i="idcard" style="--s:16px"></i></span><div><div class="t-caps">Licencia</div><div class="t-cap muted" style="font-size:11px">1045872310</div></div></div><div class="rowf gap8 card" style="padding:10px;border-radius:14px"><span class="tile ok" style="width:32px;height:32px;border-radius:10px"><i class="ic" data-i="file" style="--s:16px"></i></span><div><div class="t-caps">Propiedad</div><div class="t-cap muted" style="font-size:11px">90417735</div></div></div><div class="rowf gap8 card" style="padding:10px;border-radius:14px"><span class="tile ok" style="width:32px;height:32px;border-radius:10px"><i class="ic" data-i="shield" style="--s:16px"></i></span><div><div class="t-caps">SOAT</div><div class="t-cap muted" style="font-size:11px">301245870911</div></div></div><div class="rowf gap8 card" style="padding:10px;border-radius:14px"><span class="tile ok" style="width:32px;height:32px;border-radius:10px"><i class="ic" data-i="camera" style="--s:16px"></i></span><div><div class="t-caps">Tecnomecánica</div><div class="t-cap muted" style="font-size:11px">8821044</div></div></div></div>
+        <div class="rowf" style="margin-top:12px;text-align:center"><div class="grow"><div class="t-h2 num rowf gap4" style="justify-content:center"><i class="ic star f" data-i="star" style="--s:15px"></i>4,8</div><div class="t-cap muted">calificación</div></div><div style="width:1px;height:30px;background:var(--border)"></div><div class="grow"><div class="t-h2 num">38</div><div class="t-cap muted">viajes</div></div><div style="width:1px;height:30px;background:var(--border)"></div><div class="grow"><div class="t-h2 cy num">4</div><div class="t-cap muted">nivel</div></div></div>
+        <div class="t-cap muted" style="margin-top:10px;text-align:center">Aprobado el 12 de octubre de 2026</div>
+      </div>
+      <div class="card" style="padding:2px 16px"><div class="li" style="padding:10px 0"><span class="avatar sm">MR</span><div class="grow"><div class="t-bodys">Marta Ríos</div><div class="t-cap muted">Honda CB · XYZ 45F</div></div><span class="chip ok"><i class="ic" data-i="check" style="--s:12px"></i>Aprobado</span></div><div class="li" style="padding:10px 0"><span class="avatar sm">JG</span><div class="grow"><div class="t-bodys">Jorge Gómez</div><div class="t-cap muted">Boxer · KLM 78H</div></div><span class="chip ok"><i class="ic" data-i="check" style="--s:12px"></i>Aprobado</span></div><div class="li" style="padding:10px 0"><span class="avatar sm">LP</span><div class="grow"><div class="t-bodys">Luis Pérez</div><div class="t-cap muted">Documentos vencidos</div></div><span class="chip danger">Rechazado</span></div></div>
+    </div>
+    <div class="fnav" data-nav="admin" data-on="2"></div>
+  </div><figcaption><b>18 · Conductores (aprobados y rechazados)</b>Solo consulta: la verificación de solicitudes pendientes vive en la web. Ficha con documentos, calificación y nivel. <em>390 × 844</em></figcaption></figure>
+
+  <!-- 19 Saldos -->
+  <figure class="frame"><div class="phone glowbg">
+    <div class="sb" data-sb></div>
+    <div class="body" style="gap:12px">
+      <div class="rowf between" style="height:48px"><div><div class="t-over cy">Administrador</div><div class="t-h1">Saldos con NEXA</div></div></div>
+      <div class="card neon rowf between" style="padding:16px 18px"><div><div class="t-cap muted">Por cobrar a conductores</div><div class="t-hero wnc num" style="font-size:32px">$2.184.500</div></div><div style="text-align:right"><div class="t-h2 num">41</div><div class="t-cap muted">con saldo</div></div></div>
+      <div class="field"><i class="ic" data-i="search"></i><div class="col"><span class="lab">Buscar conductor</span><span class="val muted">Nombre o correo</span></div></div>
+      <div class="card" style="padding:2px 16px">
+        <div class="li"><span class="avatar sm">CM</span><div class="grow"><div class="t-bodys">Carlos Mendoza</div><div class="bar" style="margin-top:6px;height:6px"><i style="width:82%"></i></div></div><div style="text-align:right"><div class="t-bodys wnc num">$54.700</div><div class="t-cap muted">38 viajes</div></div></div>
+        <div class="li"><span class="avatar sm">MR</span><div class="grow"><div class="t-bodys">Marta Ríos</div><div class="bar" style="margin-top:6px;height:6px"><i style="width:64%"></i></div></div><div style="text-align:right"><div class="t-bodys wnc num">$41.200</div><div class="t-cap muted">29 viajes</div></div></div>
+        <div class="li"><span class="avatar sm">JG</span><div class="grow"><div class="t-bodys">Jorge Gómez</div><div class="bar" style="margin-top:6px;height:6px"><i style="width:40%"></i></div></div><div style="text-align:right"><div class="t-bodys wnc num">$26.900</div><div class="t-cap muted">17 viajes</div></div></div>
+        <div class="li"><span class="avatar sm">SL</span><div class="grow"><div class="t-bodys">Sara López</div><div class="bar" style="margin-top:6px;height:6px"><i style="width:18%"></i></div></div><div style="text-align:right"><div class="t-bodys okc num">$0</div><div class="t-cap muted">al día</div></div></div>
+      </div>
+    </div>
+    <div class="fnav" data-nav="admin" data-on="3"></div>
+  </div><figcaption><b>19 · Saldos de conductores</b>Total por cobrar en grande y cada conductor con su deuda y barra de proporción. <em>390 × 844</em></figcaption></figure>
+
+  </div>
+</section>
+</main>
+
+<script>
+(function () {
+  var P = {
+    home: '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+    clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+    users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+    user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+    bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+    search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+    pin: '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+    route: '<circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/>',
+    star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+    shield: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
+    phone: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>',
+    message: '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
+    share: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/>',
+    check: '<path d="M20 6 9 17l-5-5"/>',
+    'arrow-right': '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
+    'arrow-left': '<path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>',
+    x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+    camera: '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
+    locate: '<circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/>',
+    plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+    zap: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+    percent: '<line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
+    file: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>',
+    'chevron-right': '<path d="m9 18 6-6-6-6"/>',
+    'chevron-down': '<path d="m6 9 6 6 6-6"/>',
+    trophy: '<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>',
+    logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',
+    mail: '<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+    lock: '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+    cash: '<rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/>',
+    /* Motocicleta (Tabler "motorbike"): dos ruedas, chasis y manubrio */
+    moto: '<circle cx="5" cy="16" r="3"/><circle cx="19" cy="16" r="3"/><path d="M7.5 14h5l4-4h-10.5m1.5 4l4-4"/><path d="M13 6h2l1.5 3l2 4"/>',
+    idcard: '<rect width="20" height="14" x="2" y="5" rx="2"/><circle cx="8" cy="12" r="2"/><path d="M14 10h4"/><path d="M14 14h4"/>',
+    chart: '<path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>',
+    alert: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+    power: '<path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.77.04"/>',
+    navigation: '<polygon points="3 11 22 2 13 21 11 13 3 11"/>',
+    upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>',
+    map: '<polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" x2="9" y1="3" y2="18"/><line x1="15" x2="15" y1="6" y2="21"/>',
+    school: '<path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>',
+    signal: '<path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/><path d="M22 4v16"/>',
+    wifi: '<path d="M12 20h.01"/><path d="M2 8.82a15 15 0 0 1 20 0"/><path d="M5 12.859a10 10 0 0 1 14 0"/><path d="M8.5 16.429a5 5 0 0 1 7 0"/>',
+    battery: '<rect width="16" height="10" x="2" y="7" rx="2" ry="2"/><line x1="22" x2="22" y1="11" y2="13"/><line x1="6" x2="6" y1="11" y2="13"/><line x1="10" x2="10" y1="11" y2="13"/><line x1="14" x2="14" y1="11" y2="13"/>'
+  };
+  function svg(name, s) { var b = P[name]; return b ? '<i class="ic" style="--s:' + s + 'px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + b + '</svg></i>' : ''; }
+
+  // Barra de estado y barra flotante
+  document.querySelectorAll('[data-sb]').forEach(function (el) { el.innerHTML = '<span>9:41</span><span class="st">' + svg('signal', 18) + svg('wifi', 18) + svg('battery', 18) + '</span>'; });
+  var NAV = {
+    pasajero: [['home', 'Inicio'], ['clock', 'Historial'], ['moto', 'Pedir'], ['user', 'Perfil']],
+    conductor: [['home', 'Inicio'], ['chart', 'Ganancias'], ['trophy', 'Niveles'], ['user', 'Perfil']],
+    admin: [['home', 'Resumen'], ['users', 'Usuarios'], ['moto', 'Conductores'], ['chart', 'Saldos']]
+  };
+  document.querySelectorAll('[data-nav]').forEach(function (el) {
+    var on = +el.getAttribute('data-on'), items = NAV[el.getAttribute('data-nav')];
+    el.innerHTML = items.map(function (it, i) { return '<span class="it' + (i === on ? ' on' : '') + '">' + svg(it[0], 22) + (i === on ? it[1] : '') + '</span>'; }).join('');
+  });
+  document.querySelectorAll('i.ic[data-i]').forEach(function (el) {
+    var b = P[el.getAttribute('data-i')];
+    if (b) el.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + b + '</svg>';
+  });
+
+  // Mapas oscuros con jerarquia de calles, etiquetas y ruta con brillo neon
+  var uid = 0;
+  document.querySelectorAll('.map-slot').forEach(function (slot) {
+    var h = +slot.getAttribute('data-h'), w = 390, id = 'g' + (++uid);
+    var route = slot.getAttribute('data-route'), done = slot.getAttribute('data-done'), labels = slot.getAttribute('data-labels');
+    var s = '<svg class="map" viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '" aria-hidden="true"><defs><filter id="' + id + '" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="5"/></filter></defs>';
+    s += '<rect width="' + w + '" height="' + h + '" fill="var(--map-land)"/>';
+    s += '<path d="M250 ' + h + ' Q290 ' + (h - 90) + ' 390 ' + (h - 120) + ' V' + h + ' Z" fill="var(--map-water)"/>';
+    s += '<rect x="96" y="12" width="88" height="70" rx="10" fill="var(--map-park)"/><rect x="226" y="' + Math.round(Math.min(h, 520) * 0.38) + '" width="80" height="62" rx="10" fill="var(--map-park)"/>';
+    for (var y = 40; y < h; y += 62) s += '<rect x="0" y="' + (y - 2) + '" width="' + w + '" height="4" fill="var(--map-road)"/>';
+    [22, 80, 140, 200, 260, 318, 362].forEach(function (x) { s += '<rect x="' + (x - 2) + '" y="0" width="4" height="' + h + '" fill="var(--map-road)"/>'; });
+    [140, 318].forEach(function (x) { s += '<rect x="' + (x - 4) + '" y="0" width="8" height="' + h + '" fill="var(--map-road-main)"/>'; });
+    [165, 330].forEach(function (y) { if (y < h) s += '<rect x="0" y="' + (y - 4) + '" width="' + w + '" height="8" fill="var(--map-road-main)"/>'; });
+    if (labels) labels.split(';').forEach(function (l) { var a = l.split('@'), xy = a[1].split(','); s += '<text x="' + xy[0] + '" y="' + xy[1] + '" fill="#8FA8BA" fill-opacity=".55" font-size="10" font-weight="600" font-family="Montserrat,sans-serif">' + a[0] + '</text>'; });
+    if (route) {
+      s += '<path d="' + route + '" fill="none" stroke="#00C4FF" stroke-opacity=".32" stroke-width="12" stroke-linejoin="round" stroke-linecap="round" filter="url(#' + id + ')"/>';
+      s += '<path d="' + route + '" fill="none" stroke="#5EBDDA" stroke-opacity=".55" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"' + (done ? ' stroke-dasharray="1 9"' : '') + '/>';
+      s += '<path d="' + (done || route) + '" fill="none" stroke="#00C4FF" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>';
+    }
+    s += '</svg>';
+    slot.outerHTML = s;
+  });
+
+  // Zoom del lienzo
+  var canvas = document.getElementById('canvas');
+  document.querySelectorAll('.zoom button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      canvas.style.zoom = b.getAttribute('data-z');
+      document.querySelectorAll('.zoom button').forEach(function (o) { o.setAttribute('aria-pressed', o === b ? 'true' : 'false'); });
+    });
+  });
+})();
+</script>

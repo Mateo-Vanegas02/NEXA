@@ -1,0 +1,1472 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for Spanish Castilian (`es`).
+class AppLocalizationsEs extends AppLocalizations {
+  AppLocalizationsEs([String locale = 'es']) : super(locale);
+
+  @override
+  String get appNombre => 'NEXA';
+
+  @override
+  String get reintentar => 'Reintentar';
+
+  @override
+  String get cancelar => 'Cancelar';
+
+  @override
+  String get continuar => 'Continuar';
+
+  @override
+  String get omitir => 'Omitir';
+
+  @override
+  String get empezar => 'Empezar';
+
+  @override
+  String get guardar => 'Guardar';
+
+  @override
+  String get cerrarSesion => 'Cerrar sesión';
+
+  @override
+  String get cargando => 'Cargando…';
+
+  @override
+  String get errorGenerico => 'Algo salió mal';
+
+  @override
+  String get vacioHistorial => 'Aún no tienes viajes';
+
+  @override
+  String get vacioHistorialDetalle =>
+      'Cuando completes un viaje aparecerá aquí.';
+
+  @override
+  String get onb1Titulo => 'Pide tu mototaxi';
+
+  @override
+  String get onb1Texto =>
+      'Solicita un viaje en segundos y sigue a tu conductor en el mapa.';
+
+  @override
+  String get onb2Titulo => 'Sube de nivel';
+
+  @override
+  String get onb2Texto =>
+      'Cada viaje te da XP. Desbloquea descuentos, prioridad y más beneficios.';
+
+  @override
+  String get onb3Titulo => 'Viaja con confianza';
+
+  @override
+  String get onb3Texto =>
+      'Conductores verificados, tarifa clara y calificaciones en cada viaje.';
+
+  @override
+  String get loginTitulo => 'Hola de nuevo';
+
+  @override
+  String get loginSubtitulo => 'Entra para pedir o recibir viajes.';
+
+  @override
+  String get email => 'Correo electrónico';
+
+  @override
+  String get password => 'Contraseña';
+
+  @override
+  String get confirmarPassword => 'Confirmar contraseña';
+
+  @override
+  String get ingresar => 'Ingresar';
+
+  @override
+  String get noTienesCuenta => '¿No tienes cuenta? Regístrate';
+
+  @override
+  String get yaTienesCuenta => '¿Ya tienes cuenta? Inicia sesión';
+
+  @override
+  String get registroTitulo => 'Crea tu cuenta';
+
+  @override
+  String get soy => 'Quiero usar NEXA como';
+
+  @override
+  String get rolPasajero => 'Pasajero';
+
+  @override
+  String get rolConductor => 'Conductor';
+
+  @override
+  String get nombreCompleto => 'Nombre completo';
+
+  @override
+  String get telefono => 'Teléfono (10 dígitos, empieza con 3)';
+
+  @override
+  String get crearCuenta => 'Crear cuenta';
+
+  @override
+  String get campoRequerido => 'Este campo es obligatorio';
+
+  @override
+  String get emailInvalido => 'Correo electrónico inválido';
+
+  @override
+  String get passwordCorta => 'Mínimo 8 caracteres';
+
+  @override
+  String get passwordNoCoincide => 'Las contraseñas no coinciden';
+
+  @override
+  String get telefonoInvalido => 'Teléfono colombiano inválido';
+
+  @override
+  String get registroConductorWeb =>
+      'El registro de conductores requiere verificación de documentos. Completa el registro en la web de NEXA; la app solo permite crear cuentas de pasajero por ahora.';
+
+  @override
+  String get navInicio => 'Inicio';
+
+  @override
+  String get navViajes => 'Viajes';
+
+  @override
+  String get navNiveles => 'Niveles';
+
+  @override
+  String get navPerfil => 'Perfil';
+
+  @override
+  String get navGanancias => 'Ganancias';
+
+  @override
+  String get navSolicitudes => 'Solicitudes';
+
+  @override
+  String get adondeVas => '¿A dónde vas?';
+
+  @override
+  String get destinoHint => 'Toca el mapa para elegir el destino';
+
+  @override
+  String get origenActual => 'Tu ubicación';
+
+  @override
+  String get nombreDestino => 'Nombre del destino';
+
+  @override
+  String get solicitarViaje => 'Solicitar viaje';
+
+  @override
+  String get estimadoTarifa => 'Estimado de tarifa';
+
+  @override
+  String get distancia => 'Distancia';
+
+  @override
+  String get tarifaBase => 'Tarifa';
+
+  @override
+  String get total => 'Total';
+
+  @override
+  String get metodoPago => 'Método de pago';
+
+  @override
+  String get efectivo => 'Efectivo';
+
+  @override
+  String get tarifaEstimadaAviso =>
+      'Estimado. El total final lo calcula NEXA al finalizar el viaje.';
+
+  @override
+  String get buscandoConductor => 'Buscando conductor…';
+
+  @override
+  String get conductorEnCamino => 'Tu conductor va en camino';
+
+  @override
+  String get enViaje => 'Viaje en curso';
+
+  @override
+  String get viajeFinalizado => 'Viaje finalizado';
+
+  @override
+  String get viajeCancelado => 'Viaje cancelado';
+
+  @override
+  String get cancelarViaje => 'Cancelar viaje';
+
+  @override
+  String get calificaTuViaje => 'Califica tu viaje';
+
+  @override
+  String get comentarios => 'Comentarios (opcional)';
+
+  @override
+  String get enviarCalificacion => 'Enviar calificación';
+
+  @override
+  String get gracias => '¡Gracias por calificar!';
+
+  @override
+  String get historial => 'Historial de viajes';
+
+  @override
+  String get perfil => 'Perfil';
+
+  @override
+  String get estado_SOLICITADO => 'Solicitado';
+
+  @override
+  String get estado_ACEPTADO => 'Aceptado';
+
+  @override
+  String get estado_EN_CURSO => 'En curso';
+
+  @override
+  String get estado_FINALIZADO => 'Finalizado';
+
+  @override
+  String get estado_CANCELADO => 'Cancelado';
+
+  @override
+  String get nivelesTitulo => 'Tus niveles';
+
+  @override
+  String nivelActual(String nombre) {
+    return 'Nivel $nombre';
+  }
+
+  @override
+  String xpProgreso(int actual, int meta) {
+    return '$actual / $meta XP';
+  }
+
+  @override
+  String get nivelMaximo => 'Nivel máximo alcanzado';
+
+  @override
+  String faltanXp(int xp, String siguiente) {
+    return 'Te faltan $xp XP para el nivel $siguiente';
+  }
+
+  @override
+  String get beneficios => 'Beneficios';
+
+  @override
+  String beneficioBloqueado(int nivel) {
+    return 'Se desbloquea en nivel $nivel';
+  }
+
+  @override
+  String xpGanado(int n) {
+    return 'Ganaste $n XP';
+  }
+
+  @override
+  String get subisteNivel => '¡Subiste de nivel!';
+
+  @override
+  String ahoraEres(String nombre) {
+    return 'Subiste al nivel $nombre';
+  }
+
+  @override
+  String get genial => '¡Genial!';
+
+  @override
+  String barraNivelSemantica(String nombre, int porcentaje) {
+    return 'Nivel $nombre, $porcentaje por ciento hacia el siguiente nivel';
+  }
+
+  @override
+  String get enLinea => 'En línea';
+
+  @override
+  String get fueraDeLinea => 'Fuera de línea';
+
+  @override
+  String get estasEnLinea => 'Recibes solicitudes de viaje';
+
+  @override
+  String get estasFueraDeLinea => 'Conéctate para recibir solicitudes';
+
+  @override
+  String get solicitudesEntrantes => 'Solicitudes entrantes';
+
+  @override
+  String get sinSolicitudes => 'No hay solicitudes por ahora';
+
+  @override
+  String get aceptar => 'Aceptar';
+
+  @override
+  String get rechazar => 'Rechazar';
+
+  @override
+  String get yendoAPasajero => 'En camino al pasajero';
+
+  @override
+  String get iniciarViaje => 'Pasajero recogido';
+
+  @override
+  String get finalizarViaje => 'Completar viaje';
+
+  @override
+  String get viajeActivo => 'Viaje activo';
+
+  @override
+  String get gananciasTitulo => 'Ganancias';
+
+  @override
+  String get gananciaTotal => 'Total ganado';
+
+  @override
+  String get comisionActual => 'Comisión actual';
+
+  @override
+  String get comisionSiguiente => 'Comisión siguiente nivel';
+
+  @override
+  String get requisitosCalidad => 'Requisitos de calidad';
+
+  @override
+  String get bloqueadoCalidad =>
+      'Tienes los XP necesarios, pero te falta cumplir la calidad.';
+
+  @override
+  String get calificacion => 'Calificación';
+
+  @override
+  String get aceptacion => 'Aceptación';
+
+  @override
+  String get cancelacion => 'Cancelación';
+
+  @override
+  String get pendienteTitulo => 'Cuenta en revisión';
+
+  @override
+  String get pendienteTexto =>
+      'Un administrador está verificando tus documentos. Te avisaremos cuando tu cuenta esté aprobada; mientras tanto no puedes recibir viajes.';
+
+  @override
+  String get rechazadoTexto =>
+      'Tu solicitud fue rechazada. Contacta a soporte de NEXA.';
+
+  @override
+  String get conductorNoSoportado =>
+      'Tu cuenta de conductor aún no puede iniciar sesión desde la app (pendiente en el backend).';
+
+  @override
+  String get iniciarSesion => 'Iniciar sesión';
+
+  @override
+  String get solicitaAhora => 'Solicita ahora';
+
+  @override
+  String get registrate => 'Regístrate';
+
+  @override
+  String get homeBadge => 'Servicio de MotoTaxis';
+
+  @override
+  String get homeHero => 'Conecta con el movimiento';
+
+  @override
+  String get homeSubtitulo =>
+      '¡Tu destino te espera! Viajes rápidos, seguros y accesibles en dos ruedas.';
+
+  @override
+  String get servicios => 'Servicios';
+
+  @override
+  String get serviciosSub => 'Todo lo que puedes hacer en NEXA';
+
+  @override
+  String get svcReservaTitulo => 'Reserva de viajes';
+
+  @override
+  String get svcReservaTexto => 'Elige destino y tipo de moto en segundos.';
+
+  @override
+  String get svcRastreoTitulo => 'Rastreo en vivo';
+
+  @override
+  String get svcRastreoTexto => 'Sigue a tu conductor en tiempo real.';
+
+  @override
+  String get svcCalifTitulo => 'Calificaciones';
+
+  @override
+  String get svcCalifTexto => 'Califica y comenta cada viaje.';
+
+  @override
+  String get svcPagosTitulo => 'Pagos seguros';
+
+  @override
+  String get svcPagosTexto => 'Efectivo, tarjeta o billetera digital.';
+
+  @override
+  String get abrirMenu => 'Abrir menú';
+
+  @override
+  String get saludoManana => 'Buenos días';
+
+  @override
+  String get saludoTarde => 'Buenas tardes';
+
+  @override
+  String get saludoNoche => 'Buenas noches';
+
+  @override
+  String get buscadorHint => '¿A dónde vas hoy?';
+
+  @override
+  String get ahora => 'Ahora';
+
+  @override
+  String get pedirViaje => 'Pedir viaje';
+
+  @override
+  String get historialCorto => 'Historial';
+
+  @override
+  String get viajesRecientes => 'Viajes recientes';
+
+  @override
+  String get verTodo => 'Ver todo';
+
+  @override
+  String viajesCantidad(int n) {
+    return '$n viajes';
+  }
+
+  @override
+  String get notificaciones => 'Notificaciones';
+
+  @override
+  String get sinNotificaciones => 'No tienes notificaciones nuevas';
+
+  @override
+  String get aDondeVamos => '¿A dónde vamos?';
+
+  @override
+  String get origen => 'Origen';
+
+  @override
+  String get miUbicacion => 'Mi ubicación';
+
+  @override
+  String get destino => 'Destino';
+
+  @override
+  String get tiempoEstimado => 'Tiempo est.';
+
+  @override
+  String minutosValor(int n) {
+    return '$n min';
+  }
+
+  @override
+  String get precioSugerido => 'Precio sugerido · ajustable';
+
+  @override
+  String get aumentarPrecio => 'Aumentar precio';
+
+  @override
+  String get disminuirPrecio => 'Disminuir precio';
+
+  @override
+  String get cambiar => 'Cambiar';
+
+  @override
+  String get volver => 'Volver';
+
+  @override
+  String get centrarUbicacion => 'Centrar en mi ubicación';
+
+  @override
+  String get editarDestino => 'Editar destino';
+
+  @override
+  String get viajeEnCursoTitulo => 'Viaje en curso';
+
+  @override
+  String llegadaEstimada(String hora) {
+    return 'Llegada estimada $hora';
+  }
+
+  @override
+  String get paso_solicitado => 'Solicitado';
+
+  @override
+  String get paso_aceptado => 'Aceptado';
+
+  @override
+  String get paso_en_curso => 'En curso';
+
+  @override
+  String get paso_finalizado => 'Finalizado';
+
+  @override
+  String get placa => 'Placa';
+
+  @override
+  String viajesCantidadCorto(int n) {
+    return '$n viajes';
+  }
+
+  @override
+  String get llamar => 'Llamar';
+
+  @override
+  String get mensaje => 'Mensaje';
+
+  @override
+  String get compartir => 'Compartir';
+
+  @override
+  String compartirTexto(String destino, String conductor) {
+    return 'Voy en un viaje NEXA hacia $destino. Conductor: $conductor.';
+  }
+
+  @override
+  String get asistenciaRuta => 'Asistencia en ruta (SOS)';
+
+  @override
+  String get sosTitulo => '¿Necesitas ayuda?';
+
+  @override
+  String get sosTexto => 'Llamaremos a la línea de emergencias 123.';
+
+  @override
+  String get noDisponible => 'No disponible para este conductor';
+
+  @override
+  String get viajeFinalizadoTitulo => 'Viaje finalizado';
+
+  @override
+  String get llegasteDestino => '¡Llegaste a tu destino!';
+
+  @override
+  String duracionMin(int n) {
+    return '$n min';
+  }
+
+  @override
+  String get calificaExperiencia => 'Califica tu experiencia';
+
+  @override
+  String comoCalificarias(String nombre) {
+    return '¿Cómo calificarías a $nombre?';
+  }
+
+  @override
+  String get calif1 => 'Muy malo';
+
+  @override
+  String get calif2 => 'Malo';
+
+  @override
+  String get calif3 => 'Regular';
+
+  @override
+  String get calif4 => 'Bueno';
+
+  @override
+  String get calif5 => 'Muy bueno';
+
+  @override
+  String califDe5(String texto, int n) {
+    return '$texto - $n de 5';
+  }
+
+  @override
+  String get etiquetaSegura => 'Conducción segura';
+
+  @override
+  String get etiquetaPuntual => 'Puntual';
+
+  @override
+  String get etiquetaAmable => 'Amable';
+
+  @override
+  String get etiquetaMoto => 'Moto en buen estado';
+
+  @override
+  String get etiquetaCasco => 'Casco limpio';
+
+  @override
+  String get comentarioHint => 'Déjanos un comentario opcional…';
+
+  @override
+  String get omitirPorAhora => 'Omitir por ahora';
+
+  @override
+  String get cerrar => 'Cerrar';
+
+  @override
+  String get tuConductor => 'Tu conductor';
+
+  @override
+  String get metodoTarjeta => 'Tarjeta';
+
+  @override
+  String get metodoBilletera => 'Billetera digital';
+
+  @override
+  String get verDesglose => 'Ver desglose';
+
+  @override
+  String get destinoSeleccionado => 'Destino seleccionado';
+
+  @override
+  String get nombreInvalido => 'Solo letras y espacios (3 a 100 caracteres)';
+
+  @override
+  String get passwordDebil => 'Debe incluir mayúscula, minúscula y número';
+
+  @override
+  String get bienvenidaTitulo => '¡Bienvenido a NEXA!';
+
+  @override
+  String bienvenidaNombre(String nombre) {
+    return '¡Hola, $nombre!';
+  }
+
+  @override
+  String get bienvenidaPasajero =>
+      'Pide tu mototaxi, sigue tu viaje y sube de nivel con cada recorrido.';
+
+  @override
+  String get bienvenidaConductor =>
+      'Conéctate para recibir solicitudes y mejora tu comisión con cada viaje.';
+
+  @override
+  String get vamos => '¡Vamos!';
+
+  @override
+  String get cancelarViajeTitulo => '¿Cancelar el viaje?';
+
+  @override
+  String get cancelarViajeTexto => 'Tu conductor dejará de ir hacia ti.';
+
+  @override
+  String get mantenerViaje => 'Mantener viaje';
+
+  @override
+  String get cuentaYaExiste => 'Ya existe una cuenta con ese correo.';
+
+  @override
+  String get puntoEnMapa => 'Punto en el mapa';
+
+  @override
+  String get sinResultados =>
+      'Sin resultados. Toca el mapa para elegir el punto.';
+
+  @override
+  String get usarMiUbicacion => 'Usar mi ubicación';
+
+  @override
+  String get borrar => 'Borrar';
+
+  @override
+  String get origenHint => 'Busca el origen o toca el mapa';
+
+  @override
+  String get buscandoLugares => 'Buscando…';
+
+  @override
+  String get editarPerfil => 'Editar perfil';
+
+  @override
+  String get perfilActualizado => 'Perfil actualizado';
+
+  @override
+  String get cambiarFoto => 'Cambiar foto';
+
+  @override
+  String get tomarFoto => 'Tomar foto';
+
+  @override
+  String get elegirGaleria => 'Elegir de la galería';
+
+  @override
+  String get quitarFoto => 'Quitar foto';
+
+  @override
+  String get fotoActualizada => 'Foto actualizada';
+
+  @override
+  String get fotoQuitada => 'Foto eliminada';
+
+  @override
+  String get registroConductorTitulo => 'Registro de conductor';
+
+  @override
+  String get registroConductorIntro =>
+      'Completa tus datos y fotografía tus documentos. Un administrador los revisará y, cuando te aprueben, podrás iniciar sesión.';
+
+  @override
+  String get registroConductorBoton => 'Registrarme como conductor';
+
+  @override
+  String get seccionDatos => 'Tus datos';
+
+  @override
+  String get seccionVehiculo => 'Tu moto';
+
+  @override
+  String get seccionDocumentos => 'Documentos';
+
+  @override
+  String get licencia => 'Número de licencia de conducción';
+
+  @override
+  String get tarjetaPropiedad => 'Número de tarjeta de propiedad';
+
+  @override
+  String get soat => 'Número de SOAT (12 dígitos)';
+
+  @override
+  String get tecnomecanica => 'Número de tecnomecánica';
+
+  @override
+  String get marca => 'Marca';
+
+  @override
+  String get modelo => 'Modelo';
+
+  @override
+  String get color => 'Color';
+
+  @override
+  String get docLicencia => 'Foto de la licencia';
+
+  @override
+  String get docTarjeta => 'Foto de la tarjeta de propiedad';
+
+  @override
+  String get docSoat => 'Foto del SOAT';
+
+  @override
+  String get docTecno => 'Foto de la tecnomecánica';
+
+  @override
+  String get agregarFoto => 'Agregar foto';
+
+  @override
+  String get fotoLista => 'Foto lista · toca para cambiarla';
+
+  @override
+  String get faltaFoto => 'Adjunta la foto de este documento';
+
+  @override
+  String get enviarSolicitud => 'Enviar solicitud';
+
+  @override
+  String get yaTengoCuenta => 'Ya tengo cuenta';
+
+  @override
+  String pasoDe(int n, int total) {
+    return 'Paso $n de $total';
+  }
+
+  @override
+  String get registroPaso1Sub => 'Empecemos con tus datos básicos.';
+
+  @override
+  String get registroPaso2Titulo => 'Elige tu contraseña';
+
+  @override
+  String get registroPaso2Sub => 'La usarás para entrar a tu cuenta.';
+
+  @override
+  String get docsTitulo => 'Tus documentos';
+
+  @override
+  String docsListos(int n, int total) {
+    return '$n de $total listos';
+  }
+
+  @override
+  String docsFaltan(int n) {
+    return 'Faltan $n para enviar tu solicitud.';
+  }
+
+  @override
+  String get docsCompletos => 'Todo listo para enviar tu solicitud.';
+
+  @override
+  String pedirNexa(String precio) {
+    return 'Pedir NEXA · $precio';
+  }
+
+  @override
+  String get pedirNexaSinPrecio => 'Pedir NEXA';
+
+  @override
+  String get tuRuta => 'Tu ruta';
+
+  @override
+  String get fijarEnMapa => 'Fijar en el mapa';
+
+  @override
+  String get resultadosCerca => 'Resultados cerca de ti';
+
+  @override
+  String get buscarLugarHint => 'Busca una dirección o un lugar';
+
+  @override
+  String get tocaMapaDestino => 'Toca el mapa para fijar tu destino';
+
+  @override
+  String get tocaMapaOrigen => 'Toca el mapa para fijar tu origen';
+
+  @override
+  String get nuevaSolicitud => 'Nueva solicitud';
+
+  @override
+  String get faseARecoger => 'A recoger';
+
+  @override
+  String get faseEnPunto => 'En el punto';
+
+  @override
+  String get faseEnViaje => 'En viaje';
+
+  @override
+  String get conectarme => 'Conectarme';
+
+  @override
+  String get desconectarme => 'Desconectarme';
+
+  @override
+  String get buscandoSolicitudes => 'Buscando solicitudes…';
+
+  @override
+  String get gananciaPorViaje => 'Ganancia por viaje';
+
+  @override
+  String get estasAqui => 'Estás aquí';
+
+  @override
+  String get inactividadNota => 'Si pasas 90 días sin viajar bajas un nivel.';
+
+  @override
+  String get statViajes => 'viajes';
+
+  @override
+  String get statCalificacion => 'calificación';
+
+  @override
+  String get statNivel => 'nivel';
+
+  @override
+  String get editarPerfilSub => 'Nombre y celular';
+
+  @override
+  String get ofertaAhora => 'Tu oferta ahora';
+
+  @override
+  String get ocultarDesglose => 'Ocultar desglose';
+
+  @override
+  String ahorroNivel(String monto) {
+    return 'Tu nivel ahorra $monto';
+  }
+
+  @override
+  String get motoNexa => 'Moto NEXA';
+
+  @override
+  String nivelDescuento(String nivel, int pct) {
+    return 'Nivel $nivel · $pct % de descuento';
+  }
+
+  @override
+  String get solicitudEnviada => 'Solicitud enviada';
+
+  @override
+  String get solicitudEnviadaMsg =>
+      'Un administrador revisará tus documentos. Podrás iniciar sesión cuando te aprueben.';
+
+  @override
+  String get errorFoto => 'No se pudo leer la foto. Intenta de nuevo.';
+
+  @override
+  String get licenciaInvalida => 'Debe tener entre 6 y 15 dígitos';
+
+  @override
+  String get tarjetaInvalida => 'Debe tener entre 8 y 15 dígitos';
+
+  @override
+  String get soatInvalido => 'Debe tener 12 dígitos';
+
+  @override
+  String get tecnoInvalida => 'Debe tener entre 6 y 15 dígitos';
+
+  @override
+  String get placaInvalida => 'La placa debe tener 6 caracteres (ej: ABC123)';
+
+  @override
+  String get textoInvalido => 'Valor no válido';
+
+  @override
+  String get regPlaca => 'Placa (ej: ABC123)';
+
+  @override
+  String get descuentoNivel => 'Descuento por nivel';
+
+  @override
+  String get cargoPendiente => 'Cargo pendiente por cancelación';
+
+  @override
+  String get aceptoCargo => 'Acepto que este cargo se cobre con mi viaje';
+
+  @override
+  String get cotizando => 'Calculando el precio…';
+
+  @override
+  String get tarifaServidorAviso =>
+      'Precio calculado por NEXA según la ruta por calles. Lo pagas al terminar el viaje.';
+
+  @override
+  String get recargoEspera => 'Recargo por espera';
+
+  @override
+  String get extraVoluntario => 'Extra voluntario';
+
+  @override
+  String get extraTitulo => '¿Tarda en llegar un conductor?';
+
+  @override
+  String get extraTexto =>
+      'Suma un extra voluntario para que tu solicitud llegue antes a los conductores.';
+
+  @override
+  String get deudaAnterior => 'Cargo anterior';
+
+  @override
+  String get errorCotizar => 'No se pudo calcular el precio. Intenta de nuevo.';
+
+  @override
+  String get llegueAlPunto => 'Llegué al punto de recogida';
+
+  @override
+  String get esperandoPasajero => 'Esperando al pasajero';
+
+  @override
+  String get distanciaPasajero => 'Distancia del pasajero a la recogida';
+
+  @override
+  String get cobraAlPasajero => 'Cobra al pasajero';
+
+  @override
+  String get viajeTerminado => 'Viaje finalizado';
+
+  @override
+  String get finalizarAntesTitulo => '¿Finalizar antes del destino?';
+
+  @override
+  String get finalizarAntesTexto =>
+      'Aún no llegas al destino. Si finalizas ahora, el cobro será según lo recorrido.';
+
+  @override
+  String get finalizarDeTodosModos => 'Finalizar de todos modos';
+
+  @override
+  String get cancelarViajeConductorTitulo => '¿Cancelar este viaje?';
+
+  @override
+  String get cancelarViajeConductorTexto =>
+      'El pasajero será avisado de la cancelación.';
+
+  @override
+  String get pasajeroCancelo => 'El pasajero canceló el viaje.';
+
+  @override
+  String get saldoConNexa => 'Saldo con NEXA';
+
+  @override
+  String get cobradoEfectivo => 'Cobrado en efectivo';
+
+  @override
+  String get gananciaPeriodo => 'Ganado';
+
+  @override
+  String get cargosAFavor => 'Cargos a tu favor';
+
+  @override
+  String get viajesPeriodo => 'Viajes';
+
+  @override
+  String get debesANexa => 'Debes a NEXA';
+
+  @override
+  String get nexaTeDebe => 'NEXA te debe';
+
+  @override
+  String get sinUbicacion =>
+      'No pudimos obtener tu ubicación. Activa el GPS e inténtalo de nuevo.';
+
+  @override
+  String get ultimos30Dias => 'Últimos 30 días';
+
+  @override
+  String get listo => 'Listo';
+
+  @override
+  String get ventajasActuales => 'Tus ventajas actuales';
+
+  @override
+  String get descuentoViajes => 'Descuento en tus viajes';
+
+  @override
+  String get prioridadRecogida => 'Prioridad de recogida';
+
+  @override
+  String get sinVentajas =>
+      'Sube de nivel para ganar descuento y prioridad en tus viajes.';
+
+  @override
+  String get adminRol => 'Administrador';
+
+  @override
+  String get adminConductores => 'Conductores';
+
+  @override
+  String get adminProximamente => 'Próximamente';
+
+  @override
+  String get adminProximamenteDetalle =>
+      'Por ahora esta sección está en la web del administrador.';
+
+  @override
+  String get satEyebrow => 'Admin · Redes neuronales';
+
+  @override
+  String get satTitulo => 'Satisfacción';
+
+  @override
+  String get satVerModelo => 'Ver el modelo';
+
+  @override
+  String get satPeriodo7 => '7 días';
+
+  @override
+  String get satPeriodo30 => '30 días';
+
+  @override
+  String get satPeriodo90 => '90 días';
+
+  @override
+  String get satPeriodoRango => 'Rango';
+
+  @override
+  String get satDemoTitulo => 'Modo demo.';
+
+  @override
+  String get satDemoTexto =>
+      'Las predicciones usan datos sintéticos hasta tener 300 calificaciones por lado. Las cifras de satisfacción sí son reales.';
+
+  @override
+  String get satDemoFactores =>
+      'La importancia de los factores sale del modelo de demostración. Las curvas usan las calificaciones reales.';
+
+  @override
+  String get satPasajerosSatisfechos => 'Pasajeros satisfechos';
+
+  @override
+  String get satConductoresSatisfechos => 'Conductores satisfechos';
+
+  @override
+  String get satSinCalificaciones => 'Sin calificaciones';
+
+  @override
+  String satVariacion(String valor) {
+    return '$valor pts vs. período anterior';
+  }
+
+  @override
+  String satCalifica(String pct) {
+    return 'Califica el $pct';
+  }
+
+  @override
+  String get satTendencia => 'Tendencia semanal';
+
+  @override
+  String satSemanticaTendencia(String pasajero, String conductor) {
+    return 'Tendencia semanal. Última semana: pasajeros $pasajero, conductores $conductor.';
+  }
+
+  @override
+  String get satPasajero => 'Pasajero';
+
+  @override
+  String get satConductor => 'Conductor';
+
+  @override
+  String get satViajesRiesgo => 'Viajes en riesgo';
+
+  @override
+  String get satViajesRiesgoDetalle => 'Sin calificar, probable \"no\"';
+
+  @override
+  String get satFactores => 'Factores';
+
+  @override
+  String satLoQueMasPesa(String factor) {
+    return 'Lo que más pesa: $factor';
+  }
+
+  @override
+  String get satQuePesaMas => 'Qué pesa más';
+
+  @override
+  String get satQuePesaMasDetalle =>
+      'Cuánto empeora la predicción si se quita cada factor';
+
+  @override
+  String satOtrosFactores(String cantidad, String peso) {
+    return '+ $cantidad factores más con menos del $peso';
+  }
+
+  @override
+  String get satComoCambia => 'Cómo cambia la satisfacción';
+
+  @override
+  String get satPorTramoPasajero => '% de pasajeros satisfechos por tramo';
+
+  @override
+  String get satPorTramoConductor => '% de conductores satisfechos por tramo';
+
+  @override
+  String get satRiesgoIntro =>
+      'Viajes sin calificar donde la red predice que la persona no quedó satisfecha. Ordenados por probabilidad.';
+
+  @override
+  String get satTodos => 'Todos';
+
+  @override
+  String satConteo(String etiqueta, String n) {
+    return '$etiqueta · $n';
+  }
+
+  @override
+  String satViajeTitulo(String id, String fecha) {
+    return 'Viaje #$id · $fecha';
+  }
+
+  @override
+  String satRuta(String origen, String destino, String km) {
+    return '$origen → $destino · $km km';
+  }
+
+  @override
+  String get satProbNo => 'prob. de \"no\"';
+
+  @override
+  String satUmbral(String pct) {
+    return 'Umbral de alerta: $pct · se ajusta en el modelo';
+  }
+
+  @override
+  String get satSinRiesgo => 'No hay viajes en riesgo';
+
+  @override
+  String get satSinRiesgoDetalle =>
+      'Ningún viaje sin calificar supera el umbral de alerta.';
+
+  @override
+  String get satModeloEyebrow => 'Red neuronal';
+
+  @override
+  String get satModelo => 'Modelo';
+
+  @override
+  String satVersionTitulo(String version) {
+    return 'Versión $version · TensorFlow';
+  }
+
+  @override
+  String get satDemo => 'Demo';
+
+  @override
+  String satEntrenadoInfo(String fecha, String viajes, String variables) {
+    return 'Entrenado el $fecha · $viajes viajes · $variables variables';
+  }
+
+  @override
+  String get satRed => 'Red';
+
+  @override
+  String get satRegresion => 'Regresión';
+
+  @override
+  String get satResultado => 'Resultado';
+
+  @override
+  String get satSupera => 'Supera';
+
+  @override
+  String get satNoSupera => 'No supera';
+
+  @override
+  String get satMetricaNota =>
+      'PR-AUC sobre el 15 % de viajes más recientes. Mientras la red no supere a la regresión, el panel lo advierte.';
+
+  @override
+  String get satEntrenarAhora => 'Entrenar ahora';
+
+  @override
+  String get satEntrenarDemoNota =>
+      'Sin datos suficientes: se entrena con datos sintéticos (demo).';
+
+  @override
+  String get satEntrenamientoEnCurso => 'Hay un entrenamiento en curso';
+
+  @override
+  String get satVer => 'Ver';
+
+  @override
+  String get satProgramado => 'Entrenamiento programado';
+
+  @override
+  String get satCambiar => 'Cambiar';
+
+  @override
+  String get satSinProgramar =>
+      'Sin programar: la red solo se entrena cuando lo pidas.';
+
+  @override
+  String satProxima(String fecha) {
+    return 'Próximo: $fecha';
+  }
+
+  @override
+  String satProximaDatosNuevos(String fecha, String n) {
+    return 'Próximo: $fecha · solo si hay $n viajes nuevos calificados';
+  }
+
+  @override
+  String satTodosLosDias(String hora) {
+    return 'Todos los días · $hora';
+  }
+
+  @override
+  String satCadaHorasValor(String horas) {
+    return 'Cada $horas h';
+  }
+
+  @override
+  String get satHistorial => 'Historial';
+
+  @override
+  String get satManual => 'Manual';
+
+  @override
+  String get satProgramadoCorto => 'Programado';
+
+  @override
+  String get satEstPublicado => 'Publicado';
+
+  @override
+  String get satEstPublicadoDemo => 'Publicado (demo)';
+
+  @override
+  String get satEstSinPublicar => 'Guardado sin publicar';
+
+  @override
+  String get satEstSinDatosNuevos => 'Sin datos nuevos';
+
+  @override
+  String get satEstFaltanDatos => 'Faltan datos';
+
+  @override
+  String get satEstFallido => 'Falló';
+
+  @override
+  String get satEstCancelado => 'Cancelado';
+
+  @override
+  String get satEstEnCurso => 'En curso';
+
+  @override
+  String get satProgramarTitulo => 'Programar entrenamiento';
+
+  @override
+  String get satProgramarDetalle =>
+      'La red se entrena en la nube y se publica sola si cumple las condiciones.';
+
+  @override
+  String get satFrecuencia => 'Frecuencia';
+
+  @override
+  String get satDiaria => 'Diario';
+
+  @override
+  String get satSemanal => 'Semanal';
+
+  @override
+  String get satCadaHoras => 'Cada N horas';
+
+  @override
+  String get satDias => 'Días';
+
+  @override
+  String get satDiaLun => 'L';
+
+  @override
+  String get satDiaMar => 'M';
+
+  @override
+  String get satDiaMie => 'X';
+
+  @override
+  String get satDiaJue => 'J';
+
+  @override
+  String get satDiaVie => 'V';
+
+  @override
+  String get satDiaSab => 'S';
+
+  @override
+  String get satDiaDom => 'D';
+
+  @override
+  String get satHoraBogota => 'Hora (Bogotá)';
+
+  @override
+  String get satIntervalo => 'Intervalo';
+
+  @override
+  String get satSoloDatosNuevos => 'Solo con datos nuevos';
+
+  @override
+  String satSoloDatosNuevosDetalle(String n) {
+    return 'Al menos $n viajes calificados desde el último';
+  }
+
+  @override
+  String get satPublicarSiMejora => 'Publicar solo si mejora';
+
+  @override
+  String get satPublicarSiMejoraDetalle =>
+      'Si no supera a la versión actual, se guarda sin usarla';
+
+  @override
+  String get satProgramacionInvalida => 'Elige al menos un día.';
+
+  @override
+  String get satGuardarProgramacion => 'Guardar programación';
+
+  @override
+  String get satProgramacionGuardada => 'Programación guardada';
+
+  @override
+  String get satEntrenandoTitulo => 'Entrenando';
+
+  @override
+  String get satEntrenamientoTitulo => 'Entrenamiento';
+
+  @override
+  String get satEntrenandoRed => 'Entrenando la red';
+
+  @override
+  String get satEnCola => 'En cola…';
+
+  @override
+  String satEpoca(String epoca, String epocas) {
+    return 'Época $epoca de $epocas';
+  }
+
+  @override
+  String get satPasoExportar => 'Exportar viajes';
+
+  @override
+  String get satPasoEntrenar => 'Entrenar la red';
+
+  @override
+  String get satPasoEntrenarDetalle => 'TensorFlow · dos salidas';
+
+  @override
+  String get satPasoComparar => 'Comparar con la regresión';
+
+  @override
+  String get satPasoPublicar => 'Publicar para la app';
+
+  @override
+  String get satPuedesSalir =>
+      'Puedes salir de esta pantalla: el entrenamiento sigue en la nube. El panel muestra la versión actual hasta que se publique la nueva.';
+
+  @override
+  String get satCancelarEntrenamiento => 'Cancelar entrenamiento';
+
+  @override
+  String get satVolverPanel => 'Volver al modelo';
+
+  @override
+  String get satFinPublicado => 'Nueva versión publicada';
+
+  @override
+  String get satFinSinPublicar => 'Se guardó sin publicar';
+
+  @override
+  String get satFinSinPublicarDetalle => 'No superó a la versión actual.';
+
+  @override
+  String get satFinSinDatosNuevos => 'No había datos nuevos';
+
+  @override
+  String get satFinFallido => 'El entrenamiento falló';
+
+  @override
+  String get satFinCancelado => 'Entrenamiento cancelado';
+
+  @override
+  String get satSinDatosTitulo => 'Aún no hay datos para entrenar';
+
+  @override
+  String satMinimoDatos(String calificaciones, String no) {
+    return 'La red necesita al menos $calificaciones calificaciones y $no \"no\" por lado. Mientras tanto se muestran las cifras reales y el modelo de demostración.';
+  }
+
+  @override
+  String get satProgresoDatos => 'Progreso de los datos';
+
+  @override
+  String get satCalifPasajeros => 'Calificaciones de pasajeros';
+
+  @override
+  String get satNoPasajeros => '\"No\" de pasajeros';
+
+  @override
+  String get satCalifConductores => 'Calificaciones de conductores';
+
+  @override
+  String get satNoConductores => '\"No\" de conductores';
+
+  @override
+  String satConteoDe(String actual, String meta) {
+    return '$actual / $meta';
+  }
+
+  @override
+  String get satConsejoConductores =>
+      'Los conductores califican poco. Pedirles la nota al cerrar el viaje acelera el entrenamiento.';
+
+  @override
+  String get satEntrenarNoDisponible => 'Entrenar ahora (no disponible)';
+}

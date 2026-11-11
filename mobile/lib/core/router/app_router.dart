@@ -1,0 +1,276 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../features/auth/domain/auth.dart';
+import '../../features/auth/presentation/screens/splash_screen.dart';
+import '../../features/auth/presentation/screens/onboarding_screen.dart';
+import '../../features/auth/presentation/screens/login_screen.dart';
+import '../../features/auth/presentation/screens/registro_conductor_screen.dart';
+import '../../features/auth/presentation/screens/registro_screen.dart';
+import '../../features/auth/presentation/screens/perfil_screen.dart';
+import '../../features/auth/presentation/controllers/session_controller.dart';
+import '../../features/niveles/presentation/widgets/celebracion_listener.dart';
+import '../../features/niveles/presentation/screens/niveles_screen.dart';
+import '../../features/viajes/presentation/conductor/inicio_conductor_screen.dart';
+import '../../features/viajes/presentation/conductor/ganancias_screen.dart';
+import '../../features/home/presentation/home_screen.dart';
+import '../../features/satisfaccion/presentation/admin_shell.dart';
+import '../../features/satisfaccion/presentation/screens/entrenando_screen.dart';
+import '../../features/satisfaccion/presentation/screens/factores_screen.dart';
+import '../../features/satisfaccion/presentation/screens/modelo_screen.dart';
+import '../../features/satisfaccion/presentation/screens/resumen_screen.dart';
+import '../../features/satisfaccion/presentation/screens/riesgo_screen.dart';
+import '../../features/viajes/presentation/pasajero/calificacion_screen.dart';
+import '../../features/viajes/presentation/pasajero/historial_pasajero_screen.dart';
+import '../../features/viajes/presentation/pasajero/inicio_pasajero_screen.dart';
+import '../../features/viajes/presentation/pasajero/solicitar_viaje_screen.dart';
+import '../../features/viajes/presentation/pasajero/viaje_en_curso_screen.dart';
+import '../geocoding/geocoding_service.dart';
+import '../l10n/gen/app_localizations.dart';
+
+const _publicas = {
+  '/splash',
+  '/onboarding',
+  '/inicio',
+  '/login',
+  '/registro',
+  '/registro/conductor',
+};
+
+String _inicio(Rol r) => switch (r) {
+  Rol.pasajero => '/p/inicio',
+  Rol.conductor => '/c/inicio',
+  Rol.admin => '/a/satisfaccion',
+};
+
+String _prefijo(Rol r) => switch (r) {
+  Rol.pasajero => '/p/',
+  Rol.conductor => '/c/',
+  Rol.admin => '/a/',
+};
+
+/// Lógica de redirección (guards por rol), separada para poder probarla.
+String? redirigir(SesionState s, String ubicacion) {
+  if (!s.inicializado) return ubicacion == '/splash' ? null : '/splash';
+  final sesion = s.sesion;
+  if (sesion == null) {
+    if (ubicacion == '/splash') {
+      return s.onboardingVisto ? '/inicio' : '/onboarding';
+    }
+    if (ubicacion == '/onboarding' && s.onboardingVisto) return '/inicio';
+    return _publicas.contains(ubicacion) ? null : '/inicio';
+  }
+  if (_publicas.contains(ubicacion)) return _inicio(sesion.rol);
+  return ubicacion.startsWith(_prefijo(sesion.rol))
+      ? null
+      : _inicio(sesion.rol);
+}
+
+final routerProvider = Provider<GoRouter>((ref) {
+  final refresh = ValueNotifier<int>(0);
+  ref.listen(sesionProvider, (_, _) => refresh.value++);
+  ref.onDispose(refresh.dispose);
+
+  return GoRouter(
+    initialLocation: '/splash',
+    refreshListenable: refresh,
+    redirect: (context, state) =>
+        redirigir(ref.read(sesionProvider), state.uri.path),
+    routes: [
+      GoRoute(path: '/splash', builder: (_, _) => const SplashScreen()),
+      GoRoute(path: '/onboarding', builder: (_, _) => const OnboardingScreen()),
+      GoRoute(path: '/inicio', builder: (_, _) => const HomeScreen()),
+      GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
+      GoRoute(path: '/registro', builder: (_, _) => const RegistroScreen()),
+      GoRoute(
+        path: '/registro/conductor',
+        builder: (_, _) => const RegistroConductorScreen(),
+      ),
+      GoRoute(path: '/p/viaje', builder: (_, _) => const ViajeEnCursoScreen()),
+      GoRoute(
+        path: '/p/calificar',
+        builder: (_, _) => const CalificacionScreen(),
+      ),
+      GoRoute(path: '/p/niveles', builder: (_, _) => const NivelesScreen()),
+      StatefulShellRoute.indexedStack(
+        builder: (_, _, shell) => _Shell(shell: shell, rol: Rol.pasajero),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/p/inicio',
+                builder: (_, _) => const InicioPasajeroScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/p/viajes',
+                builder: (_, _) => const HistorialPasajeroScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/p/pedir',
+                // El destino ya elegido en "Tu ruta" llega como `extra`.
+                builder: (_, state) => SolicitarViajeScreen(
+                  destinoInicial: state.extra is Lugar
+                      ? state.extra! as Lugar
+                      : null,
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/p/perfil',
+                builder: (_, _) => const PerfilScreen(),
+              ),
+            ],
+          ),
+        ],
+      ),
+      StatefulShellRoute.indexedStack(
+        builder: (_, _, shell) => _Shell(shell: shell, rol: Rol.conductor),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/c/inicio',
+                builder: (_, _) => const InicioConductorScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/c/ganancias',
+                builder: (_, _) => const GananciasScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/c/niveles',
+                builder: (_, _) => const NivelesScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/c/perfil',
+                builder: (_, _) => const PerfilScreen(),
+              ),
+            ],
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/a/satisfaccion/factores',
+        builder: (_, _) => const FactoresScreen(),
+      ),
+      GoRoute(
+        path: '/a/satisfaccion/riesgo',
+        builder: (_, _) => const RiesgoScreen(),
+      ),
+      GoRoute(
+        path: '/a/satisfaccion/modelo',
+        builder: (_, _) => const ModeloScreen(),
+      ),
+      GoRoute(
+        path: '/a/satisfaccion/entrenamiento/:id',
+        builder: (_, state) =>
+            EntrenandoScreen(id: state.pathParameters['id']!),
+      ),
+      StatefulShellRoute.indexedStack(
+        builder: (_, _, shell) => AdminShell(shell: shell),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/a/inicio',
+                builder: (_, _) =>
+                    const AdminProximamenteScreen(seccion: SeccionAdmin.inicio),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/a/satisfaccion',
+                builder: (_, _) => const ResumenScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/a/conductores',
+                builder: (_, _) => const AdminProximamenteScreen(
+                  seccion: SeccionAdmin.conductores,
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/a/perfil',
+                builder: (_, _) => const AdminPerfilScreen(),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ],
+  );
+});
+
+class _Shell extends StatelessWidget {
+  const _Shell({required this.shell, required this.rol});
+  final StatefulNavigationShell shell;
+  final Rol rol;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final destinos = rol == Rol.pasajero
+        ? [
+            (Icons.home_outlined, Icons.home, l.navInicio),
+            (Icons.history, Icons.history, l.historialCorto),
+            (Icons.two_wheeler_outlined, Icons.two_wheeler, l.pedirViaje),
+            (Icons.person_outline, Icons.person, l.navPerfil),
+          ]
+        : [
+            (Icons.two_wheeler_outlined, Icons.two_wheeler, l.navSolicitudes),
+            (Icons.payments_outlined, Icons.payments, l.navGanancias),
+            (Icons.military_tech_outlined, Icons.military_tech, l.navNiveles),
+            (Icons.person_outline, Icons.person, l.navPerfil),
+          ];
+    return CelebracionListener(
+      child: Scaffold(
+        body: shell,
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: shell.currentIndex,
+          onDestinationSelected: (i) =>
+              shell.goBranch(i, initialLocation: i == shell.currentIndex),
+          destinations: [
+            for (final d in destinos)
+              NavigationDestination(
+                icon: Icon(d.$1),
+                selectedIcon: Icon(d.$2),
+                label: d.$3,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}

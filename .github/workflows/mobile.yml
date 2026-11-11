@@ -1,0 +1,61 @@
+# CI de la app Flutter (carpeta mobile/): genera textos, revisa formato, analiza y corre pruebas.
+# No firma ni distribuye nada (eso sigue en tool/distribuir.ps1) y no usa secretos.
+name: Mobile
+
+on:
+  push:
+    branches:
+      - app
+      - 'feature/flutter-**'
+    paths:
+      - 'mobile/**'
+      - '.github/workflows/mobile.yml'
+  pull_request:
+    paths:
+      - 'mobile/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  flutter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Versión de Flutter
+        run: flutter --version
+
+      - name: Dependencias
+        run: flutter pub get
+
+      # Los textos generados (lib/core/l10n/gen) y el formato se versionan. Si el
+      # código subido no coincide, el parche se imprime en el log (comprimido en
+      # base64 entre marcas) para aplicarlo con `git apply`. No se suben artefactos
+      # porque la cuota de almacenamiento de Actions es limitada.
+      - name: Textos generados y formato
+        run: |
+          flutter gen-l10n
+          dart format lib test
+          if ! git diff --quiet; then
+            echo "::warning title=Ajustes::Formato o textos generados distintos; parche en el log"
+            git diff --stat
+            echo "PARCHE-INICIO $(git diff | gzip -9 | base64 -w0) PARCHE-FIN"
+          fi
+
+      - name: Análisis
+        run: flutter analyze --no-fatal-infos
+
+      - name: Pruebas
+        # Una prueba colgada falla a los 3 min en vez de los 10 por defecto.
+        run: flutter test --reporter expanded --timeout 3m
