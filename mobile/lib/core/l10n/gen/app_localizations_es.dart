@@ -1073,15 +1073,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String get satPeriodoRango => 'Rango';
 
   @override
-  String get satDemoTitulo => 'Modo demo.';
+  String get satSinModeloTitulo => 'Sin modelo todavía.';
 
   @override
-  String get satDemoTexto =>
-      'Las predicciones usan datos sintéticos hasta tener 300 calificaciones por lado. Las cifras de satisfacción sí son reales.';
+  String get satSinModeloTexto =>
+      'Las cifras de satisfacción son reales. Los factores y los viajes en riesgo aparecen después del primer entrenamiento con viajes reales.';
 
   @override
-  String get satDemoFactores =>
-      'La importancia de los factores sale del modelo de demostración. Las curvas usan las calificaciones reales.';
+  String get satSinModeloFactores =>
+      'Aún no hay un modelo entrenado con viajes reales: entrénalo en Modelo. Las curvas usan las calificaciones reales.';
 
   @override
   String get satPasajerosSatisfechos => 'Pasajeros satisfechos';
@@ -1200,9 +1200,6 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get satDemo => 'Demo';
-
-  @override
   String satEntrenadoInfo(String fecha, String viajes, String variables) {
     return 'Entrenado el $fecha · $viajes viajes · $variables variables';
   }
@@ -1230,8 +1227,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get satEntrenarAhora => 'Entrenar ahora';
 
   @override
-  String get satEntrenarDemoNota =>
-      'Sin datos suficientes: se entrena con datos sintéticos (demo).';
+  String get satEntrenarFaltanDatos =>
+      'Se podrá entrenar cuando haya suficientes calificaciones reales.';
 
   @override
   String get satEntrenamientoEnCurso => 'Hay un entrenamiento en curso';
@@ -1280,9 +1277,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get satEstPublicado => 'Publicado';
-
-  @override
-  String get satEstPublicadoDemo => 'Publicado (demo)';
 
   @override
   String get satEstSinPublicar => 'Guardado sin publicar';
@@ -1440,7 +1434,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String satMinimoDatos(String calificaciones, String no) {
-    return 'La red necesita al menos $calificaciones calificaciones y $no \"no\" por lado. Mientras tanto se muestran las cifras reales y el modelo de demostración.';
+    return 'La red necesita al menos $calificaciones calificaciones y $no \"no\" por lado. Mientras tanto se muestran las cifras reales de satisfacción.';
   }
 
   @override

@@ -25,6 +25,7 @@ List<Json> _lista(Object? v) => [
     if (e is Map<Object?, Object?>) Map<String, dynamic>.from(e),
 ];
 DateTime? _fecha(Object? v) => v is String ? DateTime.tryParse(v) : null;
+
 /// Sin modelo entrenado con viajes reales todavía (`modo` distinto de `real`).
 bool _sinModelo(Object? v) => v != 'real';
 

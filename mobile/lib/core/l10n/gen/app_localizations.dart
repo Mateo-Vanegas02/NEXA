@@ -2086,23 +2086,23 @@ abstract class AppLocalizations {
   /// **'Rango'**
   String get satPeriodoRango;
 
-  /// No description provided for @satDemoTitulo.
+  /// No description provided for @satSinModeloTitulo.
   ///
   /// In es, this message translates to:
-  /// **'Modo demo.'**
-  String get satDemoTitulo;
+  /// **'Sin modelo todavía.'**
+  String get satSinModeloTitulo;
 
-  /// No description provided for @satDemoTexto.
+  /// No description provided for @satSinModeloTexto.
   ///
   /// In es, this message translates to:
-  /// **'Las predicciones usan datos sintéticos hasta tener 300 calificaciones por lado. Las cifras de satisfacción sí son reales.'**
-  String get satDemoTexto;
+  /// **'Las cifras de satisfacción son reales. Los factores y los viajes en riesgo aparecen después del primer entrenamiento con viajes reales.'**
+  String get satSinModeloTexto;
 
-  /// No description provided for @satDemoFactores.
+  /// No description provided for @satSinModeloFactores.
   ///
   /// In es, this message translates to:
-  /// **'La importancia de los factores sale del modelo de demostración. Las curvas usan las calificaciones reales.'**
-  String get satDemoFactores;
+  /// **'Aún no hay un modelo entrenado con viajes reales: entrénalo en Modelo. Las curvas usan las calificaciones reales.'**
+  String get satSinModeloFactores;
 
   /// No description provided for @satPasajerosSatisfechos.
   ///
@@ -2290,12 +2290,6 @@ abstract class AppLocalizations {
   /// **'Versión {version} · TensorFlow'**
   String satVersionTitulo(String version);
 
-  /// No description provided for @satDemo.
-  ///
-  /// In es, this message translates to:
-  /// **'Demo'**
-  String get satDemo;
-
   /// No description provided for @satEntrenadoInfo.
   ///
   /// In es, this message translates to:
@@ -2344,11 +2338,11 @@ abstract class AppLocalizations {
   /// **'Entrenar ahora'**
   String get satEntrenarAhora;
 
-  /// No description provided for @satEntrenarDemoNota.
+  /// No description provided for @satEntrenarFaltanDatos.
   ///
   /// In es, this message translates to:
-  /// **'Sin datos suficientes: se entrena con datos sintéticos (demo).'**
-  String get satEntrenarDemoNota;
+  /// **'Se podrá entrenar cuando haya suficientes calificaciones reales.'**
+  String get satEntrenarFaltanDatos;
 
   /// No description provided for @satEntrenamientoEnCurso.
   ///
@@ -2427,12 +2421,6 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Publicado'**
   String get satEstPublicado;
-
-  /// No description provided for @satEstPublicadoDemo.
-  ///
-  /// In es, this message translates to:
-  /// **'Publicado (demo)'**
-  String get satEstPublicadoDemo;
 
   /// No description provided for @satEstSinPublicar.
   ///
@@ -2731,7 +2719,7 @@ abstract class AppLocalizations {
   /// No description provided for @satMinimoDatos.
   ///
   /// In es, this message translates to:
-  /// **'La red necesita al menos {calificaciones} calificaciones y {no} \"no\" por lado. Mientras tanto se muestran las cifras reales y el modelo de demostración.'**
+  /// **'La red necesita al menos {calificaciones} calificaciones y {no} \"no\" por lado. Mientras tanto se muestran las cifras reales de satisfacción.'**
   String satMinimoDatos(String calificaciones, String no);
 
   /// No description provided for @satProgresoDatos.

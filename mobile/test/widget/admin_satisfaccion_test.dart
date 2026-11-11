@@ -23,10 +23,9 @@ class _MockSinModelo extends MockSatisfaccionRepository {
   _MockSinModelo() : super(reloj: () => _hoy, retardo: Duration.zero);
 
   @override
-  Future<ModeloInfo> modelo() async =>
-      ModeloInfo.fromJson(
-        FixturesSatisfaccion.modelo(version: null, datosSuficientes: false),
-      );
+  Future<ModeloInfo> modelo() async => ModeloInfo.fromJson(
+    FixturesSatisfaccion.modelo(version: null, datosSuficientes: false),
+  );
 }
 
 List<Override> _overrides({MockSatisfaccionRepository? repo}) => [
@@ -107,7 +106,8 @@ void main() {
     expect(find.text('Entrenar ahora'), findsOneWidget);
     expect(find.text('Domingos · 02:00'), findsOneWidget);
     await t.scrollUntilVisible(find.text('Historial'), 200);
-    expect(find.text('Publicado'), findsOneWidget);
+    expect(find.text('Publicado'), findsWidgets);
+    expect(find.text('Publicado (demo)'), findsNothing);
     expect(find.text('Faltan datos'), findsOneWidget);
   });
 

@@ -132,7 +132,9 @@ class _Contenido extends ConsumerWidget {
           NexaButton(
             label: l.satEntrenarAhora,
             icon: Icons.play_arrow_rounded,
-            onPressed: m.datos.suficientes ? () => _entrenar(context, ref) : null,
+            onPressed: m.datos.suficientes
+                ? () => _entrenar(context, ref)
+                : null,
           ),
           if (!m.datos.suficientes) ...[
             const SizedBox(height: Sp.sm),
@@ -361,10 +363,7 @@ Future<void> _guardar(
 ) {
   final l = AppLocalizations.of(context);
   return switch (r.estado) {
-    EstadoEntrenamiento.publicado => (
-      l.satEstPublicado,
-      colorOk(context),
-    ),
+    EstadoEntrenamiento.publicado => (l.satEstPublicado, colorOk(context)),
     EstadoEntrenamiento.guardadoSinPublicar => (
       l.satEstSinPublicar,
       colorAviso(context),

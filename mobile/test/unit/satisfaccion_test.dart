@@ -23,9 +23,8 @@ class _SinDatos extends MockSatisfaccionRepository {
   _SinDatos() : super(retardo: Duration.zero);
 
   @override
-  Future<ModeloInfo> modelo() async => ModeloInfo.fromJson(
-    FixturesSatisfaccion.modelo(datosSuficientes: false),
-  );
+  Future<ModeloInfo> modelo() async =>
+      ModeloInfo.fromJson(FixturesSatisfaccion.modelo(datosSuficientes: false));
 }
 
 MockSatisfaccionRepository _mock() =>
@@ -382,15 +381,18 @@ void main() {
       expect(m.historial.first.estado, EstadoEntrenamiento.publicado);
     });
 
-    test('sin datos suficientes no entrena (422), nunca con sintéticos', () async {
-      final repo = _SinDatos();
-      final c = _contenedor(repo: repo);
-      await c.read(modeloProvider.future);
-      await expectLater(
-        c.read(modeloProvider.notifier).entrenar(),
-        throwsA(isA<AppException>().having((e) => e.statusCode, 's', 422)),
-      );
-    });
+    test(
+      'sin datos suficientes no entrena (422), nunca con sintéticos',
+      () async {
+        final repo = _SinDatos();
+        final c = _contenedor(repo: repo);
+        await c.read(modeloProvider.future);
+        await expectLater(
+          c.read(modeloProvider.notifier).entrenar(),
+          throwsA(isA<AppException>().having((e) => e.statusCode, 's', 422)),
+        );
+      },
+    );
 
     test('cancelar detiene el entrenamiento', () async {
       final c = _contenedor();
