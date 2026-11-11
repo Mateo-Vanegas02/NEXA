@@ -64,8 +64,12 @@ jobs:
           print(f"::notice title=Tests::run={t} failures={f} errors={e} skipped={sk}")
           PY
 
+      # Los reportes solo se suben si fallaron pruebas y la subida nunca tumba el CI: la cuota de
+      # almacenamiento de artefactos del plan gratuito (500 MB acumulados por mes) se agota rápido.
+      # Los totales y los fallos ya quedan en el resumen y en las anotaciones del run.
       - name: Subir reportes de tests
-        if: always()
+        if: failure()
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: surefire-reports
