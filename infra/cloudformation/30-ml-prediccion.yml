@@ -1,0 +1,154 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  NEXA - fase 3. Lambda mediadora nexa-satisfaccion: la API del panel de satisfaccion del admin
+  (contrato v0.2). Valida el JWT de admin, lee Atlas (solo lectura), S3 y DynamoDB, y lanza la
+  entrenadora. Su URL de funcion es publica, pero cada ruta exige un JWT de ADMIN.
+  El codigo (mediadora.zip) se sube antes al bucket nexa-ml-<cuenta>, carpeta codigo/.
+
+Parameters:
+  ClaveCodigo:
+    Type: String
+    Default: codigo/mediadora.zip
+    Description: Ruta del zip dentro del bucket nexa-ml-<cuenta>
+  VersionCodigo:
+    Type: String
+    Default: '1'
+    Description: Cambiala (2, 3, ...) cada vez que subas un zip nuevo para que la Lambda lo tome
+
+Resources:
+  Registros:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/nexa-satisfaccion
+      RetentionInDays: 14
+
+  RolMediadora:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: nexa-satisfaccion
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - { Effect: Allow, Principal: { Service: lambda.amazonaws.com }, Action: sts:AssumeRole }
+      ManagedPolicyArns: [arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole]
+      Policies:
+        - PolicyName: panel-satisfaccion
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: Secretos
+                Effect: Allow
+                Action: ssm:GetParameter
+                Resource:
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nexa/prod/JWT_SECRET
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nexa/ml/MONGODB_URI
+              - Sid: LeerModelos
+                Effect: Allow
+                Action: s3:GetObject
+                Resource: !Sub arn:aws:s3:::nexa-ml-${AWS::AccountId}/modelos/*
+              - Sid: SaberSiHayModelo     # sin esto, un archivo que no existe da 403 en vez de 404
+                Effect: Allow
+                Action: s3:ListBucket
+                Resource: !Sub arn:aws:s3:::nexa-ml-${AWS::AccountId}
+                Condition: { StringLike: { 's3:prefix': ['modelos/*'] } }
+              - Sid: Entrenamientos
+                Effect: Allow
+                Action: [dynamodb:GetItem, dynamodb:PutItem, dynamodb:UpdateItem, dynamodb:Scan]
+                Resource: !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/nexa-entrenamientos
+              - Sid: LanzarEntrenadora
+                Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:nexa-entrenamiento
+              - Sid: Programar
+                Effect: Allow
+                Action: [scheduler:CreateSchedule, scheduler:UpdateSchedule, scheduler:GetSchedule]
+                Resource: !Sub arn:aws:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/default/nexa-entrenamiento
+              - Sid: PasarRolAlProgramador
+                Effect: Allow
+                Action: iam:PassRole
+                Resource: !GetAtt RolProgramador.Arn
+      Tags:
+        - { Key: proyecto, Value: nexa }
+
+  RolProgramador:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: nexa-programador-entrenamiento
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: scheduler.amazonaws.com }
+            Action: sts:AssumeRole
+            Condition: { StringEquals: { 'aws:SourceAccount': !Ref AWS::AccountId } }
+      Policies:
+        - PolicyName: invocar-mediadora
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:nexa-satisfaccion
+      Tags:
+        - { Key: proyecto, Value: nexa }
+
+  Mediadora:
+    Type: AWS::Lambda::Function
+    DependsOn: Registros
+    Properties:
+      FunctionName: nexa-satisfaccion
+      Description: !Sub API del panel de satisfaccion (codigo v${VersionCodigo})
+      Runtime: python3.13
+      Architectures: [x86_64]
+      Handler: mediadora.lambda_handler
+      MemorySize: 1024
+      Timeout: 30
+      Role: !GetAtt RolMediadora.Arn
+      Code:
+        S3Bucket: !Sub nexa-ml-${AWS::AccountId}
+        S3Key: !Ref ClaveCodigo
+      Environment:
+        Variables:
+          BUCKET: !Sub nexa-ml-${AWS::AccountId}
+          TABLA: nexa-entrenamientos
+          PARAM_JWT: /nexa/prod/JWT_SECRET
+          PARAM_MONGO: /nexa/ml/MONGODB_URI
+          MONGO_BASE: motvirsweb
+          ENTRENADORA: nexa-entrenamiento
+          ROL_PROGRAMADOR: !GetAtt RolProgramador.Arn
+          MI_ARN: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:nexa-satisfaccion
+          VERSION_CODIGO: !Ref VersionCodigo
+      Tags:
+        - { Key: proyecto, Value: nexa }
+
+  Url:
+    Type: AWS::Lambda::Url
+    Properties:
+      TargetFunctionArn: !GetAtt Mediadora.Arn
+      AuthType: NONE        # la seguridad la pone el JWT de admin dentro de la funcion
+      Cors:
+        AllowOrigins: ['*']
+        AllowMethods: [GET, POST, PUT, DELETE]
+        AllowHeaders: [authorization, content-type]
+        MaxAge: 600
+
+  PermisoUrl:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref Mediadora
+      Action: lambda:InvokeFunctionUrl
+      Principal: '*'
+      FunctionUrlAuthType: NONE
+
+  PermisoInvocarPorUrl:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref Mediadora
+      Action: lambda:InvokeFunction
+      Principal: '*'
+      InvokedViaFunctionUrl: true   # solo a traves de la URL, no con la API de Lambda
+
+Outputs:
+  UrlSatisfaccion:
+    Description: Para la app (SATISFACCION_URL), sin la barra final
+    Value: !GetAtt Url.FunctionUrl
