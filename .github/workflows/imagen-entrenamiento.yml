@@ -40,6 +40,9 @@ jobs:
 
       - name: Construir y subir la imagen
         uses: docker/build-push-action@v6
+        env:
+          DOCKER_BUILD_SUMMARY: false        # sin resumen ni registro como artefacto:
+          DOCKER_BUILD_RECORD_UPLOAD: false  # la cuota de artefactos del plan gratuito es limitada
         with:
           context: ml
           file: ml/Dockerfile.entrenamiento
