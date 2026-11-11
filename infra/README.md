@@ -10,13 +10,23 @@ Plantillas de CloudFormation, una pila por fase. Se cargan desde la consola
 | `nexa-00-cuenta` | `cloudformation/00-cuenta.yml` | Usuario IAM `nexa-github-deploy` con permisos mínimos para desplegar | creada (10 nov.) |
 | `nexa-10-web` | `cloudformation/10-web.yml` | EC2 t3.small (Amazon Linux 2023, Docker, 2 GB de swap), IP fija, security group 80/443, rol del servidor y repositorio ECR `nexa-backend` | creada (10 nov.): IP `18.227.59.40`, web desplegada en `https://18-227-59-40.sslip.io` (11 nov.) |
 | `nexa-20-ml-datos` | `cloudformation/20-ml-datos.yml` | Bucket S3 privado `nexa-ml-<cuenta>` (exportaciones, modelos) y tabla DynamoDB `nexa-entrenamientos` | creada (11 nov.) |
-| `nexa-30-ml-prediccion` | `cloudformation/30-ml-prediccion.yml` | Lambda mediadora `nexa-satisfaccion` + URL de función, su rol y el rol de EventBridge Scheduler | por crear (antes: subir `mediadora.zip` a `codigo/`) |
+| `nexa-30-ml-prediccion` | `cloudformation/30-ml-prediccion.yml` | Lambda mediadora `nexa-satisfaccion` + URL de función, su rol y el rol de EventBridge Scheduler | creada (11 nov.); actualizar con `VersionCodigo=2` y `mediadora.zip` v2 después de crear `nexa-40` |
+| `nexa-40-ml-entrenamiento` | `cloudformation/40-ml-entrenamiento.yml` | ECR `nexa-entrenamiento`, cluster ECS `nexa`, tarea Fargate (1 vCPU, 4 GB) con sus roles, logs (14 días) y security group solo de salida | por crear |
 
 Hecho a mano en la consola: presupuesto `nexa-mensual` (USD 30, alertas por correo) y los parámetros de
 Parameter Store `/nexa/prod/*` (web) y `/nexa/ml/MONGODB_URI` (entrenamiento), cargados por el dueño de la cuenta.
 
 Sin dominio propio todavía: la web se prueba en `https://<ip-con-guiones>.sslip.io` (salida `DireccionPrueba`
 de `nexa-10-web`). Route 53 Domains no está disponible en cuentas Free Tier; el dominio se compra afuera.
+
+## Entrenamiento con viajes reales (Fargate)
+TensorFlow no cabe en una Lambda de 512 MB: la mediadora lanza con `ecs:RunTask` la tarea `nexa-entrenamiento`
+(IP pública en las subredes por defecto, sin NAT) y la tarea solo existe mientras entrena (unos minutos). Orden:
+1. Actualizar `nexa-00-cuenta` (el usuario de GitHub puede subir también a `nexa-entrenamiento`).
+2. Crear `nexa-40-ml-entrenamiento` (exporta cluster, tarea, subredes, security group y roles).
+3. Rama `app`: Actions → Imagen entrenamiento → Run workflow (sube `:latest` a ECR).
+4. Subir `mediadora.zip` v2 a `s3://nexa-ml-<cuenta>/codigo/` y actualizar `nexa-30-ml-prediccion` con `VersionCodigo=2`
+   (ya importa los valores de `nexa-40`, por eso va después).
 
 ## Por qué un usuario IAM y no OIDC
 La cuenta pertenece a una organización cuya SCP niega todas las operaciones sobre proveedores

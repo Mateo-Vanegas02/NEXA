@@ -36,7 +36,9 @@ Resources:
               - ecr:UploadLayerPart
               - ecr:CompleteLayerUpload
               - ecr:PutImage
-            Resource: !Sub arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/nexa-backend
+            Resource:
+              - !Sub arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/nexa-backend
+              - !Sub arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/nexa-entrenamiento
           - Sid: BuscarServidor
             Effect: Allow
             Action: ec2:DescribeInstances

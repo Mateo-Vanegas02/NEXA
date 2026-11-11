@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: >
   NEXA - fase 3. Lambda mediadora nexa-satisfaccion: la API del panel de satisfaccion del admin
   (contrato v0.2). Valida el JWT de admin, lee Atlas (solo lectura), S3 y DynamoDB, y lanza la
-  entrenadora. Su URL de funcion es publica, pero cada ruta exige un JWT de ADMIN.
+  entrenadora (tarea de Fargate de la pila nexa-40, que se crea antes). Su URL de funcion es publica, pero cada ruta exige un JWT de ADMIN.
   El codigo (mediadora.zip) se sube antes al bucket nexa-ml-<cuenta>, carpeta codigo/.
 
 Parameters:
@@ -12,7 +12,7 @@ Parameters:
     Description: Ruta del zip dentro del bucket nexa-ml-<cuenta>
   VersionCodigo:
     Type: String
-    Default: '1'
+    Default: '2'
     Description: Cambiala (2, 3, ...) cada vez que subas un zip nuevo para que la Lambda lo tome
 
 Resources:
@@ -55,10 +55,19 @@ Resources:
                 Effect: Allow
                 Action: [dynamodb:GetItem, dynamodb:PutItem, dynamodb:UpdateItem, dynamodb:Scan]
                 Resource: !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/nexa-entrenamientos
-              - Sid: LanzarEntrenadora
+              - Sid: LanzarEntrenamiento    # tarea de Fargate de la pila nexa-40-ml-entrenamiento
                 Effect: Allow
-                Action: lambda:InvokeFunction
-                Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:nexa-entrenamiento
+                Action: ecs:RunTask
+                Resource: !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/nexa-entrenamiento:*
+                Condition:
+                  ArnEquals: { 'ecs:cluster': !Sub 'arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/nexa' }
+              - Sid: PasarRolesDeLaTarea
+                Effect: Allow
+                Action: iam:PassRole
+                Resource:
+                  - !ImportValue nexa-entrenamiento-rol-tarea
+                  - !ImportValue nexa-entrenamiento-rol-ejecucion
+                Condition: { StringEquals: { 'iam:PassedToService': ecs-tasks.amazonaws.com } }
               - Sid: Programar
                 Effect: Allow
                 Action: [scheduler:CreateSchedule, scheduler:UpdateSchedule, scheduler:GetSchedule]
@@ -114,7 +123,10 @@ Resources:
           PARAM_JWT: /nexa/prod/JWT_SECRET
           PARAM_MONGO: /nexa/ml/MONGODB_URI
           MONGO_BASE: motvirsweb
-          ENTRENADORA: nexa-entrenamiento
+          CLUSTER: !ImportValue nexa-entrenamiento-cluster
+          TAREA: !ImportValue nexa-entrenamiento-tarea
+          SUBREDES: !ImportValue nexa-entrenamiento-subredes
+          GRUPO_SEGURIDAD: !ImportValue nexa-entrenamiento-sg
           ROL_PROGRAMADOR: !GetAtt RolProgramador.Arn
           MI_ARN: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:nexa-satisfaccion
           VERSION_CODIGO: !Ref VersionCodigo

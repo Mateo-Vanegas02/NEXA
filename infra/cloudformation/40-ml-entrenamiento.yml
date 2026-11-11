@@ -1,0 +1,150 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  NEXA - fase 4. Entrenamiento del modelo de satisfaccion con viajes reales: tarea de ECS Fargate
+  bajo demanda (TensorFlow no cabe en una Lambda de 512 MB). La lanza la Lambda mediadora; lee
+  Atlas con el usuario de solo lectura y publica en S3. Solo cuesta mientras entrena.
+
+Parameters:
+  Vpc:
+    Type: AWS::EC2::VPC::Id
+    Default: vpc-0686eb30ebd496e78
+    Description: VPC por defecto de us-east-2
+  Subredes:
+    Type: CommaDelimitedList
+    Default: subnet-0e62a27af28779b5e,subnet-05387030d458e7039,subnet-0fd326eb40bd49df7
+    Description: Subredes publicas por defecto (la tarea sale a internet con IP publica, sin NAT)
+
+Resources:
+  RepoEntrenamiento:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: nexa-entrenamiento
+      ImageScanningConfiguration: { ScanOnPush: true }
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {"rules":[{"rulePriority":1,"description":"solo las 5 ultimas",
+            "selection":{"tagStatus":"any","countType":"imageCountMoreThan","countNumber":5},
+            "action":{"type":"expire"}}]}
+      Tags:
+        - { Key: proyecto, Value: nexa }
+
+  Cluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: nexa
+      CapacityProviders: [FARGATE]
+      Tags:
+        - { Key: proyecto, Value: nexa }
+
+  Registros:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs/nexa-entrenamiento
+      RetentionInDays: 14
+
+  GrupoSeguridad:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: nexa-entrenamiento
+      GroupDescription: Tarea de entrenamiento - sin entradas, solo salidas (Atlas, S3, DynamoDB)
+      VpcId: !Ref Vpc
+      Tags:
+        - { Key: proyecto, Value: nexa }
+
+  RolEjecucion:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: nexa-entrenamiento-ejecucion
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - { Effect: Allow, Principal: { Service: ecs-tasks.amazonaws.com }, Action: sts:AssumeRole }
+      ManagedPolicyArns: [arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy]
+
+  RolTarea:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: nexa-entrenamiento-tarea
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: ecs-tasks.amazonaws.com }
+            Action: sts:AssumeRole
+            Condition: { StringEquals: { 'aws:SourceAccount': !Ref AWS::AccountId } }
+      Policies:
+        - PolicyName: entrenar-y-publicar
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: UsuarioSoloLecturaDeAtlas
+                Effect: Allow
+                Action: ssm:GetParameter
+                Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nexa/ml/MONGODB_URI
+              - Sid: Modelos
+                Effect: Allow
+                Action: [s3:GetObject, s3:PutObject]
+                Resource: !Sub arn:aws:s3:::nexa-ml-${AWS::AccountId}/modelos/*
+              - Sid: SaberSiHayModelo
+                Effect: Allow
+                Action: s3:ListBucket
+                Resource: !Sub arn:aws:s3:::nexa-ml-${AWS::AccountId}
+                Condition: { StringLike: { 's3:prefix': ['modelos/*'] } }
+              - Sid: Progreso
+                Effect: Allow
+                Action: [dynamodb:GetItem, dynamodb:PutItem, dynamodb:Scan]
+                Resource: !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/nexa-entrenamientos
+      Tags:
+        - { Key: proyecto, Value: nexa }
+
+  Tarea:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: nexa-entrenamiento
+      RequiresCompatibilities: [FARGATE]
+      NetworkMode: awsvpc
+      Cpu: '1024'        # 1 vCPU
+      Memory: '4096'     # 4 GB: TensorFlow + los viajes en memoria
+      RuntimePlatform: { CpuArchitecture: X86_64, OperatingSystemFamily: LINUX }
+      ExecutionRoleArn: !GetAtt RolEjecucion.Arn
+      TaskRoleArn: !GetAtt RolTarea.Arn
+      ContainerDefinitions:
+        - Name: entrenamiento
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/nexa-entrenamiento:latest
+          Essential: true
+          Environment:
+            - { Name: BUCKET, Value: !Sub 'nexa-ml-${AWS::AccountId}' }
+            - { Name: TABLA, Value: nexa-entrenamientos }
+            - { Name: PARAM_MONGO, Value: /nexa/ml/MONGODB_URI }
+            - { Name: MONGO_BASE, Value: motvirsweb }
+            - { Name: AWS_DEFAULT_REGION, Value: !Ref AWS::Region }
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref Registros
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: entrenamiento
+      Tags:
+        - { Key: proyecto, Value: nexa }
+
+Outputs:
+  Cluster:
+    Value: !Ref Cluster
+    Export: { Name: nexa-entrenamiento-cluster }
+  Tarea:
+    Value: nexa-entrenamiento
+    Export: { Name: nexa-entrenamiento-tarea }
+  Subredes:
+    Value: !Join [',', !Ref Subredes]
+    Export: { Name: nexa-entrenamiento-subredes }
+  GrupoSeguridad:
+    Value: !GetAtt GrupoSeguridad.GroupId
+    Export: { Name: nexa-entrenamiento-sg }
+  RolTarea:
+    Value: !GetAtt RolTarea.Arn
+    Export: { Name: nexa-entrenamiento-rol-tarea }
+  RolEjecucion:
+    Value: !GetAtt RolEjecucion.Arn
+    Export: { Name: nexa-entrenamiento-rol-ejecucion }
+  RepositorioImagen:
+    Value: !GetAtt RepoEntrenamiento.RepositoryUri
