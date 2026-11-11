@@ -1,0 +1,65 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  NEXA - fase 0. Identidad con la que GitHub Actions despliega la web en AWS.
+  La organizacion de la cuenta bloquea los proveedores OIDC (SCP), asi que se usa un usuario IAM
+  sin consola y con lo minimo: subir la imagen a ECR y pedirle al servidor que se actualice.
+  Las claves de acceso NO se crean aqui: se generan en la consola y se guardan solo en los
+  secretos del repositorio de GitHub.
+
+Resources:
+  UsuarioDespliegue:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: nexa-github-deploy
+      Tags:
+        - { Key: proyecto, Value: nexa }
+
+  PoliticaDespliegue:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: nexa-github-deploy
+      Description: Subir la imagen de la web a ECR y actualizar el servidor de NEXA por SSM.
+      Users: [!Ref UsuarioDespliegue]
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: EntrarAEcr
+            Effect: Allow
+            Action: ecr:GetAuthorizationToken
+            Resource: '*'
+          - Sid: SubirImagenWeb
+            Effect: Allow
+            Action:
+              - ecr:BatchCheckLayerAvailability
+              - ecr:BatchGetImage
+              - ecr:InitiateLayerUpload
+              - ecr:UploadLayerPart
+              - ecr:CompleteLayerUpload
+              - ecr:PutImage
+            Resource: !Sub arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/nexa-backend
+          - Sid: BuscarServidor
+            Effect: Allow
+            Action: ec2:DescribeInstances
+            Resource: '*'
+          - Sid: ComandoSoloAlServidorDeNexa
+            Effect: Allow
+            Action: ssm:SendCommand
+            Resource: !Sub arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:instance/*
+            Condition:
+              StringEquals:
+                aws:ResourceTag/Name: nexa-servidor
+          - Sid: SoloElDocumentoDeShell
+            Effect: Allow
+            Action: ssm:SendCommand
+            Resource: !Sub arn:aws:ssm:${AWS::Region}::document/AWS-RunShellScript
+          - Sid: VerResultadoDelComando
+            Effect: Allow
+            Action:
+              - ssm:GetCommandInvocation
+              - ssm:ListCommandInvocations
+            Resource: '*'
+
+Outputs:
+  Usuario:
+    Description: Usuario al que se le crean las claves para GitHub
+    Value: !Ref UsuarioDespliegue
