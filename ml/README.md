@@ -120,7 +120,7 @@ solo existe mientras entrena (unos minutos, centavos de dólar). `python -m nexa
 PUBLICADO | GUARDADO_SIN_PUBLICAR (también DATOS_INSUFICIENTES, CANCELADO, FALLIDO). Lee Atlas con el usuario de solo
 lectura (`/nexa/ml/MONGODB_URI`), sube `modelos/vN/{modelo.tflite,metadatos.json,factores.json}` y mueve
 `modelos/actual.json`. El primer modelo real se publica siempre; los siguientes solo si su PR-AUC no empeora más de
-0,005 (salvo `PUBLICAR_SOLO_SI_MEJORA=false`). La imagen la construye a mano `.github/workflows/imagen-entrenamiento.yml`
+0,005 (salvo `PUBLICAR_SOLO_SI_MEJORA=false`). La imagen la construye a mano `.github/workflows/imagen-entrenamiento.yml` (en la rama `main`)
 (Actions → Imagen entrenamiento → Run workflow) cada vez que cambie `ml/nexa_ml/**`.
 
 **Desfase de 5 h:** los viajes guardados en Azure antes del arreglo de zona horaria tienen `solicitadoEn` 5 h antes;

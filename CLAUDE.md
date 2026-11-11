@@ -29,7 +29,7 @@ pytest
 ```
 - Solo datos reales: el generador de viajes falsos está en `ml/tests/` y solo lo usan las pruebas.
 - En AWS: la Lambda `nexa-satisfaccion` (`lambda_fn/mediadora.py`) atiende el panel y lanza la entrenadora en ECS
-  Fargate (`nexa_ml/entrenadora.py`, imagen `ml/Dockerfile.entrenamiento` → ECR por `imagen-entrenamiento.yml`).
+  Fargate (`nexa_ml/entrenadora.py`, imagen `ml/Dockerfile.entrenamiento` → ECR por `imagen-entrenamiento.yml` de la rama `main`).
 - La URI de Mongo va por variable de entorno (`NEXA_MONGO_URI`) y la base es `motvirsweb` (`--base motvirsweb`).
 - Nunca una calificación como variable de entrada.
 
