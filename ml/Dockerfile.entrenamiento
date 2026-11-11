@@ -7,6 +7,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     TF_CPP_MIN_LOG_LEVEL=2 \
     PIP_NO_CACHE_DIR=1
 
+# Parches de seguridad de Debian disponibles al construir (el análisis de ECR marca glibc y zlib de la base).
+RUN apt-get update \
+    && apt-get upgrade -y --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY requirements-entrenamiento.txt .
 RUN pip install --no-cache-dir -r requirements-entrenamiento.txt
