@@ -7,7 +7,7 @@ Cambios de la v0.2 (9 nov. 2026):
 - La app pide `/riesgo?lado=todos&limite=50` y filtra por lado en el teléfono.
 
 ## Generalidades
-- Base: Function URL de la Lambda (us-east-2). La app la recibe con `--dart-define=SATISFACCION_URL=https://...` (`Env.satisfaccionUrl`). Sin ella el panel muestra "no configurado".
+- Base: Function URL de la Lambda (us-east-2). La app la trae por defecto (`Env.satisfaccionUrlAws`) y `--dart-define=SATISFACCION_URL=https://...` la cambia (`Env.satisfaccionUrl`). Con una URL vacía el panel muestra "no configurado".
 - Autenticación: `Authorization: Bearer <JWT de NEXA>`. La Lambda valida firma (HS256, mismo `JWT_SECRET` del backend, leído de Parameter Store), expiración y que el rol sea `ADMIN`. 401 sin token o vencido (la app cierra la sesión); 403 si no es admin.
 - JSON en camelCase, fechas ISO 8601 con zona (`2026-11-08T02:14:00-05:00`), porcentajes de 0 a 100 con un decimal, probabilidades de 0 a 1.
 - `modo`: `"demo"` (modelo entrenado con datos sintéticos) o `"real"`. La satisfacción observada (`satisfechosPct`, `tasaRespuestaPct`) siempre es real; `modo` solo afecta a predicciones y factores.

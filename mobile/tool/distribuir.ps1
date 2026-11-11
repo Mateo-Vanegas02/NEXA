@@ -17,7 +17,7 @@ param(
   [string]$Grupos = 'testers',
   [string]$Testers = '',
   [bool]$UsarMocks = $false,
-  [string]$ApiBaseUrl = 'https://nexa-ece5b3dbfecvf3cq.eastus2-01.azurewebsites.net',
+  [string]$ApiBaseUrl = 'https://18-227-59-40.sslip.io',   # web de NEXA en AWS (ver lib/core/config/env.dart)
   [switch]$SoloCompilar,
   [switch]$SinSubirVersion
 )

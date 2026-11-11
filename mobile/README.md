@@ -12,7 +12,7 @@ App móvil (Flutter) de NEXA para los roles **pasajero** y **conductor**. El adm
 ## 2. Cómo correrlo
 Requisitos: Flutter estable (probado con 3.47) y un emulador/dispositivo Android o iOS.
 
-Por defecto la app habla con el **backend real**: en debug con el backend local (`http://10.0.2.2:8080` en el emulador de Android) y en `release` con producción (HTTPS). No hace falta ningún `--dart-define` salvo para cambiar eso.
+Por defecto la app habla con el **despliegue de AWS** (debug y release): la web en `https://18-227-59-40.sslip.io` y el panel de satisfacción en la Lambda `nexa-satisfaccion`. No hace falta ningún `--dart-define`; para el backend local usa `--dart-define=API_BASE_URL=http://10.0.2.2:8080`.
 
 ```bash
 cd mobile

@@ -5,7 +5,7 @@ Fuente de verdad: backend de `master` (commit `8a51e3e`, modelo v2.3), leído de
 Todo lo marcado **[PENDIENTE]** no existe aún en el backend y hay que crearlo (ver `PENDIENTES_BACKEND.md`).
 
 ## Base y autenticación
-- Base URL: `API_BASE_URL` (emulador Android: `http://10.0.2.2:8080`). Prefijo `/api`.
+- Base URL: la web de AWS por defecto (`Env.urlAws`); `API_BASE_URL` la cambia (emulador Android con backend local: `http://10.0.2.2:8080`). Prefijo `/api`.
 - `POST /api/auth/login` `{email, password}` → `200 {token}` (JWT, 24 h, sin refresh).
   - Hoy responde `403 {error}` si el usuario NO es pasajero. **[PENDIENTE]** abrirlo a conductores aprobados.
   - Claims del JWT: `sub`=email, `roles`, `userId`.

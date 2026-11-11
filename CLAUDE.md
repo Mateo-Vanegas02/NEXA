@@ -7,6 +7,8 @@ La web Spring Boot está en la rama `main`; aquí no hay código Java.
 Flutter 3 / Dart 3, Riverpod 3, go_router, Dio, freezed. Roles pasajero, conductor y admin (solo el panel
 de satisfacción). Reglas y comandos en `.claude/skills/nexa-flutter/SKILL.md` y `mobile/docs/DECISIONES.md`.
 El servidor decide el negocio (precio, XP, niveles, ETA): la app no lo calcula.
+Por defecto consume el despliegue de AWS (`Env.urlAws` y la Lambda `Env.satisfaccionUrlAws` en
+`lib/core/config/env.dart`); `--dart-define=API_BASE_URL=...` la cambia.
 
 ```bash
 cd mobile

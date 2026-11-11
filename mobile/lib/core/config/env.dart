@@ -1,33 +1,43 @@
-import 'package:flutter/foundation.dart' show kReleaseMode;
-
 /// Configuración por entorno. Se inyecta con `--dart-define`; no hay secretos aquí.
+///
+/// Este repositorio (`NEXA`, rama `app`) es la versión que consume el despliegue de AWS:
+/// por defecto, tanto `debug` como `release` hablan con la web de AWS y con la Lambda del
+/// panel de satisfacción. La versión que consume Azure sigue en `NEXA_Origin`.
 abstract final class Env {
-  /// Backend de producción (HTTPS, Azure). Es el que usan los builds `release`.
-  static const String urlProduccion =
-      'https://nexa-ece5b3dbfecvf3cq.eastus2-01.azurewebsites.net';
+  /// Web de NEXA en AWS (EC2 + Caddy, HTTPS). Mientras no haya dominio propio se usa
+  /// `<ip-con-guiones>.sslip.io`; al comprar el dominio solo cambia este valor.
+  static const String urlAws = 'https://18-227-59-40.sslip.io';
 
   /// Backend local desde el emulador de Android (solo builds debug: el tráfico
   /// HTTP sin cifrar está permitido únicamente en `android/app/src/debug`).
+  /// Se usa con `--dart-define=API_BASE_URL=http://10.0.2.2:8080`.
   static const String urlLocal = 'http://10.0.2.2:8080';
 
   static const String _urlDefinida = String.fromEnvironment('API_BASE_URL');
 
   /// URL base del backend (sin `/api`). Con `--dart-define=API_BASE_URL=...` gana
-  /// esa; si no, `release` usa producción y `debug` el backend local.
-  static String get apiBaseUrl => _urlDefinida.isNotEmpty
-      ? _urlDefinida
-      : (kReleaseMode ? urlProduccion : urlLocal);
+  /// esa; si no, la web de AWS (en debug y en release).
+  static String get apiBaseUrl =>
+      _urlDefinida.isNotEmpty ? _urlDefinida : urlAws;
 
   /// `true` = repositorios simulados (modo demo, sin backend). Por defecto la app
   /// habla con el backend real; para la demo: `--dart-define=USE_MOCKS=true`.
   static const bool useMocks = bool.fromEnvironment('USE_MOCKS');
 
-  /// URL de la función de satisfacción (Lambda `nexa-satisfaccion`, ver
-  /// `docs/CONTRATO_SATISFACCION.md`). Vacía = el panel del admin avisa que no
-  /// está configurada. Se define con `--dart-define=SATISFACCION_URL=...`.
-  static const String satisfaccionUrl = String.fromEnvironment(
+  /// Lambda `nexa-satisfaccion` en AWS (URL de función, us-east-2). No es secreta:
+  /// cada ruta exige el JWT de un admin. Ver `docs/CONTRATO_SATISFACCION.md`.
+  static const String satisfaccionUrlAws =
+      'https://5g4llbvy3qoesbdt7wrhfguet40tdabm.lambda-url.us-east-2.on.aws';
+
+  static const String _satisfaccionDefinida = String.fromEnvironment(
     'SATISFACCION_URL',
   );
+
+  /// URL del panel de satisfacción: `--dart-define=SATISFACCION_URL=...` si se
+  /// define, si no la Lambda de AWS.
+  static String get satisfaccionUrl => _satisfaccionDefinida.isNotEmpty
+      ? _satisfaccionDefinida
+      : satisfaccionUrlAws;
 
   /// Intervalo de polling del viaje activo.
   static const Duration pollingInterval = Duration(seconds: 5);

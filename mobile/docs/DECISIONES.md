@@ -43,3 +43,5 @@
 - Sin datos suficientes (300 calificaciones y 30 "no" por lado) se entrena en modo demo (datos sintéticos) y el panel lo indica; si nunca se ha publicado un modelo, se muestra el avance de los datos.
 - Las gráficas (tendencia y tramos) se dibujan con widgets propios y `CustomPainter`, sin agregar dependencias.
 - CI de la app: `.github/workflows/mobile.yml` (genera textos, revisa formato, `flutter analyze` y `flutter test`) en cada push a `feature/flutter-**` que toque `mobile/`.
+
+- **11 nov. 2026 — la app consume el despliegue de AWS.** Este repositorio (`NEXA`, rama `app`) es la versión para AWS; la de Azure sigue en `NEXA_Origin`. Por defecto, debug y release usan la web de AWS (`Env.urlAws`, hoy `https://18-227-59-40.sslip.io` hasta tener dominio propio) y la Lambda `nexa-satisfaccion` (`Env.satisfaccionUrlAws`, URL pública que exige JWT de admin). `API_BASE_URL` y `SATISFACCION_URL` siguen sirviendo para cambiarlas (p. ej. backend local). `tool/distribuir.ps1` compila contra AWS. Al comprar el dominio solo cambia `urlAws`.
