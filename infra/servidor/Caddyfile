@@ -1,0 +1,8 @@
+# HTTPS automático con Let's Encrypt para el dominio de /nexa/prod/DOMINIO
+# (mientras no haya dominio propio: <ip-con-guiones>.sslip.io).
+# Caddy envía X-Forwarded-Proto/For/Host: la web los respeta (server.forward-headers-strategy=framework).
+# El WebSocket (/ws) pasa por el mismo reverse_proxy.
+{$DOMINIO} {
+	encode zstd gzip
+	reverse_proxy nexa:8080
+}

@@ -1,0 +1,39 @@
+# NEXA en el servidor de AWS (/opt/nexa). Lo copia y lo levanta el workflow deploy-aws.yml por SSM.
+# .env lo arma preparar.sh desde Parameter Store (/nexa/prod/*): aquí no hay secretos.
+services:
+  nexa:
+    image: 040666550968.dkr.ecr.us-east-2.amazonaws.com/nexa-backend:${TAG:-latest}
+    container_name: nexa
+    env_file: .env
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      NEXA_ZONA_HORARIA: America/Bogota
+      # Servidor de 2 GB con 2 GB de swap; Caddy usa muy poco.
+      JAVA_OPTS: -Xms512m -Xmx1024m -XX:+UseG1GC
+    expose: ["8080"]
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options: { max-size: 10m, max-file: "3" }
+
+  caddy:
+    image: caddy:2.8.4
+    container_name: caddy
+    depends_on: [nexa]
+    environment:
+      DOMINIO: ${DOMINIO}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-datos:/data      # certificados de Let's Encrypt (no se pierden al redesplegar)
+      - caddy-config:/config
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options: { max-size: 10m, max-file: "3" }
+
+volumes:
+  caddy-datos: {}
+  caddy-config: {}

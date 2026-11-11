@@ -1,0 +1,89 @@
+# Despliega la web en el servidor de AWS (EC2 nexa-servidor, us-east-2).
+# 1) construye la imagen y la sube a ECR, 2) copia los archivos de infra/servidor al servidor por SSM
+# y corre preparar.sh, que arma .env desde Parameter Store y reinicia los contenedores.
+# Sin artefactos de Actions (cuota del plan gratuito). Credenciales: usuario IAM nexa-github-deploy
+# (la SCP de la cuenta no permite OIDC), en los secretos AWS_ACCESS_KEY_ID y AWS_SECRET_ACCESS_KEY.
+name: Deploy AWS
+
+on:
+  workflow_dispatch:   # por ahora solo a mano (Actions → Deploy AWS → Run workflow)
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-aws
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-2
+  REGISTRO: 040666550968.dkr.ecr.us-east-2.amazonaws.com
+  REPOSITORIO: nexa-backend
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: aws-actions/amazon-ecr-login@v2
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Construir y subir la imagen
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.REGISTRO }}/${{ env.REPOSITORIO }}:${{ github.sha }}
+            ${{ env.REGISTRO }}/${{ env.REPOSITORIO }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Actualizar el servidor
+        run: |
+          set -euo pipefail
+          ID=$(aws ec2 describe-instances \
+                 --filters Name=tag:Name,Values=nexa-servidor Name=instance-state-name,Values=running \
+                 --query 'Reservations[0].Instances[0].InstanceId' --output text)
+          [ "$ID" != "None" ] || { echo "No hay un servidor nexa-servidor encendido"; exit 1; }
+          b64() { base64 -w0 "infra/servidor/$1"; }
+          jq -n \
+            --arg compose "$(b64 docker-compose.aws.yml)" \
+            --arg caddy "$(b64 Caddyfile)" \
+            --arg preparar "$(b64 preparar.sh)" \
+            --arg tag "$GITHUB_SHA" \
+            '{commands: [
+              "set -e",
+              "mkdir -p /opt/nexa && cd /opt/nexa",
+              ("echo " + $compose + " | base64 -d > docker-compose.aws.yml"),
+              ("echo " + $caddy + " | base64 -d > Caddyfile"),
+              ("echo " + $preparar + " | base64 -d > preparar.sh"),
+              ("TAG=" + $tag + " bash preparar.sh")
+            ], executionTimeout: ["900"]}' > parametros.json
+          CMD=$(aws ssm send-command --instance-ids "$ID" --document-name AWS-RunShellScript \
+                  --comment "deploy ${GITHUB_SHA::7}" --parameters file://parametros.json \
+                  --query Command.CommandId --output text)
+          echo "Comando SSM: $CMD"
+          for i in $(seq 1 120); do
+            sleep 5
+            ESTADO=$(aws ssm get-command-invocation --command-id "$CMD" --instance-id "$ID" \
+                       --query Status --output text 2>/dev/null || echo Pending)
+            case "$ESTADO" in Pending|InProgress|Delayed) continue ;; *) break ;; esac
+          done
+          aws ssm get-command-invocation --command-id "$CMD" --instance-id "$ID" \
+            --query '[StandardOutputContent,StandardErrorContent]' --output text
+          echo "Estado: $ESTADO"
+          [ "$ESTADO" = "Success" ]
+
+      - name: Comprobar por HTTPS
+        if: vars.NEXA_URL_PUBLICA != ''
+        run: curl -fsS --retry 12 --retry-delay 10 --retry-all-errors -o /dev/null -w "HTTP %{http_code}\n" "${{ vars.NEXA_URL_PUBLICA }}/auth/login"
