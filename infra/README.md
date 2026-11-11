@@ -25,7 +25,9 @@ TensorFlow no cabe en una Lambda de 512 MB: la mediadora lanza con `ecs:RunTask`
 1. Actualizar `nexa-00-cuenta` (el usuario de GitHub puede subir también a `nexa-entrenamiento`).
 2. Crear `nexa-40-ml-entrenamiento` (exporta cluster, tarea, subredes, security group y roles).
 3. Actions → Imagen entrenamiento → Run workflow (workflow en `main`, construye `ml/` de la rama `app` y sube `:latest` a ECR).
-4. Subir `mediadora.zip` v2 a `s3://nexa-ml-<cuenta>/codigo/` y actualizar `nexa-30-ml-prediccion` con `VersionCodigo=2`
+4. Subir el zip como `s3://nexa-ml-<cuenta>/codigo/mediadora-v2.zip` y actualizar `nexa-30-ml-prediccion` con
+   `ClaveCodigo=codigo/mediadora-v2.zip` y `VersionCodigo=2`. **Cada versión con un nombre nuevo**: si la ruta no cambia,
+   CloudFormation no vuelve a cargar el código de la Lambda
    (ya importa los valores de `nexa-40`, por eso va después).
 
 ## Por qué un usuario IAM y no OIDC

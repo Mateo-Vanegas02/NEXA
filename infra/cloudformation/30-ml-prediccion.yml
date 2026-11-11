@@ -8,12 +8,14 @@ Description: >
 Parameters:
   ClaveCodigo:
     Type: String
-    Default: codigo/mediadora.zip
-    Description: Ruta del zip dentro del bucket nexa-ml-<cuenta>
+    Default: codigo/mediadora-v2.zip
+    Description: >
+      Ruta del zip dentro del bucket nexa-ml-<cuenta>. Usa un nombre nuevo por version (mediadora-v3.zip, ...):
+      CloudFormation solo vuelve a cargar el codigo de la Lambda si cambia esta ruta.
   VersionCodigo:
     Type: String
     Default: '2'
-    Description: Cambiala (2, 3, ...) cada vez que subas un zip nuevo para que la Lambda lo tome
+    Description: Numero de la version del codigo (solo informativo; lo que recarga el codigo es ClaveCodigo)
 
 Resources:
   Registros:
