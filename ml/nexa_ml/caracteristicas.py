@@ -15,7 +15,7 @@ como entrada: ni la del mismo viaje ni la del otro lado (fuga de información).
 from __future__ import annotations
 
 import math
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Mapping
 from zoneinfo import ZoneInfo
 
@@ -74,6 +74,22 @@ CAMPOS_OBLIGATORIOS = ("solicitadoEn", "fechaAceptacion", "fechaLlegada", "fecha
 #: Una espera hasta la aceptación mayor que esto indica fechas guardadas con zonas horarias distintas
 #: (antes de la corrección del reloj, solicitadoEn quedaba 5 h atrás en servidores en UTC).
 MAX_MINUTOS_HASTA_ACEPTACION = 240.0
+#: Desfase conocido: en Azure (JVM en UTC, antes del arreglo de zona horaria) `solicitadoEn` se guardaba con el
+#: reloj de Bogotá y las demás fechas en UTC, así que queda exactamente 5 h antes. Una espera hasta la
+#: aceptación entre 5 h y 5 h + 30 min se corrige restando esas 5 h (nadie espera 5 h a un mototaxi).
+DESFASE_ZONA_MIN = 300.0
+VENTANA_DESFASE_MIN = 30.0
+
+
+def solicitado_corregido(viaje: Mapping[str, Any]) -> datetime | None:
+    """`solicitadoEn` (o `fechaHora`) corregido del desfase de 5 h de los viajes guardados en Azure."""
+    solicitado = a_fecha(viaje.get("solicitadoEn")) or a_fecha(viaje.get("fechaHora"))
+    aceptado = a_fecha(viaje.get("fechaAceptacion"))
+    if solicitado is not None and aceptado is not None:
+        espera = (aceptado - solicitado).total_seconds() / 60.0
+        if DESFASE_ZONA_MIN <= espera <= DESFASE_ZONA_MIN + VENTANA_DESFASE_MIN:
+            return solicitado + timedelta(minutes=DESFASE_ZONA_MIN)
+    return solicitado
 
 
 def a_fecha(valor: Any) -> datetime | None:
@@ -121,7 +137,7 @@ def calcular(viaje: Mapping[str, Any]) -> list[float]:
 
     inicio = a_fecha(viaje.get("fechaInicio"))
     fin = a_fecha(viaje.get("fechaFinalizacion"))
-    solicitado = a_fecha(viaje.get("solicitadoEn")) or a_fecha(viaje.get("fechaHora"))
+    solicitado = solicitado_corregido(viaje)
     aceptado = a_fecha(viaje.get("fechaAceptacion"))
     llegada = a_fecha(viaje.get("fechaLlegada"))
 
@@ -189,6 +205,7 @@ def motivo_descarte(viaje: Mapping[str, Any]) -> str | None:
     desglose = viaje.get("desglose") or {}
     if desglose.get("totalPasajero") is None or desglose.get("gananciaConductor") is None:
         return "incompleto"
+    fechas["solicitadoEn"] = solicitado_corregido(viaje)
     orden = [fechas[c] for c in CAMPOS_OBLIGATORIOS]
     espera_aceptacion = (fechas["fechaAceptacion"] - fechas["solicitadoEn"]).total_seconds() / 60.0
     if any(b < a for a, b in zip(orden, orden[1:])) or espera_aceptacion > MAX_MINUTOS_HASTA_ACEPTACION:

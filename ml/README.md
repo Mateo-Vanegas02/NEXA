@@ -91,7 +91,24 @@ Exportar el dataset (una fila por viaje, 25 variables y las dos clases SI/NO/?):
 Con datos sintéticos (solo para ver que todo corre):
 `python -m nexa_ml.entrenar --sinteticos 3000 --salida artefactos/ --permitir-pocos-datos`
 
-## Lambda
+## Lambda mediadora `nexa-satisfaccion` (panel del admin en la app)
+
+`lambda_fn/mediadora.py` implementa el contrato v0.2 (`mobile/docs/CONTRATO_SATISFACCION.md`): `GET /resumen`,
+`/factores`, `/riesgo`, `/modelo`, `POST /entrenamientos`, `GET`/`DELETE /entrenamientos/{id}` y `PUT /programacion`.
+Valida el JWT de la web (HS256, `JWT_SECRET` de Parameter Store, rol ADMIN), lee Atlas con el usuario de solo lectura,
+el modelo publicado de S3 (`modelos/actual.json` → `modelos/vN/`) y la programación e historial de DynamoDB. No entrena:
+invoca de forma asíncrona la Lambda `nexa-entrenamiento`. Reglas puras en `nexa_ml/satisfaccion.py`; acceso a la nube en
+`nexa_ml/nube.py`; pruebas sin nube en `tests/test_mediadora.py`.
+
+```bash
+./lambda_fn/construir_mediadora.sh     # deja mediadora.zip (≈ 38 MB) para subir a s3://nexa-ml-<cuenta>/codigo/
+```
+Infraestructura: `infra/cloudformation/30-ml-prediccion.yml` en la rama `main`.
+
+**Desfase de 5 h:** los viajes guardados en Azure antes del arreglo de zona horaria tienen `solicitadoEn` 5 h antes;
+`caracteristicas.solicitado_corregido` lo corrige (espera hasta la aceptación entre 300 y 330 min) en vez de descartarlos.
+
+## Lambda de predicción directa (opcional)
 
 ```bash
 ./lambda_fn/construir.sh artefactos/   # lambda.zip ≈ 36 MB comprimido, ≈ 109 MB descomprimido

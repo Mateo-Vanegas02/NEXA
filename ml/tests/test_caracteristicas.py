@@ -94,9 +94,31 @@ def test_viajes_antiguos_sin_llegada_se_descartan():
         == "sin calificaciones"
 
 
-def test_fechas_de_dos_zonas_horarias_se_descartan():
-    # Antes de corregir el reloj, solicitadoEn quedaba 5 h atrás en un servidor en UTC.
+def test_fechas_de_dos_zonas_horarias_se_corrigen_o_descartan():
+    # Antes de corregir el reloj, solicitadoEn quedaba 5 h atrás en un servidor en UTC: se corrige.
     desfasado = {**VIAJE, "solicitadoEn": "2026-11-06T17:00:00Z"}
-    assert car.motivo_descarte(desfasado) == "fechas inconsistentes"
+    assert car.motivo_descarte(desfasado) is None
+    assert car.calcular(desfasado) == car.calcular(VIAJE)
+    # Un desfase distinto al conocido sigue descartándose.
+    raro = {**VIAJE, "solicitadoEn": "2026-11-06T15:00:00Z"}
+    assert car.motivo_descarte(raro) == "fechas inconsistentes"
     al_reves = {**VIAJE, "fechaInicio": "2026-11-06T22:40:00Z"}  # inicia después de terminar
     assert car.motivo_descarte(al_reves) == "fechas inconsistentes"
+
+
+def test_corrige_el_desfase_de_5_horas_de_azure():
+    from datetime import datetime, timedelta, timezone
+
+    from nexa_ml import caracteristicas as car
+
+    aceptado = datetime(2026, 11, 9, 20, 0, tzinfo=timezone.utc)
+    base = {"fechaAceptacion": aceptado, "fechaLlegada": aceptado + timedelta(minutes=2),
+            "fechaInicio": aceptado + timedelta(minutes=4), "fechaFinalizacion": aceptado + timedelta(minutes=10),
+            "desglose": {"totalPasajero": 9000, "gananciaConductor": 7000}, "calificacionConductor": 5}
+    con_desfase = {**base, "solicitadoEn": aceptado - timedelta(minutes=300, seconds=40)}
+    valores = dict(zip(car.CARACTERISTICAS, car.calcular(con_desfase)))
+    assert abs(valores["minutos_hasta_aceptacion"] - 40 / 60) < 1e-6
+    assert car.motivo_descarte(con_desfase) is None
+    # Una espera de 4 a 5 h no es el desfase conocido: se sigue descartando.
+    raro = {**base, "solicitadoEn": aceptado - timedelta(minutes=260)}
+    assert car.motivo_descarte(raro) == "fechas inconsistentes"
