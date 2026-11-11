@@ -1,0 +1,27 @@
+/* ==========================================================================
+   NEXA Panel — ajustes de diseño para los paneles de pasajero y conductor.
+   Se carga DESPUÉS de Dashboard_P.css / Dashboard_C.css / niveles.css. Los paneles ya usan el
+   tema oscuro con brillo cian (#020A12, #001A33, #00C4FF); esta capa solo unifica la tipografía
+   (Montserrat), los estilos de texto NEXA/* y el foco visible con las páginas públicas.
+   No toca el marcado ni el JS.
+   ========================================================================== */
+
+body, body * { font-family: 'Montserrat', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+/* Los iconos de Font Awesome conservan su propia fuente */
+.fas, .far, .fab, .fa, [class^='fa-'], [class*=' fa-'] { font-family: 'Font Awesome 6 Free', 'Font Awesome 6 Brands' !important; }
+
+/* ---- Estilos de texto NEXA/* (mismos nombres que en Figma) ---- */
+.nexa-display { font-size: clamp(2.25rem, 7vw, 4rem); line-height: 1.1; font-weight: 700; }
+.nexa-heading { font-size: clamp(1.75rem, 4.5vw, 2.5rem); line-height: 1.2; font-weight: 700; }
+.nexa-heading-sm { font-size: 1.375rem; line-height: 1.3; font-weight: 600; }
+.nexa-subheading { font-size: 1.125rem; line-height: 1.4; font-weight: 600; }
+.nexa-body { font-size: 1rem; line-height: 1.55; }
+.nexa-body-sm { font-size: 0.875rem; line-height: 1.5; }
+.nexa-caption { font-size: 0.75rem; line-height: 1.67; font-weight: 500; }
+
+/* Foco visible para quien navega con teclado */
+:focus-visible { outline: 3px solid #00c4ff; outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}

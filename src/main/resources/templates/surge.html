@@ -1,0 +1,105 @@
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXA | Experiencia Inmersiva</title>
+    <!-- Tipografía Premium -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/nexa-surge.css}">
+</head>
+<body>
+    <!-- Fondo Gradiente Reactivo -->
+    <div class="bg-gradient"></div>
+
+    <!-- HUD Indicators (Head-Up Display) -->
+    <nav class="hud-nav">
+        <div class="hud-dot active" data-target="#hero"></div>
+        <div class="hud-dot" data-target="#features"></div>
+        <div class="hud-dot" data-target="#performance"></div>
+        <div class="hud-dot" data-target="#cta"></div>
+    </nav>
+    <div class="hud-scroll-indicator">
+        <span>SCROLL TO EXPLORE</span>
+        <div class="scroll-line"></div>
+    </div>
+
+    <!-- Focal Point Dinámico (Capa Central Z-10) -->
+    <div class="focal-point" id="focalPoint">
+        <svg viewBox="0 0 500 350" class="nexa-moto" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <!-- Efecto Rim Light Premium (Acento Cyan y Amarillo) -->
+                <filter id="rim-light" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="0" stdDeviation="15" flood-color="var(--accent-yellow)" flood-opacity="0.5"/>
+                    <feDropShadow dx="-15" dy="15" stdDeviation="25" flood-color="var(--accent-cyan)" flood-opacity="0.3"/>
+                </filter>
+                <linearGradient id="moto-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#002b54" />
+                    <stop offset="100%" stop-color="#001224" />
+                </linearGradient>
+            </defs>
+            <g filter="url(#rim-light)" class="moto-chassis">
+                <!-- Chasis Aerodinámico -->
+                <path d="M120,180 L180,120 L320,130 L400,180 L350,220 L160,220 Z" fill="url(#moto-grad)" stroke="#00c4ff" stroke-width="1"/>
+                <path d="M180,120 L320,130 L280,180 L160,180 Z" fill="var(--bg-dark)" opacity="0.9"/>
+                <!-- Detalles Neón Naranja -->
+                <path d="M320,130 L400,180 L380,190 L300,140 Z" fill="var(--accent-orange)"/>
+                
+                <!-- Ruedas Deportivas -->
+                <circle cx="160" cy="220" r="45" fill="none" stroke="var(--bg-dark)" stroke-width="14"/>
+                <circle cx="160" cy="220" r="38" fill="none" stroke="var(--accent-cyan)" stroke-width="2" stroke-dasharray="10 5"/>
+                
+                <circle cx="350" cy="220" r="45" fill="none" stroke="var(--bg-dark)" stroke-width="14"/>
+                <circle cx="350" cy="220" r="38" fill="none" stroke="var(--accent-yellow)" stroke-width="2" stroke-dasharray="15 8"/>
+            </g>
+        </svg>
+    </div>
+
+    <!-- Scroll Engine Container -->
+    <main class="scroll-container" id="scrollContainer">
+        
+        <!-- 01. Hero Section -->
+        <section class="section dark-theme" id="hero">
+            <div class="content-layer left-align">
+                <h1 class="split-text parallax-fast">RIDE<br>SMARTER</h1>
+                <p class="split-text parallax-slow">El futuro de la movilidad urbana ya está aquí. Siente el poder, domina la tecnología.</p>
+                <button class="magnetic-btn">
+                    <span class="btn-text">DESCUBRIR</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- 02. Features Section -->
+        <section class="section dark-theme" id="features">
+            <div class="content-layer right-align">
+                <h2 class="split-text parallax-fast">POTENCIA<br>PURA</h2>
+                <p class="split-text parallax-slow">Diseño aerodinámico, respuesta táctil instantánea y un motor eléctrico que redefine el rendimiento.</p>
+            </div>
+        </section>
+
+        <!-- 03. Performance Section -->
+        <section class="section dark-theme" id="performance">
+            <div class="content-layer center-align">
+                <h2 class="split-text parallax-fast">CONTROL<br>TOTAL</h2>
+                <p class="split-text parallax-slow">Sistemas telemétricos integrados en tiempo real. Tu viaje, completamente en tus manos.</p>
+            </div>
+        </section>
+
+        <!-- 04. CTA Section (Inversión de color) -->
+        <section class="section light-theme" id="cta">
+            <div class="content-layer center-align mix-blend">
+                <h2 class="split-text parallax-fast">LA REVOLUCIÓN<br>TE ESPERA</h2>
+                <p class="split-text parallax-slow">Sé parte del flujo. Sé NEXA.</p>
+                <button class="magnetic-btn dark-btn">
+                    <span class="btn-text">RESERVAR AHORA</span>
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Scripts: Engine de Scroll 60fps -->
+    <script th:src="@{/js/nexa-surge.js}"></script>
+</body>
+</html>

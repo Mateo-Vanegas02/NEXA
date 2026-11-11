@@ -1,0 +1,24 @@
+-- ============================================================
+-- FÓRMULA DAX — Tabla Calendario
+-- ============================================================
+-- INSTRUCCIONES:
+-- 1. En Power BI Desktop → Vista de Informe o Vista de Modelo
+-- 2. Click en pestaña "Modelado" → "Nueva tabla"
+-- 3. Pegar esta fórmula COMPLETA en la barra de fórmulas
+-- 4. Presionar Enter
+-- ============================================================
+
+Calendario = 
+ADDCOLUMNS(
+    CALENDARAUTO(),
+    "Año", YEAR([Date]),
+    "Mes", MONTH([Date]),
+    "NombreMes", FORMAT([Date], "MMMM"),
+    "MesCorto", FORMAT([Date], "MMM"),
+    "Dia", DAY([Date]),
+    "Trimestre", QUARTER([Date]),
+    "DiaSemana", FORMAT([Date], "dddd"),
+    "NumeroDiaSemana", WEEKDAY([Date]),
+    "AñoMes", FORMAT([Date], "YYYY-MM"),
+    "SemanaDelAño", WEEKNUM([Date])
+)

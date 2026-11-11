@@ -1,0 +1,57 @@
+# NEXA con Docker Compose.
+#   Producción / servidor:   docker compose up -d --build            (lee .env)
+#   Con MongoDB local:       docker compose --profile local-db up -d --build
+#                            (en .env: MONGODB_URI=mongodb://mongo:27017/nexa)
+# Variables: copia .env.example a .env y complétalo. NEXA_PROFILE=dev sirve para probar por http
+# en local (el perfil prod exige HTTPS por la cookie Secure).
+services:
+  nexa-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nexa-backend:latest
+    container_name: nexa-backend
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=${NEXA_PROFILE:-prod}
+      # Memoria de la JVM para un servidor de 2 GB
+      - JAVA_OPTS=-Xms512m -Xmx1024m -XX:+UseG1GC
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8080"]
+      interval: 30s
+      timeout: 5s
+      start_period: 90s
+      retries: 3
+    depends_on:
+      mongo:
+        condition: service_healthy
+        required: false   # solo existe con --profile local-db
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1.5G
+        reservations:
+          memory: 512M
+
+  # MongoDB local opcional (desarrollo/pruebas). En producción se usa Atlas.
+  mongo:
+    image: mongo:7
+    container_name: nexa-mongo
+    profiles: ["local-db"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - nexa-mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  nexa-mongo-data:

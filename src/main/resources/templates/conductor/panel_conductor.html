@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Conductor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <link th:href="@{/css/modal.css}" rel="stylesheet">
+    <link th:href="@{/css/Dashboard_C.css}" rel="stylesheet">
+    <link th:href="@{/css/niveles.css}" rel="stylesheet">
+    <link th:href="@{/css/viaje-panel.css}" rel="stylesheet">
+    <link th:href="@{/css/perfil.css}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
+    <link th:href="@{/css/nexa-panel.css}" rel="stylesheet">
+    <link rel="icon" th:href="@{/icon/NEXA_ICO.ico}">
+</head>
+
+<body data-nivel-rol="conductor">
+    <div class="sidebar" id="sidebar">
+        <div>
+            <div class="sidebar-header">
+                <img th:src="@{/img/perfil.png}" class="profile-pic" id="profilePicDisplay">
+                <span class="logo-text" id="usernameDisplay">Conductor</span>
+                <span class="toggle-btn">
+                    <i class="fas fa-angle-double-left"></i>
+                </span>
+            </div>
+            <ul>
+                <li onclick="showSection('perfil')" data-section="perfil" class="active">
+                    <i class="fas fa-user"></i><span class="text">Perfil</span>
+                </li>
+                <li onclick="showSection('historial')" data-section="historial">
+                    <i class="fas fa-history"></i><span class="text">Historial</span>
+                </li>
+                <li onclick="showSection('solicitudes')" data-section="solicitudes">
+                    <i class="fas fa-car"></i><span class="text">Solicitudes</span>
+                </li>
+                <li onclick="showSection('billetera')" data-section="billetera">
+                    <i class="fas fa-wallet"></i><span class="text">Billetera</span>
+                </li>
+                <li onclick="showSection('optimizador')" data-section="optimizador">
+                    <i class="fas fa-brain"></i><span class="text">Planificador</span>
+                </li>
+                <form th:action="@{/auth/logout}" method="post" id="logout-form" style="display: none;">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                </form>
+                <li onclick="openConfirmModal('Cerrar Sesión', '¿Estás seguro de que deseas cerrar sesión?', 'logout')">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span class="text">Cerrar sesión</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="main">
+        <!-- SECCIÓN: PERFIL -->
+        <div class="section active" id="perfil">
+            <div class="section-header">
+                <button class="menu-toggle-btn" onclick="toggleMobileSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h2><span th:text="${conductor.nombre_y_Apellido}">Nombre del conductor</span></h2>
+                <div class="header-actions"></div>
+            </div>
+
+            <div th:replace="~{fragments/perfil :: perfil}"></div>
+
+            <section class="mv-card" id="miVehiculo" aria-labelledby="mvTitulo">
+                <h3 id="mvTitulo">Mi vehículo</h3>
+                <p class="mv-sub">Solo uno puede estar activo para dar servicio y lo eliges tú.</p>
+                <ul class="mv-lista" id="mvLista"><li class="mv-vacio">Cargando…</li></ul>
+                <p class="mv-estado" id="mvEstado" role="status" aria-live="polite"></p>
+                <button type="button" class="mv-usar" id="mvAgregar" aria-expanded="false" aria-controls="mvForm">
+                    <i class="fas fa-plus" aria-hidden="true"></i> Agregar vehículo</button>
+                <form id="mvForm" class="mv-form" hidden novalidate>
+                    <fieldset class="mv-grupo">
+                        <legend>Datos del vehículo</legend>
+                        <div class="mv-grid">
+                            <label>Placa<input name="placa" data-solo="placa" required maxlength="6" autocomplete="off" placeholder="ABC12D"></label>
+                            <label>Marca<input name="marca" required minlength="2" maxlength="50"></label>
+                            <label>Modelo<input name="modelo" required minlength="2" maxlength="50"></label>
+                            <label>Color<input name="color" data-solo="letras" required minlength="2" maxlength="30"></label>
+                        </div>
+                    </fieldset>
+                    <fieldset class="mv-grupo">
+                        <legend>Tarjeta de propiedad</legend>
+                        <div class="mv-grid mv-grid--par">
+                            <label>Número<input name="tarjetaPropiedad" data-solo="digitos" inputmode="numeric" required maxlength="12"></label>
+                            <label>Foto<input type="file" name="fotoTarjetaPropiedad" accept="image/jpeg,image/png,image/webp" required></label>
+                        </div>
+                    </fieldset>
+                    <fieldset class="mv-grupo">
+                        <legend>SOAT</legend>
+                        <div class="mv-grid mv-grid--par">
+                            <label>Número<input name="soat" data-solo="digitos" inputmode="numeric" required maxlength="12"></label>
+                            <label>Foto<input type="file" name="fotoSoat" accept="image/jpeg,image/png,image/webp" required></label>
+                        </div>
+                    </fieldset>
+                    <fieldset class="mv-grupo">
+                        <legend>Tecnomecánica</legend>
+                        <div class="mv-grid mv-grid--par">
+                            <label>Número<input name="tecnomecanica" data-solo="digitos" inputmode="numeric" required maxlength="12"></label>
+                            <label>Foto<input type="file" name="fotoTecnomecanica" accept="image/jpeg,image/png,image/webp" required></label>
+                        </div>
+                    </fieldset>
+                    <p class="mv-nota">Cada foto pesa máximo 5 MB. El vehículo queda en revisión y podrás usarlo cuando NEXA lo apruebe.</p>
+                    <button type="submit" class="mv-usar" id="mvEnviar">Enviar para revisión</button>
+                </form>
+                <p class="mv-nota"><i class="fas fa-circle-info" aria-hidden="true"></i>
+                    Al elegir otro vehículo, el actual queda inactivo. No puedes cambiar con un viaje en curso.</p>
+            </section>
+
+            <div class="settings-card">
+                <div class="settings-option">
+                    <div class="option-icon"><i class="fas fa-bell"></i></div>
+                    <div class="option-content">
+                        <h3>Notificaciones</h3>
+                        <p>Recibir notificaciones de nuevas solicitudes</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="chkNotificaciones">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <div class="settings-option">
+                    <div class="option-icon"><i class="fas fa-key"></i></div>
+                    <div class="option-content">
+                        <h3>Cambiar contraseña</h3>
+                        <p>Actualiza tu contraseña de acceso</p>
+                    </div>
+                    <a th:href="@{/profile/change-password}" style="text-decoration: none;">
+                        <button type="button" class="btn-settings-action">Cambiar</button>
+                    </a>
+                </div>
+
+                <!-- Elemento oculto para evitar errores en JS -->
+                <span id="darkModeText" style="display:none;"></span>
+            </div>
+        </div>
+
+        <!-- SECCIÓN: HISTORIAL -->
+        <div class="section" id="historial">
+            <div class="section-header">
+                <button class="menu-toggle-btn" onclick="toggleMobileSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h2>Historial de Viajes Realizados</h2>
+                <div class="header-actions"></div>
+            </div>
+
+            <div class="filters">
+                <input type="date" id="filtroFecha" placeholder="Filtrar por fecha">
+                <input type="text" id="filtroPasajero" placeholder="Filtrar por pasajero">
+                <button onclick="filtrarHistorial()">Filtrar</button>
+                <button onclick="resetFiltrosHistorial()">Limpiar</button>
+            </div>
+            <div class="historial-table-container">
+                <table id="historialTable">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Origen</th>
+                            <th>Destino</th>
+                            <th>Pasajero</th>
+                            <th>Precio</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historialBody"></tbody>
+                </table>
+                <div class="pagination">
+                    <button onclick="cambiarPagina(-1)" disabled id="prevPage"><i class="fas fa-chevron-left"></i></button>
+                    <span id="pageInfo">Página 1</span>
+                    <button onclick="cambiarPagina(1)" id="nextPage"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN: SOLICITUDES -->
+        <div class="section" id="solicitudes" th:attr="data-comision=${comisionConductor},data-radio-llegada=${radioLlegada},data-radio-destino=${radioDestino}">
+            <div class="section-header">
+                <button class="menu-toggle-btn" onclick="toggleMobileSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h2>Solicitudes de Viaje</h2>
+                <div class="header-actions">
+                    <span class="sc-conexion off" id="scConexion" role="status"><span class="sc-punto" aria-hidden="true"></span><span id="scConexionTexto">Conectando…</span></span>
+                </div>
+            </div>
+
+            <div class="sc-layout">
+                <div class="map-container sc-mapa">
+                    <div id="map" role="region" aria-label="Mapa de solicitudes"></div>
+                    <span class="sc-chip-mapa" aria-hidden="true"><i class="fas fa-satellite-dish"></i> <span id="scChipMapa">0 solicitudes cerca de ti</span></span>
+                    <div class="map-controls">
+                        <button type="button" class="map-btn" onclick="centrarMapa()" title="Centrar en mi ubicación" aria-label="Centrar en mi ubicación">
+                            <i class="fas fa-crosshairs"></i>
+                        </button>
+                        <button type="button" class="map-btn" onclick="verTodasLasSolicitudes()" title="Ver todas las solicitudes" aria-label="Ver todas las solicitudes">
+                            <i class="fas fa-motorcycle"></i>
+                        </button>
+                    </div>
+                </div>
+                <aside class="sc-panel" aria-labelledby="scTitulo">
+                    <div class="sc-panel-cab">
+                        <h3 id="scTitulo">Cerca de ti <span class="sc-contador" id="scContador">0</span></h3>
+                        <button type="button" class="sc-orden" id="scOrden" title="Cambiar el orden de la lista">
+                            <i class="fas fa-arrow-down-wide-short" aria-hidden="true"></i> <span id="scOrdenTexto">Prioridad NEXA</span>
+                        </button>
+                    </div>
+                    <div class="sc-lista" id="scLista" aria-live="polite">
+                        <div class="sc-vacio"><div class="sc-cargando" aria-hidden="true"></div><p>Buscando solicitudes…</p></div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+
+        <!-- SECCIÓN: VIAJE EN CURSO (panel por fase sobre el mapa; viaje-activo.js) -->
+        <div class="section" id="viaje-activo">
+            <div class="vp-contenedor viaje-activo-mapa" id="viajeActivoContenedor">
+                <div id="mapa-viaje" role="application" aria-label="Mapa del viaje"></div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN: BILLETERA -->
+        <div class="section" id="billetera">
+            <div class="section-header">
+                <button class="menu-toggle-btn" onclick="toggleMobileSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h2>Billetera</h2>
+                <div class="header-actions"></div>
+            </div>
+
+            <div class="wallet-card">
+                <div class="wallet-icon"><i class="fas fa-wallet"></i></div>
+                <div class="wallet-info">
+                    <span class="wallet-label">NEXA · Total ganado</span>
+                    <span class="wallet-amount" id="walletAmountDisplay">$0 COP</span>
+                </div>
+            </div>
+            <section class="saldo-card" aria-labelledby="saldoTitulo">
+                <div class="saldo-cab">
+                    <h3 id="saldoTitulo"><i class="fas fa-scale-balanced" aria-hidden="true"></i> Saldo con NEXA</h3>
+                    <label class="saldo-periodo">Periodo
+                        <select id="saldoDias">
+                            <option value="7">Últimos 7 días</option>
+                            <option value="30" selected>Últimos 30 días</option>
+                            <option value="90">Últimos 90 días</option>
+                        </select>
+                    </label>
+                </div>
+                <p class="saldo-sub">El pasajero te paga todo en efectivo. Aquí ves lo que cobraste, lo que ganaste
+                    y lo que queda entre tú y NEXA.</p>
+                <div id="saldoContenido" aria-live="polite"></div>
+            </section>
+
+            <div class="ingresos-container">
+                <h3><i class="fas fa-chart-line"></i> Ingresos</h3>
+                <div class="filters">
+                    <select id="filtroPeriodo" onchange="filtrarIngresos()">
+                        <option value="año">Año</option>
+                        <option value="mes">Mes</option>
+                        <option value="semana">Semana</option>
+                        <option value="día">Día</option>
+                    </select>
+                    <input type="date" id="filtroFechaIngresos" placeholder="Filtrar por fecha" onchange="filtrarIngresos()">
+                    <button onclick="resetFiltrosIngresos()">Limpiar</button>
+                </div>
+                <table id="ingresosTable">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Tú recibiste</th>
+                            <th>Descripción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ingresosBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SECCIÓN: OPTIMIZADOR -->
+        <div class="section" id="optimizador">
+            <div class="section-header">
+                <button class="menu-toggle-btn" onclick="toggleMobileSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h2>Planificador Inteligente de Jornada</h2>
+                <div class="header-actions"></div>
+            </div>
+
+            <p style="margin-bottom: 25px; color: rgba(255,255,255,0.6); font-size: 14px; line-height: 1.5;">
+                Planifica tu día de trabajo utilizando algoritmos avanzados de Investigación de Operaciones (Google OR-Tools). 
+                Calcula la combinación exacta de viajes para cumplir tu meta de ingresos diarios minimizando el riesgo financiero y la fatiga.
+            </p>
+
+            <div class="optimizer-layout" style="display: flex; gap: 30px; flex-wrap: wrap;">
+                <!-- Formulario de Configuración -->
+                <div class="optimizer-card" style="flex: 1; min-width: 320px; background: #03192e; padding: 25px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid rgba(0, 196, 255, 0.15); border-top: 5px solid #00c4ff; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <h3 style="margin-bottom: 20px; color: #00c4ff; display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 600;">
+                            <i class="fas fa-sliders-h"></i> Configura tus Parámetros
+                        </h3>
+                        <form id="optimizerForm" onsubmit="event.preventDefault(); optimizarJornadaConductor();">
+                            <div style="margin-bottom: 20px;">
+                                <label style="font-weight: 500; font-size: 13px; color: rgba(255,255,255,0.8); display: block; margin-bottom: 5px;">
+                                    Meta de Ingresos Diarios ($ COP)
+                                </label>
+                                <input type="number" id="optMeta" value="120000" min="0" max="169000" step="1000" required style="width: 100%; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(0, 196, 255, 0.2); color: white; padding: 10px; border-radius: 8px; box-sizing: border-box; outline: none; transition: border-color 0.3s;" />
+                                <small style="color: rgba(255,255,255,0.5); font-size: 11px; display: block; margin-top: 5px;">Indica $0 para buscar el rendimiento máximo absoluto, o un valor entre $40.000 y $169.000 COP.</small>
+                            </div>
+
+                            <!-- Límites Estáticos de la Jornada (Restricciones del Modelo) -->
+                            <div style="margin-bottom: 20px; padding: 15px; background: rgba(0, 196, 255, 0.05); border-left: 4px solid #00c4ff; border-radius: 8px; font-size: 13px;">
+                                <div style="font-weight: 600; color: #00c4ff; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 5px;">
+                                    <i class="fas fa-lock"></i> Restricciones Fijas de Jornada
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 3px; color: rgba(255,255,255,0.8);">
+                                    <span><strong>Jornada Laboral Máxima:</strong></span>
+                                    <span>8.0 Horas (480 minutos)</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; color: rgba(255,255,255,0.8);">
+                                    <span><strong>Presupuesto Combustible:</strong></span>
+                                    <span>$30.000 COP</span>
+                                </div>
+                            </div>
+
+                            <!-- Información de Tarifas y Tiempos de Viaje -->
+                            <div style="margin-bottom: 20px; padding: 15px; background: rgba(255, 204, 0, 0.04); border-left: 4px solid #ffcc00; border-radius: 8px; font-size: 12px; line-height: 1.5;">
+                                <div style="font-weight: 600; color: #ffcc00; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 5px;">
+                                    <i class="fas fa-info-circle"></i> Info de Tarifas y Tiempos por Viaje
+                                </div>
+                                <div style="margin-bottom: 8px; color: rgba(255,255,255,0.7);">
+                                    <strong style="color: #fff;">• Viaje Corto (0 - 2 km):</strong><br/>
+                                    <span style="margin-left: 10px;">Ingreso: <strong style="color: #4CAF50;">$4.000 COP</strong> | Tiempo: 10 min | Gasolina: $500 COP</span>
+                                </div>
+                                <div style="margin-bottom: 8px; color: rgba(255,255,255,0.7);">
+                                    <strong style="color: #fff;">• Viaje Mediano (2 - 5 km):</strong><br/>
+                                    <span style="margin-left: 10px;">Ingreso: <strong style="color: #4CAF50;">$8.500 COP</strong> | Tiempo: 25 min | Gasolina: $1.200 COP</span>
+                                </div>
+                                <div style="margin-bottom: 10px; color: rgba(255,255,255,0.7);">
+                                    <strong style="color: #fff;">• Viaje Largo (> 5 km):</strong><br/>
+                                    <span style="margin-left: 10px;">Ingreso: <strong style="color: #4CAF50;">$16.000 COP</strong> | Tiempo: 50 min | Gasolina: $2.500 COP</span>
+                                </div>
+                                <div style="font-size: 11px; color: rgba(255,255,255,0.4); font-style: italic; border-top: 1px solid rgba(255, 204, 0, 0.15); padding-top: 8px; margin-top: 8px;">
+                                    *Nota: Por políticas de cobertura NEXA, tu plan de trabajo siempre incluirá un mínimo de 10 viajes cortos ($40.000 COP mínimos).
+                                </div>
+                            </div>
+
+                            <input type="hidden" id="optHoras" value="8" />
+                            <input type="hidden" id="optGasolina" value="30000" />
+                            
+                            <div style="margin-bottom: 25px;">
+                                <label style="font-weight: 500; font-size: 13px; color: rgba(255,255,255,0.8); display: block; margin-bottom: 5px;">
+                                    Tolerancia al Riesgo (Aversión k)
+                                </label>
+                                <select id="optRiesgo" style="width: 100%; background: #020a12; border: 1px solid rgba(0, 196, 255, 0.2); color: white; padding: 10px; border-radius: 8px; outline: none;">
+                                    <option value="0.9" style="background: #020a12; color: white;">Conservador (k = 0.9) - Prefiere ingresos fijos y predecibles</option>
+                                    <option value="0.5" selected style="background: #020a12; color: white;">Moderado (k = 0.5) - Balance óptimo entre riesgo y beneficio</option>
+                                    <option value="0.1" style="background: #020a12; color: white;">Arriesgado (k = 0.1) - Maximiza ganancias tolerando alta volatilidad</option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn-settings-action" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #00c4ff, #004F78); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; transition: 0.3s; box-shadow: 0 4px 15px rgba(0, 196, 255, 0.2);">
+                                <i class="fas fa-cogs"></i> Ejecutar Optimizador
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Tarjeta de Resultados -->
+                <div class="optimizer-card" style="flex: 1.2; min-width: 320px; background: #03192e; padding: 25px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid rgba(0, 196, 255, 0.15); border-top: 5px solid #5ebdda; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <h3 style="margin-bottom: 20px; color: #5ebdda; display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 600;">
+                            <i class="fas fa-chart-pie"></i> Plan de Trabajo Sugerido
+                        </h3>
+                        
+                        <!-- Contenedor de Espera / Carga -->
+                        <div id="optimizerResultLoading" style="display: none; text-align: center; padding: 60px 0;">
+                            <div class="spinner"></div>
+                            <p style="color: rgba(255,255,255,0.6); font-size: 14px;">Procesando modelo en Google OR-Tools CP-SAT...</p>
+                        </div>
+
+                        <!-- Contenedor Estado Vacío -->
+                        <div id="optimizerResultEmpty" style="text-align: center; padding: 60px 0; color: rgba(255,255,255,0.4);">
+                            <i class="fas fa-calculator" style="font-size: 48px; color: rgba(0, 196, 255, 0.3); margin-bottom: 15px;"></i>
+                            <p style="font-size: 14px;">Ingresa tus parámetros y presiona <strong>Ejecutar Optimizador</strong> para ver el plan sugerido.</p>
+                        </div>
+
+                        <!-- Contenedor Resultados Real -->
+                        <div id="optimizerResultContent" style="display: none;">
+                            <!-- Banner de Notificación / Mensaje de Estado -->
+                            <div id="optimizerMsgBanner" style="padding: 12px 15px; border-radius: 8px; font-size: 13px; margin-bottom: 20px; font-weight: 500; display: flex; align-items: center; gap: 10px; background: rgba(0, 196, 255, 0.1); border: 1px solid rgba(0, 196, 255, 0.2); color: #00c4ff;">
+                                <i id="optimizerMsgIcon" class="fas fa-info-circle"></i>
+                                <span id="optimizerMsgText">Mensaje del solver.</span>
+                            </div>
+
+                            <!-- Distribución de Viajes -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                                <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 10px; text-align: center; border-left: 4px solid #4CAF50; border: 1px solid rgba(255,255,255,0.05); border-left-width: 4px;">
+                                    <span style="font-size: 11px; font-weight: bold; color: rgba(255,255,255,0.5); text-transform: uppercase;">Cortos (X1)</span>
+                                    <h4 id="optResX1" style="font-size: 24px; color: white; margin: 5px 0; font-weight: 700;">0</h4>
+                                    <small style="color: rgba(255,255,255,0.3); font-size: 10px;">(0 - 2 km)</small>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 10px; text-align: center; border-left: 4px solid #FF9800; border: 1px solid rgba(255,255,255,0.05); border-left-width: 4px;">
+                                    <span style="font-size: 11px; font-weight: bold; color: rgba(255,255,255,0.5); text-transform: uppercase;">Medios (X2)</span>
+                                    <h4 id="optResX2" style="font-size: 24px; color: white; margin: 5px 0; font-weight: 700;">0</h4>
+                                    <small style="color: rgba(255,255,255,0.3); font-size: 10px;">(2 - 5 km)</small>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 10px; text-align: center; border-left: 4px solid #F44336; border: 1px solid rgba(255,255,255,0.05); border-left-width: 4px;">
+                                    <span style="font-size: 11px; font-weight: bold; color: rgba(255,255,255,0.5); text-transform: uppercase;">Largos (X3)</span>
+                                    <h4 id="optResX3" style="font-size: 24px; color: white; margin: 5px 0; font-weight: 700;">0</h4>
+                                    <small style="color: rgba(255,255,255,0.3); font-size: 10px;">(> 5 km)</small>
+                                </div>
+                            </div>
+
+                            <!-- Métricas Financieras y Consumos -->
+                            <div style="border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                                <div>
+                                    <span style="font-size: 11px; color: rgba(255,255,255,0.5); display: block;">Ingreso Esperado E(Z)</span>
+                                    <strong id="optResEz" style="font-size: 16px; color: #4CAF50;">$0 COP</strong>
+                                </div>
+                                <div>
+                                    <span style="font-size: 11px; color: rgba(255,255,255,0.5); display: block;">Riesgo Estimado (Desv. Est. σ)</span>
+                                    <strong id="optResSigma" style="font-size: 16px; color: #F44336;">$0 COP</strong>
+                                </div>
+                                <div>
+                                    <span style="font-size: 11px; color: rgba(255,255,255,0.5); display: block;">Utilidad Ajustada Real</span>
+                                    <strong id="optResZadj" style="font-size: 16px; color: #00c4ff;">$0 COP</strong>
+                                </div>
+                                <div>
+                                    <span style="font-size: 11px; color: rgba(255,255,255,0.5); display: block;">Gasto Gasolina Estimado</span>
+                                    <strong id="optResGas" style="font-size: 16px; color: #cfd8dc;">$0 COP</strong>
+                                </div>
+                                <div style="grid-column: span 2;">
+                                    <span style="font-size: 11px; color: rgba(255,255,255,0.5); display: block;">Tiempo Estimado de Trabajo</span>
+                                    <strong id="optResTiempo" style="font-size: 16px; color: #FF9800;">0 min (0h 0m)</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para detalles del viaje -->
+    <div class="modal" id="modalDetallesViaje">
+        <div class="modal-content">
+            <span class="modal-close" onclick="cerrarModalDetalles()">×</span>
+            <h3>Detalles del Viaje</h3>
+            <div id="detallesViajeContent" class="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación -->
+    <div class="confirm-modal-overlay" id="confirm-modal" style="display: none;">
+        <div class="confirm-modal-content">
+            <div class="confirm-modal-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3 id="confirm-modal-title">Título de Confirmación</h3>
+            </div>
+            <p id="confirm-modal-message">Mensaje de confirmación...</p>
+            <div class="confirm-modal-actions">
+                <button class="btn-cancel" onclick="closeConfirmModal()">Cancelar</button>
+                <button class="btn-confirm-danger" id="confirm-modal-btn-yes">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="/js/mapAnimations.js?v=1.1"></script>
+    <script src="/js/viaje-fases.js"></script>
+    <script src="/js/viaje-panel.js"></script>
+    <script src="/js/viaje-mapa.js"></script>
+    <script src="/js/viaje-activo.js"></script>
+    <script src="/js/solicitudes-conductor.js"></script>
+    <script src="/js/viaje-conductor.js"></script>
+    <script src="/js/Dashboard_C.js?v=1.5"></script>
+    <script src="/js/niveles.js"></script>
+    <script th:src="@{/js/campos-restringidos.js}" defer></script>
+    <script th:src="@{/js/perfil.js}" defer></script>
+    <script th:src="@{/js/saldo-conductor.js}" defer></script>
+    <script th:src="@{/js/vehiculos-conductor.js}" defer></script>
+    <script>
+        // Navegación mobile: toggle del sidebar
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) {
+                sidebar.classList.toggle('active');
+            }
+        }
+    </script>
+</body>
+
+</html>

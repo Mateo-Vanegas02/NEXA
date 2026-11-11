@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Admin</title>
+    <link href="/css/Dashboard_A.css" rel="stylesheet">
+    <link href="/css/chatbot.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" th:href="@{/icon/NEXA_ICO.ico}">
+</head>
+
+<body>
+
+    <div class="sidebar" id="sidebar">
+        <div>
+            <div class="sidebar-header">
+                <span class="logo-text" id="user-name">ADM</span>
+                <span class="toggle-btn" onclick="toggleSidebar()">
+                    <i class="fas fa-angle-double-left"></i>
+                </span>
+            </div>
+            <ul>
+                <li onclick="showSection('home')">
+                    <i class="fas fa-chart-pie"></i> <span class="text">Inicio</span>
+                </li>
+                <li onclick="showSection('dashboard')">
+                    <i class="fas fa-user-check"></i> <span class="text">Validaciones</span>
+                </li>
+                <li onclick="showSection('deudas'); cargarDeudas()">
+                    <i class="fas fa-hand-holding-usd"></i> <span class="text">Deudas</span> <span class="nav-badge" id="deudas-badge" hidden></span>
+                </li>
+                <li onclick="showSection('ml_dashboard')">
+                    <i class="fas fa-brain"></i> <span class="text">Predicciones ML</span>
+                </li>
+                <li onclick="showSection('settings')">
+                    <i class="fas fa-cog"></i> <span class="text">Configuración</span>
+                </li>
+                <li onclick="showSection('notas')">
+                    <i class="fas fa-sticky-note"></i> <span class="text">Tablero de Notas</span>
+                </li>
+                <form th:action="@{/auth/logout}" method="post" id="logout-form" style="display: none;">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                </form>
+
+                <li onclick="openConfirmModal('Cerrar Sesión', '¿Estás seguro de que deseas cerrar sesión?', 'logout')">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span class="text">Cerrar sesión</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="main">
+
+        <div id="home" class="section active">
+            <div class="section-header">
+                <button class="menu-toggle-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h2>Bienvenido, <span th:text="${#authentication.principal.username}">Admin</span></h2>
+
+                <div class="header-actions">
+                    <button class="btn-refresh" onclick="fetchDashboardData()">
+                        <i class="fas fa-sync-alt"></i> Actualizar
+                    </button>
+                </div>
+            </div>
+
+            <div class="cards-container">
+                <div class="card">
+                    <div class="card-icon bg-blue">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Pasajeros</h3>
+                        <p id="count-pasajeros" th:text="${totalPasajeros ?: 0}">0</p>
+                    </div>
+                    <div class="card-footer">
+                        <span class="trend up"><i class="fas fa-arrow-up"></i> 12%</span>
+                        <span>vs último mes</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon bg-green">
+                        <i class="fas fa-id-card"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Conductores</h3>
+                        <p id="count-conductores" th:text="${totalConductores ?: 0}">0</p>
+                    </div>
+                    <div class="card-footer">
+                        <span class="trend up"><i class="fas fa-arrow-up"></i> 8%</span>
+                        <span>vs último mes</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon bg-orange">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Pendientes</h3>
+                        <p id="count-pendientes"
+                            th:text="${conductoresPendientes != null ? conductoresPendientes.size() : 0}">0</p>
+                    </div>
+                    <div class="card-footer">
+                        <span class="trend down"><i class="fas fa-arrow-down"></i> 5%</span>
+                        <span>vs última semana</span>
+                    </div>
+                </div>
+            </div>
+
+            <section class="dm-card" aria-labelledby="dm-titulo">
+                <div class="dm-cab">
+                    <h3 id="dm-titulo"><i class="fas fa-satellite-dish" aria-hidden="true"></i> Despacho por olas</h3>
+                    <label class="dm-periodo">Periodo
+                        <select id="dm-dias">
+                            <option value="7">Últimos 7 días</option>
+                            <option value="30" selected>Últimos 30 días</option>
+                            <option value="90">Últimos 90 días</option>
+                        </select>
+                    </label>
+                </div>
+                <p class="dm-sub">En qué ola, a qué distancia y en cuánto tiempo se aceptan los viajes. Sirve para ajustar
+                    tiempos y radios (<code>nexa.despacho.*</code>).</p>
+                <div id="dm-contenido" aria-live="polite"></div>
+            </section>
+
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3>NEXA© - Análisis de Prototipo</h3>
+                </div>
+                <div class="powerbi-frame">
+                    <iframe title="Nexa_prototipo (1)"
+                        src="https://app.powerbi.com/view?r=eyJrIjoiMmU4MzFiMmQtZjM3Yy00MGMzLWIxMDYtMjlkNWQyMGIwNDVkIiwidCI6IjlkMTJiZjNmLWU0ZjYtNDdhYi05MTJmLTFhMmYwZmM0OGFhNCIsImMiOjR9"
+                        frameborder="0" allowFullScreen="true">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+        <div id="dashboard" class="section">
+            <div class="section-header">
+                <button class="menu-toggle-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h2>Validación de Conductores</h2>
+                <div class="header-actions">
+                    <button class="btn-refresh" onclick="refreshValidationTable()">
+                        <i class="fas fa-sync-alt"></i> Actualizar
+                    </button>
+                </div>
+            </div>
+
+            <div th:if="${success}" class="alert alert-success">
+                <i class="fas fa-check-circle"></i>
+                <span th:text="${success}"></span>
+            </div>
+            <div th:if="${error}" class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i>
+                <span th:text="${error}"></span>
+            </div>
+
+            <div class="filters">
+                <button class="btn-filter active" onclick="filterTable('all')">Todos</button>
+                <button class="btn-filter" onclick="filterTable('pending')">Pendientes</button>
+                <button class="btn-filter" onclick="filterTable('review')">En revisión</button>
+                <button class="btn-filter" onclick="filterTable('approved')">Aprobados</button>
+                <button class="btn-filter" onclick="filterTable('rejected')">Rechazados</button>
+            </div>
+
+            <div class="table-container">
+                <table id="tabla-conductores">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Teléfono</th>
+                            <th>Licencia</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="conductor : ${conductoresPendientes}"
+                            th:data-status="${conductor.estadoValidacion.toString().toLowerCase()}">
+                            <td th:text="${conductor.nombre_y_Apellido}" class="clickable"
+                                th:data-nombre="${conductor.nombre_y_Apellido}" th:data-email="${conductor.email}" th:data-foto="${conductor.fotoPerfilUrl()}"
+                                th:data-telefono="${conductor.ntelefono}" th:data-licencia="${conductor.licencia}"
+                                th:data-soat="${conductor.soat != null ? conductor.soat : 'No disponible'}"
+                                th:data-tarjeta="${conductor.tarjeta_de_propiedad != null ? conductor.tarjeta_de_propiedad : 'No disponible'}"
+                                onclick="openDriverModal(this)">
+                            </td>
+                            <td th:text="${conductor.email}"></td>
+                            <td th:text="${conductor.ntelefono}"></td>
+                            <td th:text="${conductor.licencia}"></td>
+                            <td>
+                                <span th:text="${conductor.estadoValidacion}"
+                                    th:classappend="${conductor.estadoValidacion.name() == 'APROBADO'} ? 'status-approved' :
+                                    (${conductor.estadoValidacion.name() == 'RECHAZADO'} ? 'status-rejected' :
+                                    (${conductor.estadoValidacion.name() == 'EN_REVISION'} ? 'status-review' : 'status-pending'))">
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <form th:action="@{/admin/aprobar-conductor}" method="post"
+                                        th:if="${conductor.estadoValidacion.name() != 'APROBADO' and conductor.estadoValidacion.name() != 'EN_REVISION'}">
+                                        <input type="hidden" name="email" th:value="${conductor.email}">
+                                        <button type="submit" class="btn-approve">
+                                            <i class="fas fa-check"></i> Aprobar
+                                        </button>
+                                    </form>
+                                    <form th:action="@{/admin/rechazar-conductor}" method="post"
+                                        th:if="${conductor.estadoValidacion.name() != 'RECHAZADO'}">
+                                        <input type="hidden" name="email" th:value="${conductor.email}">
+                                        <button type="submit" class="btn-reject">
+                                            <i class="fas fa-times"></i> Rechazar
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr th:each="conductor : ${conductoresAprobados}"
+                            th:data-status="${conductor.estadoValidacion.toString().toLowerCase()}">
+                            <td th:text="${conductor.nombre_y_Apellido}" class="clickable"
+                                th:data-nombre="${conductor.nombre_y_Apellido}" th:data-email="${conductor.email}" th:data-foto="${conductor.fotoPerfilUrl()}"
+                                th:data-telefono="${conductor.ntelefono}" th:data-licencia="${conductor.licencia}"
+                                th:data-soat="${conductor.soat != null ? conductor.soat : 'No disponible'}"
+                                th:data-tarjeta="${conductor.tarjeta_de_propiedad != null ? conductor.tarjeta_de_propiedad : 'No disponible'}"
+                                onclick="openDriverModal(this)">
+                            </td>
+                            <td th:text="${conductor.email}"></td>
+                            <td th:text="${conductor.ntelefono}"></td>
+                            <td th:text="${conductor.licencia}"></td>
+                            <td><span class="status-approved" th:text="${conductor.estadoValidacion}"></span></td>
+                            <td><span class="no-actions">Aprobado</span></td>
+                        </tr>
+
+                        <tr th:each="conductor : ${conductoresRechazados}"
+                            th:data-status="${conductor.estadoValidacion.toString().toLowerCase()}">
+                            <td th:text="${conductor.nombre_y_Apellido}" class="clickable"
+                                th:data-nombre="${conductor.nombre_y_Apellido}" th:data-email="${conductor.email}" th:data-foto="${conductor.fotoPerfilUrl()}"
+                                th:data-telefono="${conductor.ntelefono}" th:data-licencia="${conductor.licencia}"
+                                th:data-soat="${conductor.soat != null ? conductor.soat : 'No disponible'}"
+                                th:data-tarjeta="${conductor.tarjeta_de_propiedad != null ? conductor.tarjeta_de_propiedad : 'No disponible'}"
+                                onclick="openDriverModal(this)">
+                            </td>
+                            <td th:text="${conductor.email}"></td>
+                            <td th:text="${conductor.ntelefono}"></td>
+                            <td th:text="${conductor.licencia}"></td>
+                            <td><span class="status-rejected" th:text="${conductor.estadoValidacion}"></span></td>
+                            <td><span class="no-actions">Rechazado</span></td>
+                        </tr>
+
+                        <tr
+                            th:if="${conductoresPendientes.empty && conductoresAprobados.empty && conductoresRechazados.empty}">
+                            <td colspan="6" class="no-data">No hay conductores registrados</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="deudas" class="section">
+            <div class="section-header">
+                <button class="menu-toggle-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h2>Deudas por cancelación</h2>
+                <div class="header-actions">
+                    <button class="btn-refresh" onclick="cargarDeudas()">
+                        <i class="fas fa-sync-alt"></i> Actualizar
+                    </button>
+                </div>
+            </div>
+
+            <div class="deudas-resumen">
+                <div class="deuda-card">
+                    <div class="icon-box"><i class="fas fa-users"></i></div>
+                    <span class="deuda-card-rotulo">Pasajeros con deuda</span>
+                    <strong class="deuda-card-valor" id="deudas-n">0</strong>
+                    <small class="deuda-card-pie" id="deudas-n-pie"></small>
+                </div>
+                <div class="deuda-card deuda-card--ambar">
+                    <div class="icon-box"><i class="fas fa-clock"></i></div>
+                    <span class="deuda-card-rotulo">Total por cobrar</span>
+                    <strong class="deuda-card-valor" id="deudas-total">$0</strong>
+                    <small class="deuda-card-pie">Suma de las deudas pendientes</small>
+                </div>
+                <div class="deuda-card deuda-card--verde">
+                    <div class="icon-box"><i class="fas fa-money-bill-wave"></i></div>
+                    <span class="deuda-card-rotulo">Pagadas (últimos 30 días)</span>
+                    <strong class="deuda-card-valor" id="deudas-pagadas">0</strong>
+                    <small class="deuda-card-pie" id="deudas-recaudado"></small>
+                </div>
+            </div>
+
+            <div class="deudas-ayuda">
+                <i class="fas fa-info-circle"></i>
+                La deuda se cobra sola con el próximo viaje del pasajero: él la acepta antes de pedirlo y paga todo
+                junto en efectivo al conductor (el conductor solo ve el total, no el desglose). Confirma el pago aquí
+                solo si te lo entregó por fuera, o condónala si el cargo no correspondía.
+            </div>
+            <div class="alert alert-error" id="deudas-error" style="display:none"></div>
+
+            <div class="filters" id="deudas-filtros">
+                <button class="btn-filter active" data-filtro="pendientes" type="button">Pendientes</button>
+                <button class="btn-filter" data-filtro="pagadas" type="button">Pagadas</button>
+                <button class="btn-filter" data-filtro="condonadas" type="button">Condonadas</button>
+                <button class="btn-filter" data-filtro="todas" type="button">Todas</button>
+            </div>
+
+            <div class="table-container">
+                <table id="tabla-deudas">
+                    <thead>
+                        <tr>
+                            <th>Pasajero</th>
+                            <th>Email</th>
+                            <th>Teléfono</th>
+                            <th>Viaje</th>
+                            <th>Cancelado</th>
+                            <th>Monto</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="deudas-cuerpo">
+                        <tr><td colspan="8" class="no-data">Cargando…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <section class="saldos-card" aria-labelledby="saldos-titulo">
+                <div class="saldos-cab">
+                    <h3 id="saldos-titulo"><i class="fas fa-scale-balanced" aria-hidden="true"></i>
+                        Saldo de los conductores</h3>
+                    <label class="saldos-periodo">Periodo
+                        <select id="saldos-dias">
+                            <option value="7">Últimos 7 días</option>
+                            <option value="30" selected>Últimos 30 días</option>
+                            <option value="90">Últimos 90 días</option>
+                        </select>
+                    </label>
+                </div>
+                <p class="saldos-sub">Cada conductor cobra el viaje completo en efectivo. Lo que no es suyo (la
+                    comisión y las deudas que cobró de otros viajes) queda a favor de NEXA.</p>
+                <div class="table-container">
+                    <table id="tabla-saldos">
+                        <thead>
+                            <tr>
+                                <th>Conductor</th>
+                                <th>Viajes</th>
+                                <th>Cobrado</th>
+                                <th>Ganancia</th>
+                                <th>Comisión</th>
+                                <th>Deudas cobradas</th>
+                                <th>A su favor</th>
+                                <th>Saldo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="saldos-cuerpo">
+                            <tr><td colspan="8" class="no-data">Cargando…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <div class="confirm-modal-overlay" id="pago-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="pago-titulo">
+            <div class="confirm-modal-content pago-modal">
+                <i class="fas fa-check-circle pago-icono"></i>
+                <h3 id="pago-titulo">Confirmar pago</h3>
+                <p id="pago-pregunta"></p>
+                <dl class="pago-resumen">
+                    <div><dt>Monto</dt><dd id="pago-monto" class="pago-monto"></dd></div>
+                    <div><dt>Viaje cancelado</dt><dd id="pago-viaje"></dd></div>
+                    <div><dt>Pasajero</dt><dd id="pago-email"></dd></div>
+                </dl>
+                <label for="pago-metodo">Método de pago recibido</label>
+                <select id="pago-metodo"><option value="EFECTIVO">Efectivo</option></select>
+                <label for="pago-nota">Referencia o nota (opcional)</label>
+                <input type="text" id="pago-nota" maxlength="200" placeholder="Ej.: recibido en la sede del centro">
+                <small>Al confirmar, la deuda se elimina y ya no se le cobrará con su próximo viaje.</small>
+                <div class="alert alert-error" id="pago-error" style="display:none"></div>
+                <div class="confirm-modal-actions">
+                    <button type="button" class="btn-cancel" id="pago-cancelar">Cancelar</button>
+                    <button type="button" class="btn-approve" id="pago-confirmar">Confirmar pago</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="confirm-modal-overlay" id="condonar-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="condonar-titulo">
+            <div class="confirm-modal-content pago-modal">
+                <i class="fas fa-hand-holding-heart pago-icono"></i>
+                <h3 id="condonar-titulo">Condonar deuda</h3>
+                <p id="condonar-pregunta"></p>
+                <dl class="pago-resumen">
+                    <div><dt>Monto que se perdona</dt><dd id="condonar-monto" class="pago-monto"></dd></div>
+                    <div><dt>Viaje cancelado</dt><dd id="condonar-viaje"></dd></div>
+                </dl>
+                <label for="condonar-motivo">Motivo (obligatorio, queda registrado con tu correo)</label>
+                <textarea id="condonar-motivo" rows="3" maxlength="300" placeholder="Ej.: el conductor pidió cancelar"></textarea>
+                <small>Si el cargo ya se le reconoció al conductor, lo absorbe la plataforma.</small>
+                <div class="alert alert-error" id="condonar-error" style="display:none"></div>
+                <div class="confirm-modal-actions">
+                    <button type="button" class="btn-cancel" id="condonar-cancelar">Cancelar</button>
+                    <button type="button" class="btn-approve" id="condonar-confirmar">Condonar deuda</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="infoModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="vc-titulo">
+            <div class="modal-content vc-modal" id="vc-contenedor"></div>
+        </div>
+        <div id="ml_dashboard" class="section">
+
+            <div class="section-header">
+                <button class="menu-toggle-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h2>Dashboard de Machine Learning</h2>
+                <div class="header-actions">
+                    <button class="btn-refresh" onclick="cargarDatosML()">
+                        <i class="fas fa-sync-alt"></i> Actualizar Modelo
+                    </button>
+                </div>
+            </div>
+
+            <div class="ml-loader-container" id="ml-loader">
+                <div class="ml-spinner"></div>
+                <p>Cargando datos del modelo activo...</p>
+            </div>
+
+            <div id="ml-content-wrapper" style="display: none;">
+
+                <div class="ml-grid-top">
+
+                    <div class="settings-card">
+                        <h3>Panel de Control del Modelo</h3>
+                        <div class="settings-option">
+                            <div class="option-icon"><i class="fas fa-sync-alt"></i></div>
+                            <div class="option-content">
+                                <h3>Re-entrenar Modelo</h3>
+                                <p>
+                                    Ejecuta el pipeline de entrenamiento (ETL) y genera una nueva
+                                    versión del árbol de decisión.
+                                </p>
+                            </div>
+                            <button class="btn-approve" id="btn-entrenar-ml" onclick="entrenarModeloML()">
+                                <i class="fas fa-play"></i> Entrenar
+                            </button>
+                        </div>
+                        <div id="ml-feedback" style="display:none; margin-top: 15px;"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon bg-blue"><i class="fas fa-info-circle"></i></div>
+                        <div class="card-content">
+                            <h3>Metadatos del Modelo</h3>
+                            <p id="ml-instancias">...</p>
+                        </div>
+                        <div class="card-footer">
+                            <span id="ml-fecha-entrenamiento">...</span>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="card">
+                    <div class="card-icon bg-green"><i class="fas fa-tree"></i></div>
+                    <div class="card-content">
+                        <h3>Árbol de Decisión (Reglas J48)</h3>
+                    </div>
+
+                    <div class="ml-insights-grid">
+
+                        <div class="card insight-card">
+                            <div class="card-header-mini">
+                                <i class="fas fa-chess-king" style="color: #ff9800;"></i>
+                                <h4>Factor Principal</h4>
+                            </div>
+                            <div class="insight-body">
+                                <h2 id="insight-factor-nombre">Calculando...</h2>
+                                <p>Es la variable que más define la satisfacción del cliente actualmente.</p>
+                            </div>
+                        </div>
+
+                        <div class="card insight-card">
+                            <div class="card-header-mini">
+                                <i class="fas fa-star" style="color: #ffd700;"></i>
+                                <h4>Regla de Oro (Satisfacción)</h4>
+                            </div>
+                            <div class="insight-body">
+                                <div id="insight-regla-texto" class="rule-text">Analizando patrones...</div>
+                                <span class="badge-confidence" id="insight-confianza">Alta Confianza</span>
+                            </div>
+                        </div>
+
+                        <div class="card insight-card simulator-card">
+                            <div class="card-header-mini">
+                                <i class="fas fa-vial" style="color: #00c4ff;"></i>
+                                <h4>Simulador Rápido</h4>
+                            </div>
+                            <div class="simulator-body">
+                                <div class="sim-inputs">
+                                    <input type="number" id="sim-duracion" placeholder="Minutos" class="mini-input">
+                                    <input type="number" id="sim-distancia" placeholder="KM" class="mini-input">
+                                    <input type="number" id="sim-tarifa" placeholder="Precio" class="mini-input">
+                                </div>
+                                <button onclick="simularPrediccionLocal()" class="btn-simular">
+                                    <i class="fas fa-magic"></i> Predecir
+                                </button>
+                                <div id="sim-resultado" class="sim-result">---</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stats-comparison-container">
+                        <h3 class="stats-title">Análisis de Histórico: Satisfacción vs. Variables</h3>
+
+                        <div class="comparison-wrapper">
+                            <div class="stat-side positive">
+                                <div class="stat-header">
+                                    <div class="icon-box success"><i class="fas fa-smile"></i></div>
+                                    <div>
+                                        <h4>SATISFACTORIOS</h4>
+                                        <span class="big-number" id="stat-count-si">0</span>
+                                        <span class="stat-label">viajes</span>
+                                    </div>
+                                </div>
+                                <div class="stat-details">
+                                    <div class="detail-item">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                        <span>Tarifa Prom: <strong id="stat-tarifa-si">$0</strong></span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <i class="fas fa-route"></i>
+                                        <span>Distancia Prom: <strong id="stat-distancia-si">0 km</strong></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="vs-divider">
+                                <span>VS</span>
+                            </div>
+
+                            <div class="stat-side negative">
+                                <div class="stat-header">
+                                    <div class="icon-box error"><i class="fas fa-frown"></i></div>
+                                    <div>
+                                        <h4>INSATISFACTORIOS</h4>
+                                        <span class="big-number" id="stat-count-no">0</span>
+                                        <span class="stat-label">viajes</span>
+                                    </div>
+                                </div>
+                                <div class="stat-details">
+                                    <div class="detail-item">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                        <span>Tarifa Prom: <strong id="stat-tarifa-no">$0</strong></span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <i class="fas fa-route"></i>
+                                        <span>Distancia Prom: <strong id="stat-distancia-no">0 km</strong></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <pre id="ml-arbol-texto" class="ml-arbol-visualizador">
+                ...
+            </pre>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div id="settings" class="section">
+
+            <div class="section-header">
+                <button class="menu-toggle-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h2>Configuración</h2>
+                <div class="header-actions"></div>
+            </div>
+            <div class="settings-container">
+                <div class="settings-option">
+                    <div class="option-icon"><i class="fas fa-bell"></i></div>
+                    <div class="option-content">
+                        <h3>Notificaciones</h3>
+                        <p>Alertas en vivo (Registros)</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="notif" th:checked="${notificacionesActivas}">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <div class="settings-option" onclick="openPermissionsModal()" style="cursor: pointer;">
+                    <div class="option-icon"><i class="fas fa-user-shield"></i></div>
+                    <div class="option-content">
+                        <h3>Manual Admin</h3>
+                        <p>Guía de acceso</p>
+                    </div>
+                    <button class="btn-settings"><i class="fas fa-chevron-right"></i></button>
+                </div>
+
+            </div>
+
+            <h3 class="mp-titulo">Métodos de pago</h3>
+            <p class="mp-sub">Cómo pagan los pasajeros las deudas por cancelación. Por ahora solo se recibe efectivo.</p>
+            <div class="mp-grid">
+                <div class="mp-card mp-card--activo">
+                    <div class="mp-cab"><i class="fas fa-money-bill-wave"></i>
+                        <div><strong>Efectivo</strong> <span class="mp-etiqueta mp-etiqueta--verde">Activo</span><small>Método base</small></div>
+                        <label class="switch"><input type="checkbox" checked disabled aria-label="Efectivo siempre activo"><span class="slider round"></span></label>
+                    </div>
+                    <p>El pasajero paga la deuda en mano. El administrador confirma el pago desde Deudas y la cuenta se desbloquea para nuevos viajes.</p>
+                    <dl class="mp-datos">
+                        <div><dt>Confirmación</dt><dd>Manual por el administrador</dd></div>
+                        <div><dt>Registro</dt><dd>Método y nota quedan en el historial</dd></div>
+                        <div><dt>Comisión</dt><dd>Sin comisión de pasarela</dd></div>
+                        <div><dt>Disponibilidad</dt><dd>Siempre activo · no se puede desactivar</dd></div>
+                    </dl>
+                    <div class="mp-cifras">
+                        <div><strong id="mp-pendientes">0</strong><span>Deudas pendientes</span></div>
+                        <div><strong id="mp-confirmadas" class="verde">0</strong><span>Confirmadas (30 días)</span></div>
+                        <a href="#deudas" onclick="showSection('deudas'); cargarDeudas(); return false;">Ir a Deudas →</a>
+                    </div>
+                </div>
+                <div class="mp-card">
+                    <div class="mp-cab"><i class="fas fa-credit-card"></i>
+                        <div><strong>Mercado Pago</strong> <span class="mp-etiqueta">Próximamente</span><small>Checkout Pro · tarjeta, PSE y saldo</small></div>
+                        <label class="switch"><input type="checkbox" disabled aria-label="Mercado Pago aún no disponible"><span class="slider round"></span></label>
+                    </div>
+                    <p>Pago electrónico con confirmación automática por webhook. Ya está previsto en el sistema; se enciende cuando la integración esté desplegada y probada.</p>
+                    <dl class="mp-datos">
+                        <div><dt>Integración</dt><dd>No configurada</dd></div>
+                        <div><dt>Credenciales</dt><dd>Solo en variables de entorno</dd></div>
+                        <div><dt>Webhook</dt><dd>/api/pagos/mercadopago/webhook</dd></div>
+                        <div><dt>Comisión</dt><dd>La cobra Mercado Pago</dd></div>
+                    </dl>
+                    <button type="button" class="btn-settings" disabled><i class="fas fa-lock"></i> Activar pasarela</button>
+                </div>
+            </div>
+            <div class="deudas-ayuda"><i class="fas fa-info-circle"></i>
+                La pasarela quedará detrás de una interfaz de pago intercambiable: más adelante se puede encender Mercado Pago (o cambiar a otra) sin rehacer el cobro de deudas.</div>
+        </div>
+
+        <!-- SECCIÓN: TABLERO DE NOTAS -->
+        <div id="notas" class="section">
+            <div class="section-header">
+                <h2>Tablero de Notas</h2>
+                <div class="header-actions">
+                    <button class="btn-refresh" onclick="openNotaModal()"><i class="fas fa-plus"></i> Nueva Nota</button>
+                    <button class="btn-refresh" onclick="cargarNotasAdmin()"><i class="fas fa-sync-alt"></i> Actualizar</button>
+                </div>
+            </div>
+
+            <div class="cards-container notas-grid" id="notas-container">
+                <!-- Las notas se insertarán aquí dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Modal para Crear/Editar Nota -->
+        <div class="confirm-modal-overlay" id="nota-modal" style="display: none;">
+            <div class="confirm-modal-content" style="max-width: 500px; width: 90%;">
+                <div class="confirm-modal-header" style="justify-content: space-between;">
+                    <h3 id="nota-modal-title"><i class="fas fa-sticky-note"></i> Nueva Nota</h3>
+                    <button onclick="closeNotaModal()" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; font-size:1.2rem;"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body" style="margin-top: 15px;">
+                    <input type="hidden" id="nota-id">
+                    <div style="margin-bottom: 15px;">
+                        <label for="nota-titulo" style="display:block; margin-bottom:5px; color:var(--text-secondary); font-size:0.9rem;">Título</label>
+                        <input type="text" id="nota-titulo" placeholder="Título de la nota" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main);">
+                    </div>
+                    <div>
+                        <label for="nota-contenido" style="display:block; margin-bottom:5px; color:var(--text-secondary); font-size:0.9rem;">Contenido</label>
+                        <textarea id="nota-contenido" placeholder="Escribe tu nota aquí..." rows="5" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main); resize: vertical;"></textarea>
+                    </div>
+                </div>
+                <div class="confirm-modal-actions" style="margin-top: 20px;">
+                    <button class="btn-cancel" onclick="closeNotaModal()">Cancelar</button>
+                    <button class="btn-primary" onclick="guardarNota()">Guardar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="confirm-modal-overlay" id="confirm-modal" style="display: none;">
+            <div class="confirm-modal-content">
+                <div class="confirm-modal-header">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3 id="confirm-modal-title">Título de Confirmación</h3>
+                </div>
+                <p id="confirm-modal-message">Mensaje de confirmación...</p>
+                <div class="confirm-modal-actions">
+                    <button class="btn-cancel" onclick="closeConfirmModal()">
+                        Cancelar
+                    </button>
+                    <button class="btn-confirm-danger" id="confirm-modal-btn-yes">
+                        Confirmar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="permissionsModal" class="modal">
+            <div class="modal-content" style="max-width: 600px;">
+                <span class="close-button" onclick="closePermissionsModal()">×</span>
+
+                <div class="modal-header">
+                    <div class="driver-avatar"
+                        style="border-color: var(--secondary); background: rgba(0, 196, 255, 0.1);">
+                        <i class="fas fa-book" style="color: var(--secondary);"></i>
+                    </div>
+                    <h3>Manual de Administrador</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.9em;">Guía de funcionalidades del panel NEXA
+                    </p>
+                </div>
+
+                <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
+
+                    <div style="margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px;">
+                        <h4 style="color: var(--primary-dark); margin-bottom: 8px;"><i class="fas fa-chart-pie"></i>
+                            Dashboard Principal</h4>
+                        <p style="font-size: 13px; color: var(--text-secondary);">Visualización de métricas en tiempo
+                            real. Los indicadores de tendencia comparan el rendimiento actual con el mes anterior.</p>
+                    </div>
+
+                    <div style="margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px;">
+                        <h4 style="color: var(--primary-dark); margin-bottom: 8px;"><i class="fas fa-user-check"></i>
+                            Validaciones</h4>
+                        <p style="font-size: 13px; color: var(--text-secondary);">Control de acceso para conductores.
+                        </p>
+                        <ul style="font-size: 13px; color: var(--text-secondary); margin-left: 20px;">
+                            <li><strong>Aprobar:</strong> Otorga acceso inmediato a la app de conductor.</li>
+                            <li><strong>Rechazar:</strong> Bloquea el acceso. El conductor deberá contactar soporte.
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4 style="color: var(--primary-dark); margin-bottom: 8px;"><i class="fas fa-brain"></i> Machine
+                            Learning (J48)</h4>
+                        <p style="font-size: 13px; color: var(--text-secondary);">Modelo predictivo de satisfacción.</p>
+                        <ul style="font-size: 13px; color: var(--text-secondary); margin-left: 20px;">
+                            <li><strong>Re-entrenar:</strong> Actualiza el árbol de decisión con los últimos viajes.
+                            </li>
+                            <li><strong>Simulador:</strong> Permite probar escenarios hipotéticos (tarifa vs distancia).
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn-refresh" onclick="closePermissionsModal()"
+                        style="width: 100%; justify-content: center;">Entendido</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botón flotante del Chatbot -->
+        <button class="chatbot-toggle" id="chatbotToggle" onclick="toggleChat()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M12 2C6.477 2 2 6.477 2 12c0 1.696.425 3.293 1.178 4.693L2 22l5.485-1.127A9.957 9.957 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18c-1.463 0-2.85-.316-4.108-.88l-.295-.133-3.136.645.656-3.08-.148-.288A7.95 7.95 0 014 12c0-4.411 3.589-8 8-8s8 3.589 8-8 8zm-2-9a1 1 0 110-2 1 1 0 010 2zm4 0a1 1 0 110-2 1 1 0 010 2z" />
+            </svg>
+        </button>
+
+        <!-- Ventana del Chatbot -->
+        <div class="chatbot-window" id="chatWidget">
+            <div class="chatbot-header">
+                <div class="chatbot-avatar"><i class="fas fa-robot"></i></div>
+                <div class="chatbot-header-info">
+                    <h4>Asistente Nexa</h4>
+                    <span>En línea - Admin</span>
+                </div>
+                <button onclick="toggleChat()" style="background:none; border:none; color:white; cursor:pointer;"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="chatbot-messages" id="chatBody">
+                <div class="chat-message bot">
+                    ¡Hola! Soy tu asistente de gestión. Puedo ayudarte con tus notas o consultas rápidas.
+                </div>
+            </div>
+            <div class="chatbot-input">
+                <input type="text" id="chatInput" placeholder="Escribe un mensaje...">
+                <button onclick="sendChatMessage()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/js/verificacion-conductor.js" defer></script>
+    <script src="/js/despacho-metricas.js" defer></script>
+    <script src="/js/saldos-conductores.js" defer></script>
+    <script src="/js/Dashboard_A.js" defer></script>
+</body>
+
+</html>

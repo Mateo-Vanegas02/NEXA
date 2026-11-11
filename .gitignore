@@ -1,0 +1,62 @@
+# --- Archivos de Entorno ---
+.env
+.env.local
+.env.*.local
+
+# --- Archivos de Sistema ---
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# --- Java / Maven / Gradle ---
+target/
+build/
+bin/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+.settings/
+.classpath
+.project
+.factorypath
+.apt_generated
+
+# --- IDEs ---
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# STS / Eclipse
+.springBeans
+.sts4-cache
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# VS Code
+.vscode/
+
+# --- Otros ---
+HELP.md
+# --- Secretos / entorno (nunca versionar; .env.example si) ---
+.env
+.env.*
+!.env.example
+*.env
+application-local.properties
+application-secret*.properties
+secrets/
+*.pem
+*.key
+*.p12
+*.jks

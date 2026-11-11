@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXA - Servicio de MotoTaxis</title>
+    <meta name="description"
+        content="NEXA - Servicio de mototaxis rápido y seguro. Evita el tráfico y llega a tu destino a tiempo.">
+    <meta name="keywords" content="mototaxi, transporte rápido, servicio de moto, domicilios, Cartagena">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/nexa-design.css}">
+    <link rel="stylesheet" th:href="@{/css/chatbot.css}">
+    <link rel="icon" th:href="@{/icon/NEXA_ICO.ico}">
+</head>
+
+<body data-chat-context="pasajero">
+    <a class="nx-skip" href="#contenido">Saltar al contenido</a>
+
+    <header class="nx-nav">
+        <nav class="nx-nav__in" aria-label="Principal">
+            <a class="nx-logo nexa-brand" th:href="@{/public/home/pasajero}" aria-label="NEXA, inicio">NE<span>XA</span></a>
+            <button class="nx-nav__toggle" type="button" aria-expanded="false" aria-controls="menu-principal"
+                aria-label="Abrir o cerrar menú"><i class="fas fa-bars" aria-hidden="true"></i></button>
+            <div class="nx-nav__links" id="menu-principal">
+                <a href="#servicios">Servicios</a>
+                <a href="#beneficios">Beneficios</a>
+                <a href="#nosotros">Nosotros</a>
+                <a href="#equipo">Equipo</a>
+                <a href="#contacto">Contacto</a>
+                <a th:href="@{/public/home/conductor}">Conductor</a>
+                <a th:href="@{/auth/login}">Iniciar sesión</a>
+                <a th:href="@{/auth/registro}" class="nx-nav__cta">Regístrate</a>
+            </div>
+        </nav>
+    </header>
+
+    <main id="contenido">
+        <!-- Hero: texto a la izquierda, velocímetro en tarjeta de vidrio a la derecha -->
+        <section class="nx-hero" id="inicio" aria-labelledby="hero-t">
+            <div class="nx-wrap nx-split">
+                <div>
+                    <p class="nx-pillbadge">Mototaxis en Cartagena</p>
+                    <h1 id="hero-t" class="nexa-display">NE<span class="nx-cy">XA:</span> Conecta con el movimiento</h1>
+                    <p class="nx-hero__sub nx-gradtext">¡Tu destino te espera!</p>
+                    <p class="nx-hero__lead">Pide una moto en segundos, sigue tu viaje en tiempo real y gana beneficios
+                        mientras te mueves.</p>
+                    <div class="nx-hero__cta">
+                        <a class="nx-btn" th:href="@{/auth/registro}">¡Solicita ahora!</a>
+                        <a class="nx-btn nx-btn--outline" th:href="@{/auth/login}">Ya tengo cuenta</a>
+                    </div>
+                </div>
+                <div class="nx-glass">
+                    <div class="nx-speedo" data-speedo>
+                        <div class="nx-speedo__dial">
+                            <svg viewBox="0 0 320 205" aria-hidden="true" focusable="false">
+                                <defs>
+                                    <linearGradient id="arco-grad" x1="0" x2="1">
+                                        <stop offset="0" stop-color="#004f78" />
+                                        <stop offset="1" stop-color="#00c4ff" />
+                                    </linearGradient>
+                                </defs>
+                                <path class="nx-speedo__base" d="M 46 168 A 114 114 0 0 1 274 168" />
+                                <path class="nx-speedo__arc" d="M 46 168 A 114 114 0 0 1 274 168" />
+                                <line class="nx-speedo__needle" x1="160" y1="168" x2="160" y2="70" />
+                                <circle class="nx-speedo__hub" cx="160" cy="168" r="9" />
+                            </svg>
+                            <button type="button" class="nx-speedo__tick" aria-pressed="true" data-x="14.5" data-y="82"
+                                data-title="Reserva inmediata" data-text="Solicita una moto en segundos">01</button>
+                            <button type="button" class="nx-speedo__tick" aria-pressed="false" data-x="37" data-y="24"
+                                data-title="Ruta inteligente" data-text="Sigue el trayecto en tiempo real">02</button>
+                            <button type="button" class="nx-speedo__tick" aria-pressed="false" data-x="63" data-y="24"
+                                data-title="Conductor seguro" data-text="Viaja con perfiles verificados">03</button>
+                            <button type="button" class="nx-speedo__tick" aria-pressed="false" data-x="85.5" data-y="82"
+                                data-title="Llegada rápida" data-text="Muévete sin perder tiempo">04</button>
+                        </div>
+                        <div class="nx-speedo__info" aria-live="polite">
+                            <p class="nexa-caption">SERVICIO <span data-speedo-n>01</span></p>
+                            <strong data-speedo-title>Reserva inmediata</strong>
+                            <span class="nexa-body-sm nx-muted" data-speedo-text>Solicita una moto en segundos</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="nx-section" id="servicios" aria-labelledby="servicios-t">
+            <div class="nx-wrap">
+                <div class="nx-section__head">
+                    <h2 id="servicios-t" class="nexa-heading">Nuestros <span class="nx-cy">servicios</span></h2>
+                    <p>Servicios que ofrecemos dentro de la app.</p>
+                </div>
+                <ul class="nx-grid nx-grid--3">
+                    <li class="nx-card">
+                        <span class="nx-icon" aria-hidden="true"><i class="fas fa-motorcycle"></i></span>
+                        <h3>Reserva de Viajes</h3>
+                        <p>Solicita y reserva viajes en moto de manera fácil, eligiendo el destino y el tipo de moto.</p>
+                    </li>
+                    <li class="nx-card">
+                        <span class="nx-icon" aria-hidden="true"><i class="fas fa-location-dot"></i></span>
+                        <h3>Seguimiento en Tiempo Real</h3>
+                        <p>Rastrea la ubicación de tu conductor en tiempo real: más seguridad y mejor experiencia.</p>
+                    </li>
+                    <li class="nx-card">
+                        <span class="nx-icon" aria-hidden="true"><i class="fas fa-star"></i></span>
+                        <h3>Calificaciones y Reseñas</h3>
+                        <p>Califica a los conductores y deja tu opinión; así cuidamos la calidad del servicio.</p>
+                    </li>
+                    <li class="nx-card">
+                        <span class="nx-icon" aria-hidden="true"><i class="fas fa-credit-card"></i></span>
+                        <h3>Opciones de Pago Seguras</h3>
+                        <p>Métodos de pago seguros y variados: tarjetas de crédito, débito o billeteras digitales.</p>
+                    </li>
+                    <li class="nx-card">
+                        <span class="nx-icon" aria-hidden="true"><i class="fas fa-shield-halved"></i></span>
+                        <h3>Asistencia en Ruta</h3>
+                        <p>Te ayudamos ante cualquier inconveniente durante el viaje.</p>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="nx-section nx-section--mist" id="beneficios" aria-labelledby="beneficios-t">
+            <div class="nx-wrap">
+                <div class="nx-section__head">
+                    <h2 id="beneficios-t" class="nexa-heading"><span class="nx-cy">Beneficios</span> para ti</h2>
+                    <p>Beneficios por ser parte de nosotros.</p>
+                </div>
+                <ul class="nx-grid nx-grid--3">
+                    <li class="nx-card nx-card--white">
+                        <span class="nx-icon" aria-hidden="true"><i class="fas fa-ticket"></i></span>
+                        <h3>Promociones y Descuentos</h3>
+                        <p>Cada viernes y festivo otorgamos del 20% al 45% en todos y cada uno de los viajes.</p>
+                    </li>
+                    <li class="nx-card nx-card--white">
+                        <span class="nx-icon" aria-hidden="true"><i class="fas fa-heart"></i></span>
+                        <h3>Usuario fiel</h3>
+                        <p>Después de dos meses con NEXA© ingresas al programa de afiliados: por cada persona que
+                            invites recibes un cupón para tu próximo viaje.</p>
+                    </li>
+                    <li class="nx-card nx-card--white">
+                        <span class="nx-icon" aria-hidden="true"><i class="fas fa-book-open"></i></span>
+                        <h3>Acceso a Contenido Exclusivo</h3>
+                        <p>Artículos, tutoriales y consejos sobre seguridad, técnicas de conducción, cuidado de motos y
+                            más.</p>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="nx-section" id="nosotros" aria-labelledby="nosotros-t">
+            <div class="nx-wrap nx-split">
+                <img class="nx-float" th:src="@{/img/moto3d_trans.png}" alt="Moto NEXA" loading="lazy">
+                <div>
+                    <div class="nx-section__head">
+                        <h2 id="nosotros-t" class="nexa-heading">Sobre <span class="nx-cy">nosotros</span></h2>
+                        <p>Para que nos conozcas.</p>
+                    </div>
+                    <div class="nx-about">
+                        <article>
+                            <h3>Nuestra historia</h3>
+                            <p>La historia de NEXA comienza con una idea simple pero poderosa: brindar un servicio de
+                                transporte rápido, seguro y accesible para todos. Todo comenzó con un solo casco extra y
+                                una moto lista para recorrer las calles; el boca a boca hizo el resto. ¡Bienvenidos a
+                                bordo, tu próxima aventura en dos ruedas comienza aquí!</p>
+                        </article>
+                        <article>
+                            <h3>Misión</h3>
+                            <p>Ofrecer un servicio de moto taxi rápido, seguro y accesible, ayudando a las personas a
+                                moverse sin estrés y a llegar siempre a tiempo, con conductores capacitados y motos en
+                                óptimas condiciones.</p>
+                        </article>
+                        <article>
+                            <h3>Visión</h3>
+                            <p>Convertirnos en el servicio de moto taxi más confiable y reconocido de Cartagena,
+                                integrando tecnología para optimizar rutas y garantizar viajes aún más cómodos y
+                                accesibles.</p>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="nx-section nx-section--mist" id="equipo" aria-labelledby="equipo-t">
+            <div class="nx-wrap">
+                <div class="nx-section__head">
+                    <h2 id="equipo-t" class="nexa-heading">Nuestro <span class="nx-cy">equipo</span></h2>
+                    <p>NEXA©</p>
+                </div>
+                <ul class="nx-grid nx-grid--4">
+                    <li class="nx-card nx-card--white nx-person">
+                        <img th:src="@{/img/mateo.png}" alt="Foto de Mateo Vanegas" loading="lazy">
+                        <h3>Mateo Vanegas</h3>
+                        <p>Fundador y CEO</p>
+                    </li>
+                    <li class="nx-card nx-card--white nx-person">
+                        <span class="nx-avatar" aria-hidden="true">C</span>
+                        <h3>Carlos Perez</h3>
+                        <p>Gerente de Infraestructura de Datos</p>
+                    </li>
+                    <li class="nx-card nx-card--white nx-person">
+                        <img th:src="@{/img/frank.png}" alt="Foto de Frank Salcedo" loading="lazy">
+                        <h3>Frank Salcedo</h3>
+                        <p>Coordinador de Diseño Visual</p>
+                    </li>
+                    <li class="nx-card nx-card--white nx-person">
+                        <img th:src="@{/img/ferney.png}" alt="Foto de Ferney" loading="lazy">
+                        <h3>Ferney</h3>
+                        <p>Director en Servicio al Cliente</p>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="nx-section" id="contacto" aria-labelledby="contacto-t">
+            <div class="nx-wrap nx-split" style="align-items:start">
+                <div>
+                    <div class="nx-section__head">
+                        <h2 id="contacto-t" class="nexa-heading">Contáctanos <span class="nx-cy">aquí</span></h2>
+                        <p>Responderemos cualquier inquietud.</p>
+                    </div>
+                    <ul class="nx-contact">
+                        <li><i class="fas fa-envelope" aria-hidden="true"></i> nexabikeservice@gmail.com</li>
+                        <li><i class="fas fa-phone" aria-hidden="true"></i> (+57) 986-4763477</li>
+                        <li><i class="fas fa-clock" aria-hidden="true"></i> Lunes - Viernes: 8:00 AM - 6:00 PM</li>
+                        <li><i class="fas fa-clock" aria-hidden="true"></i> Sábado - Domingo: 10:00 AM - 3:00 PM</li>
+                        <li><i class="fas fa-globe" aria-hidden="true"></i> www.NEXA.com</li>
+                    </ul>
+                </div>
+                <form class="nx-card" th:action="@{/public/contact}" method="post">
+                    <div th:if="${mensajeExito}" class="nx-alert nx-alert--ok" role="status">
+                        <span th:text="${mensajeExito}"></span>
+                    </div>
+                    <div class="nx-field">
+                        <label for="c-nombre">Nombre</label>
+                        <input id="c-nombre" type="text" name="nombre" autocomplete="name" required>
+                    </div>
+                    <div class="nx-field">
+                        <label for="c-email">Correo</label>
+                        <input id="c-email" type="email" name="email" autocomplete="email" required>
+                    </div>
+                    <div class="nx-field">
+                        <label for="c-mensaje">Mensaje</label>
+                        <textarea id="c-mensaje" name="mensaje" required></textarea>
+                    </div>
+                    <button id="submit" type="submit" class="nx-btn nx-btn--block">Enviar mensaje</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer class="nx-footer">
+        <div class="nx-footer__in">
+            <span class="nexa-brand">NE<span class="nx-cy">XA</span></span>
+            <span>NEXA© 2025 All Rights Reserved</span>
+            <span>
+                <a href="#inicio">Inicio</a>
+                <a href="#contacto">Contacto</a>
+            </span>
+        </div>
+    </footer>
+
+    <script th:src="@{/js/nexa-ui.js}"></script>
+    <script th:src="@{/js/chatbot.js}"></script>
+</body>
+
+</html>

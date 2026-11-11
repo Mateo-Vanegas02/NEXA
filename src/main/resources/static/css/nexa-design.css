@@ -1,0 +1,233 @@
+/* ==========================================================================
+   NEXA Design — CSS plano (sin frameworks) para las páginas públicas y de acceso.
+   Tema oscuro con brillo cian, barra fija translúcida, velocímetro y tarjetas con hover.
+   Paleta y tipografía de NEXA, fijas: #00C4FF (cian), #004F78 (azul), #5EBDDA (celeste) + Montserrat.
+
+   Contraste AA: blanco sobre fondo ≈ 19:1 · --nx-muted sobre fondo ≈ 10:1 ·
+   cian sobre fondo ≈ 9.7:1 · texto oscuro sobre botón cian ≈ 9.7:1.
+   ========================================================================== */
+
+/* ---- NEXA Tokens ---- */
+:root {
+  --nx-cyan: #00c4ff;
+  --nx-navy: #004f78;
+  --nx-sky: #5ebdda;
+
+  --nx-bg: #020a12;
+  --nx-surface: #001a33;
+  --nx-raised: #07324f;
+  --nx-text: #ffffff;
+  --nx-muted: #a9c1d1;
+  --nx-line: #3f7fa3;
+  --nx-ok: #6ee7a8;
+  --nx-error: #ff8a8a;
+
+  --nx-radius: 14px;
+  --nx-pill: 9999px;
+  --nx-glow: 0 0 24px rgb(0 196 255 / 0.35);
+  --nx-max: 1200px;
+  --nx-font: 'Montserrat', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ---- Base ---- */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 72px; color-scheme: dark; }
+body {
+  margin: 0;
+  color: var(--nx-text);
+  font-family: var(--nx-font);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  background:
+    radial-gradient(60rem 30rem at 85% -10%, rgb(0 196 255 / 0.18), transparent 60%),
+    radial-gradient(40rem 25rem at -10% 20%, rgb(0 79 120 / 0.55), transparent 60%),
+    var(--nx-bg);
+  background-attachment: fixed;
+}
+img { max-width: 100%; height: auto; }
+a { color: var(--nx-cyan); }
+h1, h2, h3, p { margin: 0; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+button, input, textarea, select { font: inherit; color: inherit; }
+
+/* Foco visible: anillo cian + halo blanco (se ve sobre oscuro y sobre cian) */
+:focus-visible { outline: 3px solid var(--nx-cyan); outline-offset: 2px; box-shadow: 0 0 0 5px #fff; border-radius: 6px; }
+
+.nx-skip { position: absolute; left: -9999px; top: 8px; background: var(--nx-cyan); color: var(--nx-bg); padding: 8px 12px; border-radius: 8px; z-index: 100; }
+.nx-skip:focus { left: 8px; }
+.nx-cy { color: var(--nx-cyan); }
+.nx-muted { color: var(--nx-muted); }
+.nx-gradtext { background: linear-gradient(90deg, #fff, var(--nx-cyan)); -webkit-background-clip: text; background-clip: text; color: transparent; display: inline-block; }
+
+/* ---- Estilos de texto: NEXA/Display, NEXA/Heading, … (mismos nombres que en Figma) ---- */
+.nexa-display { font-size: clamp(2.25rem, 7vw, 4rem); line-height: 1.1; font-weight: 700; letter-spacing: -0.02em; }
+.nexa-heading { font-size: clamp(1.75rem, 4.5vw, 2.5rem); line-height: 1.2; font-weight: 700; }
+.nexa-heading-sm { font-size: 1.375rem; line-height: 1.3; font-weight: 600; }
+.nexa-subheading { font-size: 1.125rem; line-height: 1.4; font-weight: 600; }
+.nexa-body { font-size: 1rem; line-height: 1.55; font-weight: 400; }
+.nexa-body-sm { font-size: 0.875rem; line-height: 1.5; font-weight: 400; }
+.nexa-caption { font-size: 0.75rem; line-height: 1.67; font-weight: 500; }
+.nexa-brand { font-size: 1.6rem; line-height: 1.2; font-weight: 700; letter-spacing: 1px; }
+
+/* ---- Barra superior fija y translúcida ---- */
+.nx-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgb(2 10 18 / 0.8); backdrop-filter: blur(12px); border-bottom: 1px solid rgb(0 196 255 / 0.15); }
+.nx-nav__in { max-width: var(--nx-max); margin: 0 auto; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.nx-logo { color: #fff; text-decoration: none; }
+.nx-logo span { color: var(--nx-cyan); }
+.nx-nav__toggle { display: none; background: transparent; border: 1px solid var(--nx-line); color: #fff; border-radius: var(--nx-radius); width: 44px; height: 44px; cursor: pointer; }
+.nx-nav__links { display: flex; align-items: center; gap: 4px; }
+.nx-nav__links a { color: rgb(255 255 255 / 0.9); text-decoration: none; font-size: 14px; padding: 8px 12px; border-radius: var(--nx-radius); transition: background 0.2s, color 0.2s; }
+.nx-nav__links a:hover { background: rgb(0 196 255 / 0.1); color: var(--nx-cyan); }
+.nx-nav__links a.active { color: var(--nx-cyan); }
+.nx-nav__links a.nx-nav__cta { background: var(--nx-cyan); color: var(--nx-bg); font-weight: 600; border-radius: var(--nx-pill); padding: 8px 20px; }
+.nx-nav__links a.nx-nav__cta:hover { box-shadow: var(--nx-glow); color: var(--nx-bg); }
+
+/* ---- Botones ---- */
+.nx-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 10px 28px; border-radius: var(--nx-pill); border: 1px solid transparent; background: var(--nx-cyan); color: var(--nx-bg); text-decoration: none; cursor: pointer; font-size: 16px; font-weight: 600; transition: box-shadow 0.2s, filter 0.2s, background 0.2s; }
+.nx-btn:hover { box-shadow: var(--nx-glow); filter: brightness(1.1); }
+.nx-btn--outline { background: transparent; color: #fff; border-color: rgb(0 196 255 / 0.6); font-weight: 400; }
+.nx-btn--outline:hover { background: rgb(0 196 255 / 0.1); box-shadow: none; filter: none; }
+.nx-btn--block { width: 100%; border-radius: var(--nx-radius); }
+.nx-btn[disabled] { opacity: 0.6; cursor: not-allowed; }
+
+/* ---- Layout ---- */
+.nx-wrap { max-width: var(--nx-max); margin: 0 auto; padding: 0 16px; }
+.nx-section { padding: 80px 0; }
+.nx-section--mist { background: rgb(0 26 51 / 0.6); }
+.nx-section__head { margin-bottom: 40px; max-width: 640px; }
+.nx-section__head p { margin-top: 8px; color: var(--nx-muted); }
+.nx-section__head::after { content: ''; display: block; width: 64px; height: 4px; border-radius: 4px; background: var(--nx-cyan); margin-top: 16px; }
+.nx-grid { display: grid; gap: 20px; }
+.nx-grid--3 { grid-template-columns: repeat(3, 1fr); }
+.nx-grid--4 { grid-template-columns: repeat(4, 1fr); }
+.nx-split { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+
+/* ---- Hero con imagen de fondo ---- */
+.nx-hero { position: relative; isolation: isolate; overflow: hidden; padding: 128px 0 80px; background: linear-gradient(90deg, #020a12 0%, rgb(2 10 18 / 0.86) 50%, rgb(2 10 18 / 0.4) 100%), url('/img/home2.png') center / cover no-repeat; }
+.nx-hero::after { content: ''; position: absolute; inset: auto 0 0 0; height: 160px; background: linear-gradient(to top, var(--nx-bg), transparent); z-index: -1; }
+.nx-pillbadge { display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgb(0 196 255 / 0.4); background: rgb(2 10 18 / 0.6); color: var(--nx-cyan); border-radius: var(--nx-pill); padding: 6px 16px; font-size: 14px; margin-bottom: 20px; }
+.nx-pillbadge::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--nx-cyan); animation: nx-pulse 2s ease-in-out infinite; }
+@keyframes nx-pulse { 50% { opacity: 0.35; } }
+.nx-hero__sub { margin-top: 16px; font-size: 1.375rem; font-weight: 600; }
+.nx-hero__lead { margin-top: 16px; max-width: 460px; color: var(--nx-muted); }
+.nx-hero__cta { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 12px; }
+.nx-hero__cta .nx-btn:first-child { box-shadow: var(--nx-glow); }
+
+/* Vidrio: tarjeta translúcida con desenfoque */
+.nx-glass { background: rgb(0 26 51 / 0.72); backdrop-filter: blur(12px); border: 1px solid rgb(0 196 255 / 0.22); border-radius: 24px; padding: 32px; }
+.nx-glass img { display: block; margin: 0 auto; max-height: 360px; object-fit: contain; filter: drop-shadow(0 0 40px rgb(0 196 255 / 0.35)); }
+
+/* ---- Tarjetas ---- */
+.nx-card { background: var(--nx-surface); border: 1px solid rgb(0 196 255 / 0.2); border-radius: var(--nx-radius); padding: 24px; transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s; }
+li.nx-card:hover { transform: translateY(-4px); border-color: var(--nx-cyan); box-shadow: var(--nx-glow); }
+.nx-card h3 { font-size: 1.125rem; font-weight: 600; }
+.nx-card p { margin-top: 8px; font-size: 14px; color: var(--nx-muted); line-height: 1.5; }
+.nx-icon { width: 48px; height: 48px; border-radius: var(--nx-radius); background: rgb(0 196 255 / 0.1); color: var(--nx-cyan); display: grid; place-items: center; font-size: 20px; margin-bottom: 16px; transition: background 0.3s, color 0.3s; }
+li.nx-card:hover .nx-icon { background: var(--nx-cyan); color: var(--nx-bg); }
+.nx-person { text-align: center; }
+.nx-person img, .nx-person .nx-avatar { width: 112px; height: 112px; border-radius: 50%; margin: 0 auto 16px; border: 2px solid var(--nx-cyan); }
+.nx-person img { display: block; object-fit: cover; object-position: center top; background: var(--nx-raised); }
+.nx-person .nx-avatar { display: grid; place-items: center; background: var(--nx-navy); color: #fff; font-size: 2rem; font-weight: 700; }
+
+/* ---- Sobre nosotros ---- */
+.nx-about article + article { margin-top: 24px; }
+.nx-about h3 { color: var(--nx-cyan); font-size: 1.125rem; font-weight: 600; }
+.nx-about p { margin-top: 4px; font-size: 14px; color: var(--nx-muted); }
+.nx-float { animation: nx-float 5s ease-in-out infinite; filter: drop-shadow(0 0 40px rgb(0 196 255 / 0.35)); max-width: 440px; width: 100%; margin: 0 auto; display: block; }
+@keyframes nx-float { 50% { transform: translateY(-10px); } }
+
+/* ---- Pestañas (pill toggle) ---- */
+.nx-tabs { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; padding: 4px; border: 1px solid var(--nx-line); background: rgb(2 10 18 / 0.6); border-radius: var(--nx-pill); margin-bottom: 24px; }
+.nx-tab { border: 1px solid transparent; background: transparent; color: #fff; padding: 10px 20px; border-radius: var(--nx-pill); cursor: pointer; min-height: 44px; transition: background 0.2s; }
+.nx-tab:hover { background: rgb(0 196 255 / 0.1); }
+.nx-tab[aria-selected='true'] { background: var(--nx-cyan); color: var(--nx-bg); font-weight: 600; }
+.nx-tabpanel[hidden] { display: none; }
+
+/* ---- Velocímetro ---- */
+.nx-speedo { max-width: 520px; margin: 0 auto; }
+.nx-speedo__dial { position: relative; aspect-ratio: 320 / 205; }
+.nx-speedo__dial svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.nx-speedo__base { fill: none; stroke: var(--nx-raised); stroke-width: 14; stroke-linecap: round; }
+.nx-speedo__arc { fill: none; stroke: url(#arco-grad); stroke-width: 6; stroke-linecap: round; filter: drop-shadow(0 0 6px #00c4ff); }
+.nx-speedo__needle { stroke: #fff; stroke-width: 3; stroke-linecap: round; transform-origin: 160px 168px; transition: transform 0.7s cubic-bezier(0.25, 1, 0.5, 1); }
+.nx-speedo__hub { fill: var(--nx-cyan); filter: drop-shadow(0 0 8px #00c4ff); }
+.nx-speedo__tick { position: absolute; width: 44px; height: 44px; transform: translate(-50%, -50%); border-radius: 50%; border: 1px solid var(--nx-line); background: rgb(2 10 18 / 0.7); color: #fff; font-weight: 600; font-size: 14px; cursor: pointer; transition: border-color 0.2s, background 0.2s; }
+.nx-speedo__tick:hover { border-color: var(--nx-cyan); }
+.nx-speedo__tick[aria-pressed='true'] { background: var(--nx-cyan); border-color: var(--nx-cyan); color: var(--nx-bg); box-shadow: var(--nx-glow); }
+.nx-speedo__info { text-align: center; margin-top: 12px; }
+.nx-speedo__info .nexa-caption { letter-spacing: 0.3em; color: var(--nx-muted); }
+.nx-speedo__info strong { display: block; font-size: 1.125rem; font-weight: 600; color: var(--nx-cyan); }
+
+/* ---- Formularios ---- */
+.nx-field { margin-bottom: 16px; }
+.nx-field label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; color: var(--nx-muted); }
+.nx-field input, .nx-field textarea, .nx-field select { width: 100%; min-height: 48px; padding: 12px 16px; background: rgb(2 10 18 / 0.7); color: #fff; border: 1px solid var(--nx-line); border-radius: var(--nx-radius); transition: border-color 0.2s, background 0.2s; }
+.nx-field textarea { min-height: 112px; resize: vertical; }
+.nx-field input:focus, .nx-field textarea:focus, .nx-field select:focus { background: var(--nx-bg); border-color: var(--nx-cyan); }
+.nx-field small { display: block; margin-top: 4px; color: var(--nx-muted); font-size: 12px; }
+.nx-field--pw { position: relative; }
+.nx-field--pw button { position: absolute; right: 4px; top: 25px; height: 48px; width: 44px; border: 0; background: transparent; cursor: pointer; border-radius: var(--nx-radius); color: var(--nx-muted); }
+.nx-field--pw button:hover { color: var(--nx-cyan); }
+.nx-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+.nx-form-grid .nx-full { grid-column: 1 / -1; }
+.nx-fieldset { border: 0; padding: 0; margin: 0 0 24px; }
+.nx-fieldset legend { font-size: 1.125rem; font-weight: 600; color: var(--nx-cyan); padding: 0; margin-bottom: 16px; }
+.nx-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; font-size: 14px; }
+
+/* ---- Alertas ---- */
+.nx-alert { border: 1px solid; border-radius: var(--nx-radius); padding: 12px 16px; margin-bottom: 16px; font-size: 14px; font-weight: 500; }
+.nx-alert--error { border-color: rgb(255 138 138 / 0.6); background: rgb(255 138 138 / 0.1); color: var(--nx-error); }
+.nx-alert--ok { border-color: rgb(110 231 168 / 0.6); background: rgb(110 231 168 / 0.1); color: var(--nx-ok); }
+
+/* ---- Contacto ---- */
+.nx-contact li { padding: 8px 0; display: flex; gap: 12px; align-items: baseline; color: var(--nx-muted); }
+.nx-contact i { color: var(--nx-cyan); width: 20px; text-align: center; }
+
+/* ---- Pie ---- */
+.nx-footer { border-top: 1px solid rgb(0 196 255 / 0.15); background: var(--nx-bg); color: var(--nx-muted); }
+.nx-footer__in { max-width: var(--nx-max); margin: 0 auto; padding: 40px 16px; display: flex; flex-wrap: wrap; gap: 24px; justify-content: space-between; align-items: center; font-size: 14px; }
+.nx-footer .nexa-brand { color: #fff; }
+.nx-footer a { margin-left: 16px; }
+
+/* ---- Pantallas de acceso (login / registro) ---- */
+.nx-auth { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; }
+.nx-auth__form { display: flex; flex-direction: column; justify-content: center; padding: 32px 16px; }
+.nx-auth__box { width: 100%; max-width: 440px; margin: 0 auto; background: rgb(0 26 51 / 0.72); backdrop-filter: blur(12px); border: 1px solid rgb(0 196 255 / 0.22); border-radius: 24px; padding: 32px; }
+.nx-auth__box--wide { max-width: 640px; }
+.nx-auth__box h1 { margin: 24px 0 4px; }
+.nx-auth__box > p { color: var(--nx-muted); margin-bottom: 24px; }
+.nx-auth__brand { color: #fff; text-decoration: none; }
+.nx-auth__brand span { color: var(--nx-cyan); }
+.nx-auth__media { position: relative; overflow: hidden; background: var(--nx-surface); }
+.nx-auth__media video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.nx-auth__media::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to right, var(--nx-bg), rgb(2 10 18 / 0.3), rgb(0 79 120 / 0.4)); }
+.nx-auth__foot { margin-top: 24px; font-size: 14px; color: var(--nx-muted); }
+
+/* ---- Responsive ---- */
+@media (max-width: 900px) {
+  .nx-grid--3, .nx-grid--4 { grid-template-columns: 1fr 1fr; }
+  .nx-split, .nx-auth { grid-template-columns: 1fr; }
+  .nx-auth__media { display: none; }
+}
+@media (max-width: 720px) {
+  .nx-nav__toggle { display: inline-grid; place-items: center; }
+  .nx-nav__links { display: none; position: absolute; left: 0; right: 0; top: 100%; flex-direction: column; align-items: stretch; padding: 16px; background: rgb(2 10 18 / 0.96); border-bottom: 1px solid rgb(0 196 255 / 0.15); }
+  .nx-nav__links.is-open { display: flex; }
+  .nx-grid--3, .nx-grid--4, .nx-form-grid { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+}
+
+/* Registro de conductor: documentos con foto + número */
+.nx-doc__nota { color: var(--nx-muted); font-size: 14px; margin: -4px 0 16px; line-height: 1.5; }
+.nx-doc-lista { display: grid; gap: 16px; }
+.nx-doc { border: 1px solid rgb(0 196 255 / 0.22); border-radius: var(--nx-radius); padding: 16px 16px 0; background: rgb(2 10 18 / 0.35); }
+.nx-doc__titulo { font-size: 1rem; font-weight: 600; margin: 0 0 12px; }
+.nx-doc input[type='file'] { padding: 10px 12px; min-height: 48px; font-size: 14px; }
+.nx-doc__vista { display: flex; align-items: center; gap: 12px; margin: -4px 0 16px; font-size: 13px; color: var(--nx-muted); word-break: break-all; }
+.nx-doc__vista img { object-fit: cover; border-radius: 10px; border: 1px solid var(--nx-line); }
+.nx-alert--warn { border-color: rgb(245 158 11 / 0.6); background: rgb(245 158 11 / 0.1); color: #f59e0b; display: flex; gap: 10px; align-items: flex-start; }
+.nx-alert a { color: inherit; text-decoration: underline; }

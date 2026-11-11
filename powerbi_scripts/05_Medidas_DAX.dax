@@ -1,0 +1,89 @@
+-- ============================================================
+-- MEDIDAS DAX — Crear una por una
+-- ============================================================
+-- INSTRUCCIONES:
+-- 1. Click en la tabla "servicios" en el panel de Campos
+-- 2. Pestaña "Modelado" → "Nueva medida"
+-- 3. Pegar cada medida UNA POR UNA en la barra de fórmulas
+-- ============================================================
+
+-- MEDIDA 1: Total de servicios
+Total Servicios = COUNTROWS(servicios)
+
+-- MEDIDA 2: Ingreso total
+Ingreso Total = SUM(servicios[tarifa])
+
+-- MEDIDA 3: Distancia total recorrida
+Distancia Total KM = SUM(servicios[distanciaKM])
+
+-- MEDIDA 4: Tarifa promedio por servicio
+Tarifa Promedio = AVERAGE(servicios[tarifa])
+
+-- MEDIDA 5: Distancia promedio por servicio
+Distancia Promedio KM = AVERAGE(servicios[distanciaKM])
+
+-- MEDIDA 6: Calificación promedio del conductor
+Calificación Promedio Conductor = AVERAGE(servicios[calificacionConductor])
+
+-- MEDIDA 7: Calificación promedio del pasajero
+Calificación Promedio Pasajero = AVERAGE(servicios[calificacionPasajero])
+
+-- MEDIDA 8: Total servicios finalizados
+Servicios Finalizados = 
+CALCULATE(
+    COUNTROWS(servicios), 
+    servicios[estado] = "FINALIZADO"
+)
+
+-- MEDIDA 9: Total servicios cancelados
+Servicios Cancelados = 
+CALCULATE(
+    COUNTROWS(servicios), 
+    servicios[estado] = "CANCELADO"
+)
+
+-- MEDIDA 10: Tasa de cancelación
+Tasa Cancelación = 
+DIVIDE(
+    CALCULATE(COUNTROWS(servicios), servicios[estado] = "CANCELADO"),
+    COUNTROWS(servicios),
+    0
+)
+
+-- MEDIDA 11: Ingreso comparativa Mes a Mes (MoM)
+Ingreso MoM % = 
+VAR IngresoMesAnterior = 
+    CALCULATE(
+        [Ingreso Total], 
+        DATEADD(Calendario[Date], -1, MONTH)
+    )
+RETURN 
+    DIVIDE(
+        [Ingreso Total] - IngresoMesAnterior, 
+        IngresoMesAnterior, 
+        0
+    )
+
+-- MEDIDA 12: Ingreso comparativa Año tras Año (YoY)
+Ingreso YoY % = 
+VAR IngresoAñoAnterior = 
+    CALCULATE(
+        [Ingreso Total], 
+        DATEADD(Calendario[Date], -1, YEAR)
+    )
+RETURN 
+    DIVIDE(
+        [Ingreso Total] - IngresoAñoAnterior, 
+        IngresoAñoAnterior, 
+        0
+    )
+
+-- MEDIDA 13: Servicios acumulados (Running Total)
+Servicios Acumulados = 
+CALCULATE(
+    [Total Servicios],
+    FILTER(
+        ALL(Calendario[Date]),
+        Calendario[Date] <= MAX(Calendario[Date])
+    )
+)
