@@ -2805,6 +2805,426 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Cargos pendientes, nivel y saldo con NEXA'**
   String get notiCanalCuentaDesc;
+
+  /// No description provided for @permAhoraNo.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahora no'**
+  String get permAhoraNo;
+
+  /// No description provided for @permNotiTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Te avisamos lo importante del viaje'**
+  String get permNotiTitulo;
+
+  /// No description provided for @permNotiTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Aunque la app esté cerrada o el teléfono bloqueado.'**
+  String get permNotiTexto;
+
+  /// No description provided for @permNotiAcepta.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando un conductor acepta'**
+  String get permNotiAcepta;
+
+  /// No description provided for @permNotiAceptaSub.
+  ///
+  /// In es, this message translates to:
+  /// **'Quién va por ti y en qué moto'**
+  String get permNotiAceptaSub;
+
+  /// No description provided for @permNotiLlega.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando llega a tu punto'**
+  String get permNotiLlega;
+
+  /// No description provided for @permNotiLlegaSub.
+  ///
+  /// In es, this message translates to:
+  /// **'Con la placa para reconocerlo'**
+  String get permNotiLlegaSub;
+
+  /// No description provided for @permNotiCargos.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargos o saldos pendientes'**
+  String get permNotiCargos;
+
+  /// No description provided for @permNotiCargosSub.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin sorpresas en tu próximo viaje'**
+  String get permNotiCargosSub;
+
+  /// No description provided for @permNotiSolicitudes.
+  ///
+  /// In es, this message translates to:
+  /// **'Solicitudes cerca de ti'**
+  String get permNotiSolicitudes;
+
+  /// No description provided for @permNotiSolicitudesSub.
+  ///
+  /// In es, this message translates to:
+  /// **'Con lo que ganas y la distancia'**
+  String get permNotiSolicitudesSub;
+
+  /// No description provided for @permNotiCancela.
+  ///
+  /// In es, this message translates to:
+  /// **'Si el pasajero cancela'**
+  String get permNotiCancela;
+
+  /// No description provided for @permNotiCancelaSub.
+  ///
+  /// In es, this message translates to:
+  /// **'Para que no vayas en vano'**
+  String get permNotiCancelaSub;
+
+  /// No description provided for @permNotiPermitir.
+  ///
+  /// In es, this message translates to:
+  /// **'Permitir notificaciones'**
+  String get permNotiPermitir;
+
+  /// No description provided for @permUbicTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Usamos tu ubicación para recogerte'**
+  String get permUbicTitulo;
+
+  /// No description provided for @permUbicTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo mientras usas la app. Sin ella no podemos pedir tu viaje.'**
+  String get permUbicTexto;
+
+  /// No description provided for @permUbicTituloConductor.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu ubicación te trae los viajes'**
+  String get permUbicTituloConductor;
+
+  /// No description provided for @permUbicTextoConductor.
+  ///
+  /// In es, this message translates to:
+  /// **'Las solicitudes se reparten por cercanía: sin ubicación no puedes ponerte en línea.'**
+  String get permUbicTextoConductor;
+
+  /// No description provided for @permUbicPunto.
+  ///
+  /// In es, this message translates to:
+  /// **'Punto de recogida exacto'**
+  String get permUbicPunto;
+
+  /// No description provided for @permUbicPuntoSub.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo ajustas hasta 300 m de ti'**
+  String get permUbicPuntoSub;
+
+  /// No description provided for @permUbicEncuentra.
+  ///
+  /// In es, this message translates to:
+  /// **'El conductor te encuentra'**
+  String get permUbicEncuentra;
+
+  /// No description provided for @permUbicEncuentraSub.
+  ///
+  /// In es, this message translates to:
+  /// **'Ve dónde estás mientras llega'**
+  String get permUbicEncuentraSub;
+
+  /// No description provided for @permUbicOla.
+  ///
+  /// In es, this message translates to:
+  /// **'Primero las solicitudes cercanas'**
+  String get permUbicOla;
+
+  /// No description provided for @permUbicOlaSub.
+  ///
+  /// In es, this message translates to:
+  /// **'Te llegan antes las de tu zona'**
+  String get permUbicOlaSub;
+
+  /// No description provided for @permUbicLlegada.
+  ///
+  /// In es, this message translates to:
+  /// **'Tiempo de llegada real'**
+  String get permUbicLlegada;
+
+  /// No description provided for @permUbicLlegadaSub.
+  ///
+  /// In es, this message translates to:
+  /// **'El pasajero ve cuánto te falta'**
+  String get permUbicLlegadaSub;
+
+  /// No description provided for @permUbicPermitir.
+  ///
+  /// In es, this message translates to:
+  /// **'Permitir al usar la app'**
+  String get permUbicPermitir;
+
+  /// No description provided for @perm2PlanoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Recibe viajes con la pantalla apagada'**
+  String get perm2PlanoTitulo;
+
+  /// No description provided for @perm2PlanoTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'NEXA usa tu ubicación en segundo plano solo mientras estás en línea o en un viaje, para que no pierdas tu lugar en la ola.'**
+  String get perm2PlanoTexto;
+
+  /// No description provided for @perm2PlanoElige.
+  ///
+  /// In es, this message translates to:
+  /// **'En la pantalla siguiente, elige'**
+  String get perm2PlanoElige;
+
+  /// No description provided for @perm2PlanoSiempre.
+  ///
+  /// In es, this message translates to:
+  /// **'Permitir todo el tiempo'**
+  String get perm2PlanoSiempre;
+
+  /// No description provided for @perm2PlanoAlUsar.
+  ///
+  /// In es, this message translates to:
+  /// **'Permitir solo con la app en uso'**
+  String get perm2PlanoAlUsar;
+
+  /// No description provided for @perm2PlanoNo.
+  ///
+  /// In es, this message translates to:
+  /// **'No permitir'**
+  String get perm2PlanoNo;
+
+  /// No description provided for @perm2PlanoMarca.
+  ///
+  /// In es, this message translates to:
+  /// **'Mi teléfono cierra la app'**
+  String get perm2PlanoMarca;
+
+  /// No description provided for @perm2PlanoContinuar.
+  ///
+  /// In es, this message translates to:
+  /// **'Continuar'**
+  String get perm2PlanoContinuar;
+
+  /// No description provided for @perm2PlanoSin.
+  ///
+  /// In es, this message translates to:
+  /// **'Seguir sin segundo plano'**
+  String get perm2PlanoSin;
+
+  /// No description provided for @permBateriaTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Evita que tu teléfono cierre NEXA'**
+  String get permBateriaTitulo;
+
+  /// No description provided for @permBateriaTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Algunas marcas apagan las apps en segundo plano para ahorrar batería. Elige la tuya.'**
+  String get permBateriaTexto;
+
+  /// No description provided for @permBateriaAbrir.
+  ///
+  /// In es, this message translates to:
+  /// **'Abrir ajustes de NEXA'**
+  String get permBateriaAbrir;
+
+  /// No description provided for @permBateriaOtra.
+  ///
+  /// In es, this message translates to:
+  /// **'Otra marca'**
+  String get permBateriaOtra;
+
+  /// No description provided for @permBatSamsung1.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustes → Apps → NEXA → Batería'**
+  String get permBatSamsung1;
+
+  /// No description provided for @permBatSamsung2.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige «Sin restricciones»'**
+  String get permBatSamsung2;
+
+  /// No description provided for @permBatSamsung3.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustes → Batería → Límites de uso en segundo plano'**
+  String get permBatSamsung3;
+
+  /// No description provided for @permBatSamsung4.
+  ///
+  /// In es, this message translates to:
+  /// **'Quita NEXA de «Apps en suspensión»'**
+  String get permBatSamsung4;
+
+  /// No description provided for @permBatXiaomi1.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustes → Apps → Administrar apps → NEXA'**
+  String get permBatXiaomi1;
+
+  /// No description provided for @permBatXiaomi2.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahorro de batería → «Sin restricciones»'**
+  String get permBatXiaomi2;
+
+  /// No description provided for @permBatXiaomi3.
+  ///
+  /// In es, this message translates to:
+  /// **'Activa «Inicio automático»'**
+  String get permBatXiaomi3;
+
+  /// No description provided for @permBatXiaomi4.
+  ///
+  /// In es, this message translates to:
+  /// **'En recientes, deja presionado NEXA y toca el candado'**
+  String get permBatXiaomi4;
+
+  /// No description provided for @permBatMotorola1.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustes → Apps → NEXA'**
+  String get permBatMotorola1;
+
+  /// No description provided for @permBatMotorola2.
+  ///
+  /// In es, this message translates to:
+  /// **'Batería de la app → «Sin restricciones»'**
+  String get permBatMotorola2;
+
+  /// No description provided for @permBatMotorola3.
+  ///
+  /// In es, this message translates to:
+  /// **'Activa «Permitir uso en segundo plano»'**
+  String get permBatMotorola3;
+
+  /// No description provided for @permBatMotorola4.
+  ///
+  /// In es, this message translates to:
+  /// **'Vuelve a NEXA y ponte en línea'**
+  String get permBatMotorola4;
+
+  /// No description provided for @permBatHuawei1.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustes → Batería → Inicio de apps'**
+  String get permBatHuawei1;
+
+  /// No description provided for @permBatHuawei2.
+  ///
+  /// In es, this message translates to:
+  /// **'Busca NEXA y desactiva «Gestionar automáticamente»'**
+  String get permBatHuawei2;
+
+  /// No description provided for @permBatHuawei3.
+  ///
+  /// In es, this message translates to:
+  /// **'Activa inicio automático, secundario y en segundo plano'**
+  String get permBatHuawei3;
+
+  /// No description provided for @permBatHuawei4.
+  ///
+  /// In es, this message translates to:
+  /// **'Vuelve a NEXA y ponte en línea'**
+  String get permBatHuawei4;
+
+  /// No description provided for @permBatOtra1.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustes → Apps → NEXA → Batería'**
+  String get permBatOtra1;
+
+  /// No description provided for @permBatOtra2.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige «Sin restricciones» o «No optimizar»'**
+  String get permBatOtra2;
+
+  /// No description provided for @permBatOtra3.
+  ///
+  /// In es, this message translates to:
+  /// **'Permite el uso en segundo plano'**
+  String get permBatOtra3;
+
+  /// No description provided for @permBatOtra4.
+  ///
+  /// In es, this message translates to:
+  /// **'Vuelve a NEXA y ponte en línea'**
+  String get permBatOtra4;
+
+  /// No description provided for @permSinUbicTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin tu ubicación no podemos pedir el viaje'**
+  String get permSinUbicTitulo;
+
+  /// No description provided for @permSinUbicTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'La usamos para fijar el punto de recogida y para que el conductor te encuentre. Nunca la compartimos fuera del viaje.'**
+  String get permSinUbicTexto;
+
+  /// No description provided for @permSinUbicTituloConductor.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin tu ubicación no puedes ponerte en línea'**
+  String get permSinUbicTituloConductor;
+
+  /// No description provided for @permSinUbicTextoConductor.
+  ///
+  /// In es, this message translates to:
+  /// **'La usamos para repartir las solicitudes por cercanía y para que el pasajero vea dónde vienes. Solo mientras estás en línea o en un viaje.'**
+  String get permSinUbicTextoConductor;
+
+  /// No description provided for @permSinUbicPasos.
+  ///
+  /// In es, this message translates to:
+  /// **'Si ya la negaste'**
+  String get permSinUbicPasos;
+
+  /// No description provided for @permSinUbicPaso1.
+  ///
+  /// In es, this message translates to:
+  /// **'Abre los ajustes de NEXA'**
+  String get permSinUbicPaso1;
+
+  /// No description provided for @permSinUbicPaso2.
+  ///
+  /// In es, this message translates to:
+  /// **'Toca Permisos → Ubicación'**
+  String get permSinUbicPaso2;
+
+  /// No description provided for @permSinUbicPaso3.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige «Permitir mientras se usa la app»'**
+  String get permSinUbicPaso3;
+
+  /// No description provided for @permSinUbicPermitir.
+  ///
+  /// In es, this message translates to:
+  /// **'Permitir ubicación'**
+  String get permSinUbicPermitir;
+
+  /// No description provided for @permSinUbicAjustes.
+  ///
+  /// In es, this message translates to:
+  /// **'Abrir ajustes'**
+  String get permSinUbicAjustes;
 }
 
 class _AppLocalizationsDelegate

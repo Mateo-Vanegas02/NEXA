@@ -11,6 +11,7 @@ import '../controllers/viaje_conductor_controller.dart';
 import '../widgets/cuenta_bloqueada.dart';
 import '../widgets/solicitud_card.dart';
 import '../widgets/viaje_activo_card.dart';
+import '../../../permisos/presentation/flujo_permisos.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,7 +23,8 @@ class InicioConductorScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final estado = ref.watch(conductorProvider);
-    return Scaffold(
+    return RevisionPermisos(
+      child: Scaffold(
       body: estado.when(
         loading: () => const SafeArea(child: CargandoSkeleton()),
         error: (e, _) => SafeArea(
@@ -34,6 +36,7 @@ class InicioConductorScreen extends ConsumerWidget {
         data: (s) => s.aprobacion == EstadoAprobacion.aprobado
             ? _Panel(estado: s)
             : SafeArea(child: CuentaBloqueada(aprobacion: s.aprobacion)),
+      ),
       ),
     );
   }
@@ -93,7 +96,13 @@ class _Panel extends ConsumerWidget {
             if (!enViaje) ...[
               _BotonConexion(
                 enLinea: estado.enLinea,
-                onTap: ctrl.alternarLinea,
+                onTap: () async {
+                  // Antes de conectarse: ubicación y, la primera vez, N03.
+                  if (!estado.enLinea && !await prepararConexion(context, ref)) {
+                    return;
+                  }
+                  await ctrl.alternarLinea();
+                },
               ),
               const SizedBox(height: Sp.md),
               Text(

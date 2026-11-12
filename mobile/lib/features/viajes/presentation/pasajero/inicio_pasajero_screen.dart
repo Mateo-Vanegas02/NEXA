@@ -15,6 +15,7 @@ import '../../domain/perfil_pasajero.dart';
 import '../controllers/viaje_pasajero_controller.dart';
 import '../widgets/estado_texto.dart';
 import '../widgets/viaje_tile.dart';
+import '../../../permisos/presentation/flujo_permisos.dart';
 import 'elegir_lugar_screen.dart';
 
 /// Inicio del pasajero: el mapa es la pantalla y una hoja inferior concentra la
@@ -44,7 +45,8 @@ class InicioPasajeroScreen extends ConsumerWidget {
     final l = AppLocalizations.of(context);
     final viaje = ref.watch(viajePasajeroProvider).value;
     final centro = ref.watch(ubicacionProvider).value ?? kCentroPorDefecto;
-    return Scaffold(
+    return RevisionPermisos(
+      child: Scaffold(
       body: Stack(
         children: [
           Positioned.fill(
@@ -88,6 +90,7 @@ class InicioPasajeroScreen extends ConsumerWidget {
             ],
           ),
         ],
+      ),
       ),
     );
   }

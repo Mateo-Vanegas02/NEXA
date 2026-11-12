@@ -13,6 +13,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:nexa_mobile/core/geocoding/geocoding_service.dart';
 import 'package:nexa_mobile/core/l10n/gen/app_localizations.dart';
 import 'package:nexa_mobile/core/network/token_storage.dart';
+import 'package:nexa_mobile/core/permisos/permisos_dispositivo.dart';
 import 'package:nexa_mobile/core/providers.dart';
 import 'package:nexa_mobile/core/utils/mi_posicion.dart';
 import 'package:nexa_mobile/core/theme/app_theme.dart';
@@ -49,6 +50,8 @@ List<Override> overridesTest({
   ubicacionProvider.overrideWith((ref) async => kCentroPorDefecto),
   // Sin GPS real en los tests (evita el canal de la plataforma).
   miPosicionProvider.overrideWithValue(miPosicion ?? () async => null),
+  // Permisos ya concedidos: las pantallas de permisos tienen sus propias pruebas.
+  permisosProvider.overrideWithValue(PermisosFijos(EstadoUbicacion.siempre)),
 ];
 
 /// Monta [child] dentro de MaterialApp con localización y tema de NEXA.

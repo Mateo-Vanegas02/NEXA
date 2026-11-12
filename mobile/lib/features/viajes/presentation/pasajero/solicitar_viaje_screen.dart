@@ -22,6 +22,7 @@ import '../../domain/servicio.dart';
 import '../controllers/viaje_pasajero_controller.dart';
 import '../widgets/desglose_card.dart';
 import 'elegir_lugar_screen.dart';
+import '../../../permisos/presentation/flujo_permisos.dart';
 
 const _metodos = ['efectivo', 'tarjeta', 'billetera'];
 
@@ -267,6 +268,8 @@ class _SolicitarViajeScreenState extends ConsumerState<SolicitarViajeScreen> {
   Future<void> _solicitar() async {
     final destino = _destino;
     if (destino == null) return;
+    // Sin permiso de ubicación no se puede pedir viaje: N02 o E01.
+    if (!await asegurarUbicacion(context, ref) || !mounted) return;
     final origen = _origenEfectivo;
     final l = AppLocalizations.of(context);
     // El servidor exige que la recogida esté cerca del pasajero: se le envía el

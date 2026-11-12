@@ -12,14 +12,14 @@ const LatLng kCentroPorDefecto = LatLng(10.4055, -75.5037);
 /// En tests se sobrescribe con `false` para no descargar teselas.
 final mapasHabilitadosProvider = Provider<bool>((ref) => true);
 
-/// Ubicación actual; si falla el permiso o el GPS, usa [kCentroPorDefecto].
+/// Ubicación actual; si no hay permiso o GPS, usa [kCentroPorDefecto].
+///
+/// No pide el permiso: lo piden las pantallas de permisos (N02 / E01) con su
+/// explicación; después se invalida este provider para centrar el mapa.
 final ubicacionProvider = FutureProvider<LatLng>((ref) async {
   try {
     if (!await Geolocator.isLocationServiceEnabled()) return kCentroPorDefecto;
-    var permiso = await Geolocator.checkPermission();
-    if (permiso == LocationPermission.denied) {
-      permiso = await Geolocator.requestPermission();
-    }
+    final permiso = await Geolocator.checkPermission();
     if (permiso == LocationPermission.denied ||
         permiso == LocationPermission.deniedForever) {
       return kCentroPorDefecto;

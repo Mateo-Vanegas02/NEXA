@@ -1483,4 +1483,226 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get notiCanalCuentaDesc => 'Cargos pendientes, nivel y saldo con NEXA';
+
+  @override
+  String get permAhoraNo => 'Ahora no';
+
+  @override
+  String get permNotiTitulo => 'Te avisamos lo importante del viaje';
+
+  @override
+  String get permNotiTexto =>
+      'Aunque la app esté cerrada o el teléfono bloqueado.';
+
+  @override
+  String get permNotiAcepta => 'Cuando un conductor acepta';
+
+  @override
+  String get permNotiAceptaSub => 'Quién va por ti y en qué moto';
+
+  @override
+  String get permNotiLlega => 'Cuando llega a tu punto';
+
+  @override
+  String get permNotiLlegaSub => 'Con la placa para reconocerlo';
+
+  @override
+  String get permNotiCargos => 'Cargos o saldos pendientes';
+
+  @override
+  String get permNotiCargosSub => 'Sin sorpresas en tu próximo viaje';
+
+  @override
+  String get permNotiSolicitudes => 'Solicitudes cerca de ti';
+
+  @override
+  String get permNotiSolicitudesSub => 'Con lo que ganas y la distancia';
+
+  @override
+  String get permNotiCancela => 'Si el pasajero cancela';
+
+  @override
+  String get permNotiCancelaSub => 'Para que no vayas en vano';
+
+  @override
+  String get permNotiPermitir => 'Permitir notificaciones';
+
+  @override
+  String get permUbicTitulo => 'Usamos tu ubicación para recogerte';
+
+  @override
+  String get permUbicTexto =>
+      'Solo mientras usas la app. Sin ella no podemos pedir tu viaje.';
+
+  @override
+  String get permUbicTituloConductor => 'Tu ubicación te trae los viajes';
+
+  @override
+  String get permUbicTextoConductor =>
+      'Las solicitudes se reparten por cercanía: sin ubicación no puedes ponerte en línea.';
+
+  @override
+  String get permUbicPunto => 'Punto de recogida exacto';
+
+  @override
+  String get permUbicPuntoSub => 'Lo ajustas hasta 300 m de ti';
+
+  @override
+  String get permUbicEncuentra => 'El conductor te encuentra';
+
+  @override
+  String get permUbicEncuentraSub => 'Ve dónde estás mientras llega';
+
+  @override
+  String get permUbicOla => 'Primero las solicitudes cercanas';
+
+  @override
+  String get permUbicOlaSub => 'Te llegan antes las de tu zona';
+
+  @override
+  String get permUbicLlegada => 'Tiempo de llegada real';
+
+  @override
+  String get permUbicLlegadaSub => 'El pasajero ve cuánto te falta';
+
+  @override
+  String get permUbicPermitir => 'Permitir al usar la app';
+
+  @override
+  String get perm2PlanoTitulo => 'Recibe viajes con la pantalla apagada';
+
+  @override
+  String get perm2PlanoTexto =>
+      'NEXA usa tu ubicación en segundo plano solo mientras estás en línea o en un viaje, para que no pierdas tu lugar en la ola.';
+
+  @override
+  String get perm2PlanoElige => 'En la pantalla siguiente, elige';
+
+  @override
+  String get perm2PlanoSiempre => 'Permitir todo el tiempo';
+
+  @override
+  String get perm2PlanoAlUsar => 'Permitir solo con la app en uso';
+
+  @override
+  String get perm2PlanoNo => 'No permitir';
+
+  @override
+  String get perm2PlanoMarca => 'Mi teléfono cierra la app';
+
+  @override
+  String get perm2PlanoContinuar => 'Continuar';
+
+  @override
+  String get perm2PlanoSin => 'Seguir sin segundo plano';
+
+  @override
+  String get permBateriaTitulo => 'Evita que tu teléfono cierre NEXA';
+
+  @override
+  String get permBateriaTexto =>
+      'Algunas marcas apagan las apps en segundo plano para ahorrar batería. Elige la tuya.';
+
+  @override
+  String get permBateriaAbrir => 'Abrir ajustes de NEXA';
+
+  @override
+  String get permBateriaOtra => 'Otra marca';
+
+  @override
+  String get permBatSamsung1 => 'Ajustes → Apps → NEXA → Batería';
+
+  @override
+  String get permBatSamsung2 => 'Elige «Sin restricciones»';
+
+  @override
+  String get permBatSamsung3 =>
+      'Ajustes → Batería → Límites de uso en segundo plano';
+
+  @override
+  String get permBatSamsung4 => 'Quita NEXA de «Apps en suspensión»';
+
+  @override
+  String get permBatXiaomi1 => 'Ajustes → Apps → Administrar apps → NEXA';
+
+  @override
+  String get permBatXiaomi2 => 'Ahorro de batería → «Sin restricciones»';
+
+  @override
+  String get permBatXiaomi3 => 'Activa «Inicio automático»';
+
+  @override
+  String get permBatXiaomi4 =>
+      'En recientes, deja presionado NEXA y toca el candado';
+
+  @override
+  String get permBatMotorola1 => 'Ajustes → Apps → NEXA';
+
+  @override
+  String get permBatMotorola2 => 'Batería de la app → «Sin restricciones»';
+
+  @override
+  String get permBatMotorola3 => 'Activa «Permitir uso en segundo plano»';
+
+  @override
+  String get permBatMotorola4 => 'Vuelve a NEXA y ponte en línea';
+
+  @override
+  String get permBatHuawei1 => 'Ajustes → Batería → Inicio de apps';
+
+  @override
+  String get permBatHuawei2 =>
+      'Busca NEXA y desactiva «Gestionar automáticamente»';
+
+  @override
+  String get permBatHuawei3 =>
+      'Activa inicio automático, secundario y en segundo plano';
+
+  @override
+  String get permBatHuawei4 => 'Vuelve a NEXA y ponte en línea';
+
+  @override
+  String get permBatOtra1 => 'Ajustes → Apps → NEXA → Batería';
+
+  @override
+  String get permBatOtra2 => 'Elige «Sin restricciones» o «No optimizar»';
+
+  @override
+  String get permBatOtra3 => 'Permite el uso en segundo plano';
+
+  @override
+  String get permBatOtra4 => 'Vuelve a NEXA y ponte en línea';
+
+  @override
+  String get permSinUbicTitulo => 'Sin tu ubicación no podemos pedir el viaje';
+
+  @override
+  String get permSinUbicTexto =>
+      'La usamos para fijar el punto de recogida y para que el conductor te encuentre. Nunca la compartimos fuera del viaje.';
+
+  @override
+  String get permSinUbicTituloConductor =>
+      'Sin tu ubicación no puedes ponerte en línea';
+
+  @override
+  String get permSinUbicTextoConductor =>
+      'La usamos para repartir las solicitudes por cercanía y para que el pasajero vea dónde vienes. Solo mientras estás en línea o en un viaje.';
+
+  @override
+  String get permSinUbicPasos => 'Si ya la negaste';
+
+  @override
+  String get permSinUbicPaso1 => 'Abre los ajustes de NEXA';
+
+  @override
+  String get permSinUbicPaso2 => 'Toca Permisos → Ubicación';
+
+  @override
+  String get permSinUbicPaso3 => 'Elige «Permitir mientras se usa la app»';
+
+  @override
+  String get permSinUbicPermitir => 'Permitir ubicación';
+
+  @override
+  String get permSinUbicAjustes => 'Abrir ajustes';
 }

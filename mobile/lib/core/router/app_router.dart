@@ -15,6 +15,7 @@ import '../../features/niveles/presentation/screens/niveles_screen.dart';
 import '../../features/viajes/presentation/conductor/inicio_conductor_screen.dart';
 import '../../features/viajes/presentation/conductor/ganancias_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/permisos/presentation/pantallas_permisos.dart';
 import '../../features/satisfaccion/presentation/admin_shell.dart';
 import '../../features/satisfaccion/presentation/screens/entrenando_screen.dart';
 import '../../features/satisfaccion/presentation/screens/factores_screen.dart';
@@ -62,6 +63,8 @@ String? redirigir(SesionState s, String ubicacion) {
     return _publicas.contains(ubicacion) ? null : '/inicio';
   }
   if (_publicas.contains(ubicacion)) return _inicio(sesion.rol);
+  // Pantallas de permisos comunes a todos los roles (N01, N02, E01)
+  if (ubicacion.startsWith('/permisos/')) return null;
   return ubicacion.startsWith(_prefijo(sesion.rol))
       ? null
       : _inicio(sesion.rol);
@@ -86,6 +89,26 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/registro/conductor',
         builder: (_, _) => const RegistroConductorScreen(),
+      ),
+      GoRoute(
+        path: '/permisos/notificaciones',
+        builder: (_, _) => const PermisoNotificacionesScreen(),
+      ),
+      GoRoute(
+        path: '/permisos/ubicacion',
+        builder: (_, _) => const PermisoUbicacionScreen(),
+      ),
+      GoRoute(
+        path: '/permisos/sin-ubicacion',
+        builder: (_, _) => const SinUbicacionScreen(),
+      ),
+      GoRoute(
+        path: '/c/permisos/segundo-plano',
+        builder: (_, _) => const SegundoPlanoScreen(),
+      ),
+      GoRoute(
+        path: '/c/permisos/bateria',
+        builder: (_, _) => const GuiaBateriaScreen(),
       ),
       GoRoute(path: '/p/viaje', builder: (_, _) => const ViajeEnCursoScreen()),
       GoRoute(

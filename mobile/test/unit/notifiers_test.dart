@@ -85,6 +85,17 @@ void main() {
       expect(redirigir(c, '/p/viaje'), '/c/inicio');
       expect(redirigir(c, '/c/ganancias'), isNull);
     });
+
+    test('las pantallas de permisos comunes sirven a todos los roles', () {
+      const p = SesionState(sesion: pasajero, inicializado: true);
+      const c = SesionState(sesion: conductor, inicializado: true);
+      expect(redirigir(p, '/permisos/notificaciones'), isNull);
+      expect(redirigir(c, '/permisos/ubicacion'), isNull);
+      expect(redirigir(c, '/c/permisos/segundo-plano'), isNull);
+      expect(redirigir(p, '/c/permisos/segundo-plano'), '/p/inicio');
+      const sinSesion = SesionState(inicializado: true, onboardingVisto: true);
+      expect(redirigir(sinSesion, '/permisos/notificaciones'), '/inicio');
+    });
   });
 
   group('NivelController', () {

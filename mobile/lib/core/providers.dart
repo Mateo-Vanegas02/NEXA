@@ -16,6 +16,8 @@ import '../features/viajes/data/viajes_repository_impl.dart';
 import '../features/viajes/domain/viajes_repository.dart';
 import 'config/env.dart';
 import 'notificaciones/notificaciones_locales.dart';
+import 'permisos/guia_permisos.dart';
+import 'permisos/permisos_dispositivo.dart';
 import 'utils/selector_imagen.dart';
 import 'network/api_client.dart';
 import 'network/token_storage.dart';
@@ -32,6 +34,21 @@ final useMocksProvider = Provider<bool>((ref) => Env.useMocks);
 /// inicializada (con sus canales); en pruebas queda la inactiva.
 final notificacionesProvider = Provider<NotificacionesLocales>(
   (ref) => const NotificacionesInactivas(),
+);
+
+/// Permisos del teléfono (ubicación). En pruebas se sustituye por
+/// `PermisosFijos`.
+final permisosProvider = Provider<PermisosDispositivo>(
+  (ref) => const PermisosGeolocator(),
+);
+
+/// Qué pantalla de permisos toca y cuáles ya vio el usuario.
+final guiaPermisosProvider = Provider<GuiaPermisos>(
+  (ref) => GuiaPermisos(
+    permisos: ref.watch(permisosProvider),
+    notificaciones: ref.watch(notificacionesProvider),
+    store: ref.watch(secureStoreProvider),
+  ),
 );
 
 /// Cámara y galería. Sobrescribible en tests.

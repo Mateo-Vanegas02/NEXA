@@ -9,6 +9,10 @@ import 'canales_notificacion.dart';
 /// solo prepara los canales y el permiso; los avisos push llegan en un paso
 /// posterior y se muestran por estos mismos canales.
 abstract class NotificacionesLocales {
+  /// false donde el teléfono no puede mostrarlas (pruebas, otras plataformas):
+  /// entonces no se ofrece la pantalla del permiso.
+  bool get disponible;
+
   /// Crea los canales (Android 8+). Se puede llamar varias veces: Android no
   /// duplica un canal con el mismo id.
   Future<void> inicializar(List<CanalNotificacion> canales);
@@ -27,6 +31,9 @@ class NotificacionesAndroid implements NotificacionesLocales {
     : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
   final FlutterLocalNotificationsPlugin _plugin;
+
+  @override
+  bool get disponible => !kIsWeb && Platform.isAndroid;
 
   AndroidFlutterLocalNotificationsPlugin? get _android => _plugin
       .resolvePlatformSpecificImplementation<
@@ -76,6 +83,9 @@ AndroidNotificationChannel canalAndroid(CanalNotificacion canal) =>
 /// Sustituto para pruebas y para plataformas sin notificaciones.
 class NotificacionesInactivas implements NotificacionesLocales {
   const NotificacionesInactivas();
+
+  @override
+  bool get disponible => false;
 
   @override
   Future<void> inicializar(List<CanalNotificacion> canales) async {}
