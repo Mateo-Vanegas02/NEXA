@@ -137,10 +137,7 @@ void main() {
       expect(ReglasRumbo.rotacionMapa(90), 270);
       expect(ReglasRumbo.rotacionMapa(0), 0);
       // Con el mapa girado al rumbo, la flecha apunta hacia arriba.
-      expect(
-        ReglasRumbo.anguloEnPantalla(90, ReglasRumbo.rotacionMapa(90)),
-        0,
-      );
+      expect(ReglasRumbo.anguloEnPantalla(90, ReglasRumbo.rotacionMapa(90)), 0);
       expect(ReglasRumbo.anguloEnPantalla(90, 0), 90);
     });
   });
@@ -262,7 +259,10 @@ void main() {
           .cambiarModo(ModoOrientacion.navegacion);
       sensores.mag.addError(Exception('NO_SENSOR'));
       await _esperar();
-      expect(c.read(orientacionMapaProvider).aviso, AvisoOrientacion.sinBrujula);
+      expect(
+        c.read(orientacionMapaProvider).aviso,
+        AvisoOrientacion.sinBrujula,
+      );
 
       rastreador.movimiento = MovimientoGps(
         rumbo: 200,

@@ -21,19 +21,19 @@ class SensoresPlus implements SensoresMovimiento {
   static const _ritmo = SensorInterval.uiInterval;
 
   @override
-  Stream<Vector3> acelerometro() => accelerometerEventStream(
-    samplingPeriod: _ritmo,
-  ).map((e) => (x: e.x, y: e.y, z: e.z));
+  Stream<Vector3> acelerometro() =>
+      accelerometerEventStream(samplingPeriod: _ritmo)
+          .map((e) => (x: e.x, y: e.y, z: e.z));
 
   @override
-  Stream<Vector3> magnetometro() => magnetometerEventStream(
-    samplingPeriod: _ritmo,
-  ).map((e) => (x: e.x, y: e.y, z: e.z));
+  Stream<Vector3> magnetometro() =>
+      magnetometerEventStream(samplingPeriod: _ritmo)
+          .map((e) => (x: e.x, y: e.y, z: e.z));
 
   @override
-  Stream<Vector3> giroscopio() => gyroscopeEventStream(
-    samplingPeriod: _ritmo,
-  ).map((e) => (x: e.x, y: e.y, z: e.z));
+  Stream<Vector3> giroscopio() =>
+      gyroscopeEventStream(samplingPeriod: _ritmo)
+          .map((e) => (x: e.x, y: e.y, z: e.z));
 }
 
 /// Pruebas y plataformas sin sensores: ningún flujo emite.
@@ -57,7 +57,8 @@ class SensoresEnMemoria implements SensoresMovimiento {
   final mag = StreamController<Vector3>.broadcast();
   final giro = StreamController<Vector3>.broadcast();
 
-  bool get escuchando => acel.hasListener || mag.hasListener || giro.hasListener;
+  bool get escuchando =>
+      acel.hasListener || mag.hasListener || giro.hasListener;
 
   @override
   Stream<Vector3> acelerometro() => acel.stream;

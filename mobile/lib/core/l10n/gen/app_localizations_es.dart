@@ -1781,12 +1781,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'Esa solicitud ya no está disponible.';
 
   @override
-  String get mapaGirarConTelefono =>
-      'Girar el mapa con el teléfono';
+  String get mapaGirarConTelefono => 'Girar el mapa con el teléfono';
 
   @override
-  String get mapaVolverNorte =>
-      'Volver al norte';
+  String get mapaVolverNorte => 'Volver al norte';
 
   @override
   String get mapaCalibrarBrujula =>
@@ -1797,10 +1795,8 @@ class AppLocalizationsEs extends AppLocalizations {
       'Tu teléfono no tiene brújula: el mapa gira solo cuando vas en marcha.';
 
   @override
-  String get navegacionActivar =>
-      'Navegar';
+  String get navegacionActivar => 'Navegar';
 
   @override
-  String get navegacionSalir =>
-      'Salir';
+  String get navegacionSalir => 'Salir';
 }

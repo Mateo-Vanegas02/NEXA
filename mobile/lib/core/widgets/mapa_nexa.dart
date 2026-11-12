@@ -156,9 +156,7 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
         initialCenter: widget.navegacion
             ? (widget.conductor ?? widget.centro)
             : widget.centro,
-        initialZoom: widget.navegacion
-            ? MapaNexa.zoomNavegacion
-            : widget.zoom,
+        initialZoom: widget.navegacion ? MapaNexa.zoomNavegacion : widget.zoom,
         onMapReady: () {
           _listo = true;
           final e = orientacion;

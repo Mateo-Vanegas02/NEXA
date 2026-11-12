@@ -136,7 +136,9 @@ abstract final class ReglasRumbo {
   /// izquierda (antihorario visto desde arriba) baja el rumbo.
   static double giroRumbo(Vector3 giroscopio, Vector3 gravedad) {
     final g = math.sqrt(
-      gravedad.x * gravedad.x + gravedad.y * gravedad.y + gravedad.z * gravedad.z,
+      gravedad.x * gravedad.x +
+          gravedad.y * gravedad.y +
+          gravedad.z * gravedad.z,
     );
     if (g < 0.1) return 0;
     final vertical =
@@ -164,7 +166,9 @@ abstract final class ReglasRumbo {
     required DateTime ahora,
   }) {
     if (gpsUsable(gps, ahora)) return FuenteRumbo.gps;
-    return brujula == EstadoBrujula.ok ? FuenteRumbo.sensores : FuenteRumbo.ninguna;
+    return brujula == EstadoBrujula.ok
+        ? FuenteRumbo.sensores
+        : FuenteRumbo.ninguna;
   }
 
   /// ¿Vale la pena girar el mapa? Ahorra batería: solo con un cambio visible y
