@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../core/errors/app_exception.dart';
 import '../domain/perfil_pasajero.dart';
@@ -16,9 +17,22 @@ Future<T> _guard<T>(Future<T> Function() f) async {
   }
 }
 
-List<Servicio> _lista(Object? data) => (data as List<dynamic>? ?? [])
-    .map((e) => Servicio.fromJson(e as _Json))
-    .toList();
+/// Lee una lista de viajes. Un viaje que no se puede leer (un campo con un
+/// formato que la app no espera) se salta en vez de tumbar la lista entera:
+/// si no, el error hace que Riverpod reintente la petición una y otra vez.
+/// En debug se registra qué falló, sin los datos del viaje.
+List<Servicio> _lista(Object? data) {
+  final viajes = <Servicio>[];
+  for (final e in data as List<dynamic>? ?? const []) {
+    try {
+      viajes.add(Servicio.fromJson(e as _Json));
+    } on Object catch (error) {
+      final id = e is Map ? e['id'] : null;
+      debugPrint('Viaje $id sin leer: ${error.runtimeType}: $error');
+    }
+  }
+  return viajes;
+}
 
 class ApiPasajeroRepository implements PasajeroRepository {
   ApiPasajeroRepository(this._dio);

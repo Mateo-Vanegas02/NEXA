@@ -29,6 +29,22 @@ void main() {
   setUp(() => tokens = TokenStorage(MemorySecureStore()));
 
   group('ApiPasajeroRepository', () {
+    test('un viaje que no se puede leer no tumba el historial', () async {
+      final a = FakeAdapter({
+        'GET /api/pasajero/historial': (
+          200,
+          [
+            {'id': 'v1', 'estado': 'FINALIZADO', 'tarifa': 9000},
+            {'id': 'v2', 'estado': 'ESTADO_NUEVO'},
+            {'id': 'v3', 'estado': 'CANCELADO', 'distanciaKM': 'no es número'},
+            {'id': 'v4', 'estado': 'CANCELADO'},
+          ],
+        ),
+      });
+      final viajes = await repo(a).historial();
+      expect(viajes.map((v) => v.id), ['v1', 'v4']);
+    });
+
     test('cotizar lee el precio que calcula el servidor', () async {
       final a = FakeAdapter({
         'POST /api/pasajero/cotizar': (
