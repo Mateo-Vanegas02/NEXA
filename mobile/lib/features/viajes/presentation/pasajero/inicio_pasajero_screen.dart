@@ -50,7 +50,13 @@ class InicioPasajeroScreen extends ConsumerWidget {
         body: Stack(
           children: [
             Positioned.fill(
-              child: MapaNexa(centro: centro, origen: centro),
+              child: MapaNexa(
+                centro: centro,
+                origen: centro,
+                orientable: true,
+                // Debajo del encabezado.
+                brujulaArriba: Sp.md + Sizes.boton + Sp.md,
+              ),
             ),
             const SafeArea(
               child: Padding(

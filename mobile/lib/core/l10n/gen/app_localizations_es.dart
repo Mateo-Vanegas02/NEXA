@@ -1779,4 +1779,28 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get pushSolicitudNoDisponible =>
       'Esa solicitud ya no está disponible.';
+
+  @override
+  String get mapaGirarConTelefono =>
+      'Girar el mapa con el teléfono';
+
+  @override
+  String get mapaVolverNorte =>
+      'Volver al norte';
+
+  @override
+  String get mapaCalibrarBrujula =>
+      'Mueve el teléfono en forma de 8 para calibrar la brújula. Mientras, el norte queda arriba.';
+
+  @override
+  String get mapaSinBrujula =>
+      'Tu teléfono no tiene brújula: el mapa gira solo cuando vas en marcha.';
+
+  @override
+  String get navegacionActivar =>
+      'Navegar';
+
+  @override
+  String get navegacionSalir =>
+      'Salir';
 }

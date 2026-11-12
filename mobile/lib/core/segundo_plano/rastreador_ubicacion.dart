@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../rumbo/reglas_rumbo.dart';
 import 'modo_segundo_plano.dart';
 
 /// Texto de la notificación fija mientras se usa el GPS en segundo plano
@@ -28,12 +29,19 @@ abstract class RastreadorUbicacion {
   Future<void> detener();
   LatLng? get ultima;
   DateTime? get ultimaEn;
+
+  /// Rumbo y velocidad del último dato (para girar el mapa en marcha).
+  MovimientoGps? get movimiento;
 }
 
 class RastreadorGeolocator implements RastreadorUbicacion {
   StreamSubscription<Position>? _sub;
   LatLng? _ultima;
   DateTime? _ultimaEn;
+  MovimientoGps? _movimiento;
+
+  @override
+  MovimientoGps? get movimiento => _movimiento;
 
   @override
   LatLng? get ultima => _ultima;
@@ -64,6 +72,12 @@ class RastreadorGeolocator implements RastreadorUbicacion {
       (p) {
         _ultima = LatLng(p.latitude, p.longitude);
         _ultimaEn = DateTime.now();
+        _movimiento = MovimientoGps(
+          rumbo: p.heading,
+          velocidad: p.speed,
+          precisionRumbo: p.headingAccuracy,
+          en: _ultimaEn!,
+        );
       },
       // Un error del GPS no detiene el servicio: el siguiente dato lo repone.
       onError: (Object _) {},
@@ -89,6 +103,9 @@ class RastreadorEnMemoria implements RastreadorUbicacion {
 
   @override
   DateTime? ultimaEn;
+
+  @override
+  MovimientoGps? movimiento;
 
   @override
   Future<void> iniciar(ModoSegundoPlano modo, AvisoRastreo aviso) async {

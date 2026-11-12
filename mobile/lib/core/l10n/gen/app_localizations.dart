@@ -3345,6 +3345,42 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Esa solicitud ya no está disponible.'**
   String get pushSolicitudNoDisponible;
+
+  /// No description provided for @mapaGirarConTelefono.
+  ///
+  /// In es, this message translates to:
+  /// **'Girar el mapa con el teléfono'**
+  String get mapaGirarConTelefono;
+
+  /// No description provided for @mapaVolverNorte.
+  ///
+  /// In es, this message translates to:
+  /// **'Volver al norte'**
+  String get mapaVolverNorte;
+
+  /// No description provided for @mapaCalibrarBrujula.
+  ///
+  /// In es, this message translates to:
+  /// **'Mueve el teléfono en forma de 8 para calibrar la brújula. Mientras, el norte queda arriba.'**
+  String get mapaCalibrarBrujula;
+
+  /// No description provided for @mapaSinBrujula.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu teléfono no tiene brújula: el mapa gira solo cuando vas en marcha.'**
+  String get mapaSinBrujula;
+
+  /// No description provided for @navegacionActivar.
+  ///
+  /// In es, this message translates to:
+  /// **'Navegar'**
+  String get navegacionActivar;
+
+  /// No description provided for @navegacionSalir.
+  ///
+  /// In es, this message translates to:
+  /// **'Salir'**
+  String get navegacionSalir;
 }
 
 class _AppLocalizationsDelegate

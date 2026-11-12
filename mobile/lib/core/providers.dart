@@ -19,6 +19,7 @@ import 'config/env.dart';
 import 'notificaciones/notificaciones_locales.dart';
 import 'permisos/guia_permisos.dart';
 import 'push/dispositivos_repository.dart';
+import 'rumbo/sensores_movimiento.dart';
 import 'push/servicio_push.dart';
 import 'permisos/permisos_dispositivo.dart';
 import 'segundo_plano/rastreador_ubicacion.dart';
@@ -38,6 +39,12 @@ final useMocksProvider = Provider<bool>((ref) => Env.useMocks);
 /// inicializada (con sus canales); en pruebas queda la inactiva.
 final notificacionesProvider = Provider<NotificacionesLocales>(
   (ref) => const NotificacionesInactivas(),
+);
+
+/// Brújula, giroscopio y acelerómetro (girar el mapa). En pruebas, inactivos
+/// o `SensoresEnMemoria`.
+final sensoresProvider = Provider<SensoresMovimiento>(
+  (ref) => const SensoresPlus(),
 );
 
 /// Avisos push (FCM). `main` lo sustituye por Firebase si arrancó; en pruebas

@@ -15,6 +15,8 @@ import 'package:nexa_mobile/core/l10n/gen/app_localizations.dart';
 import 'package:nexa_mobile/core/network/token_storage.dart';
 import 'package:nexa_mobile/core/permisos/permisos_dispositivo.dart';
 import 'package:nexa_mobile/core/providers.dart';
+import 'package:nexa_mobile/core/rumbo/sensores_movimiento.dart';
+import 'package:nexa_mobile/core/segundo_plano/rastreador_ubicacion.dart';
 import 'package:nexa_mobile/core/utils/mi_posicion.dart';
 import 'package:nexa_mobile/core/theme/app_theme.dart';
 import 'package:nexa_mobile/core/widgets/mapa_nexa.dart';
@@ -55,6 +57,9 @@ List<Override> overridesTest({
   permisosProvider.overrideWithValue(
     permisos ?? PermisosFijos(EstadoUbicacion.siempre),
   ),
+  // Sin brújula ni giroscopio reales.
+  sensoresProvider.overrideWithValue(const SensoresInactivos()),
+  rastreadorProvider.overrideWithValue(RastreadorEnMemoria()),
 ];
 
 /// Monta [child] dentro de MaterialApp con localización y tema de NEXA.

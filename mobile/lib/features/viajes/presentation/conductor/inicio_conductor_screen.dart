@@ -1,4 +1,5 @@
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/rumbo/orientacion_mapa.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/theme_x.dart';
 import '../../../../core/theme/tokens.dart';
@@ -78,6 +79,18 @@ class _Panel extends ConsumerWidget {
             activo.ubicacionDestino!.longitud,
           );
     final moto = pos == null ? null : LatLng(pos.latitud, pos.longitud);
+    // Modo navegación: solo en línea o con un viaje (lo enciende el conductor).
+    final puedeNavegar = estado.enLinea || activo != null;
+    final modoMapa = ref.watch(orientacionMapaProvider.select((o) => o.modo));
+    final navegando = puedeNavegar && modoMapa == ModoOrientacion.navegacion;
+    if (!puedeNavegar && modoMapa == ModoOrientacion.navegacion) {
+      // Se desconectó o terminó el viaje: vuelve el norte arriba.
+      Future.microtask(
+        () => ref
+            .read(orientacionMapaProvider.notifier)
+            .cambiarModo(ModoOrientacion.norte),
+      );
+    }
     return Stack(
       children: [
         Positioned.fill(
@@ -86,8 +99,23 @@ class _Panel extends ConsumerWidget {
             origen: recogida,
             destino: destino,
             conductor: moto,
+            orientable: true,
+            navegacion: navegando,
           ),
         ),
+        if (puedeNavegar)
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.only(
+                top: Sp.md + Sizes.touch + Sp.sm,
+                right: Sp.md,
+              ),
+              child: Align(
+                alignment: Alignment.topRight,
+                child: _BotonNavegar(activo: navegando),
+              ),
+            ),
+          ),
         SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(Sp.md),
@@ -289,6 +317,58 @@ class _BotonConexion extends StatelessWidget {
                 Icons.power_settings_new,
                 size: 38,
                 color: enLinea ? NexaColors.bg : NexaColors.cyan,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Enciende o apaga el modo navegación: el mapa sigue a la moto y gira con su
+/// avance (GPS en marcha; brújula detenido).
+class _BotonNavegar extends ConsumerWidget {
+  const _BotonNavegar({required this.activo});
+  final bool activo;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    return Semantics(
+      button: true,
+      toggled: activo,
+      child: Material(
+        color: activo ? NexaColors.cyan : NexaColors.glass,
+        borderRadius: BorderRadius.circular(Rad.pill),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(Rad.pill),
+          onTap: () => ref
+              .read(orientacionMapaProvider.notifier)
+              .cambiarModo(
+                activo ? ModoOrientacion.norte : ModoOrientacion.navegacion,
+              ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: Sizes.touch),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: Sp.lg),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    activo ? Icons.close : Icons.navigation,
+                    color: activo ? NexaColors.brand : Colors.white,
+                    size: 20,
+                  ),
+                  const SizedBox(width: Sp.sm),
+                  Text(
+                    activo ? l.navegacionSalir : l.navegacionActivar,
+                    style: TextStyle(
+                      color: activo ? NexaColors.brand : Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
