@@ -27,7 +27,8 @@ class InicioConductorScreen extends ConsumerWidget {
     // «Aceptar» desde la notificación no se pudo (otro conductor la tomó…).
     ref.listen(avisosPushProvider, (_, mensaje) {
       if (mensaje == null) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mensaje)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(mensaje)));
       ref.read(avisosPushProvider.notifier).consumirMensaje();
     });
     return RevisionPermisos(

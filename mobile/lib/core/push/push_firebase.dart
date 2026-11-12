@@ -131,9 +131,8 @@ class PushFirebase implements ServicioPush {
   Stream<String> get tokenRenovado => _fcm.onTokenRefresh;
 
   @override
-  Stream<AvisoPush> get recibidos => FirebaseMessaging.onMessage.map(
-    (m) => AvisoPush.desdeDatos(m.data),
-  );
+  Stream<AvisoPush> get recibidos =>
+      FirebaseMessaging.onMessage.map((m) => AvisoPush.desdeDatos(m.data));
 
   @override
   Stream<AvisoPush> get tocados {

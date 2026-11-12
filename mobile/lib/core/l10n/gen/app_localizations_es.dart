@@ -1777,5 +1777,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get pushAceptar => 'Aceptar';
 
   @override
-  String get pushSolicitudNoDisponible => 'Esa solicitud ya no está disponible.';
+  String get pushSolicitudNoDisponible =>
+      'Esa solicitud ya no está disponible.';
 }

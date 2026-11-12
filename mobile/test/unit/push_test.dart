@@ -109,17 +109,20 @@ void main() {
       c.listen(avisosPushProvider, (_, _) {});
     });
 
-    test('registra el teléfono al iniciar sesión y al rotar el token', () async {
-      await c.read(sesionProvider.notifier).iniciar();
-      await _esperar();
-      expect(dispositivos.tokens, isEmpty);
-      await c.read(sesionProvider.notifier).login('ana@x.co', '123456');
-      await _esperar();
-      expect(dispositivos.tokens, {'token-prueba'});
-      push.renovarToken('token-2');
-      await _esperar();
-      expect(dispositivos.tokens, contains('token-2'));
-    });
+    test(
+      'registra el teléfono al iniciar sesión y al rotar el token',
+      () async {
+        await c.read(sesionProvider.notifier).iniciar();
+        await _esperar();
+        expect(dispositivos.tokens, isEmpty);
+        await c.read(sesionProvider.notifier).login('ana@x.co', '123456');
+        await _esperar();
+        expect(dispositivos.tokens, {'token-prueba'});
+        push.renovarToken('token-2');
+        await _esperar();
+        expect(dispositivos.tokens, contains('token-2'));
+      },
+    );
 
     test('quita el teléfono antes de cerrar sesión', () async {
       await c.read(sesionProvider.notifier).iniciar();
