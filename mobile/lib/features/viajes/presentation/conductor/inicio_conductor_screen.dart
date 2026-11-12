@@ -7,6 +7,7 @@ import '../../../../core/widgets/nexa_diseno.dart';
 import '../../../../core/widgets/nexa_widgets.dart';
 import '../../../niveles/presentation/widgets/nivel_banner.dart';
 import '../../domain/servicio.dart';
+import '../controllers/avisos_push_controller.dart';
 import '../controllers/viaje_conductor_controller.dart';
 import '../widgets/cuenta_bloqueada.dart';
 import '../widgets/solicitud_card.dart';
@@ -23,6 +24,12 @@ class InicioConductorScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final estado = ref.watch(conductorProvider);
+    // «Aceptar» desde la notificación no se pudo (otro conductor la tomó…).
+    ref.listen(avisosPushProvider, (_, mensaje) {
+      if (mensaje == null) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mensaje)));
+      ref.read(avisosPushProvider.notifier).consumirMensaje();
+    });
     return RevisionPermisos(
       child: Scaffold(
         body: estado.when(

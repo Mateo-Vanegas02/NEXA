@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/l10n/gen/app_localizations.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'features/viajes/presentation/controllers/avisos_push_controller.dart';
 import 'features/viajes/presentation/controllers/segundo_plano_controller.dart';
 
 class NexaApp extends ConsumerWidget {
@@ -14,6 +15,8 @@ class NexaApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Vive mientras la app esté abierta: prende o apaga el GPS en segundo plano.
     ref.watch(coordinadorSegundoPlanoProvider);
+    // Avisos push: registra el teléfono y atiende los toques.
+    ref.watch(avisosPushProvider);
     return _app(context, ref);
   }
 

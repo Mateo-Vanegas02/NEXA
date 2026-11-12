@@ -18,6 +18,8 @@ import '../features/viajes/domain/viajes_repository.dart';
 import 'config/env.dart';
 import 'notificaciones/notificaciones_locales.dart';
 import 'permisos/guia_permisos.dart';
+import 'push/dispositivos_repository.dart';
+import 'push/servicio_push.dart';
 import 'permisos/permisos_dispositivo.dart';
 import 'segundo_plano/rastreador_ubicacion.dart';
 import 'utils/selector_imagen.dart';
@@ -36,6 +38,19 @@ final useMocksProvider = Provider<bool>((ref) => Env.useMocks);
 /// inicializada (con sus canales); en pruebas queda la inactiva.
 final notificacionesProvider = Provider<NotificacionesLocales>(
   (ref) => const NotificacionesInactivas(),
+);
+
+/// Avisos push (FCM). `main` lo sustituye por Firebase si arrancó; en pruebas
+/// queda el inactivo o `PushEnMemoria`.
+final servicioPushProvider = Provider<ServicioPush>(
+  (ref) => const PushInactivo(),
+);
+
+/// Registro del token del teléfono en el servidor.
+final dispositivosRepositoryProvider = Provider<DispositivosRepository>(
+  (ref) => ref.watch(useMocksProvider)
+      ? DispositivosEnMemoria()
+      : ApiDispositivosRepository(ref.watch(dioProvider)),
 );
 
 /// Permisos del teléfono (ubicación). En pruebas se sustituye por

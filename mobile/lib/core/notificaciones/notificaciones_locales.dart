@@ -5,9 +5,9 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'canales_notificacion.dart';
 
-/// Notificaciones que muestra el propio teléfono (sin servidor). Por ahora
-/// solo prepara los canales y el permiso; los avisos push llegan en un paso
-/// posterior y se muestran por estos mismos canales.
+/// Notificaciones que muestra el propio teléfono: canales, permiso y la
+/// notificación fija del viaje. Las de las solicitudes push las arma
+/// `push_firebase.dart` con el mismo plugin y los mismos canales.
 abstract class NotificacionesLocales {
   /// false donde el teléfono no puede mostrarlas (pruebas, otras plataformas):
   /// entonces no se ofrece la pantalla del permiso.
@@ -50,10 +50,17 @@ abstract final class NotificacionFijaGps {
 
 /// Implementación con `flutter_local_notifications` (solo Android por ahora).
 class NotificacionesAndroid implements NotificacionesLocales {
-  NotificacionesAndroid([FlutterLocalNotificationsPlugin? plugin])
-    : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
+  NotificacionesAndroid({FlutterLocalNotificationsPlugin? plugin, this.alTocar})
+    : plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
-  final FlutterLocalNotificationsPlugin _plugin;
+  /// El plugin también lo usan los avisos push (solicitudes).
+  final FlutterLocalNotificationsPlugin plugin;
+
+  /// Toque en una notificación de la app (o en uno de sus botones) con la app
+  /// viva. Si la notificación abrió la app, lo lee `PushFirebase.tocadoAlAbrir`.
+  final void Function(NotificationResponse)? alTocar;
+
+  FlutterLocalNotificationsPlugin get _plugin => plugin;
 
   @override
   bool get disponible => !kIsWeb && Platform.isAndroid;
@@ -70,6 +77,7 @@ class NotificacionesAndroid implements NotificacionesLocales {
       settings: const InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
       ),
+      onDidReceiveNotificationResponse: alTocar,
     );
     final android = _android;
     if (android == null) return;

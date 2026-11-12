@@ -1769,4 +1769,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get avisoAbrir => 'Abrir';
+
+  @override
+  String get pushVer => 'Ver';
+
+  @override
+  String get pushAceptar => 'Aceptar';
+
+  @override
+  String get pushSolicitudNoDisponible => 'Esa solicitud ya no está disponible.';
 }

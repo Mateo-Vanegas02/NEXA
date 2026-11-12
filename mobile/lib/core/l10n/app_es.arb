@@ -938,5 +938,8 @@
   },
   "avisoElPasajero": "el pasajero",
   "avisoTuConductor": "Tu conductor",
-  "avisoAbrir": "Abrir"
+  "avisoAbrir": "Abrir",
+  "pushVer": "Ver",
+  "pushAceptar": "Aceptar",
+  "pushSolicitudNoDisponible": "Esa solicitud ya no está disponible."
 }

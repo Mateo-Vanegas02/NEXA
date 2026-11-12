@@ -3327,6 +3327,24 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Abrir'**
   String get avisoAbrir;
+
+  /// No description provided for @pushVer.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver'**
+  String get pushVer;
+
+  /// No description provided for @pushAceptar.
+  ///
+  /// In es, this message translates to:
+  /// **'Aceptar'**
+  String get pushAceptar;
+
+  /// No description provided for @pushSolicitudNoDisponible.
+  ///
+  /// In es, this message translates to:
+  /// **'Esa solicitud ya no está disponible.'**
+  String get pushSolicitudNoDisponible;
 }
 
 class _AppLocalizationsDelegate

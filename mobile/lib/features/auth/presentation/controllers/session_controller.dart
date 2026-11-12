@@ -1,6 +1,7 @@
 import '../../../../core/providers.dart';
 import '../../domain/auth.dart';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class SesionState {
@@ -77,9 +78,38 @@ class SesionController extends Notifier<SesionState> {
 
   void consumirBienvenida() => state = state.copyWith(bienvenida: false);
 
+  bool _cerrando = false;
+
   Future<void> logout() async {
-    await _repo.logout();
+    // Evita el ciclo: un 401 al quitar el token vuelve a llamar a logout.
+    if (_cerrando) return;
+    _cerrando = true;
+    try {
+      await _quitarDispositivo();
+      await _repo.logout();
+    } finally {
+      _cerrando = false;
+    }
     state = state.copyWith(limpiar: true);
+  }
+
+  /// Antes de borrar el token de sesión: el teléfono deja de recibir los
+  /// avisos de esta cuenta. Sin red no bloquea el cierre (el servidor borra
+  /// solo los tokens que FCM rechaza).
+  Future<void> _quitarDispositivo() async {
+    if (state.sesion == null) return;
+    final push = ref.read(servicioPushProvider);
+    if (!push.activo) return;
+    try {
+      final token = await push.token().timeout(const Duration(seconds: 3));
+      if (token == null) return;
+      await ref
+          .read(dispositivosRepositoryProvider)
+          .quitar(token)
+          .timeout(const Duration(seconds: 4));
+    } on Object catch (e) {
+      debugPrint('No se pudo quitar el teléfono del servidor: $e');
+    }
   }
 }
 

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1000646576724",
+    "project_id": "nexa-push",
+    "storage_bucket": "nexa-push.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1000646576724:android:d6da93f046aa5135863bc1",
+        "android_client_info": {
+          "package_name": "com.nexa.nexa_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBcDetLumJIerNIJHPR-oB0sGGlbmU5r7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

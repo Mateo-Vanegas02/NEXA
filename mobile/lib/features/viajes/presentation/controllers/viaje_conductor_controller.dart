@@ -237,9 +237,14 @@ class ConductorController extends AsyncNotifier<ConductorState> {
 
   /// Acepta una solicitud. Si otro conductor la tomó (409) o ya no está en su
   /// ola (403), se quita de la lista y el error llega a la pantalla.
-  Future<void> aceptar(Servicio s) async {
+  Future<void> aceptar(Servicio s) => aceptarPorId(s.id);
+
+  /// Igual que [aceptar], con solo el id (botón «Aceptar» de la notificación).
+  /// Espera a que el panel termine de cargar si la app acaba de abrirse.
+  Future<void> aceptarPorId(String id) async {
+    await future;
     try {
-      final nuevo = await _repo.aceptar(s.id);
+      final nuevo = await _repo.aceptar(id);
       state = AsyncData(
         _s.copyWith(
           activo: nuevo,
@@ -253,7 +258,7 @@ class ConductorController extends AsyncNotifier<ConductorState> {
       if (codigo == 409 || codigo == 403 || codigo == 404) {
         state = AsyncData(
           _s.copyWith(
-            solicitudes: [..._s.solicitudes.where((x) => x.id != s.id)],
+            solicitudes: [..._s.solicitudes.where((x) => x.id != id)],
           ),
         );
       }
