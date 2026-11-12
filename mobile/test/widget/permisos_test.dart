@@ -118,11 +118,7 @@ void main() {
       EstadoUbicacion.sinPermiso,
       alPedir: EstadoUbicacion.alUsar,
     );
-    await _abrir(
-      t,
-      const PermisoUbicacionScreen(),
-      permisos: permisos,
-    );
+    await _abrir(t, const PermisoUbicacionScreen(), permisos: permisos);
     await t.tap(find.text('Ahora no'));
     await t.pumpAndSettle();
     expect(find.text('resultado: false'), findsOneWidget);
@@ -133,15 +129,12 @@ void main() {
     t,
   ) async {
     final permisos = PermisosFijos(EstadoUbicacion.denegadaSiempre);
-    await _abrir(
-      t,
-      const SinUbicacionScreen(),
-      permisos: permisos,
-    );
+    await _abrir(t, const SinUbicacionScreen(), permisos: permisos);
     await t.tap(find.text('Permitir ubicación'));
     await t.pumpAndSettle();
     expect(permisos.ajustesAbiertos, 1);
-    expect(find.text('resultado: abierta'), findsOneWidget);
+    // Sigue abierta hasta que vuelva de los ajustes con el permiso
+    expect(find.text('Permitir ubicación'), findsOneWidget);
   });
 
   testWidgets('N03: seguir sin segundo plano también continúa', (t) async {
