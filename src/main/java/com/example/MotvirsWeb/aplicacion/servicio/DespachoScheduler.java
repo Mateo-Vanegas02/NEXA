@@ -16,8 +16,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Avisa a los conductores cuando una solicitud pasa a la siguiente ola (para que recarguen su lista) y descarta
- * las posiciones de conductores vencidas. Solo recorre las solicitudes en estado SOLICITADO.
+ * Avisa a los conductores cuando una solicitud pasa a la siguiente ola (para que recarguen su lista; en la app,
+ * con un push a los que entran en la ola nueva), avisa al pasajero de la app cuando pasó la última ola sin que nadie
+ * aceptara y descarta las posiciones de conductores vencidas. Solo recorre las solicitudes en estado SOLICITADO.
  */
 @Slf4j
 @Component
@@ -29,9 +30,12 @@ public class DespachoScheduler {
     private final UbicacionConductorService ubicaciones;
     private final SeguimientoPasajeroService seguimientoPasajero;
     private final NotificadorTiempoReal notificador;
+    private final AvisosService avisos;
 
     /** Última ola publicada de cada solicitud abierta. */
     private final Map<String, Integer> publicadas = new ConcurrentHashMap<>();
+    /** Solicitudes a cuyo pasajero ya se le avisó que no hay conductores (una sola vez). */
+    private final Set<String> sinConductores = ConcurrentHashMap.newKeySet();
 
     @Scheduled(fixedDelayString = "${nexa.despacho.revision-segundos}",
             initialDelayString = "${nexa.despacho.revision-segundos}", timeUnit = TimeUnit.SECONDS)
@@ -57,8 +61,13 @@ public class DespachoScheduler {
             // Primera vez que se ve: la ola inicial ya la avisó la creación de la solicitud.
             if (previa != null && ola > previa) {
                 notificador.notificarOlaAmpliada(s.getId(), ola);
+                avisos.olaAmpliada(s, previa, ola);
+            }
+            if (despacho.sinConductoresTrasUltimaOla(s) && sinConductores.add(s.getId())) {
+                avisos.sinConductores(s);
             }
         }
         publicadas.keySet().retainAll(abiertas);
+        sinConductores.retainAll(abiertas);
     }
 }

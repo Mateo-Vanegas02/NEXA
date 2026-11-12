@@ -15,6 +15,8 @@ Plantillas de CloudFormation, una pila por fase. Se cargan desde la consola
 
 Hecho a mano en la consola: presupuesto `nexa-mensual` (USD 30, alertas por correo) y los parámetros de
 Parameter Store `/nexa/prod/*` (web) y `/nexa/ml/MONGODB_URI` (entrenamiento), cargados por el dueño de la cuenta.
+Opcional: `/nexa/prod/FIREBASE_CREDENCIALES` (SecureString, cuenta de servicio de Firebase en base64) para los
+avisos push de la app; `preparar.sh` la pasa al contenedor sin cambios y sin ella no se envían push.
 
 Sin dominio propio todavía: la web se prueba en `https://<ip-con-guiones>.sslip.io` (salida `DireccionPrueba`
 de `nexa-10-web`). Route 53 Domains no está disponible en cuentas Free Tier; el dominio se compra afuera.

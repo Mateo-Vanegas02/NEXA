@@ -434,6 +434,16 @@ public class NivelesService {
         return modeloTarifa.comision(nivelDe(conductor));
     }
 
+    /**
+     * Lo que el conductor se quedaría con esta solicitud: (1 − comisión) × tarifa bruta (antes del descuento del
+     * pasajero, que absorbe la plataforma) más el extra voluntario completo. Mismo cálculo que la tarjeta de la web.
+     */
+    public long gananciaEstimada(Servicio s, Conductor conductor) {
+        double bruta = s.getDesglose() != null && s.getDesglose().getTarifaBruta() > 0 ? s.getDesglose().getTarifaBruta()
+                : s.getTarifa();
+        return Math.round((1 - comisionDe(conductor)) * Math.max(0, bruta)) + Math.max(0, s.getExtraVoluntario());
+    }
+
     // ═════════════════════════ MATCHING / PRIORIDAD ═════════════════════════
 
     /** Filtra por la ventana de prioridad y ordena por puntaje para un conductor. */

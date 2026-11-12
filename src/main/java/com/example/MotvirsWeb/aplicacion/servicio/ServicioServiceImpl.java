@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import com.example.MotvirsWeb.dominio.modelo.CanalServicio;
 import com.example.MotvirsWeb.dominio.modelo.Conductor;
 import com.example.MotvirsWeb.dominio.modelo.EstadoServicio;
 import com.example.MotvirsWeb.dominio.modelo.Pasajero;
@@ -58,6 +59,8 @@ public class ServicioServiceImpl implements ServicioService {
     private final com.example.MotvirsWeb.dominio.regla.PuntoRecogida puntoRecogida;
     private final ViajeEnVivoService viajeEnVivo;
     private final com.example.MotvirsWeb.dominio.repositorio.VehiculoRepository vehiculoRepository;
+    private final com.example.MotvirsWeb.aplicacion.puerto.CanalPeticion canalPeticion;
+    private final AvisosService avisos;
 
     static final String VIAJE_NO_DISPONIBLE = "Otro conductor ya tomó este viaje. Ya no está disponible.";
 
@@ -70,6 +73,7 @@ public class ServicioServiceImpl implements ServicioService {
         if (servicio.getEstado() != EstadoServicio.SOLICITADO) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, VIAJE_NO_DISPONIBLE);
         }
+        exigirMismoCanal(servicio);
         despachoService.verificarPuedeAceptar(servicio, conductor);
         nivelesService.verificarPuedeAceptar(servicio, conductor);
 
@@ -87,6 +91,8 @@ public class ServicioServiceImpl implements ServicioService {
         viajeEnVivo.seguir(servicio);
         notificadorTiempoReal.notificarCambioEstadoServicio(servicio);
         notificadorTiempoReal.notificarSolicitudRetirada(servicioId, "TOMADO");
+        avisos.viajeAceptado(servicio);
+        avisos.solicitudRetirada(servicio, "TOMADO");
 
         return Map.of("mensaje", "Servicio aceptado con éxito", "servicioId", servicioId);
     }
@@ -134,6 +140,7 @@ public class ServicioServiceImpl implements ServicioService {
             double longitud) {
         Servicio servicio = buscarServicio(servicioId);
         exigirConductorAsignado(servicio, conductor);
+        exigirMismoCanal(servicio);
         if (servicio.getEstado() != EstadoServicio.ACEPTADO) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Solo puedes confirmar la llegada de un servicio aceptado");
@@ -154,6 +161,7 @@ public class ServicioServiceImpl implements ServicioService {
         servicio.setUbicacionLlegada(new Servicio.Coordenada(latitud, longitud));
         servicioRepository.save(servicio);
         notificadorTiempoReal.notificarCambioEstadoServicio(servicio);
+        avisos.conductorLlego(servicio);
         return Map.of("mensaje", "Llegada registrada. Se cuenta la espera del pasajero.", "servicioId", servicioId);
     }
 
@@ -170,6 +178,7 @@ public class ServicioServiceImpl implements ServicioService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "Este servicio no está asignado a ti");
         }
+        exigirMismoCanal(servicio);
         // Sin "llegué" verificado no hay recogida: el viaje no arranca desde cualquier lugar
         if (servicio.getFechaLlegada() == null) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
@@ -203,6 +212,7 @@ public class ServicioServiceImpl implements ServicioService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "No puedes finalizar este servicio");
         }
+        exigirMismoCanal(servicio);
         // Regla de oro: el viaje lo finaliza siempre el conductor, en cualquier tramo. Si no llegó al destino
         // (el pasajero se bajó antes) se cobra según lo recorrido: antes de la mitad, la mitad; desde la mitad, todo.
         boolean enDestino = viajeEnVivo.estaEnElDestino(servicio, conductor.getId());
@@ -237,6 +247,7 @@ public class ServicioServiceImpl implements ServicioService {
             log.error("No se pudo procesar niveles/XP del servicio {}", servicioId, e);
         }
         notificadorTiempoReal.notificarCambioEstadoServicio(servicio);
+        avisos.viajeFinalizado(servicio);
 
         Map<String, Object> respuesta = new HashMap<>();
         respuesta.put("mensaje", "Servicio finalizado con éxito. Redirigiendo a calificación...");
@@ -269,6 +280,7 @@ public class ServicioServiceImpl implements ServicioService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "El servicio ya está completado o cancelado");
         }
+        exigirMismoCanal(servicio);
 
         servicio.setEstado(EstadoServicio.CANCELADO);
         servicio.setCanceladoPor("CONDUCTOR");
@@ -276,6 +288,7 @@ public class ServicioServiceImpl implements ServicioService {
         servicioRepository.save(servicio);
         viajeEnVivo.terminar(conductor.getId(), servicioId);
         notificadorTiempoReal.notificarCambioEstadoServicio(servicio);
+        avisos.viajeCancelado(servicio);
 
         return Map.of("mensaje", "Servicio cancelado con éxito", "servicioId", servicioId);
     }
@@ -305,8 +318,12 @@ public class ServicioServiceImpl implements ServicioService {
         var posicion = despachoService.posicionDe(conductor, lat, lng);
         Double latitud = posicion.map(com.example.MotvirsWeb.dominio.regla.PuntoGeo::latitud).orElse(null);
         Double longitud = posicion.map(com.example.MotvirsWeb.dominio.regla.PuntoGeo::longitud).orElse(null);
+        // Cada canal atiende sus propias solicitudes: la app ve las de la app y la web las de la web
+        CanalServicio canal = canalActual();
+        List<Servicio> delCanal = obtenerServiciosDisponibles().stream()
+                .filter(s -> CanalServicio.oWeb(s.getCanal()) == canal).toList();
         return nivelesService.ordenarParaConductor(
-                despachoService.filtrarPorOla(obtenerServiciosDisponibles(), conductor, latitud, longitud),
+                despachoService.filtrarPorOla(delCanal, conductor, latitud, longitud),
                 conductor, latitud, longitud);
     }
 
@@ -431,6 +448,7 @@ public class ServicioServiceImpl implements ServicioService {
         servicio.setDuracionEstimadaMin(cotizacion.ruta().duracionMin());
         servicio.setNivelPasajero(Math.max(1, pasajero.getNivel()));
         servicio.setSolicitadoEn(nivelesService.momentoActual());
+        servicio.setCanal(canalActual());
 
         servicio.setFechaHora(parsearFechaHora(solicitud.fechaHora()));
 
@@ -441,6 +459,7 @@ public class ServicioServiceImpl implements ServicioService {
         servicio.setEstado(EstadoServicio.SOLICITADO);
         servicio = servicioRepository.save(servicio);
         notificadorTiempoReal.notificarNuevoServicioDisponible(servicio);
+        avisos.solicitudNueva(servicio);
 
         Map<String, Object> respuesta = new HashMap<>();
         respuesta.put("mensaje", "Viaje solicitado con éxito. Esperando conductor...");
@@ -483,6 +502,7 @@ public class ServicioServiceImpl implements ServicioService {
         }
         Servicio actualizado = buscarServicio(servicioId);
         notificadorTiempoReal.notificarOfertaSubida(servicioId, actualizado.getExtraVoluntario());
+        avisos.extraSubido(actualizado);
         Map<String, Object> respuesta = new HashMap<>();
         respuesta.put("mensaje", "Oferta enviada a los conductores");
         respuesta.put("servicioId", servicioId);
@@ -518,6 +538,7 @@ public class ServicioServiceImpl implements ServicioService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "No puedes cancelar un servicio que ya está " + servicio.getEstado());
         }
+        exigirMismoCanal(servicio);
 
         boolean seguiaSolicitado = servicio.getEstado() == EstadoServicio.SOLICITADO;
         LocalDateTime ahora = LocalDateTime.now();
@@ -540,8 +561,10 @@ public class ServicioServiceImpl implements ServicioService {
             viajeEnVivo.terminar(servicio.getConductor().getId(), servicioId);
         }
         notificadorTiempoReal.notificarCambioEstadoServicio(cancelado);
+        avisos.viajeCancelado(cancelado);
         if (seguiaSolicitado) {
             notificadorTiempoReal.notificarSolicitudRetirada(servicioId, "CANCELADO");
+            avisos.solicitudRetirada(cancelado, "CANCELADO");
         }
 
         Map<String, Object> respuesta = new HashMap<>();
@@ -722,6 +745,19 @@ public class ServicioServiceImpl implements ServicioService {
     }
 
     /** Defensa para llamadores que no pasan por el DTO validado de la capa web. */
+    /** Canal de la petición en curso (WEB si no se puede saber). */
+    private CanalServicio canalActual() {
+        return CanalServicio.oWeb(canalPeticion.actual());
+    }
+
+    /** Un viaje se atiende solo por el canal en que se pidió: por el otro responde 409. */
+    private void exigirMismoCanal(Servicio servicio) {
+        CanalServicio delViaje = CanalServicio.oWeb(servicio.getCanal());
+        if (delViaje != canalActual()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, delViaje.mensajeOtroCanal());
+        }
+    }
+
     private void exigirConductorAsignado(Servicio servicio, Conductor conductor) {
         if (servicio.getConductor() == null || servicio.getConductor().getId() == null
                 || !servicio.getConductor().getId().equals(conductor.getId())) {

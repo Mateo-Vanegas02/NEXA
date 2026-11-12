@@ -1,5 +1,6 @@
 package com.example.MotvirsWeb.aplicacion.servicio;
 
+import com.example.MotvirsWeb.dominio.modelo.CanalServicio;
 import com.example.MotvirsWeb.dominio.modelo.Conductor;
 import com.example.MotvirsWeb.dominio.modelo.Servicio;
 import com.example.MotvirsWeb.dominio.regla.DespachoOlas;
@@ -31,6 +32,7 @@ public class DespachoService {
     private final DespachoOlas olas;
     private final UbicacionConductorService ubicaciones;
     private final Clock clock;
+    private final com.example.MotvirsWeb.dominio.regla.ModeloNexaProperties cfg;
 
     /** Posición a usar para el conductor: la que envía la petición, si es válida, o la última vigente. */
     public Optional<PuntoGeo> posicionDe(Conductor conductor, Double lat, Double lng) {
@@ -66,10 +68,11 @@ public class DespachoService {
         int ola = olas.ola(segundos, extra);
         double radio = olas.radioKm(ola);
         PuntoGeo origen = origenDe(servicio);
-        long avisados = origen == null ? 0 : ubicaciones.contarDisponiblesEnRadio(origen, radio);
+        CanalServicio canal = CanalServicio.oWeb(servicio.getCanal());
+        long avisados = origen == null ? 0 : ubicaciones.contarDisponiblesEnRadio(origen, radio, canal);
         // En la última ola también la ven los que dejaron de reportar posición (pantalla bloqueada).
         if (olas.esUltima(ola)) {
-            avisados += ubicaciones.contarDisponiblesSinPosicionVigente();
+            avisados += ubicaciones.contarDisponiblesSinPosicionVigente(canal);
         }
         return new AvisoDespacho(ola, olas.totalOlas(), Double.isInfinite(radio) ? null : radio, avisados,
                 olas.segundosParaSiguiente(segundos, extra), extra && olas.olasPorExtra() > 0);
@@ -93,6 +96,32 @@ public class DespachoService {
 
     private static double redondear(double km) {
         return Math.round(km * 100) / 100.0;
+    }
+
+    /** Radio en km de una ola (infinito en la última si no tiene tope). */
+    public double radioKm(int ola) {
+        return olas.radioKm(ola);
+    }
+
+    /**
+     * ¿Ya pasó el tiempo para avisar al pasajero que nadie aceptó? Cuenta desde el inicio de la última ola
+     * ({@code nexa.despacho.aviso-sin-conductores-segundos} después).
+     */
+    public boolean sinConductoresTrasUltimaOla(Servicio servicio) {
+        if (servicio.getSolicitadoEn() == null) {
+            return false;
+        }
+        long limite = olas.inicioSegundos(olas.totalOlas()) + (long) cfg.getDespacho().getAvisoSinConductoresSegundos();
+        return segundosEsperando(servicio) >= limite;
+    }
+
+    public boolean esUltimaOla(int ola) {
+        return olas.esUltima(ola);
+    }
+
+    /** Segundos que lleva esperando una solicitud según el reloj del servidor. */
+    public long segundosEsperando(Servicio servicio) {
+        return segundosEsperando(servicio, LocalDateTime.now(clock));
     }
 
     public int olaDe(Servicio servicio) {

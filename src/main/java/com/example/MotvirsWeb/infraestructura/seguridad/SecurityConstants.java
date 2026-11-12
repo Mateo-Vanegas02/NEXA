@@ -62,6 +62,11 @@ public class SecurityConstants {
                         "/api/perfil/**"
         };
 
+        // Tokens de FCM del teléfono (app móvil): cualquier rol con sesión
+        public static final String[] API_DISPOSITIVOS_URLS = {
+                        "/api/dispositivos"
+        };
+
         public static final String[] SHARED_URLS = {
                         "/rating",
                         "/profile/**"

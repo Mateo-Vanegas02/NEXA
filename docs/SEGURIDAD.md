@@ -22,6 +22,7 @@ Variables a definir en Azure App Service → *Configuration → Application sett
 | `SPRING_MAIL_PASSWORD` | sí | contraseña de aplicación de Gmail |
 | `APP_BASE_URL` | sí en `prod` | `https://<dominio>` sin barra final (enlaces de recuperación y orígenes WebSocket) |
 | `SPRING_PROFILES_ACTIVE` | sí | `prod` (cookie `Secure`, `forward-headers`, logging reducido). Sin él se usa el perfil base, igualmente con logging seguro |
+| `FIREBASE_CREDENCIALES` | opcional | cuenta de servicio de Firebase (FCM) en base64; sin ella no se envían push a la app. Ver `docs/AVISOS_PUSH.md` |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | opcional | solo si hay que crear el primer admin (≥ 12 caracteres). Retirar después |
 
 Checklist de despliegue seguro:

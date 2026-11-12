@@ -17,9 +17,10 @@ class DespachoSchedulerTest {
     private final ServicioRepository repo = mock(ServicioRepository.class);
     private final DespachoService despacho = mock(DespachoService.class);
     private final NotificadorTiempoReal notificador = mock(NotificadorTiempoReal.class);
+    private final AvisosService avisos = mock(AvisosService.class);
     private final DespachoScheduler scheduler =
             new DespachoScheduler(repo, despacho, mock(UbicacionConductorService.class),
-                    mock(SeguimientoPasajeroService.class), notificador);
+                    mock(SeguimientoPasajeroService.class), notificador, avisos);
 
     private Servicio solicitud(String id) {
         Servicio s = new Servicio();
@@ -39,6 +40,7 @@ class DespachoSchedulerTest {
 
         scheduler.ampliarOlas(); // pasó a la 2
         verify(notificador).notificarOlaAmpliada("s1", 2);
+        verify(avisos).olaAmpliada(s, 1, 2);
 
         scheduler.ampliarOlas(); // sigue en la 2
         verify(notificador, times(1)).notificarOlaAmpliada(anyString(), anyInt());
@@ -54,5 +56,19 @@ class DespachoSchedulerTest {
         scheduler.ampliarOlas(); // ya no está abierta
         scheduler.ampliarOlas(); // reaparece: cuenta como primera vez, no se avisa
         verify(notificador, never()).notificarOlaAmpliada(anyString(), anyInt());
+    }
+
+    @Test
+    void avisaSinConductoresUnaSolaVezPorSolicitud() {
+        Servicio s = solicitud("s1");
+        when(repo.findByEstado(EstadoServicio.SOLICITADO)).thenReturn(List.of(s));
+        when(despacho.olaDe(s)).thenReturn(4);
+        when(despacho.sinConductoresTrasUltimaOla(s)).thenReturn(false, true, true);
+
+        scheduler.ampliarOlas();
+        verify(avisos, never()).sinConductores(s);
+        scheduler.ampliarOlas();
+        scheduler.ampliarOlas();
+        verify(avisos, times(1)).sinConductores(s);
     }
 }

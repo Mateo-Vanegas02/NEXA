@@ -41,6 +41,10 @@ class ServicioAccesoTest {
     private NivelesService nivelesService;
     @Mock
     private ViajeEnVivoService viajeEnVivo;
+    @Mock
+    private com.example.MotvirsWeb.aplicacion.puerto.CanalPeticion canalPeticion;
+    @Mock
+    private AvisosService avisos;
     @InjectMocks
     private ServicioServiceImpl servicioService;
 

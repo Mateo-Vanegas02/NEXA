@@ -151,8 +151,15 @@ class SeguridadHttpTest {
             return new ApiConductorController(s, o, u,
                     mock(com.example.MotvirsWeb.aplicacion.servicio.SeguimientoPasajeroService.class),
                     mock(com.example.MotvirsWeb.aplicacion.servicio.UbicacionConductorService.class),
+                    mock(com.example.MotvirsWeb.aplicacion.puerto.CanalPeticion.class),
                     mock(com.example.MotvirsWeb.aplicacion.servicio.ViajeEnVivoService.class),
                     mock(com.example.MotvirsWeb.aplicacion.servicio.SaldoConductorService.class));
+        }
+
+        @Bean
+        com.example.MotvirsWeb.presentacion.api.ApiDispositivosController apiDispositivosController(UsuarioContextHelper u) {
+            return new com.example.MotvirsWeb.presentacion.api.ApiDispositivosController(
+                    mock(com.example.MotvirsWeb.aplicacion.servicio.DispositivosService.class), u);
         }
 
         @Bean
@@ -206,6 +213,22 @@ class SeguridadHttpTest {
     void tokenJwtBasuraDevuelve401() throws Exception {
         mvc.perform(get("/api/pasajero/perfil").header("Authorization", "Bearer no.es.un.jwt"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void elTokenDelTelefonoSeRegistraConSesionDeCualquierRolYValidaLaEntrada() throws Exception {
+        String cuerpo = "{\"token\":\"fcm-123\",\"plataforma\":\"ANDROID\"}";
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/dispositivos")
+                .with(csrf()).contentType(MediaType.APPLICATION_JSON).content(cuerpo)).andExpect(status().isUnauthorized());
+        for (String rol : new String[] { "PASAJERO", "CONDUCTOR", "ADMIN" }) {
+            mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/dispositivos")
+                    .with(user("u@x.com").roles(rol)).with(csrf())
+                    .contentType(MediaType.APPLICATION_JSON).content(cuerpo)).andExpect(status().isNoContent());
+        }
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/dispositivos")
+                .with(user("u@x.com").roles("PASAJERO")).with(csrf())
+                .contentType(MediaType.APPLICATION_JSON).content("{\"token\":\"\",\"plataforma\":\"WINDOWS\"}"))
+                .andExpect(status().isBadRequest());
     }
 
     // ── 403: rol incorrecto ─────────────────────────────────────────────

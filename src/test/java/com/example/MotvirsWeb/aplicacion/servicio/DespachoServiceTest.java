@@ -32,7 +32,7 @@ class DespachoServiceTest {
         ModeloNexaProperties cfg = ModeloNexaPropertiesTestSupport.cargar();
         Clock reloj = Clock.fixed(AHORA.toInstant(ZoneOffset.UTC), ZoneOffset.UTC);
         ubicaciones = new UbicacionConductorService(cfg, reloj);
-        despacho = new DespachoService(new DespachoOlas(cfg), ubicaciones, reloj);
+        despacho = new DespachoService(new DespachoOlas(cfg), ubicaciones, reloj, cfg);
     }
 
     private Servicio solicitud(long segundosEsperando) {

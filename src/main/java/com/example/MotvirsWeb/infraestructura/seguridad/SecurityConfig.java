@@ -59,6 +59,8 @@ public class SecurityConfig {
                                                 .requestMatchers(SecurityConstants.API_NIVELES_PASAJERO_URLS).hasRole("PASAJERO")
                                                 .requestMatchers(SecurityConstants.API_NIVELES_URLS).hasAnyRole("PASAJERO", "CONDUCTOR")
                                                 .requestMatchers(SecurityConstants.API_PERFIL_URLS).hasAnyRole("PASAJERO", "CONDUCTOR")
+                                                .requestMatchers(SecurityConstants.API_DISPOSITIVOS_URLS)
+                                                .hasAnyRole("PASAJERO", "CONDUCTOR", "ADMIN")
                                                 .requestMatchers(SecurityConstants.API_URLS).authenticated()
                                                 .requestMatchers(SecurityConstants.SHARED_URLS)
                                                 .hasAnyRole("CONDUCTOR", "PASAJERO", "ADMIN")

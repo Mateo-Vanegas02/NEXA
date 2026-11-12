@@ -18,6 +18,9 @@ import java.io.IOException;
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
+    /** Atributo de la petición que marca que llegó desde la app (token Bearer válido); lo lee CanalPeticionHttp. */
+    public static final String ATRIBUTO_CANAL = "nexa.canal";
+
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
 
@@ -56,6 +59,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                             new WebAuthenticationDetailsSource().buildDetails(request));
                     // Establecemos el usuario en el SecurityContext
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                    request.setAttribute(ATRIBUTO_CANAL, com.example.MotvirsWeb.dominio.modelo.CanalServicio.APP);
                 }
             }
         } catch (Exception e) {

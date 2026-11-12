@@ -64,6 +64,10 @@ public class ServicioServiceImplTest {
     private com.example.MotvirsWeb.dominio.regla.ModeloExtra modeloExtra =
             new com.example.MotvirsWeb.dominio.regla.ModeloExtra(ModeloNexaPropertiesTestSupport.cargar());
 
+    @Mock
+    private com.example.MotvirsWeb.aplicacion.puerto.CanalPeticion canalPeticion;
+    @Mock
+    private AvisosService avisos;
     @InjectMocks
     private ServicioServiceImpl servicioService;
 

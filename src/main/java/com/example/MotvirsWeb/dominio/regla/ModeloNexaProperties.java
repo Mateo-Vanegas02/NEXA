@@ -32,6 +32,7 @@ public class ModeloNexaProperties {
     private Job job = new Job();
     private Beneficios beneficios = new Beneficios();
     private Despacho despacho = new Despacho();
+    private Avisos avisos = new Avisos();
     private Recogida recogida = new Recogida();
     private Seguimiento seguimiento = new Seguimiento();
     private Viaje viaje = new Viaje();
@@ -177,6 +178,16 @@ public class ModeloNexaProperties {
         private int ubicacionVigenciaSegundos;
         /** Cada cuántos segundos se revisa si alguna solicitud pasó a la siguiente ola. */
         private int revisionSegundos;
+        /** Segundos tras el inicio de la última ola sin aceptación para avisar al pasajero que no hay conductores. */
+        private int avisoSinConductoresSegundos;
+    }
+
+    @Data
+    public static class Avisos {
+        /** Vigencia en FCM del aviso de una solicitud (igual que la tarjeta en pantalla). */
+        private int vigenciaSolicitudSegundos;
+        private int vigenciaViajeMinutos;
+        private int vigenciaCuentaHoras;
     }
 
     @Data

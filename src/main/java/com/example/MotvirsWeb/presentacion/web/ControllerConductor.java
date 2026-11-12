@@ -39,6 +39,7 @@ public class ControllerConductor {
     private final UsuarioContextHelper usuarioContext;
     private final com.example.MotvirsWeb.aplicacion.servicio.SeguimientoPasajeroService seguimientoPasajero;
     private final UbicacionConductorService ubicacionConductorService;
+    private final com.example.MotvirsWeb.aplicacion.puerto.CanalPeticion canalPeticion;
     private final com.example.MotvirsWeb.aplicacion.servicio.ViajeEnVivoService viajeEnVivoService;
     private final com.example.MotvirsWeb.aplicacion.servicio.SaldoConductorService saldoConductorService;
     private final ServicioRepository servicioRepository; // solo para la vista del panel
@@ -99,7 +100,8 @@ public class ControllerConductor {
             @Valid @RequestBody UbicacionConductorRequest posicion) {
         Conductor conductor = usuarioContext.getConductorAutenticado();
         PuntoGeo punto = new PuntoGeo(posicion.latitud(), posicion.longitud());
-        ubicacionConductorService.registrar(conductor.getId(), punto, posicion.estaDisponible());
+        ubicacionConductorService.registrar(conductor.getId(), punto, posicion.estaDisponible(),
+                canalPeticion.actual());
         // Con un viaje aceptado o en curso, la misma posición le llega en vivo al pasajero
         // Con viaje responde 200 con fase, distancia y ETA calculados por el servidor; sin viaje, 204
         return viajeEnVivoService.reportar(conductor.getId(), punto)

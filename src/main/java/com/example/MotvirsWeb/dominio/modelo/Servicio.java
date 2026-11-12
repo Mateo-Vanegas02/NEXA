@@ -70,6 +70,8 @@ public class Servicio {
     private int nivelPasajero;
     /** Momento (reloj del servidor) en que se solicitó; base de la ventana de prioridad. */
     private LocalDateTime solicitadoEn;
+    /** Canal por el que se pidió (WEB o APP); null en viajes anteriores, que cuentan como WEB. */
+    private CanalServicio canal;
     // ── Deuda de una cancelación anterior, cobrada junto con este viaje ──
     /** Deuda que tenía el pasajero al pedir el viaje y que aceptó pagar con él; 0 si no debía nada. */
     private long deudaPorCobrar;
