@@ -397,10 +397,7 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
             top: Sp.md + Sizes.touch + Sp.sm,
             left: 0,
             right: 0,
-            child: SafeArea(
-              bottom: false,
-              child: _Etiqueta(texto: etiqueta),
-            ),
+            child: SafeArea(bottom: false, child: _Etiqueta(texto: etiqueta)),
           ),
         if (orientacion != null && widget.orientable)
           Positioned(

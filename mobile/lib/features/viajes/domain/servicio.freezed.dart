@@ -289,7 +289,7 @@ as double,
 /// @nodoc
 mixin _$Participante {
 
- String? get id; String get nombre; String? get email; String? get telefono; double? get calificacion; int? get viajes; int? get nivel; String? get vehiculo; String? get placa; String? get fotoUrl;
+@JsonKey(readValue: leerIdParticipante) String? get id; String get nombre; String? get email; String? get telefono; double? get calificacion; int? get viajes; int? get nivel; String? get vehiculo; String? get placa; String? get fotoUrl;
 /// Create a copy of Participante
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -327,7 +327,7 @@ abstract mixin class $ParticipanteCopyWith<$Res>  {
   factory $ParticipanteCopyWith(Participante value, $Res Function(Participante) _then) = _$ParticipanteCopyWithImpl;
 @useResult
 $Res call({
- String? id, String nombre, String? email, String? telefono, double? calificacion, int? viajes, int? nivel, String? vehiculo, String? placa, String? fotoUrl
+@JsonKey(readValue: leerIdParticipante) String? id, String nombre, String? email, String? telefono, double? calificacion, int? viajes, int? nivel, String? vehiculo, String? placa, String? fotoUrl
 });
 
 
@@ -441,7 +441,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String nombre,  String? email,  String? telefono,  double? calificacion,  int? viajes,  int? nivel,  String? vehiculo,  String? placa,  String? fotoUrl)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(readValue: leerIdParticipante)  String? id,  String nombre,  String? email,  String? telefono,  double? calificacion,  int? viajes,  int? nivel,  String? vehiculo,  String? placa,  String? fotoUrl)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Participante() when $default != null:
 return $default(_that.id,_that.nombre,_that.email,_that.telefono,_that.calificacion,_that.viajes,_that.nivel,_that.vehiculo,_that.placa,_that.fotoUrl);case _:
@@ -462,7 +462,7 @@ return $default(_that.id,_that.nombre,_that.email,_that.telefono,_that.calificac
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String nombre,  String? email,  String? telefono,  double? calificacion,  int? viajes,  int? nivel,  String? vehiculo,  String? placa,  String? fotoUrl)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(readValue: leerIdParticipante)  String? id,  String nombre,  String? email,  String? telefono,  double? calificacion,  int? viajes,  int? nivel,  String? vehiculo,  String? placa,  String? fotoUrl)  $default,) {final _that = this;
 switch (_that) {
 case _Participante():
 return $default(_that.id,_that.nombre,_that.email,_that.telefono,_that.calificacion,_that.viajes,_that.nivel,_that.vehiculo,_that.placa,_that.fotoUrl);case _:
@@ -482,7 +482,7 @@ return $default(_that.id,_that.nombre,_that.email,_that.telefono,_that.calificac
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String nombre,  String? email,  String? telefono,  double? calificacion,  int? viajes,  int? nivel,  String? vehiculo,  String? placa,  String? fotoUrl)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(readValue: leerIdParticipante)  String? id,  String nombre,  String? email,  String? telefono,  double? calificacion,  int? viajes,  int? nivel,  String? vehiculo,  String? placa,  String? fotoUrl)?  $default,) {final _that = this;
 switch (_that) {
 case _Participante() when $default != null:
 return $default(_that.id,_that.nombre,_that.email,_that.telefono,_that.calificacion,_that.viajes,_that.nivel,_that.vehiculo,_that.placa,_that.fotoUrl);case _:
@@ -497,10 +497,10 @@ return $default(_that.id,_that.nombre,_that.email,_that.telefono,_that.calificac
 @JsonSerializable()
 
 class _Participante implements Participante {
-  const _Participante({this.id, this.nombre = '', this.email, this.telefono, this.calificacion, this.viajes, this.nivel, this.vehiculo, this.placa, this.fotoUrl});
+  const _Participante({@JsonKey(readValue: leerIdParticipante) this.id, this.nombre = '', this.email, this.telefono, this.calificacion, this.viajes, this.nivel, this.vehiculo, this.placa, this.fotoUrl});
   factory _Participante.fromJson(Map<String, dynamic> json) => _$ParticipanteFromJson(json);
 
-@override final  String? id;
+@override@JsonKey(readValue: leerIdParticipante) final  String? id;
 @override@JsonKey() final  String nombre;
 @override final  String? email;
 @override final  String? telefono;
@@ -546,7 +546,7 @@ abstract mixin class _$ParticipanteCopyWith<$Res> implements $ParticipanteCopyWi
   factory _$ParticipanteCopyWith(_Participante value, $Res Function(_Participante) _then) = __$ParticipanteCopyWithImpl;
 @override @useResult
 $Res call({
- String? id, String nombre, String? email, String? telefono, double? calificacion, int? viajes, int? nivel, String? vehiculo, String? placa, String? fotoUrl
+@JsonKey(readValue: leerIdParticipante) String? id, String nombre, String? email, String? telefono, double? calificacion, int? viajes, int? nivel, String? vehiculo, String? placa, String? fotoUrl
 });
 
 
@@ -586,7 +586,7 @@ as String?,
 /// @nodoc
 mixin _$Servicio {
 
- String get id; EstadoServicio get estado; Participante? get pasajero; Participante? get conductor; String get origen; String get destino; double get distanciaKM; Coordenada? get ubicacionOrigen; Coordenada? get ubicacionDestino; DateTime? get fechaHora; DateTime? get fechaLlegada; DateTime? get fechaInicio; DateTime? get fechaFinalizacion; double get duracionEstimadaMin; double get tarifa; double get extraVoluntario; double get deudaCobrada; bool get finalizadoAntesDelDestino; double? get fraccionCobrada; String? get metodoPago; double? get calificacionConductor; double? get calificacionPasajero; int get nivelPasajero; int get xpGanadoPasajero; int get xpGanadoConductor;
+ String get id; EstadoServicio get estado; Participante? get pasajero; Participante? get conductor; String get origen; String get destino; double get distanciaKM; Coordenada? get ubicacionOrigen; Coordenada? get ubicacionDestino; DateTime? get fechaHora; DateTime? get fechaLlegada; DateTime? get fechaInicio; DateTime? get fechaFinalizacion; double get duracionEstimadaMin; String? get rutaGeometria; double get tarifa; double get extraVoluntario; double get deudaCobrada; bool get finalizadoAntesDelDestino; double? get fraccionCobrada; String? get metodoPago; double? get calificacionConductor; double? get calificacionPasajero; int get nivelPasajero; int get xpGanadoPasajero; int get xpGanadoConductor;
 /// Create a copy of Servicio
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -600,20 +600,20 @@ $ServicioCopyWith<Servicio> get copyWith => _$ServicioCopyWithImpl<Servicio>(thi
 @override
 bool operator ==(Object other) {
   final _this = this as Servicio;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Servicio&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.estado, _this.estado) || other.estado == _this.estado)&&(identical(other.pasajero, _this.pasajero) || other.pasajero == _this.pasajero)&&(identical(other.conductor, _this.conductor) || other.conductor == _this.conductor)&&(identical(other.origen, _this.origen) || other.origen == _this.origen)&&(identical(other.destino, _this.destino) || other.destino == _this.destino)&&(identical(other.distanciaKM, _this.distanciaKM) || other.distanciaKM == _this.distanciaKM)&&(identical(other.ubicacionOrigen, _this.ubicacionOrigen) || other.ubicacionOrigen == _this.ubicacionOrigen)&&(identical(other.ubicacionDestino, _this.ubicacionDestino) || other.ubicacionDestino == _this.ubicacionDestino)&&(identical(other.fechaHora, _this.fechaHora) || other.fechaHora == _this.fechaHora)&&(identical(other.fechaLlegada, _this.fechaLlegada) || other.fechaLlegada == _this.fechaLlegada)&&(identical(other.fechaInicio, _this.fechaInicio) || other.fechaInicio == _this.fechaInicio)&&(identical(other.fechaFinalizacion, _this.fechaFinalizacion) || other.fechaFinalizacion == _this.fechaFinalizacion)&&(identical(other.duracionEstimadaMin, _this.duracionEstimadaMin) || other.duracionEstimadaMin == _this.duracionEstimadaMin)&&(identical(other.tarifa, _this.tarifa) || other.tarifa == _this.tarifa)&&(identical(other.extraVoluntario, _this.extraVoluntario) || other.extraVoluntario == _this.extraVoluntario)&&(identical(other.deudaCobrada, _this.deudaCobrada) || other.deudaCobrada == _this.deudaCobrada)&&(identical(other.finalizadoAntesDelDestino, _this.finalizadoAntesDelDestino) || other.finalizadoAntesDelDestino == _this.finalizadoAntesDelDestino)&&(identical(other.fraccionCobrada, _this.fraccionCobrada) || other.fraccionCobrada == _this.fraccionCobrada)&&(identical(other.metodoPago, _this.metodoPago) || other.metodoPago == _this.metodoPago)&&(identical(other.calificacionConductor, _this.calificacionConductor) || other.calificacionConductor == _this.calificacionConductor)&&(identical(other.calificacionPasajero, _this.calificacionPasajero) || other.calificacionPasajero == _this.calificacionPasajero)&&(identical(other.nivelPasajero, _this.nivelPasajero) || other.nivelPasajero == _this.nivelPasajero)&&(identical(other.xpGanadoPasajero, _this.xpGanadoPasajero) || other.xpGanadoPasajero == _this.xpGanadoPasajero)&&(identical(other.xpGanadoConductor, _this.xpGanadoConductor) || other.xpGanadoConductor == _this.xpGanadoConductor));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Servicio&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.estado, _this.estado) || other.estado == _this.estado)&&(identical(other.pasajero, _this.pasajero) || other.pasajero == _this.pasajero)&&(identical(other.conductor, _this.conductor) || other.conductor == _this.conductor)&&(identical(other.origen, _this.origen) || other.origen == _this.origen)&&(identical(other.destino, _this.destino) || other.destino == _this.destino)&&(identical(other.distanciaKM, _this.distanciaKM) || other.distanciaKM == _this.distanciaKM)&&(identical(other.ubicacionOrigen, _this.ubicacionOrigen) || other.ubicacionOrigen == _this.ubicacionOrigen)&&(identical(other.ubicacionDestino, _this.ubicacionDestino) || other.ubicacionDestino == _this.ubicacionDestino)&&(identical(other.fechaHora, _this.fechaHora) || other.fechaHora == _this.fechaHora)&&(identical(other.fechaLlegada, _this.fechaLlegada) || other.fechaLlegada == _this.fechaLlegada)&&(identical(other.fechaInicio, _this.fechaInicio) || other.fechaInicio == _this.fechaInicio)&&(identical(other.fechaFinalizacion, _this.fechaFinalizacion) || other.fechaFinalizacion == _this.fechaFinalizacion)&&(identical(other.duracionEstimadaMin, _this.duracionEstimadaMin) || other.duracionEstimadaMin == _this.duracionEstimadaMin)&&(identical(other.rutaGeometria, _this.rutaGeometria) || other.rutaGeometria == _this.rutaGeometria)&&(identical(other.tarifa, _this.tarifa) || other.tarifa == _this.tarifa)&&(identical(other.extraVoluntario, _this.extraVoluntario) || other.extraVoluntario == _this.extraVoluntario)&&(identical(other.deudaCobrada, _this.deudaCobrada) || other.deudaCobrada == _this.deudaCobrada)&&(identical(other.finalizadoAntesDelDestino, _this.finalizadoAntesDelDestino) || other.finalizadoAntesDelDestino == _this.finalizadoAntesDelDestino)&&(identical(other.fraccionCobrada, _this.fraccionCobrada) || other.fraccionCobrada == _this.fraccionCobrada)&&(identical(other.metodoPago, _this.metodoPago) || other.metodoPago == _this.metodoPago)&&(identical(other.calificacionConductor, _this.calificacionConductor) || other.calificacionConductor == _this.calificacionConductor)&&(identical(other.calificacionPasajero, _this.calificacionPasajero) || other.calificacionPasajero == _this.calificacionPasajero)&&(identical(other.nivelPasajero, _this.nivelPasajero) || other.nivelPasajero == _this.nivelPasajero)&&(identical(other.xpGanadoPasajero, _this.xpGanadoPasajero) || other.xpGanadoPasajero == _this.xpGanadoPasajero)&&(identical(other.xpGanadoConductor, _this.xpGanadoConductor) || other.xpGanadoConductor == _this.xpGanadoConductor));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as Servicio;
-  return Object.hashAll([runtimeType,_this.id,_this.estado,_this.pasajero,_this.conductor,_this.origen,_this.destino,_this.distanciaKM,_this.ubicacionOrigen,_this.ubicacionDestino,_this.fechaHora,_this.fechaLlegada,_this.fechaInicio,_this.fechaFinalizacion,_this.duracionEstimadaMin,_this.tarifa,_this.extraVoluntario,_this.deudaCobrada,_this.finalizadoAntesDelDestino,_this.fraccionCobrada,_this.metodoPago,_this.calificacionConductor,_this.calificacionPasajero,_this.nivelPasajero,_this.xpGanadoPasajero,_this.xpGanadoConductor]);
+  return Object.hashAll([runtimeType,_this.id,_this.estado,_this.pasajero,_this.conductor,_this.origen,_this.destino,_this.distanciaKM,_this.ubicacionOrigen,_this.ubicacionDestino,_this.fechaHora,_this.fechaLlegada,_this.fechaInicio,_this.fechaFinalizacion,_this.duracionEstimadaMin,_this.rutaGeometria,_this.tarifa,_this.extraVoluntario,_this.deudaCobrada,_this.finalizadoAntesDelDestino,_this.fraccionCobrada,_this.metodoPago,_this.calificacionConductor,_this.calificacionPasajero,_this.nivelPasajero,_this.xpGanadoPasajero,_this.xpGanadoConductor]);
 }
 
 @override
 String toString() {
   final _this = this as Servicio;
-  return 'Servicio(id: ${_this.id}, estado: ${_this.estado}, pasajero: ${_this.pasajero}, conductor: ${_this.conductor}, origen: ${_this.origen}, destino: ${_this.destino}, distanciaKM: ${_this.distanciaKM}, ubicacionOrigen: ${_this.ubicacionOrigen}, ubicacionDestino: ${_this.ubicacionDestino}, fechaHora: ${_this.fechaHora}, fechaLlegada: ${_this.fechaLlegada}, fechaInicio: ${_this.fechaInicio}, fechaFinalizacion: ${_this.fechaFinalizacion}, duracionEstimadaMin: ${_this.duracionEstimadaMin}, tarifa: ${_this.tarifa}, extraVoluntario: ${_this.extraVoluntario}, deudaCobrada: ${_this.deudaCobrada}, finalizadoAntesDelDestino: ${_this.finalizadoAntesDelDestino}, fraccionCobrada: ${_this.fraccionCobrada}, metodoPago: ${_this.metodoPago}, calificacionConductor: ${_this.calificacionConductor}, calificacionPasajero: ${_this.calificacionPasajero}, nivelPasajero: ${_this.nivelPasajero}, xpGanadoPasajero: ${_this.xpGanadoPasajero}, xpGanadoConductor: ${_this.xpGanadoConductor})';
+  return 'Servicio(id: ${_this.id}, estado: ${_this.estado}, pasajero: ${_this.pasajero}, conductor: ${_this.conductor}, origen: ${_this.origen}, destino: ${_this.destino}, distanciaKM: ${_this.distanciaKM}, ubicacionOrigen: ${_this.ubicacionOrigen}, ubicacionDestino: ${_this.ubicacionDestino}, fechaHora: ${_this.fechaHora}, fechaLlegada: ${_this.fechaLlegada}, fechaInicio: ${_this.fechaInicio}, fechaFinalizacion: ${_this.fechaFinalizacion}, duracionEstimadaMin: ${_this.duracionEstimadaMin}, rutaGeometria: ${_this.rutaGeometria}, tarifa: ${_this.tarifa}, extraVoluntario: ${_this.extraVoluntario}, deudaCobrada: ${_this.deudaCobrada}, finalizadoAntesDelDestino: ${_this.finalizadoAntesDelDestino}, fraccionCobrada: ${_this.fraccionCobrada}, metodoPago: ${_this.metodoPago}, calificacionConductor: ${_this.calificacionConductor}, calificacionPasajero: ${_this.calificacionPasajero}, nivelPasajero: ${_this.nivelPasajero}, xpGanadoPasajero: ${_this.xpGanadoPasajero}, xpGanadoConductor: ${_this.xpGanadoConductor})';
 }
 
 
@@ -624,7 +624,7 @@ abstract mixin class $ServicioCopyWith<$Res>  {
   factory $ServicioCopyWith(Servicio value, $Res Function(Servicio) _then) = _$ServicioCopyWithImpl;
 @useResult
 $Res call({
- String id, EstadoServicio estado, Participante? pasajero, Participante? conductor, String origen, String destino, double distanciaKM, Coordenada? ubicacionOrigen, Coordenada? ubicacionDestino, DateTime? fechaHora, DateTime? fechaLlegada, DateTime? fechaInicio, DateTime? fechaFinalizacion, double duracionEstimadaMin, double tarifa, double extraVoluntario, double deudaCobrada, bool finalizadoAntesDelDestino, double? fraccionCobrada, String? metodoPago, double? calificacionConductor, double? calificacionPasajero, int nivelPasajero, int xpGanadoPasajero, int xpGanadoConductor
+ String id, EstadoServicio estado, Participante? pasajero, Participante? conductor, String origen, String destino, double distanciaKM, Coordenada? ubicacionOrigen, Coordenada? ubicacionDestino, DateTime? fechaHora, DateTime? fechaLlegada, DateTime? fechaInicio, DateTime? fechaFinalizacion, double duracionEstimadaMin, String? rutaGeometria, double tarifa, double extraVoluntario, double deudaCobrada, bool finalizadoAntesDelDestino, double? fraccionCobrada, String? metodoPago, double? calificacionConductor, double? calificacionPasajero, int nivelPasajero, int xpGanadoPasajero, int xpGanadoConductor
 });
 
 
@@ -641,7 +641,7 @@ class _$ServicioCopyWithImpl<$Res>
 
 /// Create a copy of Servicio
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? estado = null,Object? pasajero = freezed,Object? conductor = freezed,Object? origen = null,Object? destino = null,Object? distanciaKM = null,Object? ubicacionOrigen = freezed,Object? ubicacionDestino = freezed,Object? fechaHora = freezed,Object? fechaLlegada = freezed,Object? fechaInicio = freezed,Object? fechaFinalizacion = freezed,Object? duracionEstimadaMin = null,Object? tarifa = null,Object? extraVoluntario = null,Object? deudaCobrada = null,Object? finalizadoAntesDelDestino = null,Object? fraccionCobrada = freezed,Object? metodoPago = freezed,Object? calificacionConductor = freezed,Object? calificacionPasajero = freezed,Object? nivelPasajero = null,Object? xpGanadoPasajero = null,Object? xpGanadoConductor = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? estado = null,Object? pasajero = freezed,Object? conductor = freezed,Object? origen = null,Object? destino = null,Object? distanciaKM = null,Object? ubicacionOrigen = freezed,Object? ubicacionDestino = freezed,Object? fechaHora = freezed,Object? fechaLlegada = freezed,Object? fechaInicio = freezed,Object? fechaFinalizacion = freezed,Object? duracionEstimadaMin = null,Object? rutaGeometria = freezed,Object? tarifa = null,Object? extraVoluntario = null,Object? deudaCobrada = null,Object? finalizadoAntesDelDestino = null,Object? fraccionCobrada = freezed,Object? metodoPago = freezed,Object? calificacionConductor = freezed,Object? calificacionPasajero = freezed,Object? nivelPasajero = null,Object? xpGanadoPasajero = null,Object? xpGanadoConductor = null,}) {
   return _then(Servicio(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,estado: null == estado ? _self.estado : estado // ignore: cast_nullable_to_non_nullable
@@ -657,7 +657,8 @@ as DateTime?,fechaLlegada: freezed == fechaLlegada ? _self.fechaLlegada : fechaL
 as DateTime?,fechaInicio: freezed == fechaInicio ? _self.fechaInicio : fechaInicio // ignore: cast_nullable_to_non_nullable
 as DateTime?,fechaFinalizacion: freezed == fechaFinalizacion ? _self.fechaFinalizacion : fechaFinalizacion // ignore: cast_nullable_to_non_nullable
 as DateTime?,duracionEstimadaMin: null == duracionEstimadaMin ? _self.duracionEstimadaMin : duracionEstimadaMin // ignore: cast_nullable_to_non_nullable
-as double,tarifa: null == tarifa ? _self.tarifa : tarifa // ignore: cast_nullable_to_non_nullable
+as double,rutaGeometria: freezed == rutaGeometria ? _self.rutaGeometria : rutaGeometria // ignore: cast_nullable_to_non_nullable
+as String?,tarifa: null == tarifa ? _self.tarifa : tarifa // ignore: cast_nullable_to_non_nullable
 as double,extraVoluntario: null == extraVoluntario ? _self.extraVoluntario : extraVoluntario // ignore: cast_nullable_to_non_nullable
 as double,deudaCobrada: null == deudaCobrada ? _self.deudaCobrada : deudaCobrada // ignore: cast_nullable_to_non_nullable
 as double,finalizadoAntesDelDestino: null == finalizadoAntesDelDestino ? _self.finalizadoAntesDelDestino : finalizadoAntesDelDestino // ignore: cast_nullable_to_non_nullable
@@ -801,10 +802,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  EstadoServicio estado,  Participante? pasajero,  Participante? conductor,  String origen,  String destino,  double distanciaKM,  Coordenada? ubicacionOrigen,  Coordenada? ubicacionDestino,  DateTime? fechaHora,  DateTime? fechaLlegada,  DateTime? fechaInicio,  DateTime? fechaFinalizacion,  double duracionEstimadaMin,  double tarifa,  double extraVoluntario,  double deudaCobrada,  bool finalizadoAntesDelDestino,  double? fraccionCobrada,  String? metodoPago,  double? calificacionConductor,  double? calificacionPasajero,  int nivelPasajero,  int xpGanadoPasajero,  int xpGanadoConductor)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  EstadoServicio estado,  Participante? pasajero,  Participante? conductor,  String origen,  String destino,  double distanciaKM,  Coordenada? ubicacionOrigen,  Coordenada? ubicacionDestino,  DateTime? fechaHora,  DateTime? fechaLlegada,  DateTime? fechaInicio,  DateTime? fechaFinalizacion,  double duracionEstimadaMin,  String? rutaGeometria,  double tarifa,  double extraVoluntario,  double deudaCobrada,  bool finalizadoAntesDelDestino,  double? fraccionCobrada,  String? metodoPago,  double? calificacionConductor,  double? calificacionPasajero,  int nivelPasajero,  int xpGanadoPasajero,  int xpGanadoConductor)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Servicio() when $default != null:
-return $default(_that.id,_that.estado,_that.pasajero,_that.conductor,_that.origen,_that.destino,_that.distanciaKM,_that.ubicacionOrigen,_that.ubicacionDestino,_that.fechaHora,_that.fechaLlegada,_that.fechaInicio,_that.fechaFinalizacion,_that.duracionEstimadaMin,_that.tarifa,_that.extraVoluntario,_that.deudaCobrada,_that.finalizadoAntesDelDestino,_that.fraccionCobrada,_that.metodoPago,_that.calificacionConductor,_that.calificacionPasajero,_that.nivelPasajero,_that.xpGanadoPasajero,_that.xpGanadoConductor);case _:
+return $default(_that.id,_that.estado,_that.pasajero,_that.conductor,_that.origen,_that.destino,_that.distanciaKM,_that.ubicacionOrigen,_that.ubicacionDestino,_that.fechaHora,_that.fechaLlegada,_that.fechaInicio,_that.fechaFinalizacion,_that.duracionEstimadaMin,_that.rutaGeometria,_that.tarifa,_that.extraVoluntario,_that.deudaCobrada,_that.finalizadoAntesDelDestino,_that.fraccionCobrada,_that.metodoPago,_that.calificacionConductor,_that.calificacionPasajero,_that.nivelPasajero,_that.xpGanadoPasajero,_that.xpGanadoConductor);case _:
   return orElse();
 
 }
@@ -822,10 +823,10 @@ return $default(_that.id,_that.estado,_that.pasajero,_that.conductor,_that.orige
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  EstadoServicio estado,  Participante? pasajero,  Participante? conductor,  String origen,  String destino,  double distanciaKM,  Coordenada? ubicacionOrigen,  Coordenada? ubicacionDestino,  DateTime? fechaHora,  DateTime? fechaLlegada,  DateTime? fechaInicio,  DateTime? fechaFinalizacion,  double duracionEstimadaMin,  double tarifa,  double extraVoluntario,  double deudaCobrada,  bool finalizadoAntesDelDestino,  double? fraccionCobrada,  String? metodoPago,  double? calificacionConductor,  double? calificacionPasajero,  int nivelPasajero,  int xpGanadoPasajero,  int xpGanadoConductor)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  EstadoServicio estado,  Participante? pasajero,  Participante? conductor,  String origen,  String destino,  double distanciaKM,  Coordenada? ubicacionOrigen,  Coordenada? ubicacionDestino,  DateTime? fechaHora,  DateTime? fechaLlegada,  DateTime? fechaInicio,  DateTime? fechaFinalizacion,  double duracionEstimadaMin,  String? rutaGeometria,  double tarifa,  double extraVoluntario,  double deudaCobrada,  bool finalizadoAntesDelDestino,  double? fraccionCobrada,  String? metodoPago,  double? calificacionConductor,  double? calificacionPasajero,  int nivelPasajero,  int xpGanadoPasajero,  int xpGanadoConductor)  $default,) {final _that = this;
 switch (_that) {
 case _Servicio():
-return $default(_that.id,_that.estado,_that.pasajero,_that.conductor,_that.origen,_that.destino,_that.distanciaKM,_that.ubicacionOrigen,_that.ubicacionDestino,_that.fechaHora,_that.fechaLlegada,_that.fechaInicio,_that.fechaFinalizacion,_that.duracionEstimadaMin,_that.tarifa,_that.extraVoluntario,_that.deudaCobrada,_that.finalizadoAntesDelDestino,_that.fraccionCobrada,_that.metodoPago,_that.calificacionConductor,_that.calificacionPasajero,_that.nivelPasajero,_that.xpGanadoPasajero,_that.xpGanadoConductor);case _:
+return $default(_that.id,_that.estado,_that.pasajero,_that.conductor,_that.origen,_that.destino,_that.distanciaKM,_that.ubicacionOrigen,_that.ubicacionDestino,_that.fechaHora,_that.fechaLlegada,_that.fechaInicio,_that.fechaFinalizacion,_that.duracionEstimadaMin,_that.rutaGeometria,_that.tarifa,_that.extraVoluntario,_that.deudaCobrada,_that.finalizadoAntesDelDestino,_that.fraccionCobrada,_that.metodoPago,_that.calificacionConductor,_that.calificacionPasajero,_that.nivelPasajero,_that.xpGanadoPasajero,_that.xpGanadoConductor);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -842,10 +843,10 @@ return $default(_that.id,_that.estado,_that.pasajero,_that.conductor,_that.orige
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  EstadoServicio estado,  Participante? pasajero,  Participante? conductor,  String origen,  String destino,  double distanciaKM,  Coordenada? ubicacionOrigen,  Coordenada? ubicacionDestino,  DateTime? fechaHora,  DateTime? fechaLlegada,  DateTime? fechaInicio,  DateTime? fechaFinalizacion,  double duracionEstimadaMin,  double tarifa,  double extraVoluntario,  double deudaCobrada,  bool finalizadoAntesDelDestino,  double? fraccionCobrada,  String? metodoPago,  double? calificacionConductor,  double? calificacionPasajero,  int nivelPasajero,  int xpGanadoPasajero,  int xpGanadoConductor)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  EstadoServicio estado,  Participante? pasajero,  Participante? conductor,  String origen,  String destino,  double distanciaKM,  Coordenada? ubicacionOrigen,  Coordenada? ubicacionDestino,  DateTime? fechaHora,  DateTime? fechaLlegada,  DateTime? fechaInicio,  DateTime? fechaFinalizacion,  double duracionEstimadaMin,  String? rutaGeometria,  double tarifa,  double extraVoluntario,  double deudaCobrada,  bool finalizadoAntesDelDestino,  double? fraccionCobrada,  String? metodoPago,  double? calificacionConductor,  double? calificacionPasajero,  int nivelPasajero,  int xpGanadoPasajero,  int xpGanadoConductor)?  $default,) {final _that = this;
 switch (_that) {
 case _Servicio() when $default != null:
-return $default(_that.id,_that.estado,_that.pasajero,_that.conductor,_that.origen,_that.destino,_that.distanciaKM,_that.ubicacionOrigen,_that.ubicacionDestino,_that.fechaHora,_that.fechaLlegada,_that.fechaInicio,_that.fechaFinalizacion,_that.duracionEstimadaMin,_that.tarifa,_that.extraVoluntario,_that.deudaCobrada,_that.finalizadoAntesDelDestino,_that.fraccionCobrada,_that.metodoPago,_that.calificacionConductor,_that.calificacionPasajero,_that.nivelPasajero,_that.xpGanadoPasajero,_that.xpGanadoConductor);case _:
+return $default(_that.id,_that.estado,_that.pasajero,_that.conductor,_that.origen,_that.destino,_that.distanciaKM,_that.ubicacionOrigen,_that.ubicacionDestino,_that.fechaHora,_that.fechaLlegada,_that.fechaInicio,_that.fechaFinalizacion,_that.duracionEstimadaMin,_that.rutaGeometria,_that.tarifa,_that.extraVoluntario,_that.deudaCobrada,_that.finalizadoAntesDelDestino,_that.fraccionCobrada,_that.metodoPago,_that.calificacionConductor,_that.calificacionPasajero,_that.nivelPasajero,_that.xpGanadoPasajero,_that.xpGanadoConductor);case _:
   return null;
 
 }
@@ -857,7 +858,7 @@ return $default(_that.id,_that.estado,_that.pasajero,_that.conductor,_that.orige
 @JsonSerializable()
 
 class _Servicio extends Servicio {
-  const _Servicio({required this.id, required this.estado, this.pasajero, this.conductor, this.origen = '', this.destino = '', this.distanciaKM = 0, this.ubicacionOrigen, this.ubicacionDestino, this.fechaHora, this.fechaLlegada, this.fechaInicio, this.fechaFinalizacion, this.duracionEstimadaMin = 0, this.tarifa = 0, this.extraVoluntario = 0, this.deudaCobrada = 0, this.finalizadoAntesDelDestino = false, this.fraccionCobrada, this.metodoPago, this.calificacionConductor, this.calificacionPasajero, this.nivelPasajero = 0, this.xpGanadoPasajero = 0, this.xpGanadoConductor = 0}): super._();
+  const _Servicio({required this.id, required this.estado, this.pasajero, this.conductor, this.origen = '', this.destino = '', this.distanciaKM = 0, this.ubicacionOrigen, this.ubicacionDestino, this.fechaHora, this.fechaLlegada, this.fechaInicio, this.fechaFinalizacion, this.duracionEstimadaMin = 0, this.rutaGeometria, this.tarifa = 0, this.extraVoluntario = 0, this.deudaCobrada = 0, this.finalizadoAntesDelDestino = false, this.fraccionCobrada, this.metodoPago, this.calificacionConductor, this.calificacionPasajero, this.nivelPasajero = 0, this.xpGanadoPasajero = 0, this.xpGanadoConductor = 0}): super._();
   factory _Servicio.fromJson(Map<String, dynamic> json) => _$ServicioFromJson(json);
 
 @override final  String id;
@@ -874,6 +875,7 @@ class _Servicio extends Servicio {
 @override final  DateTime? fechaInicio;
 @override final  DateTime? fechaFinalizacion;
 @override@JsonKey() final  double duracionEstimadaMin;
+@override final  String? rutaGeometria;
 @override@JsonKey() final  double tarifa;
 @override@JsonKey() final  double extraVoluntario;
 @override@JsonKey() final  double deudaCobrada;
@@ -899,18 +901,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Servicio&&(identical(other.id, id) || other.id == id)&&(identical(other.estado, estado) || other.estado == estado)&&(identical(other.pasajero, pasajero) || other.pasajero == pasajero)&&(identical(other.conductor, conductor) || other.conductor == conductor)&&(identical(other.origen, origen) || other.origen == origen)&&(identical(other.destino, destino) || other.destino == destino)&&(identical(other.distanciaKM, distanciaKM) || other.distanciaKM == distanciaKM)&&(identical(other.ubicacionOrigen, ubicacionOrigen) || other.ubicacionOrigen == ubicacionOrigen)&&(identical(other.ubicacionDestino, ubicacionDestino) || other.ubicacionDestino == ubicacionDestino)&&(identical(other.fechaHora, fechaHora) || other.fechaHora == fechaHora)&&(identical(other.fechaLlegada, fechaLlegada) || other.fechaLlegada == fechaLlegada)&&(identical(other.fechaInicio, fechaInicio) || other.fechaInicio == fechaInicio)&&(identical(other.fechaFinalizacion, fechaFinalizacion) || other.fechaFinalizacion == fechaFinalizacion)&&(identical(other.duracionEstimadaMin, duracionEstimadaMin) || other.duracionEstimadaMin == duracionEstimadaMin)&&(identical(other.tarifa, tarifa) || other.tarifa == tarifa)&&(identical(other.extraVoluntario, extraVoluntario) || other.extraVoluntario == extraVoluntario)&&(identical(other.deudaCobrada, deudaCobrada) || other.deudaCobrada == deudaCobrada)&&(identical(other.finalizadoAntesDelDestino, finalizadoAntesDelDestino) || other.finalizadoAntesDelDestino == finalizadoAntesDelDestino)&&(identical(other.fraccionCobrada, fraccionCobrada) || other.fraccionCobrada == fraccionCobrada)&&(identical(other.metodoPago, metodoPago) || other.metodoPago == metodoPago)&&(identical(other.calificacionConductor, calificacionConductor) || other.calificacionConductor == calificacionConductor)&&(identical(other.calificacionPasajero, calificacionPasajero) || other.calificacionPasajero == calificacionPasajero)&&(identical(other.nivelPasajero, nivelPasajero) || other.nivelPasajero == nivelPasajero)&&(identical(other.xpGanadoPasajero, xpGanadoPasajero) || other.xpGanadoPasajero == xpGanadoPasajero)&&(identical(other.xpGanadoConductor, xpGanadoConductor) || other.xpGanadoConductor == xpGanadoConductor));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Servicio&&(identical(other.id, id) || other.id == id)&&(identical(other.estado, estado) || other.estado == estado)&&(identical(other.pasajero, pasajero) || other.pasajero == pasajero)&&(identical(other.conductor, conductor) || other.conductor == conductor)&&(identical(other.origen, origen) || other.origen == origen)&&(identical(other.destino, destino) || other.destino == destino)&&(identical(other.distanciaKM, distanciaKM) || other.distanciaKM == distanciaKM)&&(identical(other.ubicacionOrigen, ubicacionOrigen) || other.ubicacionOrigen == ubicacionOrigen)&&(identical(other.ubicacionDestino, ubicacionDestino) || other.ubicacionDestino == ubicacionDestino)&&(identical(other.fechaHora, fechaHora) || other.fechaHora == fechaHora)&&(identical(other.fechaLlegada, fechaLlegada) || other.fechaLlegada == fechaLlegada)&&(identical(other.fechaInicio, fechaInicio) || other.fechaInicio == fechaInicio)&&(identical(other.fechaFinalizacion, fechaFinalizacion) || other.fechaFinalizacion == fechaFinalizacion)&&(identical(other.duracionEstimadaMin, duracionEstimadaMin) || other.duracionEstimadaMin == duracionEstimadaMin)&&(identical(other.rutaGeometria, rutaGeometria) || other.rutaGeometria == rutaGeometria)&&(identical(other.tarifa, tarifa) || other.tarifa == tarifa)&&(identical(other.extraVoluntario, extraVoluntario) || other.extraVoluntario == extraVoluntario)&&(identical(other.deudaCobrada, deudaCobrada) || other.deudaCobrada == deudaCobrada)&&(identical(other.finalizadoAntesDelDestino, finalizadoAntesDelDestino) || other.finalizadoAntesDelDestino == finalizadoAntesDelDestino)&&(identical(other.fraccionCobrada, fraccionCobrada) || other.fraccionCobrada == fraccionCobrada)&&(identical(other.metodoPago, metodoPago) || other.metodoPago == metodoPago)&&(identical(other.calificacionConductor, calificacionConductor) || other.calificacionConductor == calificacionConductor)&&(identical(other.calificacionPasajero, calificacionPasajero) || other.calificacionPasajero == calificacionPasajero)&&(identical(other.nivelPasajero, nivelPasajero) || other.nivelPasajero == nivelPasajero)&&(identical(other.xpGanadoPasajero, xpGanadoPasajero) || other.xpGanadoPasajero == xpGanadoPasajero)&&(identical(other.xpGanadoConductor, xpGanadoConductor) || other.xpGanadoConductor == xpGanadoConductor));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hashAll([runtimeType,id,estado,pasajero,conductor,origen,destino,distanciaKM,ubicacionOrigen,ubicacionDestino,fechaHora,fechaLlegada,fechaInicio,fechaFinalizacion,duracionEstimadaMin,tarifa,extraVoluntario,deudaCobrada,finalizadoAntesDelDestino,fraccionCobrada,metodoPago,calificacionConductor,calificacionPasajero,nivelPasajero,xpGanadoPasajero,xpGanadoConductor]);
+    return Object.hashAll([runtimeType,id,estado,pasajero,conductor,origen,destino,distanciaKM,ubicacionOrigen,ubicacionDestino,fechaHora,fechaLlegada,fechaInicio,fechaFinalizacion,duracionEstimadaMin,rutaGeometria,tarifa,extraVoluntario,deudaCobrada,finalizadoAntesDelDestino,fraccionCobrada,metodoPago,calificacionConductor,calificacionPasajero,nivelPasajero,xpGanadoPasajero,xpGanadoConductor]);
 }
 
 @override
 String toString() {
-    return 'Servicio(id: $id, estado: $estado, pasajero: $pasajero, conductor: $conductor, origen: $origen, destino: $destino, distanciaKM: $distanciaKM, ubicacionOrigen: $ubicacionOrigen, ubicacionDestino: $ubicacionDestino, fechaHora: $fechaHora, fechaLlegada: $fechaLlegada, fechaInicio: $fechaInicio, fechaFinalizacion: $fechaFinalizacion, duracionEstimadaMin: $duracionEstimadaMin, tarifa: $tarifa, extraVoluntario: $extraVoluntario, deudaCobrada: $deudaCobrada, finalizadoAntesDelDestino: $finalizadoAntesDelDestino, fraccionCobrada: $fraccionCobrada, metodoPago: $metodoPago, calificacionConductor: $calificacionConductor, calificacionPasajero: $calificacionPasajero, nivelPasajero: $nivelPasajero, xpGanadoPasajero: $xpGanadoPasajero, xpGanadoConductor: $xpGanadoConductor)';
+    return 'Servicio(id: $id, estado: $estado, pasajero: $pasajero, conductor: $conductor, origen: $origen, destino: $destino, distanciaKM: $distanciaKM, ubicacionOrigen: $ubicacionOrigen, ubicacionDestino: $ubicacionDestino, fechaHora: $fechaHora, fechaLlegada: $fechaLlegada, fechaInicio: $fechaInicio, fechaFinalizacion: $fechaFinalizacion, duracionEstimadaMin: $duracionEstimadaMin, rutaGeometria: $rutaGeometria, tarifa: $tarifa, extraVoluntario: $extraVoluntario, deudaCobrada: $deudaCobrada, finalizadoAntesDelDestino: $finalizadoAntesDelDestino, fraccionCobrada: $fraccionCobrada, metodoPago: $metodoPago, calificacionConductor: $calificacionConductor, calificacionPasajero: $calificacionPasajero, nivelPasajero: $nivelPasajero, xpGanadoPasajero: $xpGanadoPasajero, xpGanadoConductor: $xpGanadoConductor)';
 }
 
 
@@ -921,7 +923,7 @@ abstract mixin class _$ServicioCopyWith<$Res> implements $ServicioCopyWith<$Res>
   factory _$ServicioCopyWith(_Servicio value, $Res Function(_Servicio) _then) = __$ServicioCopyWithImpl;
 @override @useResult
 $Res call({
- String id, EstadoServicio estado, Participante? pasajero, Participante? conductor, String origen, String destino, double distanciaKM, Coordenada? ubicacionOrigen, Coordenada? ubicacionDestino, DateTime? fechaHora, DateTime? fechaLlegada, DateTime? fechaInicio, DateTime? fechaFinalizacion, double duracionEstimadaMin, double tarifa, double extraVoluntario, double deudaCobrada, bool finalizadoAntesDelDestino, double? fraccionCobrada, String? metodoPago, double? calificacionConductor, double? calificacionPasajero, int nivelPasajero, int xpGanadoPasajero, int xpGanadoConductor
+ String id, EstadoServicio estado, Participante? pasajero, Participante? conductor, String origen, String destino, double distanciaKM, Coordenada? ubicacionOrigen, Coordenada? ubicacionDestino, DateTime? fechaHora, DateTime? fechaLlegada, DateTime? fechaInicio, DateTime? fechaFinalizacion, double duracionEstimadaMin, String? rutaGeometria, double tarifa, double extraVoluntario, double deudaCobrada, bool finalizadoAntesDelDestino, double? fraccionCobrada, String? metodoPago, double? calificacionConductor, double? calificacionPasajero, int nivelPasajero, int xpGanadoPasajero, int xpGanadoConductor
 });
 
 
@@ -938,7 +940,7 @@ class __$ServicioCopyWithImpl<$Res>
 
 /// Create a copy of Servicio
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? estado = null,Object? pasajero = freezed,Object? conductor = freezed,Object? origen = null,Object? destino = null,Object? distanciaKM = null,Object? ubicacionOrigen = freezed,Object? ubicacionDestino = freezed,Object? fechaHora = freezed,Object? fechaLlegada = freezed,Object? fechaInicio = freezed,Object? fechaFinalizacion = freezed,Object? duracionEstimadaMin = null,Object? tarifa = null,Object? extraVoluntario = null,Object? deudaCobrada = null,Object? finalizadoAntesDelDestino = null,Object? fraccionCobrada = freezed,Object? metodoPago = freezed,Object? calificacionConductor = freezed,Object? calificacionPasajero = freezed,Object? nivelPasajero = null,Object? xpGanadoPasajero = null,Object? xpGanadoConductor = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? estado = null,Object? pasajero = freezed,Object? conductor = freezed,Object? origen = null,Object? destino = null,Object? distanciaKM = null,Object? ubicacionOrigen = freezed,Object? ubicacionDestino = freezed,Object? fechaHora = freezed,Object? fechaLlegada = freezed,Object? fechaInicio = freezed,Object? fechaFinalizacion = freezed,Object? duracionEstimadaMin = null,Object? rutaGeometria = freezed,Object? tarifa = null,Object? extraVoluntario = null,Object? deudaCobrada = null,Object? finalizadoAntesDelDestino = null,Object? fraccionCobrada = freezed,Object? metodoPago = freezed,Object? calificacionConductor = freezed,Object? calificacionPasajero = freezed,Object? nivelPasajero = null,Object? xpGanadoPasajero = null,Object? xpGanadoConductor = null,}) {
   return _then(_Servicio(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,estado: null == estado ? _self.estado : estado // ignore: cast_nullable_to_non_nullable
@@ -954,7 +956,8 @@ as DateTime?,fechaLlegada: freezed == fechaLlegada ? _self.fechaLlegada : fechaL
 as DateTime?,fechaInicio: freezed == fechaInicio ? _self.fechaInicio : fechaInicio // ignore: cast_nullable_to_non_nullable
 as DateTime?,fechaFinalizacion: freezed == fechaFinalizacion ? _self.fechaFinalizacion : fechaFinalizacion // ignore: cast_nullable_to_non_nullable
 as DateTime?,duracionEstimadaMin: null == duracionEstimadaMin ? _self.duracionEstimadaMin : duracionEstimadaMin // ignore: cast_nullable_to_non_nullable
-as double,tarifa: null == tarifa ? _self.tarifa : tarifa // ignore: cast_nullable_to_non_nullable
+as double,rutaGeometria: freezed == rutaGeometria ? _self.rutaGeometria : rutaGeometria // ignore: cast_nullable_to_non_nullable
+as String?,tarifa: null == tarifa ? _self.tarifa : tarifa // ignore: cast_nullable_to_non_nullable
 as double,extraVoluntario: null == extraVoluntario ? _self.extraVoluntario : extraVoluntario // ignore: cast_nullable_to_non_nullable
 as double,deudaCobrada: null == deudaCobrada ? _self.deudaCobrada : deudaCobrada // ignore: cast_nullable_to_non_nullable
 as double,finalizadoAntesDelDestino: null == finalizadoAntesDelDestino ? _self.finalizadoAntesDelDestino : finalizadoAntesDelDestino // ignore: cast_nullable_to_non_nullable
