@@ -7,11 +7,7 @@ void main() {
     'estado': 'SOLICITADO',
     'origen': 'A',
     'destino': 'B',
-    'pasajero': {
-      'id': idPasajero,
-      'idString': ?idString,
-      'nombre': 'Laura',
-    },
+    'pasajero': {'id': idPasajero, 'idString': ?idString, 'nombre': 'Laura'},
   };
 
   test('lee el id del pasajero como texto', () {
@@ -20,7 +16,10 @@ void main() {
   });
 
   test('un id como objeto (servidor anterior) no impide leer el viaje', () {
-    final objeto = {'timestamp': 1778000000, 'date': '2026-11-12T20:17:51.000+00:00'};
+    final objeto = {
+      'timestamp': 1778000000,
+      'date': '2026-11-12T20:17:51.000+00:00',
+    };
     final s = Servicio.fromJson(viaje(objeto));
     expect(s.id, 'v1');
     expect(s.estado, EstadoServicio.solicitado);
