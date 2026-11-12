@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexa_mobile/core/network/token_storage.dart';
 import 'package:nexa_mobile/core/permisos/guia_permisos.dart';
 import 'package:nexa_mobile/core/permisos/permisos_dispositivo.dart';
-import 'package:nexa_mobile/core/providers.dart';
 import 'package:nexa_mobile/features/auth/domain/auth.dart';
 import 'package:nexa_mobile/features/auth/presentation/controllers/session_controller.dart';
 import 'package:nexa_mobile/features/permisos/presentation/pantallas_permisos.dart';
@@ -55,9 +53,12 @@ class _LanzadorState extends State<_Lanzador> {
 Future<void> _abrir(
   WidgetTester t,
   Widget pantalla, {
-  List<Override> overrides = const [],
+  PermisosDispositivo? permisos,
+  SecureStore? store,
 }) async {
-  await t.pumpWidget(envolver(_Lanzador(pantalla), overrides: overrides));
+  await t.pumpWidget(
+    envolver(_Lanzador(pantalla), permisos: permisos, store: store),
+  );
   await t.tap(find.text('abrir'));
   await t.pumpAndSettle();
 }
@@ -100,10 +101,8 @@ void main() {
     await _abrir(
       t,
       const PermisoUbicacionScreen(),
-      overrides: [
-        permisosProvider.overrideWithValue(permisos),
-        secureStoreProvider.overrideWithValue(store),
-      ],
+      permisos: permisos,
+      store: store,
     );
     await t.tap(find.text('Permitir al usar la app'));
     await t.pumpAndSettle();
@@ -122,7 +121,7 @@ void main() {
     await _abrir(
       t,
       const PermisoUbicacionScreen(),
-      overrides: [permisosProvider.overrideWithValue(permisos)],
+      permisos: permisos,
     );
     await t.tap(find.text('Ahora no'));
     await t.pumpAndSettle();
@@ -137,7 +136,7 @@ void main() {
     await _abrir(
       t,
       const SinUbicacionScreen(),
-      overrides: [permisosProvider.overrideWithValue(permisos)],
+      permisos: permisos,
     );
     await t.tap(find.text('Permitir ubicación'));
     await t.pumpAndSettle();

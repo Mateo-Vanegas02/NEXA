@@ -41,6 +41,7 @@ List<Override> overridesTest({
   Duration splash = Duration.zero,
   GeocodingService? geocoding,
   Future<LatLng?> Function()? miPosicion,
+  PermisosDispositivo? permisos,
 }) => [
   secureStoreProvider.overrideWithValue(store ?? MemorySecureStore()),
   useMocksProvider.overrideWithValue(true),
@@ -51,7 +52,9 @@ List<Override> overridesTest({
   // Sin GPS real en los tests (evita el canal de la plataforma).
   miPosicionProvider.overrideWithValue(miPosicion ?? () async => null),
   // Permisos ya concedidos: las pantallas de permisos tienen sus propias pruebas.
-  permisosProvider.overrideWithValue(PermisosFijos(EstadoUbicacion.siempre)),
+  permisosProvider.overrideWithValue(
+    permisos ?? PermisosFijos(EstadoUbicacion.siempre),
+  ),
 ];
 
 /// Monta [child] dentro de MaterialApp con localización y tema de NEXA.
@@ -59,9 +62,11 @@ Widget envolver(
   Widget child, {
   List<Override> overrides = const [],
   GeocodingService? geocoding,
+  PermisosDispositivo? permisos,
+  SecureStore? store,
 }) => ProviderScope(
   overrides: [
-    ...overridesTest(geocoding: geocoding),
+    ...overridesTest(geocoding: geocoding, permisos: permisos, store: store),
     ...overrides,
   ],
   child: MaterialApp(
