@@ -2769,6 +2769,42 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Entrenar ahora (no disponible)'**
   String get satEntrenarNoDisponible;
+
+  /// No description provided for @notiCanalSolicitudes.
+  ///
+  /// In es, this message translates to:
+  /// **'Solicitudes de viaje'**
+  String get notiCanalSolicitudes;
+
+  /// No description provided for @notiCanalSolicitudesDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevas solicitudes cerca de ti mientras estás en línea'**
+  String get notiCanalSolicitudesDesc;
+
+  /// No description provided for @notiCanalViaje.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu viaje'**
+  String get notiCanalViaje;
+
+  /// No description provided for @notiCanalViajeDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Conductor en camino, llegada al punto y fin del viaje'**
+  String get notiCanalViajeDesc;
+
+  /// No description provided for @notiCanalCuenta.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu cuenta'**
+  String get notiCanalCuenta;
+
+  /// No description provided for @notiCanalCuentaDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargos pendientes, nivel y saldo con NEXA'**
+  String get notiCanalCuentaDesc;
 }
 
 class _AppLocalizationsDelegate

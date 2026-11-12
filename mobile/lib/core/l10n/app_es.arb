@@ -800,5 +800,11 @@
     }
   },
   "satConsejoConductores": "Los conductores califican poco. Pedirles la nota al cerrar el viaje acelera el entrenamiento.",
-  "satEntrenarNoDisponible": "Entrenar ahora (no disponible)"
+  "satEntrenarNoDisponible": "Entrenar ahora (no disponible)",
+  "notiCanalSolicitudes": "Solicitudes de viaje",
+  "notiCanalSolicitudesDesc": "Nuevas solicitudes cerca de ti mientras estás en línea",
+  "notiCanalViaje": "Tu viaje",
+  "notiCanalViajeDesc": "Conductor en camino, llegada al punto y fin del viaje",
+  "notiCanalCuenta": "Tu cuenta",
+  "notiCanalCuentaDesc": "Cargos pendientes, nivel y saldo con NEXA"
 }

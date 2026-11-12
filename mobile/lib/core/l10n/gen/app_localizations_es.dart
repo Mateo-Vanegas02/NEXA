@@ -1463,4 +1463,24 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get satEntrenarNoDisponible => 'Entrenar ahora (no disponible)';
+
+  @override
+  String get notiCanalSolicitudes => 'Solicitudes de viaje';
+
+  @override
+  String get notiCanalSolicitudesDesc =>
+      'Nuevas solicitudes cerca de ti mientras estás en línea';
+
+  @override
+  String get notiCanalViaje => 'Tu viaje';
+
+  @override
+  String get notiCanalViajeDesc =>
+      'Conductor en camino, llegada al punto y fin del viaje';
+
+  @override
+  String get notiCanalCuenta => 'Tu cuenta';
+
+  @override
+  String get notiCanalCuentaDesc => 'Cargos pendientes, nivel y saldo con NEXA';
 }

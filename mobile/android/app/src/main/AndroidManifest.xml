@@ -2,6 +2,16 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <!-- Solo el conductor la pide (pantalla N03): ubicación con la pantalla apagada mientras está
+         en línea o en un viaje. Google Play exige declararla en la ficha y en la política de datos. -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+    <!-- Servicio en primer plano de tipo ubicación (notificación fija «En línea»), Android 14+ -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+    <!-- Mantiene la CPU despierta para reportar la posición con la pantalla apagada -->
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <!-- Notificaciones (Android 13+); se pide en la pantalla N01, nunca al abrir la app -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
         android:label="NEXA"
         android:name="${applicationName}"

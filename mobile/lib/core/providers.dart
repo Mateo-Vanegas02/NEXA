@@ -15,6 +15,7 @@ import '../features/viajes/data/mock_backend.dart';
 import '../features/viajes/data/viajes_repository_impl.dart';
 import '../features/viajes/domain/viajes_repository.dart';
 import 'config/env.dart';
+import 'notificaciones/notificaciones_locales.dart';
 import 'utils/selector_imagen.dart';
 import 'network/api_client.dart';
 import 'network/token_storage.dart';
@@ -26,6 +27,12 @@ final splashMinimoProvider = Provider<Duration>(
 
 /// `true` = repositorios simulados. Sobrescribible en tests.
 final useMocksProvider = Provider<bool>((ref) => Env.useMocks);
+
+/// Notificaciones del teléfono. `main` lo sustituye por la instancia ya
+/// inicializada (con sus canales); en pruebas queda la inactiva.
+final notificacionesProvider = Provider<NotificacionesLocales>(
+  (ref) => const NotificacionesInactivas(),
+);
 
 /// Cámara y galería. Sobrescribible en tests.
 final selectorImagenProvider = Provider<SelectorImagen>(
