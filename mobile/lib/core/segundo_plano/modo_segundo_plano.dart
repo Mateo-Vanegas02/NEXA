@@ -1,0 +1,94 @@
+/// Cuándo y con qué ritmo la app sigue usando el GPS con la pantalla apagada.
+///
+/// Solo hay trabajo en segundo plano cuando el negocio lo necesita (plan de
+/// segundo plano, fase 3): el conductor en línea o en un viaje y el pasajero
+/// mientras su conductor va por él. Fuera de eso el servicio está apagado.
+enum ModoSegundoPlano {
+  apagado,
+
+  /// Conductor en línea sin viaje: posición para no perder su ola.
+  enLinea,
+
+  /// Conductor con un viaje aceptado o en curso.
+  enViaje,
+
+  /// Pasajero con el conductor en camino (hasta que inicia el viaje).
+  pasajeroEnCamino,
+}
+
+/// Parámetros del GPS para cada modo.
+class AjustesRastreo {
+  const AjustesRastreo({
+    required this.intervalo,
+    required this.distanciaMetros,
+    required this.altaPrecision,
+  });
+
+  /// Cada cuánto el sistema entrega una posición.
+  final Duration intervalo;
+
+  /// Movimiento mínimo para entregar una posición nueva.
+  final int distanciaMetros;
+
+  /// Alta precisión solo cuando hay un viaje (gasta más batería).
+  final bool altaPrecision;
+}
+
+abstract final class ReglasSegundoPlano {
+  static ModoSegundoPlano conductor({
+    required bool enLinea,
+    required bool conViaje,
+  }) {
+    if (conViaje) return ModoSegundoPlano.enViaje;
+    return enLinea ? ModoSegundoPlano.enLinea : ModoSegundoPlano.apagado;
+  }
+
+  /// El pasajero solo comparte su posición mientras el conductor va por él.
+  static ModoSegundoPlano pasajero({required bool conductorEnCamino}) =>
+      conductorEnCamino
+      ? ModoSegundoPlano.pasajeroEnCamino
+      : ModoSegundoPlano.apagado;
+
+  static AjustesRastreo? ajustes(ModoSegundoPlano modo) => switch (modo) {
+    ModoSegundoPlano.apagado => null,
+    // El servidor olvida la posición a los 45 s: 15 s la mantiene vigente.
+    ModoSegundoPlano.enLinea => const AjustesRastreo(
+      intervalo: Duration(seconds: 15),
+      distanciaMetros: 30,
+      altaPrecision: false,
+    ),
+    // Igual que viaje-activo.js de la web: cada 3 s o 10 m.
+    ModoSegundoPlano.enViaje => const AjustesRastreo(
+      intervalo: Duration(seconds: 3),
+      distanciaMetros: 10,
+      altaPrecision: true,
+    ),
+    ModoSegundoPlano.pasajeroEnCamino => const AjustesRastreo(
+      intervalo: Duration(seconds: 5),
+      distanciaMetros: 10,
+      altaPrecision: true,
+    ),
+  };
+
+  /// Una posición del rastreador sirve si es reciente; si no, se pide una
+  /// nueva al GPS.
+  static bool vigente(DateTime? tomada, DateTime ahora) =>
+      tomada != null && ahora.difference(tomada) <= const Duration(seconds: 20);
+
+  /// Con la app en segundo plano y sin viaje, el conductor reporta cada tres
+  /// ciclos de sondeo (15 s en vez de 5 s) para ahorrar batería y datos.
+  static bool saltarCiclo({
+    required bool primerPlano,
+    required bool conViaje,
+    required int ciclo,
+  }) => !primerPlano && !conViaje && ciclo % 3 != 0;
+
+  /// Cambiar de modo reinicia el servicio en primer plano; Android 14 no deja
+  /// iniciarlo de ubicación desde segundo plano, así que con la app oculta
+  /// solo se permite apagarlo. El cambio pendiente se aplica al volver.
+  static bool puedeCambiar({
+    required ModoSegundoPlano actual,
+    required ModoSegundoPlano nuevo,
+    required bool primerPlano,
+  }) => primerPlano || nuevo == ModoSegundoPlano.apagado;
+}

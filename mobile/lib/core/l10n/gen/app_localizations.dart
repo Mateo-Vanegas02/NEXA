@@ -3225,6 +3225,48 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Abrir ajustes'**
   String get permSinUbicAjustes;
+
+  /// No description provided for @segPlanoCanal.
+  ///
+  /// In es, this message translates to:
+  /// **'Ubicación de NEXA'**
+  String get segPlanoCanal;
+
+  /// No description provided for @segPlanoEnLineaTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'En línea'**
+  String get segPlanoEnLineaTitulo;
+
+  /// No description provided for @segPlanoEnLineaTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscando solicitudes cerca de ti'**
+  String get segPlanoEnLineaTexto;
+
+  /// No description provided for @segPlanoViajeTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Viaje en curso'**
+  String get segPlanoViajeTitulo;
+
+  /// No description provided for @segPlanoViajeTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Compartiendo tu ubicación con el pasajero'**
+  String get segPlanoViajeTexto;
+
+  /// No description provided for @segPlanoPasajeroTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu conductor va en camino'**
+  String get segPlanoPasajeroTitulo;
+
+  /// No description provided for @segPlanoPasajeroTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Compartimos tu ubicación para que te encuentre'**
+  String get segPlanoPasajeroTexto;
 }
 
 class _AppLocalizationsDelegate

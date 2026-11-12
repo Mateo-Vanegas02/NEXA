@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../features/auth/data/auth_repository_impl.dart';
@@ -18,6 +19,7 @@ import 'config/env.dart';
 import 'notificaciones/notificaciones_locales.dart';
 import 'permisos/guia_permisos.dart';
 import 'permisos/permisos_dispositivo.dart';
+import 'segundo_plano/rastreador_ubicacion.dart';
 import 'utils/selector_imagen.dart';
 import 'network/api_client.dart';
 import 'network/token_storage.dart';
@@ -41,6 +43,32 @@ final notificacionesProvider = Provider<NotificacionesLocales>(
 final permisosProvider = Provider<PermisosDispositivo>(
   (ref) => const PermisosGeolocator(),
 );
+
+/// GPS con servicio en primer plano (segundo plano). En pruebas,
+/// `RastreadorEnMemoria`.
+final rastreadorProvider = Provider<RastreadorUbicacion>(
+  (ref) => RastreadorGeolocator(),
+);
+
+/// Si la app está a la vista (true) o en segundo plano / pantalla apagada.
+final primerPlanoProvider = NotifierProvider<PrimerPlano, bool>(
+  PrimerPlano.new,
+);
+
+class PrimerPlano extends Notifier<bool> {
+  @override
+  bool build() {
+    try {
+      final escucha = AppLifecycleListener(
+        onStateChange: (s) => state = s == AppLifecycleState.resumed,
+      );
+      ref.onDispose(escucha.dispose);
+    } on Object {
+      // Pruebas sin WidgetsBinding: se considera siempre a la vista.
+    }
+    return true;
+  }
+}
 
 /// Qué pantalla de permisos toca y cuáles ya vio el usuario.
 final guiaPermisosProvider = Provider<GuiaPermisos>(

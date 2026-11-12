@@ -876,5 +876,12 @@
   "permSinUbicPaso2": "Toca Permisos → Ubicación",
   "permSinUbicPaso3": "Elige «Permitir mientras se usa la app»",
   "permSinUbicPermitir": "Permitir ubicación",
-  "permSinUbicAjustes": "Abrir ajustes"
+  "permSinUbicAjustes": "Abrir ajustes",
+  "segPlanoCanal": "Ubicación de NEXA",
+  "segPlanoEnLineaTitulo": "En línea",
+  "segPlanoEnLineaTexto": "Buscando solicitudes cerca de ti",
+  "segPlanoViajeTitulo": "Viaje en curso",
+  "segPlanoViajeTexto": "Compartiendo tu ubicación con el pasajero",
+  "segPlanoPasajeroTitulo": "Tu conductor va en camino",
+  "segPlanoPasajeroTexto": "Compartimos tu ubicación para que te encuentre"
 }

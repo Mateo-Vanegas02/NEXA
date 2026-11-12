@@ -5,12 +5,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/l10n/gen/app_localizations.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'features/viajes/presentation/controllers/segundo_plano_controller.dart';
 
 class NexaApp extends ConsumerWidget {
   const NexaApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => MaterialApp.router(
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Vive mientras la app esté abierta: prende o apaga el GPS en segundo plano.
+    ref.watch(coordinadorSegundoPlanoProvider);
+    return _app(context, ref);
+  }
+
+  Widget _app(BuildContext context, WidgetRef ref) => MaterialApp.router(
     title: 'NEXA',
     debugShowCheckedModeBanner: false,
     theme: AppTheme.light,

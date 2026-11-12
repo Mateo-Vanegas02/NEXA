@@ -1705,4 +1705,26 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get permSinUbicAjustes => 'Abrir ajustes';
+
+  @override
+  String get segPlanoCanal => 'Ubicación de NEXA';
+
+  @override
+  String get segPlanoEnLineaTitulo => 'En línea';
+
+  @override
+  String get segPlanoEnLineaTexto => 'Buscando solicitudes cerca de ti';
+
+  @override
+  String get segPlanoViajeTitulo => 'Viaje en curso';
+
+  @override
+  String get segPlanoViajeTexto => 'Compartiendo tu ubicación con el pasajero';
+
+  @override
+  String get segPlanoPasajeroTitulo => 'Tu conductor va en camino';
+
+  @override
+  String get segPlanoPasajeroTexto =>
+      'Compartimos tu ubicación para que te encuentre';
 }

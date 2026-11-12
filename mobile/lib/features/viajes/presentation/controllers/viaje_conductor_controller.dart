@@ -1,6 +1,7 @@
 import '../../../../core/config/env.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/providers.dart';
+import '../../../../core/segundo_plano/modo_segundo_plano.dart';
 import '../../../../core/utils/mi_posicion.dart';
 import '../../../auth/presentation/controllers/session_controller.dart';
 import '../../../niveles/presentation/controllers/niveles_controller.dart';
@@ -94,6 +95,7 @@ class ConductorState {
 class ConductorController extends AsyncNotifier<ConductorState> {
   Timer? _timer;
   bool _sondeando = false;
+  int _ciclo = 0;
   final Set<String> _rechazadas = {};
 
   @override
@@ -136,6 +138,14 @@ class ConductorController extends AsyncNotifier<ConductorState> {
       return;
     }
     if (_sondeando) return;
+    // Pantalla apagada y sin viaje: cada 15 s en vez de cada 5 s.
+    if (ReglasSegundoPlano.saltarCiclo(
+      primerPlano: ref.read(primerPlanoProvider),
+      conViaje: actual.activo != null,
+      ciclo: _ciclo++,
+    )) {
+      return;
+    }
     _sondeando = true;
     try {
       final gps = await _gps();

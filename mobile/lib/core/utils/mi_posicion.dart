@@ -2,11 +2,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../providers.dart';
+import '../segundo_plano/modo_segundo_plano.dart';
+
 /// Posición GPS actual del usuario, o `null` si no hay permiso, el GPS está
-/// apagado o tarda demasiado. No pide permisos (eso lo hace `ubicacionProvider`
-/// al abrir el mapa). Sobrescribible en tests.
+/// apagado o tarda demasiado. No pide permisos (eso lo hacen las pantallas de
+/// permisos). Si el rastreador de segundo plano tiene una posición reciente, la
+/// usa (funciona con la pantalla apagada). Sobrescribible en tests.
 final miPosicionProvider = Provider<Future<LatLng?> Function()>(
   (ref) => () async {
+    final rastreador = ref.read(rastreadorProvider);
+    final reciente = rastreador.ultima;
+    if (reciente != null &&
+        ReglasSegundoPlano.vigente(rastreador.ultimaEn, DateTime.now())) {
+      return reciente;
+    }
     try {
       final permiso = await Geolocator.checkPermission();
       if (permiso == LocationPermission.denied ||
