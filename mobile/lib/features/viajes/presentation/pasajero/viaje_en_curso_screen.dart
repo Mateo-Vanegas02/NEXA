@@ -10,6 +10,7 @@ import '../../../../core/theme/theme_x.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/utils/acciones_externas.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/mapa/polyline.dart';
 import '../../../../core/widgets/mapa_nexa.dart';
 import '../../../../core/widgets/nexa_diseno.dart';
 import '../../../../core/widgets/nexa_popup.dart';
@@ -104,6 +105,7 @@ class _Seguimiento extends ConsumerWidget {
             centro: origen,
             origen: origen,
             destino: destino,
+            ruta: rutaDe(s.rutaGeometria),
             conductor: pos == null ? null : LatLng(pos.latitud, pos.longitud),
             orientable: true,
             // Debajo del botón SOS.

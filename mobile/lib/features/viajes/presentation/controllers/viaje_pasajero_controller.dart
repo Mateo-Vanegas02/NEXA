@@ -41,7 +41,10 @@ class ViajePasajeroController extends AsyncNotifier<Servicio?> {
   @override
   Future<Servicio?> build() async {
     ref.onDispose(_detener);
-    ref.watch(sesionProvider.select((s) => s.sesion?.email));
+    // Sin sesión (recién cerrada) no se consulta nada: respondería 401.
+    if (sinSesionActiva(ref)) {
+      return null;
+    }
     final historial = await ref.read(pasajeroRepositoryProvider).historial();
     final activo = historial.where((s) => s.estado.activo).firstOrNull;
     if (activo != null) _iniciarPolling();
@@ -189,12 +192,17 @@ final viajePasajeroProvider =
     );
 
 final historialPasajeroProvider = FutureProvider<List<Servicio>>((ref) {
-  ref.watch(sesionProvider.select((s) => s.sesion?.email));
+  if (sinSesionActiva(ref)) {
+    return const [];
+  }
   return ref.watch(pasajeroRepositoryProvider).historial();
 });
 
 final perfilPasajeroProvider = FutureProvider<PerfilPasajero>((ref) {
-  ref.watch(sesionProvider.select((s) => s.sesion?.email));
+  // Sin sesión queda cargando: no hay perfil que pedir (evita un 401).
+  if (sinSesionActiva(ref)) {
+    return Completer<PerfilPasajero>().future;
+  }
   return ref.watch(pasajeroRepositoryProvider).perfil();
 });
 

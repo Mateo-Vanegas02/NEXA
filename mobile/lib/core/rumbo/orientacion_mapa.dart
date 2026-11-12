@@ -37,7 +37,7 @@ class EstadoOrientacion {
 
   bool get orientado => modo != ModoOrientacion.norte;
 
-  /// Rotación que hay que dar al mapa (`flutter_map`).
+  /// Cuánto se ve girado el mapa en pantalla (aguja y flecha).
   double get rotacionMapa =>
       rumbo == null ? 0 : ReglasRumbo.rotacionMapa(rumbo!);
 

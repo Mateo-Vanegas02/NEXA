@@ -101,7 +101,10 @@ class ConductorController extends AsyncNotifier<ConductorState> {
   @override
   Future<ConductorState> build() async {
     ref.onDispose(() => _timer?.cancel());
-    ref.watch(sesionProvider.select((s) => s.sesion?.email));
+    // Sin sesión (recién cerrada) no se consulta nada: respondería 401.
+    if (sinSesionActiva(ref)) {
+      return Completer<ConductorState>().future;
+    }
     final aprobacion = await ref
         .read(authRepositoryProvider)
         .estadoAprobacion();

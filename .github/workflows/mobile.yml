@@ -28,11 +28,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Java para compilar el APK de verificación (AGP 9 pide JDK 17 o más)
+      # Java para compilar el APK de verificación (maplibre_gl pide JDK 21)
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '21'
 
       - uses: subosito/flutter-action@v2
         with:
@@ -45,13 +45,14 @@ jobs:
       - name: Dependencias
         run: flutter pub get
 
-      # Los textos generados (lib/core/l10n/gen) y el formato se versionan. Si el
+      # Los textos generados (lib/core/l10n/gen), los modelos freezed/json y el formato se versionan. Si el
       # código subido no coincide, el parche se imprime en el log (comprimido en
       # base64 entre marcas) para aplicarlo con `git apply`. No se suben artefactos
       # porque la cuota de almacenamiento de Actions es limitada.
       - name: Textos generados y formato
         run: |
           flutter gen-l10n
+          dart run build_runner build --delete-conflicting-outputs
           dart format lib test
           if ! git diff --quiet; then
             echo "::warning title=Ajustes::Formato o textos generados distintos; parche en el log"

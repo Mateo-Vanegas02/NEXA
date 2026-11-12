@@ -87,6 +87,8 @@ abstract class Servicio with _$Servicio {
     DateTime? fechaInicio,
     DateTime? fechaFinalizacion,
     @Default(0) double duracionEstimadaMin,
+    // Trazado por calles (polyline codificada de OSRM); null = línea recta.
+    String? rutaGeometria,
     @Default(0) double tarifa,
     @Default(0) double extraVoluntario,
     @Default(0) double deudaCobrada,
@@ -200,6 +202,8 @@ class Cotizacion {
     this.multiplicador = 1,
     this.deudaPendiente = 0,
     required this.totalAPagar,
+    this.duracionMin = 0,
+    this.rutaGeometria,
   });
 
   factory Cotizacion.fromJson(Map<String, dynamic> j) => Cotizacion(
@@ -210,7 +214,15 @@ class Cotizacion {
     multiplicador: (j['multiplicador'] as num?)?.toDouble() ?? 1,
     deudaPendiente: (j['deudaPendiente'] as num?)?.toDouble() ?? 0,
     totalAPagar: (j['totalAPagar'] as num?)?.toDouble() ?? 0,
+    duracionMin: (j['duracionMin'] as num?)?.toDouble() ?? 0,
+    rutaGeometria: j['rutaGeometria'] as String?,
   );
+
+  /// Minutos de la ruta según el servidor (0 si no los dio).
+  final double duracionMin;
+
+  /// Trazado por calles (polyline codificada); null = línea recta.
+  final String? rutaGeometria;
 
   final double distanciaKm;
 

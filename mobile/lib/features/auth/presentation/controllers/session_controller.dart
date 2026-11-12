@@ -116,3 +116,12 @@ class SesionController extends Notifier<SesionState> {
 final sesionProvider = NotifierProvider<SesionController, SesionState>(
   SesionController.new,
 );
+
+/// La sesión se cerró: no se pide nada (respondería 401). Antes de restaurar
+/// la sesión (pruebas con repositorios simulados) sí se consulta.
+bool sinSesionActiva(Ref ref) {
+  final (inicializado, correo) = ref.watch(
+    sesionProvider.select((s) => (s.inicializado, s.sesion?.email)),
+  );
+  return inicializado && correo == null;
+}

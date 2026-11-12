@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -14,6 +13,7 @@ import '../../../../core/providers.dart';
 import '../../../../core/theme/theme_x.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/mapa/polyline.dart';
 import '../../../../core/widgets/mapa_nexa.dart';
 import '../../../../core/widgets/nexa_diseno.dart';
 import '../../../../core/widgets/nexa_widgets.dart';
@@ -42,7 +42,7 @@ class SolicitarViajeScreen extends ConsumerStatefulWidget {
 }
 
 class _SolicitarViajeScreenState extends ConsumerState<SolicitarViajeScreen> {
-  final _mapa = MapController();
+  final _mapa = MapaNexaController();
 
   /// `null` = ubicación actual (GPS).
   LatLng? _origen;
@@ -152,11 +152,8 @@ class _SolicitarViajeScreenState extends ConsumerState<SolicitarViajeScreen> {
   }
 
   void _moverMapa(LatLng p) {
-    try {
-      _mapa.move(p, 15);
-    } on Object {
-      // El mapa aún no está listo (o está deshabilitado en tests).
-    }
+    // Si el mapa aún no está listo (o está deshabilitado en tests), no hace nada.
+    unawaited(_mapa.mover(p, 15));
   }
 
   Future<void> _elegir(_Campo campo) async {
@@ -328,7 +325,10 @@ class _SolicitarViajeScreenState extends ConsumerState<SolicitarViajeScreen> {
     final destino = _destino;
     final cot = _cot;
     final km = cot?.distanciaKm ?? 0.0;
-    final minutos = minutosEstimados(km);
+    // La duración la da el servidor (OSRM); el estimado local solo si no vino.
+    final minutos = (cot?.duracionMin ?? 0) > 0
+        ? cot!.duracionMin.ceil()
+        : minutosEstimados(km);
     final puedeSolicitar =
         cot != null && !_cotizando && (!cot.tieneDeuda || _aceptaDeuda);
     final kmTxt = NumberFormat('0.0', 'es_CO').format(km);
@@ -341,6 +341,8 @@ class _SolicitarViajeScreenState extends ConsumerState<SolicitarViajeScreen> {
               centro: origen,
               origen: origen,
               destino: destino,
+              ruta: rutaDe(cot?.rutaGeometria),
+              encuadrarRuta: true,
               etiquetaRuta: cot == null ? null : '$minutos min · $kmTxt km',
               onTap: _alTocarMapa,
             ),

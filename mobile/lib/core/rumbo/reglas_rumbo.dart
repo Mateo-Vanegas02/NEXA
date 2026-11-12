@@ -188,8 +188,9 @@ abstract final class ReglasRumbo {
     return diferencia(anterior, nuevo).abs() > minimo;
   }
 
-  /// Rotación de `flutter_map` (positiva = el mapa gira en sentido horario)
-  /// para que lo que está adelante quede arriba en la pantalla.
+  /// Giro en pantalla del norte (positivo = horario) cuando lo que está
+  /// adelante queda arriba: el mapa (MapLibre, `bearing` = rumbo) se ve girado
+  /// −rumbo. Lo usan la aguja de la brújula y la flecha de la moto.
   static double rotacionMapa(double rumbo) => normalizar(-rumbo);
 
   /// Ángulo en pantalla de una flecha que apunta a [rumbo] sobre un mapa

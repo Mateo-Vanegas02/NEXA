@@ -39,6 +39,18 @@ abstract final class Env {
       ? _satisfaccionDefinida
       : satisfaccionUrlAws;
 
+  /// Estilos del mapa (OpenFreeMap: vectorial, gratis, sin clave ni registro).
+  /// Con `--dart-define=MAPA_ESTILO_OSCURO=...` se cambia sin tocar el código
+  /// (p. ej. por mapas propios en AWS).
+  static const String estiloMapaOscuro = String.fromEnvironment(
+    'MAPA_ESTILO_OSCURO',
+    defaultValue: 'https://tiles.openfreemap.org/styles/dark',
+  );
+  static const String estiloMapaClaro = String.fromEnvironment(
+    'MAPA_ESTILO_CLARO',
+    defaultValue: 'https://tiles.openfreemap.org/styles/liberty',
+  );
+
   /// Intervalo de polling del viaje activo.
   static const Duration pollingInterval = Duration(seconds: 5);
 }
