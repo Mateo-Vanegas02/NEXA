@@ -16,6 +16,15 @@ class _Notificaciones implements NotificacionesLocales {
   Future<bool> permitidas() async => concedidas;
   @override
   Future<bool> pedirPermiso() async => concedidas = true;
+  @override
+  Future<void> mostrarViaje({
+    required String titulo,
+    required String texto,
+    required String canal,
+    required String abrir,
+  }) async {}
+  @override
+  Future<void> cerrarViaje() async {}
 }
 
 EstadoPermisos _estado({

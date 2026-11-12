@@ -234,49 +234,52 @@ void main() {
       expect(c.read(coordinadorSegundoPlanoProvider), ModoSegundoPlano.apagado);
     });
 
-    test('la notificación fija muestra el viaje con los datos del servidor', () async {
-      final c = crear(Rol.conductor);
-      await c.read(conductorProvider.future);
-      final ctrl = c.read(conductorProvider.notifier) as _Conductor;
-      const conPasajero = Servicio(
-        id: 'v1',
-        estado: EstadoServicio.aceptado,
-        pasajero: Participante(nombre: 'Laura Díaz'),
-        origen: 'Cl 45',
-        destino: 'Centro',
-      );
-      const posicion = PosicionViaje(
-        fase: 'A_RECOGER',
-        latitud: 10.4,
-        longitud: -75.5,
-        distanciaRestanteKm: 0.648,
-        etaMinutos: 3,
-      );
-      ctrl.poner(
-        const ConductorState(
-          aprobacion: EstadoAprobacion.aprobado,
-          activo: conPasajero,
-          posicion: posicion,
-        ),
-      );
-      await _esperar();
-      expect(avisos.mostrados, ['Recoge a Laura | 3 min · 650 m']);
+    test(
+      'la notificación fija muestra el viaje con los datos del servidor',
+      () async {
+        final c = crear(Rol.conductor);
+        await c.read(conductorProvider.future);
+        final ctrl = c.read(conductorProvider.notifier) as _Conductor;
+        const conPasajero = Servicio(
+          id: 'v1',
+          estado: EstadoServicio.aceptado,
+          pasajero: Participante(nombre: 'Laura Díaz'),
+          origen: 'Cl 45',
+          destino: 'Centro',
+        );
+        const posicion = PosicionViaje(
+          fase: 'A_RECOGER',
+          latitud: 10.4,
+          longitud: -75.5,
+          distanciaRestanteKm: 0.648,
+          etaMinutos: 3,
+        );
+        ctrl.poner(
+          const ConductorState(
+            aprobacion: EstadoAprobacion.aprobado,
+            activo: conPasajero,
+            posicion: posicion,
+          ),
+        );
+        await _esperar();
+        expect(avisos.mostrados, ['Recoge a Laura | 3 min · 650 m']);
 
-      // El mismo texto no se vuelve a publicar en cada sondeo.
-      ctrl.poner(
-        const ConductorState(
-          aprobacion: EstadoAprobacion.aprobado,
-          activo: conPasajero,
-          posicion: posicion,
-        ),
-      );
-      await _esperar();
-      expect(avisos.mostrados, hasLength(1));
+        // El mismo texto no se vuelve a publicar en cada sondeo.
+        ctrl.poner(
+          const ConductorState(
+            aprobacion: EstadoAprobacion.aprobado,
+            activo: conPasajero,
+            posicion: posicion,
+          ),
+        );
+        await _esperar();
+        expect(avisos.mostrados, hasLength(1));
 
-      ctrl.poner(const ConductorState(aprobacion: EstadoAprobacion.aprobado));
-      await _esperar();
-      expect(avisos.cerrados, 1);
-    });
+        ctrl.poner(const ConductorState(aprobacion: EstadoAprobacion.aprobado));
+        await _esperar();
+        expect(avisos.cerrados, 1);
+      },
+    );
 
     test('sin permiso de ubicación no prende nada', () async {
       final c = crear(Rol.conductor);
