@@ -38,10 +38,20 @@ abstract class Coordenada with _$Coordenada {
       _$CoordenadaFromJson(json);
 }
 
+/// Id del pasajero o del conductor tal como venga: texto, `idString`, o el
+/// objeto que serializaba el servidor antes (`{timestamp, date}`) que no trae
+/// el id y se descarta. Así un viaje no deja de leerse por este campo.
+Object? leerIdParticipante(Map<dynamic, dynamic> json, String clave) {
+  final id = json[clave];
+  if (id is String) return id;
+  final texto = json['idString'];
+  return texto is String ? texto : null;
+}
+
 @freezed
 abstract class Participante with _$Participante {
   const factory Participante({
-    String? id,
+    @JsonKey(readValue: leerIdParticipante) String? id,
     @Default('') String nombre,
     String? email,
     String? telefono,

@@ -19,7 +19,7 @@ Map<String, dynamic> _$CoordenadaToJson(_Coordenada instance) =>
 
 _Participante _$ParticipanteFromJson(Map<String, dynamic> json) =>
     _Participante(
-      id: json['id'] as String?,
+      id: leerIdParticipante(json, 'id') as String?,
       nombre: json['nombre'] as String? ?? '',
       email: json['email'] as String?,
       telefono: json['telefono'] as String?,

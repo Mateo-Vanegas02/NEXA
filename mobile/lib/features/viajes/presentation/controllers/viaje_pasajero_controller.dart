@@ -1,4 +1,5 @@
 import '../../../../core/config/env.dart';
+import '../../../../core/errors/app_exception.dart';
 import '../../../../core/providers.dart';
 import '../../../../core/utils/mi_posicion.dart';
 import '../../../auth/presentation/controllers/session_controller.dart';
@@ -117,9 +118,37 @@ class ViajePasajeroController extends AsyncNotifier<Servicio?> {
   }
 
   Future<void> solicitar(SolicitudViaje solicitud) async {
-    final s = await _repo.solicitar(solicitud);
-    state = AsyncData(s);
-    _iniciarPolling();
+    // Un segundo toque mientras va la primera petición no pide otro viaje.
+    if (_solicitando) return;
+    _solicitando = true;
+    try {
+      final s = await _repo.solicitar(solicitud);
+      state = AsyncData(s);
+      _iniciarPolling();
+    } on AppException catch (e) {
+      // 409: ya hay una solicitud o un viaje abierto (p. ej. la respuesta de
+      // la primera no llegó). Se retoma en vez de dejar al pasajero bloqueado.
+      if (e.statusCode == 409 && await _retomar()) return;
+      rethrow;
+    } finally {
+      _solicitando = false;
+    }
+  }
+
+  bool _solicitando = false;
+
+  /// Vuelve a buscar el viaje abierto en el servidor; true si lo encontró.
+  Future<bool> _retomar() async {
+    try {
+      final historial = await _repo.historial();
+      final activo = historial.where((s) => s.estado.activo).firstOrNull;
+      if (activo == null) return false;
+      state = AsyncData(activo);
+      _iniciarPolling();
+      return true;
+    } on Object {
+      return false;
+    }
   }
 
   Future<void> cancelar() async {

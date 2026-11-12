@@ -10,6 +10,7 @@ enum TipoAviso {
   viajeFinalizado('VIAJE_FINALIZADO'),
   viajeCancelado('VIAJE_CANCELADO'),
   sinConductores('SIN_CONDUCTORES'),
+  solicitudVencida('SOLICITUD_VENCIDA'),
   otro('');
 
   const TipoAviso(this.codigo);
