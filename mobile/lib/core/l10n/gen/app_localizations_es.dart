@@ -1727,4 +1727,46 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get segPlanoPasajeroTexto =>
       'Compartimos tu ubicación para que te encuentre';
+
+  @override
+  String avisoRecoger(String nombre) {
+    return 'Recoge a $nombre';
+  }
+
+  @override
+  String avisoEsperando(String nombre) {
+    return 'Esperando a $nombre';
+  }
+
+  @override
+  String get avisoEnElPunto => 'Estás en el punto de recogida';
+
+  @override
+  String avisoLlevando(String nombre) {
+    return 'Llevando a $nombre';
+  }
+
+  @override
+  String avisoEtaDistancia(int minutos, String distancia) {
+    return '$minutos min · $distancia';
+  }
+
+  @override
+  String avisoConductorVa(String nombre) {
+    return '$nombre va por ti';
+  }
+
+  @override
+  String avisoLlegaEn(int minutos) {
+    return 'Llega en $minutos min';
+  }
+
+  @override
+  String get avisoElPasajero => 'el pasajero';
+
+  @override
+  String get avisoTuConductor => 'Tu conductor';
+
+  @override
+  String get avisoAbrir => 'Abrir';
 }

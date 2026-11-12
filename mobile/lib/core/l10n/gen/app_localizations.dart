@@ -3267,6 +3267,66 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Compartimos tu ubicación para que te encuentre'**
   String get segPlanoPasajeroTexto;
+
+  /// No description provided for @avisoRecoger.
+  ///
+  /// In es, this message translates to:
+  /// **'Recoge a {nombre}'**
+  String avisoRecoger(String nombre);
+
+  /// No description provided for @avisoEsperando.
+  ///
+  /// In es, this message translates to:
+  /// **'Esperando a {nombre}'**
+  String avisoEsperando(String nombre);
+
+  /// No description provided for @avisoEnElPunto.
+  ///
+  /// In es, this message translates to:
+  /// **'Estás en el punto de recogida'**
+  String get avisoEnElPunto;
+
+  /// No description provided for @avisoLlevando.
+  ///
+  /// In es, this message translates to:
+  /// **'Llevando a {nombre}'**
+  String avisoLlevando(String nombre);
+
+  /// No description provided for @avisoEtaDistancia.
+  ///
+  /// In es, this message translates to:
+  /// **'{minutos} min · {distancia}'**
+  String avisoEtaDistancia(int minutos, String distancia);
+
+  /// No description provided for @avisoConductorVa.
+  ///
+  /// In es, this message translates to:
+  /// **'{nombre} va por ti'**
+  String avisoConductorVa(String nombre);
+
+  /// No description provided for @avisoLlegaEn.
+  ///
+  /// In es, this message translates to:
+  /// **'Llega en {minutos} min'**
+  String avisoLlegaEn(int minutos);
+
+  /// No description provided for @avisoElPasajero.
+  ///
+  /// In es, this message translates to:
+  /// **'el pasajero'**
+  String get avisoElPasajero;
+
+  /// No description provided for @avisoTuConductor.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu conductor'**
+  String get avisoTuConductor;
+
+  /// No description provided for @avisoAbrir.
+  ///
+  /// In es, this message translates to:
+  /// **'Abrir'**
+  String get avisoAbrir;
 }
 
 class _AppLocalizationsDelegate

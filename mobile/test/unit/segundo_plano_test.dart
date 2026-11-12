@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexa_mobile/core/network/token_storage.dart';
+import 'package:nexa_mobile/core/notificaciones/canales_notificacion.dart';
+import 'package:nexa_mobile/core/notificaciones/notificaciones_locales.dart';
 import 'package:nexa_mobile/core/permisos/permisos_dispositivo.dart';
 import 'package:nexa_mobile/core/providers.dart';
 import 'package:nexa_mobile/core/segundo_plano/modo_segundo_plano.dart';
@@ -43,6 +45,28 @@ class _PrimerPlano extends PrimerPlano {
   bool build() => true;
 
   void poner(bool v) => state = v;
+}
+
+class _Avisos implements NotificacionesLocales {
+  final List<String> mostrados = [];
+  int cerrados = 0;
+  @override
+  bool get disponible => true;
+  @override
+  Future<void> inicializar(List<CanalNotificacion> canales) async {}
+  @override
+  Future<bool> permitidas() async => true;
+  @override
+  Future<bool> pedirPermiso() async => true;
+  @override
+  Future<void> mostrarViaje({
+    required String titulo,
+    required String texto,
+    required String canal,
+    required String abrir,
+  }) async => mostrados.add('$titulo | $texto');
+  @override
+  Future<void> cerrarViaje() async => cerrados++;
 }
 
 const _viaje = Servicio(
@@ -153,10 +177,12 @@ void main() {
   group('coordinador', () {
     late RastreadorEnMemoria rastreador;
     late PermisosFijos permisos;
+    late _Avisos avisos;
 
     ProviderContainer crear(Rol rol) {
       rastreador = RastreadorEnMemoria();
       permisos = PermisosFijos(EstadoUbicacion.siempre);
+      avisos = _Avisos();
       final c = ProviderContainer(
         overrides: [
           sesionProvider.overrideWith(() => _Sesion(rol)),
@@ -164,6 +190,7 @@ void main() {
           useMocksProvider.overrideWithValue(true),
           rastreadorProvider.overrideWithValue(rastreador),
           permisosProvider.overrideWithValue(permisos),
+          notificacionesProvider.overrideWithValue(avisos),
           primerPlanoProvider.overrideWith(_PrimerPlano.new),
           conductorProvider.overrideWith(_Conductor.new),
           viajePasajeroProvider.overrideWith(_Pasajero.new),
@@ -205,6 +232,50 @@ void main() {
       await _esperar();
       expect(rastreador.activo, ModoSegundoPlano.apagado);
       expect(c.read(coordinadorSegundoPlanoProvider), ModoSegundoPlano.apagado);
+    });
+
+    test('la notificación fija muestra el viaje con los datos del servidor', () async {
+      final c = crear(Rol.conductor);
+      await c.read(conductorProvider.future);
+      final ctrl = c.read(conductorProvider.notifier) as _Conductor;
+      const conPasajero = Servicio(
+        id: 'v1',
+        estado: EstadoServicio.aceptado,
+        pasajero: Participante(nombre: 'Laura Díaz'),
+        origen: 'Cl 45',
+        destino: 'Centro',
+      );
+      const posicion = PosicionViaje(
+        fase: 'A_RECOGER',
+        latitud: 10.4,
+        longitud: -75.5,
+        distanciaRestanteKm: 0.648,
+        etaMinutos: 3,
+      );
+      ctrl.poner(
+        const ConductorState(
+          aprobacion: EstadoAprobacion.aprobado,
+          activo: conPasajero,
+          posicion: posicion,
+        ),
+      );
+      await _esperar();
+      expect(avisos.mostrados, ['Recoge a Laura | 3 min · 650 m']);
+
+      // El mismo texto no se vuelve a publicar en cada sondeo.
+      ctrl.poner(
+        const ConductorState(
+          aprobacion: EstadoAprobacion.aprobado,
+          activo: conPasajero,
+          posicion: posicion,
+        ),
+      );
+      await _esperar();
+      expect(avisos.mostrados, hasLength(1));
+
+      ctrl.poner(const ConductorState(aprobacion: EstadoAprobacion.aprobado));
+      await _esperar();
+      expect(avisos.cerrados, 1);
     });
 
     test('sin permiso de ubicación no prende nada', () async {

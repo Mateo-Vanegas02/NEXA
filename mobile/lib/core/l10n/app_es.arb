@@ -883,5 +883,60 @@
   "segPlanoViajeTitulo": "Viaje en curso",
   "segPlanoViajeTexto": "Compartiendo tu ubicación con el pasajero",
   "segPlanoPasajeroTitulo": "Tu conductor va en camino",
-  "segPlanoPasajeroTexto": "Compartimos tu ubicación para que te encuentre"
+  "segPlanoPasajeroTexto": "Compartimos tu ubicación para que te encuentre",
+  "avisoRecoger": "Recoge a {nombre}",
+  "@avisoRecoger": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "avisoEsperando": "Esperando a {nombre}",
+  "@avisoEsperando": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "avisoEnElPunto": "Estás en el punto de recogida",
+  "avisoLlevando": "Llevando a {nombre}",
+  "@avisoLlevando": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "avisoEtaDistancia": "{minutos} min · {distancia}",
+  "@avisoEtaDistancia": {
+    "placeholders": {
+      "minutos": {
+        "type": "int"
+      },
+      "distancia": {
+        "type": "String"
+      }
+    }
+  },
+  "avisoConductorVa": "{nombre} va por ti",
+  "@avisoConductorVa": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "avisoLlegaEn": "Llega en {minutos} min",
+  "@avisoLlegaEn": {
+    "placeholders": {
+      "minutos": {
+        "type": "int"
+      }
+    }
+  },
+  "avisoElPasajero": "el pasajero",
+  "avisoTuConductor": "Tu conductor",
+  "avisoAbrir": "Abrir"
 }

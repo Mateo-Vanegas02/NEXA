@@ -11,6 +11,7 @@ import '../../../../core/segundo_plano/rastreador_ubicacion.dart';
 import '../../../auth/domain/auth.dart';
 import '../../../auth/presentation/controllers/session_controller.dart';
 import '../../domain/servicio.dart';
+import 'aviso_viaje.dart';
 import 'viaje_conductor_controller.dart';
 import 'viaje_pasajero_controller.dart';
 
@@ -27,6 +28,10 @@ import 'viaje_pasajero_controller.dart';
 class CoordinadorSegundoPlano extends Notifier<ModoSegundoPlano> {
   Future<void> _cola = Future.value();
 
+  /// Último texto publicado en la notificación fija (no se repite).
+  AvisoViaje? _avisoPublicado;
+  bool _hayAviso = false;
+
   @override
   ModoSegundoPlano build() {
     final rol = ref.watch(sesionProvider.select((s) => s.sesion?.rol));
@@ -37,6 +42,8 @@ class CoordinadorSegundoPlano extends Notifier<ModoSegundoPlano> {
       ref.listen(conductorProvider, (_, _) => _evaluar());
     } else if (rol == Rol.pasajero) {
       ref.listen(viajePasajeroProvider, (_, _) => _evaluar());
+      // El ETA del conductor llega aparte: también actualiza la notificación.
+      ref.listen(posicionConductorProvider, (_, _) => _evaluar());
     }
     // Un cambio que no se pudo aplicar en segundo plano se aplica al volver.
     ref.listen(primerPlanoProvider, (_, _) => _evaluar());
@@ -68,8 +75,45 @@ class CoordinadorSegundoPlano extends Notifier<ModoSegundoPlano> {
   }
 
   Future<void> _aplicar() async {
+    await _cambiarModo();
+    await _actualizarAviso();
+  }
+
+  /// Texto del viaje en la notificación fija, con lo que dice el servidor.
+  Future<void> _actualizarAviso() async {
+    final notificaciones = ref.read(notificacionesProvider);
+    final aviso = switch (state) {
+      ModoSegundoPlano.enViaje => TextosAvisoViaje.conductor(
+        _textos,
+        ref.read(conductorProvider).value ?? const ConductorState(),
+      ),
+      ModoSegundoPlano.pasajeroEnCamino => TextosAvisoViaje.pasajero(
+        _textos,
+        ref.read(viajePasajeroProvider).value,
+        ref.read(posicionConductorProvider),
+      ),
+      _ => null,
+    };
+    // Sin viaje (en línea) queda el texto propio del servicio («En línea»).
+    if (aviso == null || aviso == _avisoPublicado) return;
+    _avisoPublicado = aviso;
+    _hayAviso = true;
+    await notificaciones.mostrarViaje(
+      titulo: aviso.titulo,
+      texto: aviso.texto,
+      canal: _textos.segPlanoCanal,
+      abrir: _textos.avisoAbrir,
+    );
+  }
+
+  static AppLocalizations get _textos =>
+      lookupAppLocalizations(const Locale('es'));
+
+  Future<void> _cambiarModo() async {
     final nuevo = _deseado();
     if (nuevo == state) return;
+    // Un modo nuevo reinicia el servicio con su texto propio.
+    _avisoPublicado = null;
     final primerPlano = ref.read(primerPlanoProvider);
     if (!ReglasSegundoPlano.puedeCambiar(
       actual: state,
@@ -81,6 +125,10 @@ class CoordinadorSegundoPlano extends Notifier<ModoSegundoPlano> {
     final rastreador = ref.read(rastreadorProvider);
     if (nuevo == ModoSegundoPlano.apagado) {
       await rastreador.detener();
+      if (_hayAviso) {
+        _hayAviso = false;
+        await ref.read(notificacionesProvider).cerrarViaje();
+      }
       state = nuevo;
       return;
     }
