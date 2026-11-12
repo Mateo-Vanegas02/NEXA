@@ -18,7 +18,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * Avisa a los conductores cuando una solicitud pasa a la siguiente ola (para que recarguen su lista; en la app,
  * con un push a los que entran en la ola nueva), avisa al pasajero de la app cuando pasó la última ola sin que nadie
- * aceptara y descarta las posiciones de conductores vencidas. Solo recorre las solicitudes en estado SOLICITADO.
+ * aceptara, cancela sin cargo la que esperó más de {@code nexa.despacho.vencimiento-solicitud-minutos} y descarta las
+ * posiciones de conductores vencidas. Solo recorre las solicitudes en estado SOLICITADO.
  */
 @Slf4j
 @Component
@@ -31,6 +32,8 @@ public class DespachoScheduler {
     private final SeguimientoPasajeroService seguimientoPasajero;
     private final NotificadorTiempoReal notificador;
     private final AvisosService avisos;
+
+    static final String MOTIVO_VENCIDA = "VENCIDA";
 
     /** Última ola publicada de cada solicitud abierta. */
     private final Map<String, Integer> publicadas = new ConcurrentHashMap<>();
@@ -55,6 +58,10 @@ public class DespachoScheduler {
             if (s.getId() == null) {
                 continue;
             }
+            if (despacho.vencida(s)) {
+                vencer(s);
+                continue;
+            }
             abiertas.add(s.getId());
             int ola = despacho.olaDe(s);
             Integer previa = publicadas.put(s.getId(), ola);
@@ -70,5 +77,16 @@ public class DespachoScheduler {
         publicadas.keySet().retainAll(abiertas);
         sinConductores.retainAll(abiertas);
         avisos.olvidarCerradas(abiertas);
+    }
+
+    /** Nadie la tomó a tiempo: se cancela sin cargo, sale del mapa de los conductores y se avisa al pasajero. */
+    private void vencer(Servicio s) {
+        if (servicioRepository.vencerSiSigueSolicitado(s.getId(), java.time.LocalDateTime.now()) == 0) {
+            return; // la tomó un conductor justo ahora
+        }
+        log.info("Solicitud {} vencida sin conductor: cancelada sin cargo", s.getId());
+        notificador.notificarSolicitudRetirada(s.getId(), MOTIVO_VENCIDA);
+        avisos.solicitudRetirada(s, MOTIVO_VENCIDA);
+        avisos.solicitudVencida(s);
     }
 }

@@ -538,9 +538,12 @@ public class ServicioServiceImpl implements ServicioService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "No puedes cancelar un servicio que ya está " + servicio.getEstado());
         }
-        exigirMismoCanal(servicio);
-
         boolean seguiaSolicitado = servicio.getEstado() == EstadoServicio.SOLICITADO;
+        // Una solicitud que aún espera conductor la puede cancelar su pasajero desde la web o la app (si la pidió en
+        // la app y la perdió de vista, no queda bloqueado). Con conductor asignado rige el canal del viaje.
+        if (!seguiaSolicitado) {
+            exigirMismoCanal(servicio);
+        }
         LocalDateTime ahora = LocalDateTime.now();
         long cargo = calcularCargoCancelacion(servicio, ahora);
         if (cargo > 0 && !deudaService.registrar(pasajero.getId(), servicioId, cargo, ahora)) {

@@ -53,6 +53,15 @@ class DespachoServiceTest {
     }
 
     @Test
+    void unaSolicitudVenceAlPasarElTiempoMaximoDeEspera() {
+        assertFalse(despacho.vencida(solicitud(9 * 60 + 59)));
+        assertTrue(despacho.vencida(solicitud(10 * 60)));
+        Servicio sinHora = solicitud(0);
+        sinHora.setSolicitadoEn(null);
+        assertFalse(despacho.vencida(sinHora), "las antiguas sin hora no vencen");
+    }
+
+    @Test
     void elConductorCercanoVeLaSolicitudDesdeLaPrimeraOla() {
         Conductor c = conductor();
         ubicaciones.registrar(c.getId(), new PuntoGeo(10.4300, -75.5253), true); // ~0,7 km

@@ -43,6 +43,7 @@ ver; la app pide el detalle a la API (`viaje-activo`, `viaje-en-camino`, `solici
 | `VIAJE_FINALIZADO` | pasajero | `nexa_viaje` | notificación | Llegaste a tu destino — Toca para ver el total y calificar | llegaste + calificar |
 | `VIAJE_CANCELADO` | el otro lado | `nexa_viaje` | notificación | Laura canceló el viaje / Tu conductor canceló el viaje | inicio |
 | `SIN_CONDUCTORES` | pasajero (una vez, 45 s después del inicio de la última ola) | `nexa_viaje` | notificación | Sin conductores cerca por ahora | buscando conductor (E03) |
+| `SOLICITUD_VENCIDA` | pasajero (la solicitud esperó `nexa.despacho.vencimiento-solicitud-minutos` y se canceló sola, sin cargo; a los conductores avisados les llega `SOLICITUD_RETIRADA` con motivo `VENCIDA`) | `nexa_viaje` | notificación | No encontramos conductor | inicio |
 
 Los avisos del mismo viaje usan `tag = viaje-<servicioId>`: uno nuevo reemplaza al anterior en la bandeja.
 Vigencias en `modelo-nexa.properties` (`nexa.avisos.*`): solicitud 45 s, viaje 10 min, cuenta 24 h.

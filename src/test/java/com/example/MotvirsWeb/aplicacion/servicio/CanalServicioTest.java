@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -138,14 +139,34 @@ class CanalServicioTest {
     }
 
     @Test
-    void elPasajeroNoCancelaDesdeLaAppUnViajeDeLaWeb() {
+    void elPasajeroNoCancelaDesdeLaAppUnViajeAceptadoDeLaWeb() {
         when(canalPeticion.actual()).thenReturn(CanalServicio.APP);
-        when(servicioRepository.findById("s1")).thenReturn(Optional.of(solicitud("s1", CanalServicio.WEB)));
+        Servicio aceptado = solicitud("s1", CanalServicio.WEB);
+        aceptado.setEstado(EstadoServicio.ACEPTADO);
+        aceptado.setConductor(new Servicio.ConductorEmbedded(conductor));
+        when(servicioRepository.findById("s1")).thenReturn(Optional.of(aceptado));
 
         ResponseStatusException e = assertThrows(ResponseStatusException.class,
                 () -> servicioService.cancelarViajePasajero("s1", pasajero));
 
         assertEquals(HttpStatus.CONFLICT, e.getStatusCode());
+        verify(servicioRepository, never()).save(any());
+    }
+
+    @Test
+    void elPasajeroCancelaDesdeLaWebUnaSolicitudQuePidioEnLaApp() {
+        org.mockito.Mockito.lenient().when(canalPeticion.actual()).thenReturn(CanalServicio.WEB);
+        when(servicioRepository.findById("s1")).thenReturn(Optional.of(solicitud("s1", CanalServicio.APP)));
+
+        // El resto de la cancelación (cargo, notificaciones) no se arma en esta prueba: basta con que el canal
+        // no la frene con 409.
+        try {
+            servicioService.cancelarViajePasajero("s1", pasajero);
+        } catch (ResponseStatusException e) {
+            assertNotEquals(HttpStatus.CONFLICT, e.getStatusCode());
+        } catch (RuntimeException otraFaltaDelMock) {
+            // esperado: dependencias sin simular más adelante
+        }
     }
 
     @Test

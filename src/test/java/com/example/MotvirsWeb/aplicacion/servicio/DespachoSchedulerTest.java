@@ -8,7 +8,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -71,5 +73,34 @@ class DespachoSchedulerTest {
         scheduler.ampliarOlas();
         scheduler.ampliarOlas();
         verify(avisos, times(1)).sinConductores(s);
+    }
+
+    @Test
+    void cancelaLaSolicitudVencidaYAvisaATodos() {
+        Servicio s = solicitud("s1");
+        when(repo.findByEstado(EstadoServicio.SOLICITADO)).thenReturn(List.of(s));
+        when(despacho.vencida(s)).thenReturn(true);
+        when(repo.vencerSiSigueSolicitado(eq("s1"), any())).thenReturn(1L);
+
+        scheduler.ampliarOlas();
+
+        verify(notificador).notificarSolicitudRetirada("s1", "VENCIDA");
+        verify(avisos).solicitudRetirada(s, "VENCIDA");
+        verify(avisos).solicitudVencida(s);
+        verify(avisos).olvidarCerradas(java.util.Set.of());
+        verify(despacho, never()).olaDe(s);
+    }
+
+    @Test
+    void siUnConductorLaTomoJustoAntesNoSeAvisaNada() {
+        Servicio s = solicitud("s1");
+        when(repo.findByEstado(EstadoServicio.SOLICITADO)).thenReturn(List.of(s));
+        when(despacho.vencida(s)).thenReturn(true);
+        when(repo.vencerSiSigueSolicitado(eq("s1"), any())).thenReturn(0L);
+
+        scheduler.ampliarOlas();
+
+        verify(notificador, never()).notificarSolicitudRetirada(anyString(), anyString());
+        verify(avisos, never()).solicitudVencida(any());
     }
 }

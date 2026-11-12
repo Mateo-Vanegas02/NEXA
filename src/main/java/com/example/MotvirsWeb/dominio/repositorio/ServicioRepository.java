@@ -49,6 +49,15 @@ public interface ServicioRepository extends MongoRepository<Servicio, String> {
     @org.springframework.data.mongodb.repository.Update("{ '$set': { 'estado': 'ACEPTADO', 'conductor': ?1, 'fechaAceptacion': ?2 } }")
     long tomarSiDisponible(String servicioId, Servicio.ConductorEmbedded conductor, java.time.LocalDateTime fechaAceptacion);
 
+    /**
+     * Cancela una solicitud que esperó demasiado, solo si sigue SOLICITADO (atómico: si un conductor la tomó en ese
+     * instante, devuelve 0 y no la toca). Sin cargo para el pasajero.
+     */
+    @org.springframework.data.mongodb.repository.Query("{ '_id': ?0, 'estado': 'SOLICITADO' }")
+    @org.springframework.data.mongodb.repository.Update("{ '$set': { 'estado': 'CANCELADO', 'canceladoPor': 'SISTEMA', "
+            + "'fechaCancelacion': ?1, 'cargoCancelacion': 0 } }")
+    long vencerSiSigueSolicitado(String servicioId, java.time.LocalDateTime fecha);
+
     /** Guarda en qué ola y a qué distancia se aceptó (métricas del despacho). */
     @org.springframework.data.mongodb.repository.Query("{ '_id': ?0 }")
     @org.springframework.data.mongodb.repository.Update("{ '$set': { 'olaAceptacion': ?1, 'distanciaRecogidaKm': ?2 } }")

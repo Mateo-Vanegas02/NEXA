@@ -204,7 +204,8 @@ public class Servicio {
     @AllArgsConstructor
     public static class PasajeroEmbedded {
         @Field("_id")
-        private ObjectId id;  // Cambia de String a ObjectId
+        @com.fasterxml.jackson.databind.annotation.JsonSerialize(using = com.fasterxml.jackson.databind.ser.std.ToStringSerializer.class)
+        private ObjectId id;  // En JSON sale como texto (la app lo lee como String)
         private String nombre;
         private String email;
         /** Foto de perfil del pasajero (null si no tiene). */
@@ -226,6 +227,7 @@ public class Servicio {
     @AllArgsConstructor
     public static class ConductorEmbedded {
         @Field("_id")
+        @com.fasterxml.jackson.databind.annotation.JsonSerialize(using = com.fasterxml.jackson.databind.ser.std.ToStringSerializer.class)
         private ObjectId id;
         private String nombre;
         /** Foto de perfil del conductor (null si no tiene); el pasajero la ve al ser asignado. */

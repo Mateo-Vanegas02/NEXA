@@ -180,6 +180,8 @@ public class ModeloNexaProperties {
         private int revisionSegundos;
         /** Segundos tras el inicio de la última ola sin aceptación para avisar al pasajero que no hay conductores. */
         private int avisoSinConductoresSegundos;
+        /** Minutos que una solicitud puede esperar conductor; después se cancela sola, sin cargo (0 = no vence). */
+        private int vencimientoSolicitudMinutos;
     }
 
     @Data

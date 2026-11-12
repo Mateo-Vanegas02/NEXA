@@ -115,6 +115,18 @@ public class DespachoService {
         return segundosEsperando(servicio) >= limite;
     }
 
+    /**
+     * ¿La solicitud ya esperó más de {@code nexa.despacho.vencimiento-solicitud-minutos}? Las antiguas sin hora de
+     * solicitud no vencen (no se sabe cuánto llevan).
+     */
+    public boolean vencida(Servicio servicio) {
+        int minutos = cfg.getDespacho().getVencimientoSolicitudMinutos();
+        if (minutos <= 0 || servicio.getSolicitadoEn() == null) {
+            return false;
+        }
+        return segundosEsperando(servicio) >= minutos * 60L;
+    }
+
     public boolean esUltimaOla(int ola) {
         return olas.esUltima(ola);
     }

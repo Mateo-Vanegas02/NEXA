@@ -176,6 +176,16 @@ public class AvisosService {
         });
     }
 
+    /** La solicitud esperó demasiado sin conductor y se canceló sola, sin cargo. */
+    public void solicitudVencida(Servicio s) {
+        seguro("solicitud vencida", () -> {
+            if (deApp(s)) {
+                alPasajero(s, "SOLICITUD_VENCIDA", "No encontramos conductor",
+                        "Cancelamos tu solicitud sin costo. Puedes pedir otro viaje");
+            }
+        });
+    }
+
     // ─────────────────────────── DETALLE ───────────────────────────
 
     private void avisarSolicitud(Servicio s, Collection<ObjectId> conductores, String tipo, long variante) {
