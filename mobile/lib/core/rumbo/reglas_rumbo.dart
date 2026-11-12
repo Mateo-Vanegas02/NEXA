@@ -114,7 +114,6 @@ abstract final class ReglasRumbo {
     hy /= normaH;
     hz /= normaH;
     final nx = ax / normaA;
-    final ny = ay / normaA;
     final nz = az / normaA;
     // M = A × H: apunta al norte.
     final my = nz * hx - nx * hz;
