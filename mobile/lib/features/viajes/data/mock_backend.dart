@@ -485,6 +485,10 @@ class MockPasajeroRepository implements PasajeroRepository {
   @override
   Future<Servicio> detalle(String id) => _t(() => _b.detallePasajero(id));
   @override
+  Future<String?> viajeAbiertoId() => _t(
+    () => _b.historialPasajero().where((s) => s.estado.activo).firstOrNull?.id,
+  );
+  @override
   Future<Servicio> calificar(
     String id,
     double calificacion,

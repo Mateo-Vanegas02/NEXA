@@ -45,13 +45,20 @@ class ViajePasajeroController extends AsyncNotifier<Servicio?> {
     if (sinSesionActiva(ref)) {
       return null;
     }
-    final historial = await ref.read(pasajeroRepositoryProvider).historial();
-    final activo = historial.where((s) => s.estado.activo).firstOrNull;
+    final activo = await _buscarAbierto();
     if (activo != null) _iniciarPolling();
     return activo;
   }
 
   PasajeroRepository get _repo => ref.read(pasajeroRepositoryProvider);
+
+  /// Solicitud que espera conductor o viaje en marcha. El servidor lo dice
+  /// directo (el historial no trae las solicitudes que aún esperan).
+  Future<Servicio?> _buscarAbierto() async {
+    final repo = ref.read(pasajeroRepositoryProvider);
+    final id = await repo.viajeAbiertoId();
+    return id == null ? null : repo.detalle(id);
+  }
 
   void _iniciarPolling() {
     _timer?.cancel();
@@ -143,8 +150,7 @@ class ViajePasajeroController extends AsyncNotifier<Servicio?> {
   /// Vuelve a buscar el viaje abierto en el servidor; true si lo encontró.
   Future<bool> _retomar() async {
     try {
-      final historial = await _repo.historial();
-      final activo = historial.where((s) => s.estado.activo).firstOrNull;
+      final activo = await _buscarAbierto();
       if (activo == null) return false;
       state = AsyncData(activo);
       _iniciarPolling();

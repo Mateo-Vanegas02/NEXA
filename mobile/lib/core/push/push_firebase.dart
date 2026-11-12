@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io' show Platform;
+import 'dart:ui' show DartPluginRegistrant;
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -23,16 +24,23 @@ const vigenciaSolicitud = Duration(seconds: 45);
 /// avisos del viaje traen su propia notificación y los muestra Android.
 @pragma('vm:entry-point')
 Future<void> avisoEnSegundoPlano(RemoteMessage mensaje) async {
-  WidgetsFlutterBinding.ensureInitialized();
   final aviso = AvisoPush.desdeDatos(mensaje.data);
+  // Los avisos del viaje ya traen su notificación: aquí no hay nada que hacer.
   if (!aviso.esSolicitud && aviso.tipo != TipoAviso.solicitudRetirada) return;
-  final plugin = FlutterLocalNotificationsPlugin();
-  await plugin.initialize(
-    settings: const InitializationSettings(
-      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
-    ),
-  );
-  await mostrarAvisoSolicitud(plugin, aviso);
+  try {
+    WidgetsFlutterBinding.ensureInitialized();
+    DartPluginRegistrant.ensureInitialized();
+    final plugin = FlutterLocalNotificationsPlugin();
+    await plugin.initialize(
+      settings: const InitializationSettings(
+        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+      ),
+    );
+    await mostrarAvisoSolicitud(plugin, aviso);
+  } catch (e, pila) {
+    // Queda en el registro (logcat) con su causa en vez de un error genérico.
+    debugPrint('Aviso ${aviso.tipo.codigo} en segundo plano falló: $e\n$pila');
+  }
 }
 
 /// Muestra (o quita) la notificación de una solicitud. La usan el isolate de

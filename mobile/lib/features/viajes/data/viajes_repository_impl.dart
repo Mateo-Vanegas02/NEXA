@@ -50,7 +50,35 @@ class ApiPasajeroRepository implements PasajeroRepository {
       '/pasajero/solicitar-viaje',
       data: s.toJson(),
     );
-    return Servicio.fromJson(r.data!);
+    // El servidor responde {mensaje, servicioId, desglose}, no el viaje: el
+    // detalle se pide aparte (ya pasa por la vista del pasajero).
+    final datos = r.data!;
+    if (datos['estado'] != null && datos['id'] is String) {
+      return Servicio.fromJson(datos);
+    }
+    final id = datos['servicioId'];
+    if (id is! String || id.isEmpty || id == 'null-id') {
+      throw const AppException(
+        ErrorKind.desconocido,
+        'El servidor no devolvió el viaje creado.',
+      );
+    }
+    return _detalle(id);
+  });
+
+  @override
+  Future<String?> viajeAbiertoId() => _guard(() async {
+    final pendiente = await _dio.get<_Json>('/pasajero/solicitud-activa');
+    final p = pendiente.data;
+    if (p != null && p['activa'] == true && p['servicioId'] is String) {
+      return p['servicioId'] as String;
+    }
+    final enCamino = await _dio.get<_Json>('/pasajero/viaje-en-camino');
+    final c = enCamino.data;
+    if (c != null && c['activo'] == true && c['id'] is String) {
+      return c['id'] as String;
+    }
+    return null;
   });
 
   @override
@@ -105,10 +133,12 @@ class ApiPasajeroRepository implements PasajeroRepository {
   });
 
   @override
-  Future<Servicio> detalle(String id) => _guard(() async {
+  Future<Servicio> detalle(String id) => _guard(() => _detalle(id));
+
+  Future<Servicio> _detalle(String id) async {
     final r = await _dio.get<_Json>('/pasajero/servicios/$id');
     return Servicio.fromJson(r.data!);
-  });
+  }
 
   @override
   Future<Servicio> calificar(

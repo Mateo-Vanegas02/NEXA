@@ -18,6 +18,10 @@ abstract interface class PasajeroRepository {
   /// El pasajero reporta dónde está mientras su conductor va en camino.
   Future<void> reportarUbicacion(String id, Coordenada posicion);
   Future<List<Servicio>> historial();
+
+  /// Id de la solicitud que espera conductor o del viaje aceptado/en curso
+  /// del pasajero (para retomarlo al abrir la app), o `null`.
+  Future<String?> viajeAbiertoId();
   Future<Servicio> detalle(String id);
   Future<Servicio> calificar(
     String id,

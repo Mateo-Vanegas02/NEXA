@@ -124,6 +124,71 @@ void main() {
       },
     );
 
+    test(
+      'solicitar lee la respuesta real {servicioId} y pide el viaje',
+      () async {
+        final a = FakeAdapter({
+          'POST /api/pasajero/solicitar-viaje': (
+            200,
+            {
+              'mensaje': 'Viaje solicitado con éxito. Esperando conductor...',
+              'servicioId': 's9',
+              'desglose': {'tarifa': 7000},
+            },
+          ),
+          'GET /api/pasajero/servicios/s9': (
+            200,
+            {'id': 's9', 'estado': 'SOLICITADO', 'origen': 'A', 'destino': 'B'},
+          ),
+        });
+        final s = await repo(a).solicitar(
+          const SolicitudViaje(
+            origen: 'A',
+            destino: 'B',
+            ubicacionOrigen: _o,
+            ubicacionDestino: _d,
+          ),
+        );
+        expect(s.id, 's9');
+        expect(s.estado, EstadoServicio.solicitado);
+      },
+    );
+
+    test('retoma la solicitud que espera conductor o el viaje en camino', () async {
+      expect(
+        await repo(
+          FakeAdapter({
+            'GET /api/pasajero/solicitud-activa': (
+              200,
+              {'activa': true, 'servicioId': 's1', 'estado': 'SOLICITADO'},
+            ),
+          }),
+        ).viajeAbiertoId(),
+        's1',
+      );
+      expect(
+        await repo(
+          FakeAdapter({
+            'GET /api/pasajero/solicitud-activa': (200, {'activa': false}),
+            'GET /api/pasajero/viaje-en-camino': (
+              200,
+              {'activo': true, 'id': 's2', 'estado': 'ACEPTADO'},
+            ),
+          }),
+        ).viajeAbiertoId(),
+        's2',
+      );
+      expect(
+        await repo(
+          FakeAdapter({
+            'GET /api/pasajero/solicitud-activa': (200, {'activa': false}),
+            'GET /api/pasajero/viaje-en-camino': (200, {'activo': false}),
+          }),
+        ).viajeAbiertoId(),
+        isNull,
+      );
+    });
+
     test('402: falta aceptar el cargo pendiente', () async {
       final r = repo(
         FakeAdapter({
@@ -320,6 +385,8 @@ class _RepoFalso implements PasajeroRepository {
   Future<List<Servicio>> historial() async => [_s];
   @override
   Future<Servicio> detalle(String id) async => _s;
+  @override
+  Future<String?> viajeAbiertoId() async => estado.activo ? 's1' : null;
   @override
   Future<PosicionViaje?> posicionConductor(String id) async {
     consultasPosicion++;
