@@ -46,7 +46,9 @@ class _N01State extends ConsumerState<PermisoNotificacionesScreen> {
         concedido = false;
       }
     }
-    await ref.read(guiaPermisosProvider).marcarVisto(PasoPermiso.notificaciones);
+    await ref
+        .read(guiaPermisosProvider)
+        .marcarVisto(PasoPermiso.notificaciones);
     if (mounted) _cerrar(context, concedido);
   }
 
@@ -133,18 +135,10 @@ class _N02State extends ConsumerState<PermisoUbicacionScreen> {
       motivos: conductor
           ? [
               Motivo(Icons.waves, l.permUbicOla, l.permUbicOlaSub),
-              Motivo(
-                Icons.schedule,
-                l.permUbicLlegada,
-                l.permUbicLlegadaSub,
-              ),
+              Motivo(Icons.schedule, l.permUbicLlegada, l.permUbicLlegadaSub),
             ]
           : [
-              Motivo(
-                Icons.adjust,
-                l.permUbicPunto,
-                l.permUbicPuntoSub,
-              ),
+              Motivo(Icons.adjust, l.permUbicPunto, l.permUbicPuntoSub),
               Motivo(
                 Icons.two_wheeler,
                 l.permUbicEncuentra,
@@ -383,39 +377,38 @@ class _N04State extends ConsumerState<GuiaBateriaScreen> {
     MarcaTelefono.otra => l.permBateriaOtra,
   };
 
-  static List<String> pasos(AppLocalizations l, MarcaTelefono m) =>
-      switch (m) {
-        MarcaTelefono.samsung => [
-          l.permBatSamsung1,
-          l.permBatSamsung2,
-          l.permBatSamsung3,
-          l.permBatSamsung4,
-        ],
-        MarcaTelefono.xiaomi => [
-          l.permBatXiaomi1,
-          l.permBatXiaomi2,
-          l.permBatXiaomi3,
-          l.permBatXiaomi4,
-        ],
-        MarcaTelefono.motorola => [
-          l.permBatMotorola1,
-          l.permBatMotorola2,
-          l.permBatMotorola3,
-          l.permBatMotorola4,
-        ],
-        MarcaTelefono.huawei => [
-          l.permBatHuawei1,
-          l.permBatHuawei2,
-          l.permBatHuawei3,
-          l.permBatHuawei4,
-        ],
-        MarcaTelefono.otra => [
-          l.permBatOtra1,
-          l.permBatOtra2,
-          l.permBatOtra3,
-          l.permBatOtra4,
-        ],
-      };
+  static List<String> pasos(AppLocalizations l, MarcaTelefono m) => switch (m) {
+    MarcaTelefono.samsung => [
+      l.permBatSamsung1,
+      l.permBatSamsung2,
+      l.permBatSamsung3,
+      l.permBatSamsung4,
+    ],
+    MarcaTelefono.xiaomi => [
+      l.permBatXiaomi1,
+      l.permBatXiaomi2,
+      l.permBatXiaomi3,
+      l.permBatXiaomi4,
+    ],
+    MarcaTelefono.motorola => [
+      l.permBatMotorola1,
+      l.permBatMotorola2,
+      l.permBatMotorola3,
+      l.permBatMotorola4,
+    ],
+    MarcaTelefono.huawei => [
+      l.permBatHuawei1,
+      l.permBatHuawei2,
+      l.permBatHuawei3,
+      l.permBatHuawei4,
+    ],
+    MarcaTelefono.otra => [
+      l.permBatOtra1,
+      l.permBatOtra2,
+      l.permBatOtra3,
+      l.permBatOtra4,
+    ],
+  };
 
   @override
   Widget build(BuildContext context) {

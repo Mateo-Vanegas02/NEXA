@@ -47,50 +47,50 @@ class InicioPasajeroScreen extends ConsumerWidget {
     final centro = ref.watch(ubicacionProvider).value ?? kCentroPorDefecto;
     return RevisionPermisos(
       child: Scaffold(
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: MapaNexa(centro: centro, origen: centro),
-          ),
-          const SafeArea(
-            child: Padding(
-              padding: EdgeInsets.all(Sp.md),
-              child: _Encabezado(),
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: MapaNexa(centro: centro, origen: centro),
             ),
-          ),
-          NexaHojaArrastrable(
-            inicial: 0.52,
-            minimo: 0.3,
-            children: [
-              _Buscador(onTap: () => _elegirDestino(context, ref)),
-              const SizedBox(height: Sp.md),
-              const NivelBanner(rutaNiveles: '/p/niveles'),
-              if (viaje != null) ...[
+            const SafeArea(
+              child: Padding(
+                padding: EdgeInsets.all(Sp.md),
+                child: _Encabezado(),
+              ),
+            ),
+            NexaHojaArrastrable(
+              inicial: 0.52,
+              minimo: 0.3,
+              children: [
+                _Buscador(onTap: () => _elegirDestino(context, ref)),
                 const SizedBox(height: Sp.md),
-                NexaCard(
-                  onTap: () => context.push('/p/viaje'),
-                  child: Row(
-                    children: [
-                      Icon(Icons.two_wheeler, color: context.acento),
-                      const SizedBox(width: Sp.md),
-                      Expanded(
-                        child: Text(
-                          '${l.viajeEnCursoTitulo}: '
-                          '${estadoTexto(l, viaje.estado)}',
-                          style: context.textos.titleSmall,
+                const NivelBanner(rutaNiveles: '/p/niveles'),
+                if (viaje != null) ...[
+                  const SizedBox(height: Sp.md),
+                  NexaCard(
+                    onTap: () => context.push('/p/viaje'),
+                    child: Row(
+                      children: [
+                        Icon(Icons.two_wheeler, color: context.acento),
+                        const SizedBox(width: Sp.md),
+                        Expanded(
+                          child: Text(
+                            '${l.viajeEnCursoTitulo}: '
+                            '${estadoTexto(l, viaje.estado)}',
+                            style: context.textos.titleSmall,
+                          ),
                         ),
-                      ),
-                      const Icon(Icons.chevron_right),
-                    ],
+                        const Icon(Icons.chevron_right),
+                      ],
+                    ),
                   ),
-                ),
+                ],
+                const SizedBox(height: Sp.xl),
+                const _ViajesRecientes(),
               ],
-              const SizedBox(height: Sp.xl),
-              const _ViajesRecientes(),
-            ],
-          ),
-        ],
-      ),
+            ),
+          ],
+        ),
       ),
     );
   }

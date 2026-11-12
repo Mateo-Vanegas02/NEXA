@@ -25,18 +25,18 @@ class InicioConductorScreen extends ConsumerWidget {
     final estado = ref.watch(conductorProvider);
     return RevisionPermisos(
       child: Scaffold(
-      body: estado.when(
-        loading: () => const SafeArea(child: CargandoSkeleton()),
-        error: (e, _) => SafeArea(
-          child: EstadoError(
-            mensaje: AppException.from(e).mensaje,
-            onReintentar: () => ref.invalidate(conductorProvider),
+        body: estado.when(
+          loading: () => const SafeArea(child: CargandoSkeleton()),
+          error: (e, _) => SafeArea(
+            child: EstadoError(
+              mensaje: AppException.from(e).mensaje,
+              onReintentar: () => ref.invalidate(conductorProvider),
+            ),
           ),
+          data: (s) => s.aprobacion == EstadoAprobacion.aprobado
+              ? _Panel(estado: s)
+              : SafeArea(child: CuentaBloqueada(aprobacion: s.aprobacion)),
         ),
-        data: (s) => s.aprobacion == EstadoAprobacion.aprobado
-            ? _Panel(estado: s)
-            : SafeArea(child: CuentaBloqueada(aprobacion: s.aprobacion)),
-      ),
       ),
     );
   }
@@ -98,7 +98,8 @@ class _Panel extends ConsumerWidget {
                 enLinea: estado.enLinea,
                 onTap: () async {
                   // Antes de conectarse: ubicación y, la primera vez, N03.
-                  if (!estado.enLinea && !await prepararConexion(context, ref)) {
+                  if (!estado.enLinea &&
+                      !await prepararConexion(context, ref)) {
                     return;
                   }
                   await ctrl.alternarLinea();

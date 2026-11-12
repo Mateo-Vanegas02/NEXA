@@ -40,9 +40,8 @@ class _LanzadorState extends State<_Lanzador> {
       children: [
         TextButton(
           onPressed: () async {
-            final r = await Navigator.of(
-              context,
-            ).push(MaterialPageRoute<bool>(builder: (_) => widget.pantalla));
+            final r = await Navigator.of(context)
+                .push(MaterialPageRoute<bool>(builder: (_) => widget.pantalla));
             setState(() => resultado = r);
           },
           child: const Text('abrir'),
@@ -109,7 +108,10 @@ void main() {
     await t.tap(find.text('Permitir al usar la app'));
     await t.pumpAndSettle();
     expect(find.text('resultado: true'), findsOneWidget);
-    expect(await store.read('permiso_visto_${PasoPermiso.ubicacion.name}'), '1');
+    expect(
+      await store.read('permiso_visto_${PasoPermiso.ubicacion.name}'),
+      '1',
+    );
   });
 
   testWidgets('N02: «Ahora no» se cierra con false sin pedir nada', (t) async {
@@ -155,7 +157,10 @@ void main() {
     await t.pumpAndSettle();
     await t.tap(find.text('Motorola'));
     await t.pumpAndSettle();
-    expect(find.text('Batería de la app → «Sin restricciones»'), findsOneWidget);
+    expect(
+      find.text('Batería de la app → «Sin restricciones»'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('el conductor ve los textos de conductor', (t) async {
@@ -166,6 +171,9 @@ void main() {
       ),
     );
     await t.pumpAndSettle();
-    expect(find.text('Sin tu ubicación no puedes ponerte en línea'), findsOneWidget);
+    expect(
+      find.text('Sin tu ubicación no puedes ponerte en línea'),
+      findsOneWidget,
+    );
   });
 }

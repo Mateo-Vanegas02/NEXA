@@ -7,10 +7,9 @@ import 'package:nexa_mobile/core/permisos/permisos_dispositivo.dart';
 import 'package:nexa_mobile/features/auth/domain/auth.dart';
 
 class _Notificaciones implements NotificacionesLocales {
-  _Notificaciones({this.disponible = true, this.concedidas = false});
   @override
-  final bool disponible;
-  bool concedidas;
+  final bool disponible = true;
+  bool concedidas = false;
   @override
   Future<void> inicializar(List<CanalNotificacion> canales) async {}
   @override

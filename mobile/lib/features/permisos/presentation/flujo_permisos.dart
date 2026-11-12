@@ -13,7 +13,10 @@ import '../../auth/presentation/controllers/session_controller.dart';
 
 /// Al llegar al inicio tras iniciar sesión: N01 y, para el pasajero, N02
 /// (si dice «Ahora no», E01).
-Future<void> revisarPermisosAlEntrar(BuildContext context, WidgetRef ref) async {
+Future<void> revisarPermisosAlEntrar(
+  BuildContext context,
+  WidgetRef ref,
+) async {
   final rol = ref.read(sesionProvider).sesion?.rol;
   if (rol == null) return;
   final guia = ref.read(guiaPermisosProvider);
@@ -93,4 +96,3 @@ class _RevisionPermisosState extends ConsumerState<RevisionPermisos> {
   @override
   Widget build(BuildContext context) => widget.child;
 }
-
