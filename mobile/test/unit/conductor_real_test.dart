@@ -128,6 +128,44 @@ void main() {
       );
     });
 
+    test('aceptar lee la respuesta real {mensaje, servicioId}', () async {
+      final s = await repo(
+        FakeAdapter({
+          'POST /api/conductor/aceptar-servicio/s1': (
+            200,
+            {'mensaje': 'Servicio aceptado con éxito', 'servicioId': 's1'},
+          ),
+          'GET /api/conductor/viaje-activo': (
+            200,
+            {'id': 's1', 'estado': 'ACEPTADO', 'origen': 'A', 'destino': 'B'},
+          ),
+        }),
+      ).aceptar('s1');
+      expect(s.id, 's1');
+      expect(s.estado, EstadoServicio.aceptado);
+    });
+
+    test('al finalizar el viaje ya no está activo: se toma del historial', () async {
+      final s = await repo(
+        FakeAdapter({
+          'POST /api/conductor/finalizar-servicio/s1': (
+            200,
+            {'mensaje': 'Servicio finalizado con éxito.', 'servicioId': 's1'},
+          ),
+          'GET /api/conductor/viaje-activo': (204, null),
+          'GET /api/conductor/historial': (
+            200,
+            [
+              {'id': 's0', 'estado': 'FINALIZADO'},
+              {'id': 's1', 'estado': 'FINALIZADO', 'tarifa': 7000},
+            ],
+          ),
+        }),
+      ).finalizar('s1');
+      expect(s.estado, EstadoServicio.finalizado);
+      expect(s.tarifa, 7000);
+    });
+
     test('el saldo es la vista del conductor, sin comisión', () async {
       final s = await repo(
         FakeAdapter({

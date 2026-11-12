@@ -34,6 +34,12 @@ List<Servicio> _lista(Object? data) {
   return viajes;
 }
 
+/// ¿La respuesta es un viaje? Varias acciones solo devuelven
+/// `{mensaje, servicioId}` y el viaje hay que pedirlo aparte.
+@visibleForTesting
+bool esServicio(Map<String, dynamic>? datos) =>
+    datos != null && datos['id'] is String && datos['estado'] is String;
+
 class ApiPasajeroRepository implements PasajeroRepository {
   ApiPasajeroRepository(this._dio);
   final Dio _dio;
@@ -53,9 +59,7 @@ class ApiPasajeroRepository implements PasajeroRepository {
     // El servidor responde {mensaje, servicioId, desglose}, no el viaje: el
     // detalle se pide aparte (ya pasa por la vista del pasajero).
     final datos = r.data!;
-    if (datos['estado'] != null && datos['id'] is String) {
-      return Servicio.fromJson(datos);
-    }
+    if (esServicio(datos)) return Servicio.fromJson(datos);
     final id = datos['servicioId'];
     if (id is! String || id.isEmpty || id == 'null-id') {
       throw const AppException(
@@ -97,7 +101,10 @@ class ApiPasajeroRepository implements PasajeroRepository {
   @override
   Future<Servicio> cancelar(String id) => _guard(() async {
     final r = await _dio.post<_Json>('/pasajero/cancelar-viaje/$id');
-    return Servicio.fromJson(r.data!);
+    // Responde {mensaje, servicioId, cargoCancelacion}: el viaje se pide aparte.
+    final datos = r.data;
+    if (esServicio(datos)) return Servicio.fromJson(datos!);
+    return _detalle(id);
   });
 
   @override
@@ -164,10 +171,29 @@ class ApiConductorRepository implements ConductorRepository {
   ApiConductorRepository(this._dio);
   final Dio _dio;
 
+  /// Las acciones responden `{mensaje, servicioId, …}`, no el viaje: se
+  /// busca después (el activo si sigue en marcha; si no, en el historial).
   Future<Servicio> _accion(String ruta, String id) => _guard(() async {
     final r = await _dio.post<_Json>('/conductor/$ruta/$id');
-    return Servicio.fromJson(r.data!);
+    final datos = r.data;
+    if (esServicio(datos)) return Servicio.fromJson(datos!);
+    return _viajeTrasAccion(id);
   });
+
+  Future<Servicio> _viajeTrasAccion(String id) async {
+    final activo = await _dio.get<Object?>('/conductor/viaje-activo');
+    final a = activo.data;
+    if (activo.statusCode != 204 && a is _Json && a['id'] == id) {
+      return Servicio.fromJson(a);
+    }
+    final r = await _dio.get<List<dynamic>>('/conductor/historial');
+    final viaje = _lista(r.data).where((s) => s.id == id).firstOrNull;
+    if (viaje != null) return viaje;
+    throw const AppException(
+      ErrorKind.noEncontrado,
+      'No encontramos el viaje. Actualiza para verlo.',
+    );
+  }
 
   @override
   Future<List<Servicio>> disponibles({double? lat, double? lng}) =>
@@ -216,7 +242,9 @@ class ApiConductorRepository implements ConductorRepository {
       '/conductor/llegue/$id',
       data: posicion.toJson(),
     );
-    return Servicio.fromJson(r.data!);
+    final datos = r.data;
+    if (esServicio(datos)) return Servicio.fromJson(datos!);
+    return _viajeTrasAccion(id);
   });
 
   @override
