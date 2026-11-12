@@ -72,8 +72,17 @@ public class AvisosService {
             if (!deApp(s) || ola <= olaAnterior) {
                 return;
             }
-            avisarSolicitud(s, conductoresEntre(s, olaAnterior, ola), "SOLICITUD_NUEVA", ola);
+            // Con extra la ola salta: quien ya recibió el aviso del extra no recibe además el de solicitud nueva
+            Set<ObjectId> yaAvisados = avisados.getOrDefault(s.getId(), Set.of());
+            List<ObjectId> nuevos = conductoresEntre(s, olaAnterior, ola).stream()
+                    .filter(id -> !yaAvisados.contains(id)).toList();
+            avisarSolicitud(s, nuevos, "SOLICITUD_NUEVA", ola);
         });
+    }
+
+    /** Olvida a quién se avisó de las solicitudes que ya no están abiertas (las cierra cualquier camino). */
+    public void olvidarCerradas(Collection<String> abiertas) {
+        avisados.keySet().retainAll(abiertas);
     }
 
     /** El pasajero subió el extra: a todos los que ya la ven, con la ganancia nueva. */

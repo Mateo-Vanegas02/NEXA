@@ -56,6 +56,7 @@ class DespachoSchedulerTest {
         scheduler.ampliarOlas(); // ya no está abierta
         scheduler.ampliarOlas(); // reaparece: cuenta como primera vez, no se avisa
         verify(notificador, never()).notificarOlaAmpliada(anyString(), anyInt());
+        verify(avisos).olvidarCerradas(java.util.Set.of());
     }
 
     @Test

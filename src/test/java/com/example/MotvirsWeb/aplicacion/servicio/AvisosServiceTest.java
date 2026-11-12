@@ -134,6 +134,29 @@ class AvisosServiceTest {
     }
 
     @Test
+    void siElExtraAdelantaLaOlaNoLlegaDosVecesAlMismoConductor() {
+        Servicio s = solicitud(CanalServicio.APP, 0);
+        s.setExtraVoluntario(1000);
+        avisos.extraSubido(s);        // ya avisa a los de la ola a la que saltó
+        avisos.olaAmpliada(s, 1, 2);  // el planificador ve el salto después
+
+        ArgumentCaptor<Aviso> aviso = ArgumentCaptor.forClass(Aviso.class);
+        verify(push, times(2)).enviar(any(), aviso.capture()); // cerca y lejos, una vez cada uno
+        assertTrue(aviso.getAllValues().stream().allMatch(a -> "SOLICITUD_EXTRA".equals(a.tipo())));
+    }
+
+    @Test
+    void olvidaLasSolicitudesCerradasYYaNoLesAvisaElRetiro() {
+        Servicio s = solicitud(CanalServicio.APP, 0);
+        avisos.solicitudNueva(s);
+        avisos.olvidarCerradas(List.of());
+
+        avisos.solicitudRetirada(s, "CANCELADO");
+
+        verify(push, times(1)).enviar(any(), any()); // solo el aviso de la solicitud nueva
+    }
+
+    @Test
     void unaSolicitudDeLaWebNoGeneraPush() {
         avisos.solicitudNueva(solicitud(CanalServicio.WEB, 0));
         avisos.viajeAceptado(solicitud(CanalServicio.WEB, 0));

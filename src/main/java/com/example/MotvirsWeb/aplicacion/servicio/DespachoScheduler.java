@@ -69,5 +69,6 @@ public class DespachoScheduler {
         }
         publicadas.keySet().retainAll(abiertas);
         sinConductores.retainAll(abiertas);
+        avisos.olvidarCerradas(abiertas);
     }
 }
