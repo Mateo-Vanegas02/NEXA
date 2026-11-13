@@ -135,4 +135,12 @@ class VisibilidadServicioTest {
         assertNull(VisibilidadServicio.paraPasajero((Servicio) null));
         assertTrue(VisibilidadServicio.paraConductor((java.util.List<Servicio>) null).isEmpty());
     }
+
+    @Test
+    void elPasajeroNuncaRecibeLaGananciaDelConductor() {
+        viaje.setGananciaEstimada(5520L);
+        Servicio vista = VisibilidadServicio.paraPasajero(viaje);
+        assertNull(vista.getGananciaEstimada());
+        assertEquals(5520L, viaje.getGananciaEstimada(), "la entidad no se toca");
+    }
 }

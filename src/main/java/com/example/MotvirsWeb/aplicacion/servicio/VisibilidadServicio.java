@@ -52,6 +52,10 @@ public final class VisibilidadServicio {
         if (original == null) {
             return null;
         }
+        if (original.getGananciaEstimada() != null) {
+            original = copiar(original);
+            original.setGananciaEstimada(null);
+        }
         Servicio v = copiar(original);
         v.setCalificacionPasajero(null);
         v.setComentariosPasajero(null);

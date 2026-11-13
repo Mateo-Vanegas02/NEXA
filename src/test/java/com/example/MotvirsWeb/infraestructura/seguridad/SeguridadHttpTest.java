@@ -155,7 +155,8 @@ class SeguridadHttpTest {
                     mock(com.example.MotvirsWeb.aplicacion.servicio.ViajeEnVivoService.class),
                     mock(com.example.MotvirsWeb.aplicacion.servicio.SaldoConductorService.class),
                     mock(com.example.MotvirsWeb.aplicacion.servicio.IdempotenciaService.class),
-                    mock(com.example.MotvirsWeb.aplicacion.servicio.UbicacionLoteService.class));
+                    mock(com.example.MotvirsWeb.aplicacion.servicio.UbicacionLoteService.class),
+                    mock(com.example.MotvirsWeb.aplicacion.servicio.NivelesService.class));
         }
 
         @Bean

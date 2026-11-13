@@ -43,17 +43,43 @@ public class ApiConductorController {
     private final com.example.MotvirsWeb.aplicacion.servicio.SaldoConductorService saldoConductorService;
     private final com.example.MotvirsWeb.aplicacion.servicio.IdempotenciaService idempotencia;
     private final com.example.MotvirsWeb.aplicacion.servicio.UbicacionLoteService ubicacionLote;
+    private final com.example.MotvirsWeb.aplicacion.servicio.NivelesService nivelesService;
 
     @GetMapping("/perfil")
     public ResponseEntity<Conductor> obtenerPerfil() {
         return ResponseEntity.ok(usuarioContext.getConductorAutenticado());
     }
 
+    /**
+     * Solicitudes que le tocan al conductor, cada una con {@code gananciaEstimada}: lo que se quedaría según su
+     * nivel (la app muestra «Ganas $X» sin conocer la comisión).
+     */
     @GetMapping("/servicios-disponibles")
     public ResponseEntity<List<Servicio>> obtenerServiciosDisponibles(
             @RequestParam(required = false) Double lat, @RequestParam(required = false) Double lng) {
-        return ResponseEntity.ok(com.example.MotvirsWeb.aplicacion.servicio.VisibilidadServicio.paraConductor(servicioService.obtenerServiciosDisponibles(
-                usuarioContext.getConductorAutenticado(), lat, lng)));
+        Conductor conductor = usuarioContext.getConductorAutenticado();
+        List<Servicio> vistas = new java.util.ArrayList<>();
+        for (Servicio s : servicioService.obtenerServiciosDisponibles(conductor, lat, lng)) {
+            Servicio v = com.example.MotvirsWeb.aplicacion.servicio.VisibilidadServicio.paraConductor(s);
+            v.setGananciaEstimada(nivelesService.gananciaEstimada(s, conductor));
+            vistas.add(v);
+        }
+        return ResponseEntity.ok(vistas);
+    }
+
+    /**
+     * El conductor califica al pasajero de un viaje finalizado (estrellas, comentario y factores de
+     * {@code FactoresCalificacion} para el conductor). 400 si un factor no existe o contradice la nota.
+     */
+    @PostMapping("/calificar-servicio/{servicioId}")
+    public ResponseEntity<?> calificarServicio(@PathVariable String servicioId,
+            @Valid @RequestBody com.example.MotvirsWeb.presentacion.dto.CalificacionRequest datos) {
+        if (datos.calificacion() == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "La calificación es obligatoria"));
+        }
+        Conductor conductor = usuarioContext.getConductorAutenticado();
+        return responder(() -> servicioService.calificarServicio(servicioId, "conductor", datos.calificacion(),
+                datos.comentarios() == null ? "" : datos.comentarios(), datos.factores(), conductor.getIdString()));
     }
 
     @PostMapping("/aceptar-servicio/{servicioId}")

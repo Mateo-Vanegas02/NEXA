@@ -120,6 +120,13 @@ public class Servicio {
     @com.fasterxml.jackson.annotation.JsonIgnore
     private DesgloseTarifa desglose;
 
+    /**
+     * Lo que ganaría el conductor que mira la solicitud ({@code NivelesService.gananciaEstimada}). Solo se llena en
+     * la lista de solicitudes del conductor; no se guarda y el pasajero nunca lo recibe.
+     */
+    @Transient
+    private Long gananciaEstimada;
+
 
     @Transient //  Le dice a Mongo que no guarde este campo
     public Double getCalificacionPromedio() {
