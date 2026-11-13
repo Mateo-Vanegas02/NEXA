@@ -140,6 +140,7 @@ Future<void> _pantalla(
   Rol? rol,
   String email = 'demo@nexa.co',
   List<Override> extra = const [],
+  Object? datos,
 }) async {
   usarTamano(t, _tam);
   await t.pumpWidget(
@@ -150,7 +151,7 @@ Future<void> _pantalla(
   );
   await _avanzar(t, 4);
   final ctx = t.element(find.byType(Navigator).first);
-  ProviderScope.containerOf(ctx).read(routerProvider).go(ruta);
+  ProviderScope.containerOf(ctx).read(routerProvider).go(ruta, extra: datos);
   await _avanzar(t);
   t.takeException();
   await _capturar(t, nombre);
@@ -214,6 +215,12 @@ void main() {
     ('D02', '/a/satisfaccion/factores', Rol.admin, 'admin@nexa.co', []),
     ('D03', '/a/satisfaccion/riesgo', Rol.admin, 'admin@nexa.co', []),
     ('D04', '/a/satisfaccion/modelo', Rol.admin, 'admin@nexa.co', []),
+    ('N01', '/permisos/notificaciones', Rol.pasajero, '', []),
+    ('N02', '/permisos/ubicacion', Rol.pasajero, '', []),
+    ('E01', '/permisos/sin-ubicacion', Rol.pasajero, '', []),
+    ('N03', '/c/permisos/segundo-plano', Rol.conductor, 'conductor@nexa.co', []),
+    ('N04', '/c/permisos/bateria', Rol.conductor, 'conductor@nexa.co', []),
+    ('C07', '/c/calificar', Rol.conductor, 'conductor@nexa.co', []),
   ];
 
   for (final (nombre, ruta, rol, email, extra) in casos) {
@@ -226,6 +233,11 @@ void main() {
         rol: rol,
         email: email.isEmpty ? 'demo@nexa.co' : email,
         extra: extra,
+        datos: nombre == 'C07'
+            ? _servicio(EstadoServicio.finalizado).copyWith(
+                pasajero: const Participante(id: 'p1', nombre: 'Laura Gómez'),
+              )
+            : null,
       ),
       skip: !_activas,
     );

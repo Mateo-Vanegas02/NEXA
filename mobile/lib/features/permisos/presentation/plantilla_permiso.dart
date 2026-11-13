@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/theme_x.dart';
+import '../../../core/theme/nexa_texto.dart';
 import '../../../core/theme/tokens.dart';
+import '../../../core/widgets/nexa_icono_app.dart';
 import '../../../core/widgets/nexa_diseno.dart';
 import '../../../core/widgets/nexa_widgets.dart';
 
@@ -64,9 +66,9 @@ class PlantillaPermiso extends StatelessWidget {
                     alignment: Alignment.centerLeft,
                     child: Padding(
                       padding: const EdgeInsets.all(Sp.sm),
-                      child: BackButton(
+                      child: NexaBotonAtras(
                         onPressed: cargando
-                            ? null
+                            ? () {}
                             : onAtras ??
                                   () => Navigator.of(context).maybePop(false),
                       ),
@@ -86,9 +88,7 @@ class PlantillaPermiso extends StatelessWidget {
                             header: true,
                             child: Text(
                               titulo,
-                              style: context.textos.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
+                              style: NexaTexto.titulo.copyWith(fontSize: 26),
                             ),
                           ),
                           const SizedBox(height: Sp.sm),
@@ -122,13 +122,10 @@ class PlantillaPermiso extends StatelessWidget {
                         ),
                         if (secundario != null) ...[
                           const SizedBox(height: Sp.xs),
-                          SizedBox(
-                            width: double.infinity,
-                            height: Sizes.touch,
-                            child: TextButton(
-                              onPressed: cargando ? null : onSecundario,
-                              child: Text(secundario!),
-                            ),
+                          NexaButton(
+                            label: secundario!,
+                            variant: NexaButtonVariant.fantasma,
+                            onPressed: cargando ? null : onSecundario,
                           ),
                         ],
                       ],
@@ -144,34 +141,45 @@ class PlantillaPermiso extends StatelessWidget {
   }
 }
 
+/// Ilustración de los permisos (N02/E01): ondas concéntricas con el icono
+/// en un cuadro con brillo.
 class _IconoGrande extends StatelessWidget {
   const _IconoGrande({required this.icono, required this.color});
   final IconData icono;
   final Color color;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 120,
-      height: 120,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color.withValues(alpha: 0.12),
-        border: Border.all(color: color.withValues(alpha: 0.35)),
-      ),
-      child: Center(
-        child: Container(
-          width: 72,
-          height: 72,
+  Widget build(BuildContext context) => SizedBox.square(
+    dimension: 200,
+    child: Stack(
+      alignment: Alignment.center,
+      children: [
+        for (final (d, a) in [(200.0, 0.06), (150.0, 0.1), (104.0, 0.16)])
+          Container(
+            width: d,
+            height: d,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: color.withValues(alpha: a / 2),
+              border: Border.all(color: color.withValues(alpha: a * 2)),
+            ),
+          ),
+        Container(
+          width: 76,
+          height: 76,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(Rad.lg),
-            color: color.withValues(alpha: 0.18),
+            color: color.withValues(alpha: 0.2),
+            border: Border.all(color: color.withValues(alpha: 0.5)),
+            boxShadow: [
+              BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 30),
+            ],
           ),
           child: Icon(icono, size: 38, color: color),
         ),
-      ),
-    );
-  }
+      ],
+    ),
+  );
 }
 
 class _FilaMotivo extends StatelessWidget {
@@ -189,7 +197,7 @@ class _FilaMotivo extends StatelessWidget {
             height: 40,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(Rad.md),
-              color: context.acento.withValues(alpha: 0.14),
+              color: NexaColors.raised,
             ),
             child: Icon(motivo.icono, size: 20, color: context.acento),
           ),
