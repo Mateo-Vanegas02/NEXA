@@ -1234,5 +1234,31 @@
         "type": "String"
       }
     }
+  },
+  "lema": "Tu ciudad, a tu ritmo.",
+  "ciudadPais": "Cartagena · Colombia",
+  "factor_ESPERA_EN_EL_PUNTO": "Me hizo esperar en el punto",
+  "factor_PUNTO_DIFICIL": "El punto de recogida era difícil",
+  "factor_PAGO": "Problemas con el pago o el recargo",
+  "factor_TRATO": "El trato",
+  "factor_LISTO_A_TIEMPO": "Estaba listo a tiempo",
+  "factor_PUNTO_CLARO": "Punto de recogida claro",
+  "factor_PAGO_SIN_PROBLEMAS": "Pagó sin problemas",
+  "calificarOpcionalConductor": "Calificar es opcional · {nombre} no verá lo que marques",
+  "@calificarOpcionalConductor": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "calificar": "Calificar",
+  "ganasMonto": "Ganas {monto}",
+  "@ganasMonto": {
+    "placeholders": {
+      "monto": {
+        "type": "String"
+      }
+    }
   }
 }

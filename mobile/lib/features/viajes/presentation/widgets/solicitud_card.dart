@@ -73,8 +73,12 @@ class _SolicitudCardState extends ConsumerState<SolicitudCard> {
               style: NexaTexto.etiqueta.copyWith(color: NexaColors.cyan),
             ),
             const SizedBox(height: Sp.xs),
+            // «Ganas $X» lo calcula el servidor según el nivel del conductor;
+            // sin ese dato se muestra lo que cobra en efectivo.
             Text(
-              '${l.cobraAlPasajero} ${Fmt.cop(total)}',
+              servicio.gananciaEstimada != null
+                  ? l.ganasMonto(Fmt.cop(servicio.gananciaEstimada!))
+                  : '${l.cobraAlPasajero} ${Fmt.cop(total)}',
               style: NexaTexto.titulo,
             ),
             Text(

@@ -155,7 +155,8 @@ class ApiPasajeroRepository implements PasajeroRepository {
     String comentarios, {
     List<String> factores = const [],
   }) => _guard(() async {
-    final r = await _dio.post<_Json>(
+    // El servidor responde {mensaje, servicioId}, no el viaje.
+    await _dio.post<_Json>(
       '/pasajero/calificar-servicio/$id',
       data: {
         'calificacion': calificacion,
@@ -163,7 +164,7 @@ class ApiPasajeroRepository implements PasajeroRepository {
         if (factores.isNotEmpty) 'factores': factores,
       },
     );
-    return Servicio.fromJson(r.data!);
+    return _detalle(id);
   });
 
   @override
@@ -336,5 +337,22 @@ class ApiConductorRepository implements ConductorRepository {
   Future<DesgloseConductor> desglose(String id) => _guard(() async {
     final r = await _dio.get<_Json>('/niveles/viajes/$id/desglose');
     return DesgloseConductor.fromJson(r.data!);
+  });
+
+  @override
+  Future<void> calificar(
+    String id,
+    double calificacion,
+    String comentarios, {
+    List<String> factores = const [],
+  }) => _guard(() async {
+    await _dio.post<_Json>(
+      '/conductor/calificar-servicio/$id',
+      data: {
+        'calificacion': calificacion,
+        'comentarios': comentarios,
+        if (factores.isNotEmpty) 'factores': factores,
+      },
+    );
   });
 }

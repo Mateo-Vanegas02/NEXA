@@ -17,6 +17,7 @@ import '../controllers/viaje_conductor_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 /// A cuántos km del destino se considera que el conductor "llegó" para avisar
 /// antes de finalizar. Solo es un aviso: el servidor decide cuánto se cobra.
@@ -439,7 +440,20 @@ class ResumenViajeCard extends StatelessWidget {
           ),
         ],
         const SizedBox(height: Sp.lg),
-        NexaButton(label: l.listo, onPressed: onCerrar),
+        NexaButton(
+          label: nombre.isEmpty ? l.calificar : l.calificarA(nombre),
+          onPressed: () {
+            final router = GoRouter.of(context);
+            onCerrar();
+            router.push('/c/calificar', extra: servicio);
+          },
+        ),
+        const SizedBox(height: Sp.sm),
+        NexaButton(
+          label: l.ahoraNo,
+          variant: NexaButtonVariant.fantasma,
+          onPressed: onCerrar,
+        ),
       ],
     );
   }

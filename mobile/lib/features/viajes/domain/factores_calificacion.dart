@@ -31,20 +31,40 @@ abstract final class FactoresCalificacion {
     FactorCalificacion('AMABLE', positivo: true),
   ];
 
+  /// Lo que el conductor marca sobre el pasajero.
+  static const delConductor = [
+    FactorCalificacion('ESPERA_EN_EL_PUNTO', positivo: false),
+    FactorCalificacion('PUNTO_DIFICIL', positivo: false),
+    FactorCalificacion('PAGO', positivo: false),
+    FactorCalificacion('TRATO', positivo: false),
+    FactorCalificacion('LISTO_A_TIEMPO', positivo: true),
+    FactorCalificacion('PUNTO_CLARO', positivo: true),
+    FactorCalificacion('PAGO_SIN_PROBLEMAS', positivo: true),
+    FactorCalificacion('AMABLE', positivo: true),
+  ];
+
   static bool satisfecho(double nota) => nota >= notaSatisfecho;
 
-  /// Los factores que tienen sentido para esa nota.
-  static List<FactorCalificacion> paraNota(double nota) => [
-    for (final f in delPasajero)
+  /// Los factores que tienen sentido para esa nota (del pasajero o, con
+  /// [conductor], del conductor).
+  static List<FactorCalificacion> paraNota(
+    double nota, {
+    bool conductor = false,
+  }) => [
+    for (final f in conductor ? delConductor : delPasajero)
       if (f.positivo == satisfecho(nota)) f,
   ];
 
   /// Deja solo los elegidos que siguen valiendo para la nota (al cambiar de
   /// 5 a 2 estrellas, los positivos se descartan), en el orden del catálogo.
-  static List<String> validos(double nota, Iterable<String> elegidos) {
+  static List<String> validos(
+    double nota,
+    Iterable<String> elegidos, {
+    bool conductor = false,
+  }) {
     final set = elegidos.toSet();
     return [
-      for (final f in paraNota(nota))
+      for (final f in paraNota(nota, conductor: conductor))
         if (set.contains(f.codigo)) f.codigo,
     ];
   }

@@ -100,6 +100,8 @@ abstract class Servicio with _$Servicio {
     @Default(0) int nivelPasajero,
     @Default(0) int xpGanadoPasajero,
     @Default(0) int xpGanadoConductor,
+    // Lo que ganaría el conductor con esta solicitud (solo en su lista).
+    double? gananciaEstimada,
   }) = _Servicio;
 
   factory Servicio.fromJson(Map<String, dynamic> json) =>

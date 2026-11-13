@@ -74,4 +74,13 @@ abstract interface class ConductorRepository {
   Future<List<Servicio>> historial();
   Future<List<Ingreso>> ingresos({String? periodo});
   Future<DesgloseConductor> desglose(String id);
+
+  /// El conductor califica al pasajero (estrellas, comentario y códigos de
+  /// `FactoresCalificacion.delConductor`).
+  Future<void> calificar(
+    String id,
+    double calificacion,
+    String comentarios, {
+    List<String> factores = const [],
+  });
 }

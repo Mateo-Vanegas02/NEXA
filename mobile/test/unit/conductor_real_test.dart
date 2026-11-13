@@ -580,4 +580,12 @@ class _Repo implements ConductorRepository {
   @override
   Future<DesgloseConductor> desglose(String id) async =>
       _desglose ?? const DesgloseConductor();
+
+  @override
+  Future<void> calificar(
+    String id,
+    double calificacion,
+    String comentarios, {
+    List<String> factores = const [],
+  }) async {}
 }

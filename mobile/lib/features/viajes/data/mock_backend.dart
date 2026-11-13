@@ -555,6 +555,14 @@ class MockConductorRepository implements ConductorRepository {
   @override
   Future<DesgloseConductor> desglose(String id) =>
       _t(() => _b.desgloseConductor(id));
+
+  @override
+  Future<void> calificar(
+    String id,
+    double calificacion,
+    String comentarios, {
+    List<String> factores = const [],
+  }) async {}
 }
 
 class MockNivelesRepository implements NivelesRepository {

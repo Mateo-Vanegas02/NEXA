@@ -13,7 +13,9 @@ import '../../features/auth/presentation/controllers/session_controller.dart';
 import '../../features/niveles/presentation/widgets/celebracion_listener.dart';
 import '../../features/niveles/presentation/screens/niveles_screen.dart';
 import '../../features/viajes/presentation/conductor/inicio_conductor_screen.dart';
+import '../../features/viajes/presentation/conductor/calificar_pasajero_screen.dart';
 import '../../features/viajes/presentation/conductor/ganancias_screen.dart';
+import '../../features/viajes/domain/servicio.dart';
 import '../../features/permisos/presentation/pantallas_permisos.dart';
 import '../../features/satisfaccion/presentation/admin_shell.dart';
 import '../../features/satisfaccion/presentation/screens/entrenando_screen.dart';
@@ -116,6 +118,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/p/calificar',
         builder: (_, _) => const CalificacionScreen(),
+      ),
+      GoRoute(
+        path: '/c/calificar',
+        builder: (_, state) => state.extra is Servicio
+            ? CalificarPasajeroScreen(servicio: state.extra! as Servicio)
+            : const InicioConductorScreen(),
       ),
       GoRoute(
         path: '/p/pedir',

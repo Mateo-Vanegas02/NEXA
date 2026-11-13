@@ -504,6 +504,14 @@ class ConductorController extends AsyncNotifier<ConductorState> {
 
   void descartarAvisoCancelacion() =>
       state = AsyncData(_s.copyWith(pasajeroCancelo: false));
+
+  /// Califica al pasajero del viaje [id] (opcional; diseño C07).
+  Future<void> calificarPasajero(
+    String id,
+    double calificacion,
+    String comentarios, {
+    List<String> factores = const [],
+  }) => _repo.calificar(id, calificacion, comentarios, factores: factores);
 }
 
 final conductorProvider =
