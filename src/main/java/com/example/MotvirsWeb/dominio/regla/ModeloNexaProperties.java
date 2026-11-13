@@ -36,6 +36,7 @@ public class ModeloNexaProperties {
     private Recogida recogida = new Recogida();
     private Seguimiento seguimiento = new Seguimiento();
     private Viaje viaje = new Viaje();
+    private SinConexion sinConexion = new SinConexion();
     /** Zona horaria del negocio (America/Bogota). */
     private String zonaHoraria;
 
@@ -154,6 +155,14 @@ public class ModeloNexaProperties {
         private double umbralCobroCompleto = 0.5;
         /** Fracción del viaje que se cobra si se finaliza antes del umbral (la regla de la mitad). */
         private double fraccionCobroAnticipado = 0.5;
+    }
+
+    @Data
+    public static class SinConexion {
+        /** Minutos hacia atrás que se acepta la hora de una acción hecha sin señal (con viaje: la duración, si es mayor). */
+        private long toleranciaMinutos = 5;
+        /** Máximo de posiciones en un envío por lote. */
+        private int maxPuntosLote = 500;
     }
 
     @Data

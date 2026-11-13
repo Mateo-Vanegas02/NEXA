@@ -308,4 +308,64 @@ class ViajeEnVivoServiceTest {
 
         assertTrue(servicio.posicionDe("s1", pasajeroId.toHexString()).isEmpty());
     }
+
+    // ─── Sin conexión: posiciones en lote ───
+
+    private long ms(int segundosAtras) {
+        return reloj.ahora.minusSeconds(segundosAtras).toEpochMilli();
+    }
+
+    private Servicio enCurso() {
+        Servicio s = viaje(EstadoServicio.EN_CURSO);
+        s.setFechaInicio(java.time.LocalDateTime.ofInstant(reloj.ahora.minusSeconds(600), ZoneOffset.UTC));
+        servicio.iniciar(s);
+        return s;
+    }
+
+    @Test
+    void elLoteSumaAlRecorridoEnElOrdenDeSusHoras() {
+        enCurso();
+        // Llegan desordenados: el servidor los pone en orden de hora
+        int guardados = servicio.reportarLote(conductorId, java.util.List.of(
+                new ViajeEnVivoService.PuntoConHora(new PuntoGeo(10.4336, -75.5253), ms(100)),
+                new ViajeEnVivoService.PuntoConHora(RECOGIDA, ms(300)),
+                new ViajeEnVivoService.PuntoConHora(new PuntoGeo(10.4436, -75.5253), ms(20))));
+
+        assertEquals(3, guardados);
+        ViajeEnVivoService.Recorrido r = servicio.terminar(conductorId, "s1");
+        assertEquals(RECOGIDA.latitud(), r.puntos().get(0).getLatitud());
+        assertEquals(10.4436, r.puntos().get(2).getLatitud());
+        assertTrue(r.km() > 2);
+    }
+
+    @Test
+    void lasPosicionesAnterioresAlInicioNoSonRecorrido() {
+        enCurso();
+        int guardados = servicio.reportarLote(conductorId, java.util.List.of(
+                new ViajeEnVivoService.PuntoConHora(RECOGIDA, ms(900))));
+        assertEquals(0, guardados);
+    }
+
+    @Test
+    void unLotePosteriorAlUltimoReporteDiceSiLlegoAlDestino() {
+        Servicio s = enCurso();
+        servicio.reportar(conductorId, RECOGIDA);
+        reloj.ahora = reloj.ahora.plusSeconds(120); // sin señal: la posición en vivo venció
+        assertFalse(servicio.estaEnElDestino(s, conductorId));
+
+        servicio.reportarLote(conductorId, java.util.List.of(
+                new ViajeEnVivoService.PuntoConHora(DESTINO, ms(10))));
+
+        assertTrue(servicio.estaEnElDestino(s, conductorId));
+    }
+
+    @Test
+    void unLoteViejoNoReemplazaUnReporteEnVivoMasNuevo() {
+        Servicio s = enCurso();
+        servicio.reportarLote(conductorId, java.util.List.of(
+                new ViajeEnVivoService.PuntoConHora(DESTINO, ms(60))));
+        servicio.reportar(conductorId, RECOGIDA);
+        reloj.ahora = reloj.ahora.plusSeconds(120);
+        assertFalse(servicio.estaEnElDestino(s, conductorId));
+    }
 }

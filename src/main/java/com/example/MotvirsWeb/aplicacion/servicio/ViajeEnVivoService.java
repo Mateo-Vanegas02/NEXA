@@ -44,10 +44,19 @@ public class ViajeEnVivoService {
         final PuntoGeo destino;
         boolean enCurso;
         long ultimoEnvio;
+        /** Desde cuándo se guarda el recorrido (ms): puntos más viejos, enviados tras un corte, no cuentan. */
+        long inicioMs;
+        /** Hora (ms) del último reporte en vivo del conductor en este viaje. */
+        long ultimoVivoMs;
+        /** Posición más nueva de un lote enviado tras un corte de señal, y su hora (ms). */
+        PuntoGeo ultimoDelLote;
+        long ultimoDelLoteMs;
         /** Último mensaje calculado: lo consulta el pasajero por REST (la app móvil no usa el WebSocket). */
         volatile PosicionViaje ultima;
         PuntoGeo ultimoGuardado;
+        long ultimoGuardadoMs;
         final List<PuntoGeo> recorrido = new ArrayList<>();
+        final List<Long> horas = new ArrayList<>();
 
         Viaje(String servicioId, String pasajeroId, PuntoGeo recogida, PuntoGeo destino, boolean enCurso) {
             this.servicioId = servicioId;
@@ -110,9 +119,15 @@ public class ViajeEnVivoService {
             synchronized (v) {
                 v.enCurso = true;
                 v.recorrido.clear();
+                v.horas.clear();
                 v.ultimoGuardado = null;
+                v.ultimoGuardadoMs = 0;
+                v.inicioMs = servicio.getFechaInicio() == null ? clock.millis()
+                        : servicio.getFechaInicio().atZone(clock.getZone()).toInstant().toEpochMilli();
                 // El primer punto del recorrido es donde está el conductor al arrancar, si lo conocemos
-                ubicaciones.vigente(servicio.getConductor().getId()).ifPresent(p -> guardar(v, p));
+                long ahora = clock.millis();
+                ubicaciones.vigente(servicio.getConductor().getId())
+                        .ifPresent(p -> guardar(v, p, Math.max(ahora, v.inicioMs)));
             }
         }
     }
@@ -130,10 +145,11 @@ public class ViajeEnVivoService {
         PosicionViaje mensaje;
         boolean publicar = false;
         synchronized (v) {
-            if (v.enCurso) {
-                guardar(v, posicion);
-            }
             long ahora = clock.millis();
+            if (v.enCurso) {
+                guardar(v, posicion, ahora);
+            }
+            v.ultimoVivoMs = ahora;
             PuntoGeo objetivo = v.enCurso ? v.destino : v.recogida;
             double km = regla.kmPorCalle(posicion, objetivo);
             mensaje = new PosicionViaje(v.servicioId, v.enCurso ? "EN_CURSO" : "ACEPTADO",
@@ -148,6 +164,56 @@ public class ViajeEnVivoService {
             notificador.notificarPosicionConductor(v.pasajeroId, mensaje);
         }
         return java.util.Optional.of(mensaje);
+    }
+
+    /** Posición guardada en el teléfono durante un corte de señal, con la hora en que se tomó. */
+    public record PuntoConHora(PuntoGeo punto, long ms) {
+    }
+
+    /**
+     * Posiciones que el teléfono guardó sin señal y envía al volver: se suman al recorrido real en el orden de sus
+     * horas (no del envío) con la misma regla que en vivo, y la más nueva pasa a ser la última conocida. No se reenvían
+     * al pasajero (ya son viejas). Devuelve cuántos puntos quedaron en el recorrido.
+     */
+    public int reportarLote(ObjectId conductorId, List<PuntoConHora> puntos) {
+        Viaje v = conductorId == null ? null : porConductor.get(conductorId);
+        if (v == null || puntos == null || puntos.isEmpty()) {
+            return 0;
+        }
+        synchronized (v) {
+            List<PuntoConHora> ordenados = puntos.stream()
+                    .sorted(java.util.Comparator.comparingLong(PuntoConHora::ms)).toList();
+            PuntoConHora ultimo = ordenados.get(ordenados.size() - 1);
+            if (ultimo.ms() > v.ultimoDelLoteMs) {
+                v.ultimoDelLote = ultimo.punto();
+                v.ultimoDelLoteMs = ultimo.ms();
+            }
+            if (!v.enCurso) {
+                return 0;
+            }
+            int antes = v.recorrido.size();
+            List<PuntoConHora> utiles = ordenados.stream().filter(p -> p.ms() >= v.inicioMs).toList();
+            if (utiles.isEmpty()) {
+                return 0;
+            }
+            if (utiles.get(0).ms() >= v.ultimoGuardadoMs) {
+                utiles.forEach(p -> guardar(v, p.punto(), p.ms()));
+            } else {
+                // Llegan puntos anteriores a los ya guardados: se rearma el recorrido en orden de hora
+                List<PuntoConHora> todos = new ArrayList<>();
+                for (int i = 0; i < v.recorrido.size(); i++) {
+                    todos.add(new PuntoConHora(v.recorrido.get(i), v.horas.get(i)));
+                }
+                todos.addAll(utiles);
+                todos.sort(java.util.Comparator.comparingLong(PuntoConHora::ms));
+                v.recorrido.clear();
+                v.horas.clear();
+                v.ultimoGuardado = null;
+                v.ultimoGuardadoMs = 0;
+                todos.forEach(p -> guardar(v, p.punto(), p.ms()));
+            }
+            return Math.max(0, v.recorrido.size() - antes);
+        }
     }
 
     /**
@@ -198,7 +264,27 @@ public class ViajeEnVivoService {
         if (destino == null) {
             return true;
         }
-        return ubicaciones.vigente(conductorId).map(p -> regla.enElDestino(p, destino)).orElse(false);
+        return ultimaPosicion(servicio, conductorId).map(p -> regla.enElDestino(p, destino)).orElse(false);
+    }
+
+    /**
+     * Dónde está el conductor según el servidor: su posición vigente o, si se quedó sin señal y envió lo guardado al
+     * volver, la última posición de ese lote (si es posterior a su último reporte en vivo). Una posición en vivo ya
+     * vencida no cuenta, y nunca la que diga el teléfono en la acción.
+     */
+    private Optional<PuntoGeo> ultimaPosicion(Servicio servicio, ObjectId conductorId) {
+        Optional<PuntoGeo> vigente = ubicaciones.vigente(conductorId);
+        if (vigente.isPresent()) {
+            return vigente;
+        }
+        Viaje v = conductorId == null ? null : porConductor.get(conductorId);
+        if (v == null || !v.servicioId.equals(servicio.getId())) {
+            return Optional.empty();
+        }
+        synchronized (v) {
+            return v.ultimoDelLote != null && v.ultimoDelLoteMs >= v.ultimoVivoMs
+                    ? Optional.of(v.ultimoDelLote) : Optional.empty();
+        }
     }
 
     /**
@@ -212,7 +298,7 @@ public class ViajeEnVivoService {
         Double km = recorrido != null && !recorrido.puntos().isEmpty() ? recorrido.km() : null;
         if (km == null) {
             PuntoGeo origen = punto(servicio.getUbicacionOrigen());
-            Optional<PuntoGeo> posicion = ubicaciones.vigente(conductorId);
+            Optional<PuntoGeo> posicion = ultimaPosicion(servicio, conductorId);
             if (origen != null && posicion.isPresent()) {
                 km = regla.kmPorCalle(origen, posicion.get());
             }
@@ -220,10 +306,12 @@ public class ViajeEnVivoService {
         return regla.factorCobro(false, km, servicio.getDistanciaKM());
     }
 
-    private void guardar(Viaje v, PuntoGeo p) {
+    private void guardar(Viaje v, PuntoGeo p, long ms) {
         if (regla.debeGuardarPunto(v.ultimoGuardado, p, v.recorrido.size())) {
             v.recorrido.add(p);
+            v.horas.add(ms);
             v.ultimoGuardado = p;
+            v.ultimoGuardadoMs = ms;
         }
     }
 

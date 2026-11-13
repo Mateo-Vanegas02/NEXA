@@ -1,5 +1,7 @@
 package com.example.MotvirsWeb.aplicacion.servicio;
 
+import com.example.MotvirsWeb.dominio.regla.ModeloNexaProperties;
+import com.example.MotvirsWeb.dominio.regla.ReglaSinConexion;
 import com.example.MotvirsWeb.aplicacion.comando.SolicitudViaje;
 import com.example.MotvirsWeb.dominio.repositorio.ServicioRepository;
 import com.example.MotvirsWeb.aplicacion.puerto.NotificadorTiempoReal;
@@ -61,6 +63,7 @@ public class ServicioServiceImpl implements ServicioService {
     private final com.example.MotvirsWeb.dominio.repositorio.VehiculoRepository vehiculoRepository;
     private final com.example.MotvirsWeb.aplicacion.puerto.CanalPeticion canalPeticion;
     private final AvisosService avisos;
+    private final ModeloNexaProperties modeloNexa;
 
     static final String VIAJE_NO_DISPONIBLE = "Otro conductor ya tomó este viaje. Ya no está disponible.";
 
@@ -137,7 +140,7 @@ public class ServicioServiceImpl implements ServicioService {
 
     @Override
     public Map<String, Object> confirmarLlegada(String servicioId, Conductor conductor, double latitud,
-            double longitud) {
+            double longitud, LocalDateTime ocurridoEn) {
         Servicio servicio = buscarServicio(servicioId);
         exigirConductorAsignado(servicio, conductor);
         exigirMismoCanal(servicio);
@@ -157,7 +160,8 @@ public class ServicioServiceImpl implements ServicioService {
                             + Math.round(registroLlegada.distanciaMetros(posicion, recogida)) + " m; debes estar a menos de "
                             + Math.round(registroLlegada.radioMetros()) + " m)");
         }
-        servicio.setFechaLlegada(LocalDateTime.now());
+        servicio.setFechaLlegada(ReglaSinConexion.horaEvento(LocalDateTime.now(), ocurridoEn,
+                servicio.getFechaAceptacion(), toleranciaSinConexion(servicio, false)));
         servicio.setUbicacionLlegada(new Servicio.Coordenada(latitud, longitud));
         servicioRepository.save(servicio);
         notificadorTiempoReal.notificarCambioEstadoServicio(servicio);
@@ -166,7 +170,7 @@ public class ServicioServiceImpl implements ServicioService {
     }
 
     @Override
-    public Map<String, Object> iniciarServicio(String servicioId, Conductor conductor) {
+    public Map<String, Object> iniciarServicio(String servicioId, Conductor conductor, LocalDateTime ocurridoEn) {
         Servicio servicio = buscarServicio(servicioId);
 
         if (servicio.getEstado() != EstadoServicio.ACEPTADO) {
@@ -185,7 +189,8 @@ public class ServicioServiceImpl implements ServicioService {
                     "Confirma que llegaste al punto de recogida antes de iniciar el viaje");
         }
 
-        LocalDateTime ahora = LocalDateTime.now();
+        LocalDateTime ahora = ReglaSinConexion.horaEvento(LocalDateTime.now(), ocurridoEn,
+                servicio.getFechaLlegada(), toleranciaSinConexion(servicio, false));
         servicio.setEstado(EstadoServicio.EN_CURSO);
         servicio.setFechaInicio(ahora);
         if (servicio.getFechaLlegada() != null) {
@@ -198,13 +203,20 @@ public class ServicioServiceImpl implements ServicioService {
         return Map.of("mensaje", "Viaje iniciado con éxito", "servicioId", servicioId);
     }
 
+    /** Minutos que se acepta la hora del teléfono (ver {@link ReglaSinConexion#toleranciaMinutos}). */
+    private long toleranciaSinConexion(Servicio servicio, boolean enCurso) {
+        var sinConexion = modeloNexa == null ? new ModeloNexaProperties.SinConexion() : modeloNexa.getSinConexion();
+        return ReglaSinConexion.toleranciaMinutos(sinConexion.getToleranciaMinutos(), enCurso,
+                servicio.getDuracionEstimadaMin());
+    }
+
     /** Una fracción de cobro fuera de (0, 1] se ignora: se cobra el viaje completo. */
     private static double fraccionValida(double f) {
         return f > 0 && f <= 1.0 ? f : 1.0;
     }
 
     @Override
-    public Map<String, Object> finalizarServicio(String servicioId, Conductor conductor) {
+    public Map<String, Object> finalizarServicio(String servicioId, Conductor conductor, LocalDateTime ocurridoEn) {
         Servicio servicio = buscarServicio(servicioId);
 
         if (servicio.getEstado() != EstadoServicio.EN_CURSO ||
@@ -217,7 +229,10 @@ public class ServicioServiceImpl implements ServicioService {
         // (el pasajero se bajó antes) se cobra según lo recorrido: antes de la mitad, la mitad; desde la mitad, todo.
         boolean enDestino = viajeEnVivo.estaEnElDestino(servicio, conductor.getId());
         servicio.setEstado(EstadoServicio.FINALIZADO);
-        servicio.setFechaFinalizacion(LocalDateTime.now());
+        // Sin señal se finaliza con la hora del teléfono (dentro de la tolerancia); el cobro sigue saliendo de las
+        // posiciones que el servidor recibió (en vivo o en el lote al volver la señal), nunca de lo que diga la acción.
+        servicio.setFechaFinalizacion(ReglaSinConexion.horaEvento(LocalDateTime.now(), ocurridoEn,
+                servicio.getFechaInicio(), toleranciaSinConexion(servicio, true)));
         ViajeEnVivoService.Recorrido recorrido = viajeEnVivo.terminar(conductor.getId(), servicioId);
         if (recorrido != null && !recorrido.puntos().isEmpty()) {
             servicio.setDistanciaRecorridaKm(recorrido.km());

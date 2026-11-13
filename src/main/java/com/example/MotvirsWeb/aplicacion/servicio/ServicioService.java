@@ -33,17 +33,35 @@ public interface ServicioService {
      * El conductor confirma que llegó al punto de recogida. Se acepta solo si su ubicación está
      * dentro del radio configurado; la hora la fija el servidor y desde ahí corre la espera.
      */
-    Map<String, Object> confirmarLlegada(String servicioId, Conductor conductor, double latitud, double longitud);
+    default Map<String, Object> confirmarLlegada(String servicioId, Conductor conductor, double latitud,
+            double longitud) {
+        return confirmarLlegada(servicioId, conductor, latitud, longitud, null);
+    }
+
+    /**
+     * Igual, con la hora en que ocurrió si la app la hizo sin señal ({@code ocurridoEn}; null = ahora). El servidor la
+     * acepta solo dentro de la tolerancia sin conexión ({@link com.example.MotvirsWeb.dominio.regla.ReglaSinConexion}).
+     */
+    Map<String, Object> confirmarLlegada(String servicioId, Conductor conductor, double latitud, double longitud,
+            java.time.LocalDateTime ocurridoEn);
 
     /**
      * Cambia el estado de un servicio ACEPTADO a EN_CURSO.
      */
-    Map<String, Object> iniciarServicio(String servicioId, Conductor conductor);
+    default Map<String, Object> iniciarServicio(String servicioId, Conductor conductor) {
+        return iniciarServicio(servicioId, conductor, null);
+    }
+
+    Map<String, Object> iniciarServicio(String servicioId, Conductor conductor, java.time.LocalDateTime ocurridoEn);
 
     /**
      * Finaliza un servicio EN_CURSO del conductor dado.
      */
-    Map<String, Object> finalizarServicio(String servicioId, Conductor conductor);
+    default Map<String, Object> finalizarServicio(String servicioId, Conductor conductor) {
+        return finalizarServicio(servicioId, conductor, null);
+    }
+
+    Map<String, Object> finalizarServicio(String servicioId, Conductor conductor, java.time.LocalDateTime ocurridoEn);
 
     /**
      * Cancela un servicio activo del conductor dado.

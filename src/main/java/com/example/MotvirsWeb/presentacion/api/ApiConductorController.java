@@ -1,10 +1,13 @@
 package com.example.MotvirsWeb.presentacion.api;
 
 import jakarta.validation.Valid;
-import com.example.MotvirsWeb.presentacion.dto.SolicitudViajeRequest;
 import com.example.MotvirsWeb.dominio.modelo.Conductor;
 import com.example.MotvirsWeb.dominio.regla.PuntoGeo;
 import com.example.MotvirsWeb.presentacion.dto.UbicacionConductorRequest;
+import com.example.MotvirsWeb.presentacion.dto.AccionSinConexionRequest;
+import com.example.MotvirsWeb.presentacion.dto.LlegadaRequest;
+import com.example.MotvirsWeb.presentacion.dto.UbicacionLoteRequest;
+import com.example.MotvirsWeb.aplicacion.servicio.IdempotenciaService;
 import com.example.MotvirsWeb.aplicacion.servicio.UbicacionConductorService;
 import com.example.MotvirsWeb.dominio.modelo.Servicio;
 import com.example.MotvirsWeb.presentacion.dto.OptimizerResponseDto;
@@ -38,6 +41,8 @@ public class ApiConductorController {
     private final com.example.MotvirsWeb.aplicacion.puerto.CanalPeticion canalPeticion;
     private final com.example.MotvirsWeb.aplicacion.servicio.ViajeEnVivoService viajeEnVivoService;
     private final com.example.MotvirsWeb.aplicacion.servicio.SaldoConductorService saldoConductorService;
+    private final com.example.MotvirsWeb.aplicacion.servicio.IdempotenciaService idempotencia;
+    private final com.example.MotvirsWeb.aplicacion.servicio.UbicacionLoteService ubicacionLote;
 
     @GetMapping("/perfil")
     public ResponseEntity<Conductor> obtenerPerfil() {
@@ -105,55 +110,80 @@ public class ApiConductorController {
                 .orElseGet(() -> ResponseEntity.noContent().build());
     }
 
-    /** El conductor confirma que llegó al punto de recogida (la ubicación se verifica en el servidor). */
-    @PostMapping("/llegue/{servicioId}")
-    public ResponseEntity<?> confirmarLlegada(@PathVariable String servicioId,
-            @Valid @RequestBody SolicitudViajeRequest.Coordenada posicion) {
+    /**
+     * Posiciones guardadas sin señal, cada una con su hora (fase 5 de la app). Se suman al recorrido real en orden de
+     * hora; las que caen fuera de la tolerancia sin conexión se ignoran.
+     */
+    @PostMapping("/ubicacion/lote")
+    public ResponseEntity<?> reportarUbicacionLote(@Valid @RequestBody UbicacionLoteRequest lote) {
+        Conductor conductor = usuarioContext.getConductorAutenticado();
         try {
-            Conductor conductor = usuarioContext.getConductorAutenticado();
-            return ResponseEntity.ok(servicioService.confirmarLlegada(servicioId, conductor,
-                    posicion.latitud(), posicion.longitud()));
-        } catch (ResponseStatusException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(Map.of("error", e.getReason(), "message", e.getReason()));
-        } catch (Exception e) {
+            return ResponseEntity.ok(ubicacionLote.recibir(conductor, lote.puntos().stream()
+                    .map(p -> new com.example.MotvirsWeb.aplicacion.servicio.UbicacionLoteService.Punto(
+                            new PuntoGeo(p.latitud(), p.longitud()), p.ocurridoEn()))
+                    .toList()));
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
+    }
+
+    /**
+     * El conductor confirma que llegó al punto de recogida (la ubicación se verifica en el servidor). Con
+     * {@code Idempotency-Key} un reintento devuelve la misma respuesta; {@code ocurridoEn} si fue sin señal.
+     */
+    @PostMapping("/llegue/{servicioId}")
+    public ResponseEntity<?> confirmarLlegada(@PathVariable String servicioId,
+            @Valid @RequestBody LlegadaRequest llegada,
+            @RequestHeader(value = IdempotenciaService.CABECERA, required = false) String llave) {
+        Conductor conductor = usuarioContext.getConductorAutenticado();
+        return idempotencia.ejecutar(llave, conductor.getIdString(), "llegue:" + servicioId,
+                () -> responder(() -> servicioService.confirmarLlegada(servicioId, conductor,
+                        llegada.latitud(), llegada.longitud(), hora(llegada.ocurridoEn()))));
     }
 
     @PostMapping("/iniciar-servicio/{servicioId}")
-    public ResponseEntity<?> iniciarServicio(@PathVariable String servicioId) {
-        try {
-            Conductor conductor = usuarioContext.getConductorAutenticado();
-            return ResponseEntity.ok(servicioService.iniciarServicio(servicioId, conductor));
-        } catch (ResponseStatusException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(Map.of("error", e.getReason()));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public ResponseEntity<?> iniciarServicio(@PathVariable String servicioId,
+            @RequestBody(required = false) AccionSinConexionRequest accion,
+            @RequestHeader(value = IdempotenciaService.CABECERA, required = false) String llave) {
+        Conductor conductor = usuarioContext.getConductorAutenticado();
+        return idempotencia.ejecutar(llave, conductor.getIdString(), "iniciar:" + servicioId,
+                () -> responder(() -> servicioService.iniciarServicio(servicioId, conductor,
+                        hora(accion == null ? null : accion.ocurridoEn()))));
     }
 
     @PostMapping("/finalizar-servicio/{servicioId}")
-    public ResponseEntity<?> finalizarServicio(@PathVariable String servicioId) {
-        try {
-            Conductor conductor = usuarioContext.getConductorAutenticado();
-            return ResponseEntity.ok(servicioService.finalizarServicio(servicioId, conductor));
-        } catch (ResponseStatusException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(Map.of("error", e.getReason()));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public ResponseEntity<?> finalizarServicio(@PathVariable String servicioId,
+            @RequestBody(required = false) AccionSinConexionRequest accion,
+            @RequestHeader(value = IdempotenciaService.CABECERA, required = false) String llave) {
+        Conductor conductor = usuarioContext.getConductorAutenticado();
+        return idempotencia.ejecutar(llave, conductor.getIdString(), "finalizar:" + servicioId,
+                () -> responder(() -> servicioService.finalizarServicio(servicioId, conductor,
+                        hora(accion == null ? null : accion.ocurridoEn()))));
     }
 
     @PostMapping("/cancelar-servicio/{servicioId}")
-    public ResponseEntity<?> cancelarServicio(@PathVariable String servicioId) {
+    public ResponseEntity<?> cancelarServicio(@PathVariable String servicioId,
+            @RequestHeader(value = IdempotenciaService.CABECERA, required = false) String llave) {
+        Conductor conductor = usuarioContext.getConductorAutenticado();
+        return idempotencia.ejecutar(llave, conductor.getIdString(), "cancelar:" + servicioId,
+                () -> responder(() -> servicioService.cancelarServicioConductor(servicioId, conductor)));
+    }
+
+    /** Errores del servicio con el formato de siempre ({@code error} y, para la web, {@code message}). */
+    private static ResponseEntity<?> responder(java.util.function.Supplier<Object> accion) {
         try {
-            Conductor conductor = usuarioContext.getConductorAutenticado();
-            return ResponseEntity.ok(servicioService.cancelarServicioConductor(servicioId, conductor));
+            return ResponseEntity.ok(accion.get());
         } catch (ResponseStatusException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(Map.of("error", e.getReason()));
+            return ResponseEntity.status(e.getStatusCode())
+                    .body(Map.of("error", e.getReason(), "message", e.getReason()));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", String.valueOf(e.getMessage())));
         }
+    }
+
+    private static java.time.LocalDateTime hora(java.time.Instant ocurridoEn) {
+        return ocurridoEn == null ? null
+                : java.time.LocalDateTime.ofInstant(ocurridoEn, java.time.ZoneId.systemDefault());
     }
 
     @GetMapping("/servicios-en-curso")
