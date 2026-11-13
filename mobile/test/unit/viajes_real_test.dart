@@ -154,40 +154,43 @@ void main() {
       },
     );
 
-    test('retoma la solicitud que espera conductor o el viaje en camino', () async {
-      expect(
-        await repo(
-          FakeAdapter({
-            'GET /api/pasajero/solicitud-activa': (
-              200,
-              {'activa': true, 'servicioId': 's1', 'estado': 'SOLICITADO'},
-            ),
-          }),
-        ).viajeAbiertoId(),
-        's1',
-      );
-      expect(
-        await repo(
-          FakeAdapter({
-            'GET /api/pasajero/solicitud-activa': (200, {'activa': false}),
-            'GET /api/pasajero/viaje-en-camino': (
-              200,
-              {'activo': true, 'id': 's2', 'estado': 'ACEPTADO'},
-            ),
-          }),
-        ).viajeAbiertoId(),
-        's2',
-      );
-      expect(
-        await repo(
-          FakeAdapter({
-            'GET /api/pasajero/solicitud-activa': (200, {'activa': false}),
-            'GET /api/pasajero/viaje-en-camino': (200, {'activo': false}),
-          }),
-        ).viajeAbiertoId(),
-        isNull,
-      );
-    });
+    test(
+      'retoma la solicitud que espera conductor o el viaje en camino',
+      () async {
+        expect(
+          await repo(
+            FakeAdapter({
+              'GET /api/pasajero/solicitud-activa': (
+                200,
+                {'activa': true, 'servicioId': 's1', 'estado': 'SOLICITADO'},
+              ),
+            }),
+          ).viajeAbiertoId(),
+          's1',
+        );
+        expect(
+          await repo(
+            FakeAdapter({
+              'GET /api/pasajero/solicitud-activa': (200, {'activa': false}),
+              'GET /api/pasajero/viaje-en-camino': (
+                200,
+                {'activo': true, 'id': 's2', 'estado': 'ACEPTADO'},
+              ),
+            }),
+          ).viajeAbiertoId(),
+          's2',
+        );
+        expect(
+          await repo(
+            FakeAdapter({
+              'GET /api/pasajero/solicitud-activa': (200, {'activa': false}),
+              'GET /api/pasajero/viaje-en-camino': (200, {'activo': false}),
+            }),
+          ).viajeAbiertoId(),
+          isNull,
+        );
+      },
+    );
 
     test('402: falta aceptar el cargo pendiente', () async {
       final r = repo(
