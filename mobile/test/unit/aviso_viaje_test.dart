@@ -94,4 +94,26 @@ void main() {
       isNull,
     );
   });
+
+  test('el pasajero que espera ve «Buscando conductor» y su destino', () {
+    expect(
+      TextosAvisoViaje.pasajero(
+        l,
+        viaje.copyWith(estado: EstadoServicio.solicitado, destino: 'Bazurto'),
+        null,
+      ),
+      const AvisoViaje('Buscando conductor', 'Hacia Bazurto'),
+    );
+    expect(
+      TextosAvisoViaje.pasajero(
+        l,
+        viaje.copyWith(estado: EstadoServicio.solicitado, destino: ' '),
+        null,
+      ),
+      const AvisoViaje(
+        'Buscando conductor',
+        'Te avisamos apenas un conductor acepte',
+      ),
+    );
+  });
 }

@@ -1799,4 +1799,15 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get navegacionSalir => 'Salir';
+
+  @override
+  String get avisoBuscandoTitulo => 'Buscando conductor';
+
+  @override
+  String get avisoBuscandoTexto => 'Te avisamos apenas un conductor acepte';
+
+  @override
+  String avisoBuscandoHacia(String destino) {
+    return 'Hacia $destino';
+  }
 }

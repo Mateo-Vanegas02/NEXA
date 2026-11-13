@@ -2,7 +2,8 @@
 ///
 /// Solo hay trabajo en segundo plano cuando el negocio lo necesita (plan de
 /// segundo plano, fase 3): el conductor en línea o en un viaje y el pasajero
-/// mientras su conductor va por él. Fuera de eso el servicio está apagado.
+/// mientras busca conductor o su conductor va por él. Fuera de eso el servicio
+/// está apagado.
 enum ModoSegundoPlano {
   apagado,
 
@@ -11,6 +12,11 @@ enum ModoSegundoPlano {
 
   /// Conductor con un viaje aceptado o en curso.
   enViaje,
+
+  /// Pasajero esperando que un conductor acepte (máx. 10 min: luego la
+  /// solicitud vence). Mantiene viva la app con la pantalla apagada para
+  /// enterarse al instante y muestra «Buscando conductor».
+  pasajeroBuscando,
 
   /// Pasajero con el conductor en camino (hasta que inicia el viaje).
   pasajeroEnCamino,
@@ -44,10 +50,13 @@ abstract final class ReglasSegundoPlano {
   }
 
   /// El pasajero solo comparte su posición mientras el conductor va por él.
-  static ModoSegundoPlano pasajero({required bool conductorEnCamino}) =>
-      conductorEnCamino
-      ? ModoSegundoPlano.pasajeroEnCamino
-      : ModoSegundoPlano.apagado;
+  static ModoSegundoPlano pasajero({
+    required bool conductorEnCamino,
+    bool buscando = false,
+  }) {
+    if (conductorEnCamino) return ModoSegundoPlano.pasajeroEnCamino;
+    return buscando ? ModoSegundoPlano.pasajeroBuscando : ModoSegundoPlano.apagado;
+  }
 
   static AjustesRastreo? ajustes(ModoSegundoPlano modo) => switch (modo) {
     ModoSegundoPlano.apagado => null,
@@ -62,6 +71,12 @@ abstract final class ReglasSegundoPlano {
       intervalo: Duration(seconds: 3),
       distanciaMetros: 10,
       altaPrecision: true,
+    ),
+    // Solo mantiene viva la app: el GPS va en su ritmo más económico.
+    ModoSegundoPlano.pasajeroBuscando => const AjustesRastreo(
+      intervalo: Duration(seconds: 30),
+      distanciaMetros: 50,
+      altaPrecision: false,
     ),
     ModoSegundoPlano.pasajeroEnCamino => const AjustesRastreo(
       intervalo: Duration(seconds: 5),
@@ -85,10 +100,13 @@ abstract final class ReglasSegundoPlano {
 
   /// Cambiar de modo reinicia el servicio en primer plano; Android 14 no deja
   /// iniciarlo de ubicación desde segundo plano, así que con la app oculta
-  /// solo se permite apagarlo. El cambio pendiente se aplica al volver.
+  /// solo se permite apagarlo. El cambio pendiente se aplica al volver (p. ej.
+  /// si el conductor acepta con la app oculta, sigue el servicio de «buscando»
+  /// y solo cambia el texto de la notificación a «Carlos va por ti»).
   static bool puedeCambiar({
     required ModoSegundoPlano actual,
     required ModoSegundoPlano nuevo,
     required bool primerPlano,
   }) => primerPlano || nuevo == ModoSegundoPlano.apagado;
+
 }

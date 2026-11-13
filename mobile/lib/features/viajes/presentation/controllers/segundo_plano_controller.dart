@@ -64,6 +64,7 @@ class CoordinadorSegundoPlano extends Notifier<ModoSegundoPlano> {
       final v = ref.read(viajePasajeroProvider).value;
       return ReglasSegundoPlano.pasajero(
         conductorEnCamino: v?.estado == EstadoServicio.aceptado,
+        buscando: v?.estado == EstadoServicio.solicitado,
       );
     }
     return ModoSegundoPlano.apagado;
@@ -87,6 +88,7 @@ class CoordinadorSegundoPlano extends Notifier<ModoSegundoPlano> {
         _textos,
         ref.read(conductorProvider).value ?? const ConductorState(),
       ),
+      ModoSegundoPlano.pasajeroBuscando ||
       ModoSegundoPlano.pasajeroEnCamino => TextosAvisoViaje.pasajero(
         _textos,
         ref.read(viajePasajeroProvider).value,
@@ -112,8 +114,6 @@ class CoordinadorSegundoPlano extends Notifier<ModoSegundoPlano> {
   Future<void> _cambiarModo() async {
     final nuevo = _deseado();
     if (nuevo == state) return;
-    // Un modo nuevo reinicia el servicio con su texto propio.
-    _avisoPublicado = null;
     final primerPlano = ref.read(primerPlanoProvider);
     if (!ReglasSegundoPlano.puedeCambiar(
       actual: state,
@@ -122,6 +122,8 @@ class CoordinadorSegundoPlano extends Notifier<ModoSegundoPlano> {
     )) {
       return;
     }
+    // Un modo nuevo reinicia el servicio con su texto propio.
+    _avisoPublicado = null;
     final rastreador = ref.read(rastreadorProvider);
     if (nuevo == ModoSegundoPlano.apagado) {
       await rastreador.detener();
@@ -148,6 +150,11 @@ class CoordinadorSegundoPlano extends Notifier<ModoSegundoPlano> {
       ModoSegundoPlano.enViaje => AvisoRastreo(
         titulo: l.segPlanoViajeTitulo,
         texto: l.segPlanoViajeTexto,
+        canal: l.segPlanoCanal,
+      ),
+      ModoSegundoPlano.pasajeroBuscando => AvisoRastreo(
+        titulo: l.avisoBuscandoTitulo,
+        texto: l.avisoBuscandoTexto,
         canal: l.segPlanoCanal,
       ),
       ModoSegundoPlano.pasajeroEnCamino => AvisoRastreo(

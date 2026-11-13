@@ -102,6 +102,14 @@ void main() {
         ReglasSegundoPlano.pasajero(conductorEnCamino: false),
         ModoSegundoPlano.apagado,
       );
+      expect(
+        ReglasSegundoPlano.pasajero(conductorEnCamino: false, buscando: true),
+        ModoSegundoPlano.pasajeroBuscando,
+      );
+      final buscando = ReglasSegundoPlano.ajustes(
+        ModoSegundoPlano.pasajeroBuscando,
+      )!;
+      expect(buscando.altaPrecision, isFalse);
     });
 
     test('en línea mantiene la posición vigente para el servidor (45 s)', () {
@@ -324,14 +332,14 @@ void main() {
       expect(rastreador.activo, ModoSegundoPlano.enViaje);
     });
 
-    test('el pasajero solo mientras el conductor va en camino', () async {
+    test('el pasajero mientras busca conductor y mientras va por él', () async {
       final c = crear(Rol.pasajero);
       await c.read(viajePasajeroProvider.future);
       final ctrl = c.read(viajePasajeroProvider.notifier) as _Pasajero;
 
       ctrl.poner(_viaje.copyWith(estado: EstadoServicio.solicitado));
       await _esperar();
-      expect(rastreador.iniciados, isEmpty);
+      expect(rastreador.activo, ModoSegundoPlano.pasajeroBuscando);
 
       ctrl.poner(_viaje);
       await _esperar();

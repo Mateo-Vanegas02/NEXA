@@ -59,13 +59,22 @@ abstract final class TextosAvisoViaje {
     };
   }
 
-  /// Pasajero con el conductor en camino: «Carlos va por ti · Llega en 3 min
-  /// · KZT 38F». Null en cualquier otro estado.
+  /// Pasajero buscando conductor («Buscando conductor · Hacia Bazurto») o con
+  /// el conductor en camino («Carlos va por ti · Llega en 3 min · KZT 38F»).
+  /// Null en cualquier otro estado.
   static AvisoViaje? pasajero(
     AppLocalizations l,
     Servicio? viaje,
     PosicionViaje? posicionConductor,
   ) {
+    if (viaje?.estado == EstadoServicio.solicitado) {
+      return AvisoViaje(
+        l.avisoBuscandoTitulo,
+        viaje!.destino.trim().isEmpty
+            ? l.avisoBuscandoTexto
+            : l.avisoBuscandoHacia(viaje.destino.trim()),
+      );
+    }
     if (viaje == null || viaje.estado != EstadoServicio.aceptado) return null;
     final c = viaje.conductor;
     final nombre = _primerNombre(c?.nombre, l.avisoTuConductor);

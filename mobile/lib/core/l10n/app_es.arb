@@ -947,5 +947,15 @@
   "mapaCalibrarBrujula": "Mueve el teléfono en forma de 8 para calibrar la brújula. Mientras, el norte queda arriba.",
   "mapaSinBrujula": "Tu teléfono no tiene brújula: el mapa gira solo cuando vas en marcha.",
   "navegacionActivar": "Navegar",
-  "navegacionSalir": "Salir"
+  "navegacionSalir": "Salir",
+  "avisoBuscandoTitulo": "Buscando conductor",
+  "avisoBuscandoTexto": "Te avisamos apenas un conductor acepte",
+  "avisoBuscandoHacia": "Hacia {destino}",
+  "@avisoBuscandoHacia": {
+    "placeholders": {
+      "destino": {
+        "type": "String"
+      }
+    }
+  }
 }

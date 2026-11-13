@@ -3381,6 +3381,24 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Salir'**
   String get navegacionSalir;
+
+  /// No description provided for @avisoBuscandoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscando conductor'**
+  String get avisoBuscandoTitulo;
+
+  /// No description provided for @avisoBuscandoTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Te avisamos apenas un conductor acepte'**
+  String get avisoBuscandoTexto;
+
+  /// No description provided for @avisoBuscandoHacia.
+  ///
+  /// In es, this message translates to:
+  /// **'Hacia {destino}'**
+  String avisoBuscandoHacia(String destino);
 }
 
 class _AppLocalizationsDelegate
