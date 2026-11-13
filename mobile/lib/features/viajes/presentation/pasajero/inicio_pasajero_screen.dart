@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/theme_x.dart';
+import '../../../../core/theme/nexa_texto.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/widgets/mapa_nexa.dart';
 import '../../../../core/widgets/nexa_diseno.dart';
@@ -68,6 +69,8 @@ class InicioPasajeroScreen extends ConsumerWidget {
               inicial: 0.52,
               minimo: 0.3,
               children: [
+                Text(l.buscadorHint, style: NexaTexto.titulo),
+                const SizedBox(height: Sp.md),
                 _Buscador(onTap: () => _elegirDestino(context, ref)),
                 const SizedBox(height: Sp.md),
                 const NivelBanner(rutaNiveles: '/p/niveles', irEnLugar: true),
@@ -251,14 +254,9 @@ class _Buscador extends StatelessWidget {
               color: NexaColors.card,
               borderRadius: BorderRadius.circular(Rad.lg + 2),
               border: Border.all(
-                color: NexaColors.cyan.withValues(alpha: 0.45),
+                color: NexaColors.cyan.withValues(alpha: 0.7),
+                width: 1.5,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: NexaColors.cyan.withValues(alpha: 0.18),
-                  blurRadius: 24,
-                ),
-              ],
             ),
             child: ConstrainedBox(
               constraints: const BoxConstraints(minHeight: 60),
@@ -273,9 +271,9 @@ class _Buscador extends StatelessWidget {
                     const SizedBox(width: Sp.md),
                     Expanded(
                       child: Text(
-                        l.buscadorHint,
-                        style: context.textos.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
+                        l.buscaUnDestino,
+                        style: NexaTexto.cuerpo.copyWith(
+                          color: NexaColors.muted,
                         ),
                       ),
                     ),

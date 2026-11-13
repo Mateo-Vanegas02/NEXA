@@ -1,6 +1,7 @@
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/theme_x.dart';
+import '../../../../core/theme/nexa_texto.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/responsive.dart';
@@ -21,8 +22,8 @@ class NivelesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
     final nivel = ref.watch(nivelProvider);
+    final conductor = nivel.value?.rol.toLowerCase() == 'conductor';
     return Scaffold(
-      appBar: AppBar(title: Text(l.nivelesTitulo)),
       body: FondoNexa(
         child: SafeArea(
           child: nivel.when(
@@ -34,8 +35,34 @@ class NivelesScreen extends ConsumerWidget {
             data: (n) => RefreshIndicator(
               onRefresh: () => ref.read(nivelProvider.notifier).refrescar(),
               child: ListView(
-                padding: EdgeInsets.all(context.gutter),
-                children: [ContenidoCentrado(child: _Contenido(n: n))],
+                padding: EdgeInsets.fromLTRB(
+                  context.gutter,
+                  Sp.lg,
+                  context.gutter,
+                  Sp.xl + MediaQuery.paddingOf(context).bottom,
+                ),
+                children: [
+                  ContenidoCentrado(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          conductor ? l.tuNivel : l.nivelesTitulo,
+                          style: NexaTexto.titulo.copyWith(fontSize: 28),
+                        ),
+                        const SizedBox(height: Sp.xs),
+                        Text(
+                          conductor ? l.tuNivelSub : l.nivelesSub,
+                          style: NexaTexto.pequeno.copyWith(
+                            color: NexaColors.muted,
+                          ),
+                        ),
+                        const SizedBox(height: Sp.lg),
+                        _Contenido(n: n),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -57,10 +84,22 @@ class _Resumen extends StatelessWidget {
     final t = context.textos;
     final progreso = n.esNivelMaximo ? 1.0 : n.progreso.clamp(0.0, 1.0);
     final meta = n.xpSiguienteNivel;
-    return Column(
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: Sp.xl, horizontal: Sp.lg),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(Rad.lg),
+        border: Border.all(color: NexaColors.gold.withValues(alpha: 0.35)),
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF2B2410), NexaColors.card],
+        ),
+      ),
+      child: Column(
       children: [
         NexaAnilloProgreso(
           progreso: progreso,
+          color: NexaColors.gold,
           diametro: 136,
           trazo: 9,
           relleno: 4,
@@ -77,7 +116,7 @@ class _Resumen extends StatelessWidget {
                     '${n.nivel}',
                     textScaler: TextScaler.noScaling,
                     style: t.displayMedium?.copyWith(
-                      color: NexaColors.cyan,
+                      color: NexaColors.texto,
                       fontWeight: FontWeight.w700,
                       height: 1,
                     ),
@@ -86,7 +125,7 @@ class _Resumen extends StatelessWidget {
                     l.statNivel.toUpperCase(),
                     textScaler: TextScaler.noScaling,
                     style: t.labelSmall?.copyWith(
-                      color: context.muted,
+                      color: NexaColors.gold,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1,
                     ),
@@ -110,6 +149,7 @@ class _Resumen extends StatelessWidget {
           style: t.bodySmall?.copyWith(color: context.muted),
         ),
       ],
+      ),
     );
   }
 }

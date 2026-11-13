@@ -17,7 +17,9 @@ class FondoNexa extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (Theme.of(context).brightness != Brightness.dark) return child;
+    // expand: el fondo cubre toda la pantalla aunque el contenido sea corto.
     return Stack(
+      fit: StackFit.expand,
       children: [
         Positioned.fill(
           child: DecoratedBox(
@@ -177,9 +179,14 @@ class NexaAvatarAnillo extends StatelessWidget {
 }
 
 class _AnilloPainter extends CustomPainter {
-  const _AnilloPainter(this.progreso, {this.trazo = 3});
+  const _AnilloPainter(
+    this.progreso, {
+    this.trazo = 3,
+    this.color = NexaColors.cyan,
+  });
   final double progreso;
   final double trazo;
+  final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -187,7 +194,7 @@ class _AnilloPainter extends CustomPainter {
     final pista = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = trazo
-      ..color = NexaColors.cyan.withValues(alpha: 0.18);
+      ..color = color.withValues(alpha: 0.18);
     canvas.drawArc(rect, 0, 2 * math.pi, false, pista);
     if (progreso <= 0) return;
     final barrido = 2 * math.pi * progreso;
@@ -195,13 +202,13 @@ class _AnilloPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeWidth = trazo + 3
-      ..color = NexaColors.cyan.withValues(alpha: 0.35)
+      ..color = color.withValues(alpha: 0.35)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
     final arco = Paint()
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeWidth = trazo
-      ..color = NexaColors.cyan;
+      ..color = color;
     canvas
       ..drawArc(rect, -math.pi / 2, barrido, false, brillo)
       ..drawArc(rect, -math.pi / 2, barrido, false, arco);
@@ -209,7 +216,7 @@ class _AnilloPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_AnilloPainter old) =>
-      old.progreso != progreso || old.trazo != trazo;
+      old.progreso != progreso || old.trazo != trazo || old.color != color;
 }
 
 /// Anillo de neón con avance de 0 a 1 que rodea cualquier contenido
@@ -222,9 +229,11 @@ class NexaAnilloProgreso extends StatelessWidget {
     this.trazo = 4,
     this.relleno = 7,
     this.etiquetaSemantica,
+    this.color = NexaColors.cyan,
     super.key,
   });
 
+  final Color color;
   final double progreso;
   final Widget child;
   final double diametro;
@@ -242,7 +251,11 @@ class NexaAnilloProgreso extends StatelessWidget {
       width: diametro,
       height: diametro,
       child: CustomPaint(
-        painter: _AnilloPainter(progreso.clamp(0.0, 1.0), trazo: trazo),
+        painter: _AnilloPainter(
+          progreso.clamp(0.0, 1.0),
+          trazo: trazo,
+          color: color,
+        ),
         child: Padding(padding: EdgeInsets.all(trazo + relleno), child: child),
       ),
     );

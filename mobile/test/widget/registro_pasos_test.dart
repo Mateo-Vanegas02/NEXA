@@ -59,6 +59,7 @@ void main() {
         expect(find.text('Crear cuenta'), findsOneWidget);
         expect(find.text('Confirmar contraseña'), findsOneWidget);
 
+        await t.ensureVisible(find.byTooltip('Volver'));
         await t.tap(find.byTooltip('Volver'));
         await t.pump();
         expect(find.text('Paso 1 de 2'), findsOneWidget);

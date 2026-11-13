@@ -4,6 +4,7 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/providers.dart';
 import '../../../../core/theme/theme_x.dart';
+import '../../../../core/theme/nexa_texto.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/utils/selector_imagen.dart';
@@ -11,7 +12,6 @@ import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/nexa_diseno.dart';
 import '../../../../core/widgets/nexa_widgets.dart';
 import '../../../../core/widgets/opciones_foto.dart';
-import '../../../niveles/domain/nivel.dart';
 import '../../../niveles/presentation/controllers/niveles_controller.dart';
 import '../../../viajes/presentation/controllers/viaje_pasajero_controller.dart';
 import '../../domain/auth.dart';
@@ -33,57 +33,93 @@ class PerfilScreen extends ConsumerWidget {
     final perfil = ref.watch(perfilProvider).asData?.value;
     final nivel = ref.watch(nivelProvider).asData?.value;
     final esConductor = sesion?.rol == Rol.conductor;
+    final pasajero = esConductor
+        ? null
+        : ref.watch(perfilPasajeroProvider).value;
+    final nombre = (perfil?.nombre.isNotEmpty ?? false)
+        ? perfil!.nombre
+        : sesion?.email ?? '';
+    final resumen = [
+      if (pasajero?.calificacion != null)
+        pasajero!.calificacion!.toStringAsFixed(1).replaceAll('.', ','),
+      esConductor ? l.rolConductor : l.rolPasajero,
+      if (nivel != null) l.nivelActual(nivel.nombre),
+    ].join(' · ');
     return Scaffold(
-      appBar: AppBar(title: Text(l.perfil)),
       body: FondoNexa(
         child: SafeArea(
+          bottom: false,
           child: ListView(
-            padding: EdgeInsets.all(context.gutter),
+            padding: EdgeInsets.fromLTRB(
+              context.gutter,
+              Sp.lg,
+              context.gutter,
+              Sp.xl + MediaQuery.paddingOf(context).bottom,
+            ),
             children: [
               ContenidoCentrado(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Center(
-                      child: _AvatarPerfil(
-                        foto: ref.watch(fotoPerfilProvider).asData?.value,
-                        habilitado: perfil != null,
-                        tieneFoto: perfil?.tieneFoto ?? false,
-                        progreso: nivel?.progreso ?? 0,
-                      ),
-                    ),
-                    const SizedBox(height: Sp.md),
-                    Text(
-                      (perfil?.nombre.isNotEmpty ?? false)
-                          ? perfil!.nombre
-                          : sesion?.email ?? '',
-                      style: t.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (perfil != null)
-                      Text(
-                        [
-                          perfil.email,
-                          if (perfil.telefono != null) perfil.telefono!,
-                        ].join(' · '),
-                        style: t.bodySmall?.copyWith(color: context.muted),
-                        textAlign: TextAlign.center,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    const SizedBox(height: Sp.sm),
-                    Center(
-                      child: Chip(
-                        label: Text(
-                          esConductor ? l.rolConductor : l.rolPasajero,
+                    Row(
+                      children: [
+                        _AvatarPerfil(
+                          foto: ref.watch(fotoPerfilProvider).asData?.value,
+                          habilitado: perfil != null,
+                          tieneFoto: perfil?.tieneFoto ?? false,
+                          progreso: nivel?.progreso ?? 0,
                         ),
-                      ),
+                        const SizedBox(width: Sp.lg),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                nombre,
+                                style: NexaTexto.titulo,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: Sp.xs),
+                              Row(
+                                children: [
+                                  if (pasajero?.calificacion != null) ...[
+                                    const Icon(
+                                      Icons.star,
+                                      size: 14,
+                                      color: NexaColors.gold,
+                                    ),
+                                    const SizedBox(width: Sp.xs),
+                                  ],
+                                  Flexible(
+                                    child: Text(
+                                      resumen,
+                                      style: NexaTexto.pequeno.copyWith(
+                                        color: NexaColors.muted,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (perfil != null)
+                                Text(
+                                  [
+                                    perfil.email,
+                                    if (perfil.telefono != null)
+                                      perfil.telefono!,
+                                  ].join(' · '),
+                                  style: NexaTexto.pequeno.copyWith(
+                                    color: NexaColors.tenue,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: Sp.lg),
-                    _Cifras(esConductor: esConductor, nivel: nivel),
-                    const SizedBox(height: Sp.lg),
+                    const SizedBox(height: Sp.xl),
+                    _Seccion(texto: l.seccionCuenta),
                     NexaCard(
                       padding: const EdgeInsets.symmetric(
                         horizontal: Sp.lg,
@@ -93,7 +129,7 @@ class PerfilScreen extends ConsumerWidget {
                         children: [
                           if (perfil != null)
                             _Opcion(
-                              icono: Icons.edit_outlined,
+                              icono: Icons.person_outline,
                               titulo: l.editarPerfil,
                               detalle: l.editarPerfilSub,
                               onTap: () => showDialog<void>(
@@ -105,7 +141,7 @@ class PerfilScreen extends ConsumerWidget {
                               ),
                             ),
                           _Opcion(
-                            icono: Icons.military_tech_outlined,
+                            icono: Icons.star_outline,
                             titulo: l.nivelesTitulo,
                             detalle: nivel == null
                                 ? null
@@ -123,14 +159,44 @@ class PerfilScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: Sp.lg),
-                    TextButton.icon(
-                      onPressed: () =>
-                          ref.read(sesionProvider.notifier).logout(),
-                      icon: const Icon(Icons.logout),
-                      label: Text(l.cerrarSesion),
-                      style: TextButton.styleFrom(
-                        minimumSize: const Size.fromHeight(Sizes.touch),
-                        foregroundColor: context.colors.error,
+                    Material(
+                      color: NexaColors.card,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(Rad.lg),
+                        side: const BorderSide(color: NexaColors.line),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: InkWell(
+                        onTap: () =>
+                            ref.read(sesionProvider.notifier).logout(),
+                        child: Padding(
+                          padding: const EdgeInsets.all(Sp.md + 2),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: NexaColors.errorSuave,
+                                  borderRadius: BorderRadius.circular(Rad.md),
+                                ),
+                                child: const Icon(
+                                  Icons.logout,
+                                  size: 20,
+                                  color: NexaColors.error,
+                                ),
+                              ),
+                              const SizedBox(width: Sp.md),
+                              Text(
+                                l.cerrarSesion,
+                                style: NexaTexto.cuerpo.copyWith(
+                                  color: NexaColors.error,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -144,78 +210,19 @@ class PerfilScreen extends ConsumerWidget {
   }
 }
 
-/// Tres cifras del perfil: viajes, calificación y nivel. Viajes y calificación
-/// solo existen para el pasajero.
-class _Cifras extends ConsumerWidget {
-  const _Cifras({required this.esConductor, required this.nivel});
-  final bool esConductor;
-  final NivelEstado? nivel;
+/// Etiqueta de sección en mayúsculas («CUENTA»).
+class _Seccion extends StatelessWidget {
+  const _Seccion({required this.texto});
+  final String texto;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = AppLocalizations.of(context);
-    final p = esConductor ? null : ref.watch(perfilPasajeroProvider).value;
-    final cal = p?.calificacion;
-    final cifras = [
-      if (p?.viajes != null) ('${p!.viajes}', l.statViajes, false),
-      if (cal != null)
-        (cal.toStringAsFixed(1).replaceAll('.', ','), l.statCalificacion, true),
-      if (nivel != null) (nivel!.nombre, l.statNivel, false),
-    ];
-    if (cifras.isEmpty) return const SizedBox.shrink();
-    return NexaCard(
-      padding: const EdgeInsets.symmetric(vertical: Sp.md),
-      child: Row(
-        children: [
-          for (var i = 0; i < cifras.length; i++) ...[
-            if (i > 0)
-              Container(
-                width: 1,
-                height: 32,
-                color: context.colors.outline.withValues(alpha: 0.4),
-              ),
-            Expanded(
-              child: Column(
-                children: [
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        if (cifras[i].$3) ...[
-                          const Icon(
-                            Icons.star,
-                            size: 16,
-                            color: NexaColors.gold,
-                          ),
-                          const SizedBox(width: Sp.xs),
-                        ],
-                        Text(
-                          cifras[i].$1,
-                          style: context.textos.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: i == cifras.length - 1 && nivel != null
-                                ? NexaColors.cyan
-                                : null,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Text(
-                    cifras[i].$2,
-                    style: context.textos.bodySmall?.copyWith(
-                      color: context.muted,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(left: Sp.xs, bottom: Sp.sm),
+    child: Text(
+      texto.toUpperCase(),
+      style: NexaTexto.etiqueta.copyWith(color: NexaColors.tenue),
+    ),
+  );
 }
 
 /// Fila de la lista del perfil: icono, título, detalle y flecha.
@@ -341,6 +348,10 @@ class _AvatarPerfil extends ConsumerWidget {
           children: [
             NexaAnilloProgreso(
               progreso: progreso,
+              color: NexaColors.gold,
+              diametro: 88,
+              trazo: 3,
+              relleno: 3,
               child: CircleAvatar(
                 backgroundImage: foto == null ? null : MemoryImage(foto!),
                 child: foto == null ? const Icon(Icons.person, size: 40) : null,
@@ -351,11 +362,11 @@ class _AvatarPerfil extends ConsumerWidget {
                 right: 0,
                 bottom: 2,
                 child: CircleAvatar(
-                  radius: 18,
+                  radius: 14,
                   backgroundColor: NexaColors.cyan,
                   child: Icon(
                     Icons.photo_camera,
-                    size: 17,
+                    size: 14,
                     color: NexaColors.bg,
                   ),
                 ),

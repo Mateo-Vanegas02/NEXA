@@ -127,31 +127,40 @@ class _SolicitudCardState extends ConsumerState<SolicitudCard> {
             ),
             const SizedBox(height: Sp.lg),
             // Con letra muy grande los botones se apilan.
-            Flex(
-              direction: MediaQuery.textScalerOf(context).scale(10) > 15
-                  ? Axis.vertical
-                  : Axis.horizontal,
-              verticalDirection: VerticalDirection.up,
-              children: [
-                Flexible(
-                  fit: FlexFit.tight,
-                  child: NexaButton(
-                    label: l.ahoraNo,
-                    variant: NexaButtonVariant.secundario,
-                    onPressed: _aceptando ? null : () => ctrl.rechazar(servicio),
+            if (MediaQuery.textScalerOf(context).scale(10) > 15) ...[
+              NexaButton(
+                label: l.aceptar,
+                cargando: _aceptando,
+                onPressed: _aceptar,
+              ),
+              const SizedBox(height: Sp.sm),
+              NexaButton(
+                label: l.ahoraNo,
+                variant: NexaButtonVariant.secundario,
+                onPressed: _aceptando ? null : () => ctrl.rechazar(servicio),
+              ),
+            ] else
+              Row(
+                children: [
+                  Expanded(
+                    child: NexaButton(
+                      label: l.ahoraNo,
+                      variant: NexaButtonVariant.secundario,
+                      onPressed: _aceptando
+                          ? null
+                          : () => ctrl.rechazar(servicio),
+                    ),
                   ),
-                ),
-                const SizedBox(width: Sp.md, height: Sp.sm),
-                Flexible(
-                  fit: FlexFit.tight,
-                  child: NexaButton(
-                    label: l.aceptar,
-                    cargando: _aceptando,
-                    onPressed: _aceptar,
+                  const SizedBox(width: Sp.md),
+                  Expanded(
+                    child: NexaButton(
+                      label: l.aceptar,
+                      cargando: _aceptando,
+                      onPressed: _aceptar,
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
           ],
         ),
       ),

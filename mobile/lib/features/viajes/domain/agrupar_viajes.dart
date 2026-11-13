@@ -1,0 +1,30 @@
+import 'servicio.dart';
+
+/// Tramos del historial (diseño P10): hoy, esta semana (desde el lunes) y
+/// antes. Sin fecha va a «antes».
+enum TramoFecha { hoy, semana, antes }
+
+TramoFecha tramoDe(DateTime? fecha, DateTime ahora) {
+  if (fecha == null) return TramoFecha.antes;
+  final hoy = DateTime(ahora.year, ahora.month, ahora.day);
+  final dia = DateTime(fecha.year, fecha.month, fecha.day);
+  if (dia == hoy) return TramoFecha.hoy;
+  final lunes = hoy.subtract(Duration(days: hoy.weekday - 1));
+  if (!dia.isBefore(lunes) && dia.isBefore(hoy)) return TramoFecha.semana;
+  return TramoFecha.antes;
+}
+
+/// Agrupa en orden (hoy, semana, antes) conservando el orden de la lista.
+Map<TramoFecha, List<Servicio>> agruparPorTramo(
+  List<Servicio> viajes,
+  DateTime ahora,
+) {
+  final grupos = <TramoFecha, List<Servicio>>{
+    for (final t in TramoFecha.values) t: [],
+  };
+  for (final s in viajes) {
+    grupos[tramoDe(s.fechaHora, ahora)]!.add(s);
+  }
+  grupos.removeWhere((_, v) => v.isEmpty);
+  return grupos;
+}

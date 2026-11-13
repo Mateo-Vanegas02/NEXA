@@ -1202,5 +1202,26 @@
       }
     }
   },
-  "navActividad": "Actividad"
+  "navActividad": "Actividad",
+  "estrellasDe5": "{n} de 5 estrellas",
+  "tramoHoy": "Hoy",
+  "tramoSemana": "Esta semana",
+  "tramoAntes": "Antes",
+  "filtroTodos": "Todos",
+  "filtroCompletados": "Completados",
+  "filtroCancelados": "Cancelados",
+  "viajesN": "viajes",
+  "gastadoEsteMes": "este mes",
+  "@estrellasDe5": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "buscaUnDestino": "Busca un destino",
+  "tuNivel": "Tu nivel",
+  "tuNivelSub": "Se calcula con tu XP de los últimos 90 días",
+  "nivelesSub": "Viaja, suma XP y desbloquea beneficios",
+  "seccionCuenta": "Cuenta"
 }

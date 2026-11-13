@@ -189,9 +189,7 @@ void main() {
         expect(find.text('Ahora'), findsOneWidget);
         expect(find.byType(LevelProgressBar), findsOneWidget);
         expect(find.text('Viajes recientes'), findsOneWidget);
-        expect(find.textContaining('Casa → C.C. Plaza'), findsOneWidget);
-        expect(find.text('Finalizado'), findsOneWidget);
-        expect(find.text('Cancelado'), findsOneWidget);
+        expect(find.text('C.C. Plaza'), findsOneWidget);
       });
 
       testWidgets('pedir viaje: hoja inferior y botón inactivo sin destino', (
@@ -289,7 +287,8 @@ void main() {
           const HistorialPasajeroScreen(),
           overrides: [_sesion(Rol.pasajero)],
         );
-        expect(find.textContaining('Universidad → Casa'), findsOneWidget);
+        expect(find.text('Actividad'), findsWidgets);
+        expect(find.text('Completados'), findsOneWidget);
       });
 
       testWidgets('dashboard conductor: en línea y solicitudes', (t) async {

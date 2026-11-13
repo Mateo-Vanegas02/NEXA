@@ -30,21 +30,38 @@ class LevelProgressBar extends StatelessWidget {
       value: meta == null ? l.nivelMaximo : l.xpProgreso(estado.xpActual, meta),
       child: ExcludeSemantics(
         child: Material(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(Rad.md),
+          color: Colors.transparent,
           child: InkWell(
-            borderRadius: BorderRadius.circular(Rad.md),
+            borderRadius: BorderRadius.circular(Rad.lg),
             onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.all(Sp.md),
+            child: Ink(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(Rad.lg),
+                border: Border.all(color: color.withValues(alpha: 0.4)),
+                gradient: LinearGradient(
+                  colors: [
+                    Color.lerp(NexaColors.card, color, 0.16)!,
+                    NexaColors.card,
+                  ],
+                ),
+              ),
+              padding: const EdgeInsets.all(Sp.lg),
               child: Row(
                 children: [
-                  CircleAvatar(
-                    backgroundColor: color.withValues(alpha: 0.2),
-                    foregroundColor: color,
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(Rad.md),
+                    ),
+                    alignment: Alignment.center,
                     child: Text(
                       '${estado.nivel}',
-                      style: t.titleMedium?.copyWith(color: color),
+                      style: t.titleMedium?.copyWith(
+                        color: color,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                   const SizedBox(width: Sp.md),
@@ -57,8 +74,15 @@ class LevelProgressBar extends StatelessWidget {
                           children: [
                             Expanded(
                               child: Text(
-                                l.nivelActual(estado.nombre),
-                                style: t.titleSmall,
+                                estado.descuento > 0
+                                    ? l.nivelDescuento(
+                                        estado.nombre,
+                                        (estado.descuento * 100).round(),
+                                      )
+                                    : l.nivelActual(estado.nombre),
+                                style: t.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                ),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -79,12 +103,12 @@ class LevelProgressBar extends StatelessWidget {
                           borderRadius: BorderRadius.circular(Rad.pill),
                           child: LinearProgressIndicator(
                             value: progreso,
-                            minHeight: Sizes.barHeight,
+                            minHeight: 6,
                             color: color,
-                            backgroundColor: color.withValues(alpha: 0.2),
+                            backgroundColor: NexaColors.line,
                           ),
                         ),
-                        const SizedBox(height: Sp.xs),
+                        const SizedBox(height: Sp.xs + 2),
                         Text(
                           estado.esNivelMaximo
                               ? l.nivelMaximo
@@ -99,6 +123,10 @@ class LevelProgressBar extends StatelessWidget {
                       ],
                     ),
                   ),
+                  if (onTap != null) ...[
+                    const SizedBox(width: Sp.sm),
+                    Icon(Icons.chevron_right, color: context.muted),
+                  ],
                 ],
               ),
             ),
