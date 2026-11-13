@@ -43,7 +43,12 @@ Override _sesion(Rol? rol, [String email = 'demo@nexa.co']) =>
       () => _SesionFija(
         rol == null
             ? null
-            : Sesion(token: 't', rol: rol, email: email, userId: 'u-${rol.name}'),
+            : Sesion(
+                token: 't',
+                rol: rol,
+                email: email,
+                userId: 'u-${rol.name}',
+              ),
       ),
     );
 
@@ -105,12 +110,26 @@ Future<void> _avanzar(WidgetTester t, [int veces = 8]) async {
 
 Future<void> _capturar(WidgetTester t, String nombre) async {
   final limite = t.renderObject<RenderRepaintBoundary>(find.byKey(_clave));
+  print('captura $nombre: renderizando');
   final bytes = await t.runAsync(() async {
-    final img = await limite.toImage(pixelRatio: 1.5);
-    final d = await img.toByteData(format: ui.ImageByteFormat.png);
+    final img = await limite.toImage().timeout(const Duration(seconds: 30));
+    final d = await img
+        .toByteData(format: ui.ImageByteFormat.png)
+        .timeout(const Duration(seconds: 30));
     return d!.buffer.asUint8List();
   });
-  print('CAPTURA-INICIO $nombre ${base64Encode(bytes!)} CAPTURA-FIN');
+  if (bytes == null) {
+    print('captura $nombre: sin imagen');
+    return;
+  }
+  // En trozos: el log de GitHub corta las líneas muy largas.
+  final b64 = base64Encode(bytes);
+  const trozo = 30000;
+  final partes = (b64.length / trozo).ceil();
+  for (var i = 0; i < partes; i++) {
+    final fin = (i + 1) * trozo > b64.length ? b64.length : (i + 1) * trozo;
+    print('CAPTURA $nombre $i/$partes ${b64.substring(i * trozo, fin)}');
+  }
 }
 
 /// Abre la app en [ruta] con la sesión de [rol] y la captura.
@@ -149,21 +168,41 @@ void main() {
     ('A04', '/registro', null, '', []),
     ('P01', '/p/inicio', Rol.pasajero, '', []),
     ('P03', '/p/pedir', Rol.pasajero, '', []),
-    ('P04', '/p/viaje', Rol.pasajero, '', [
-      _viaje(_servicio(EstadoServicio.solicitado)),
-    ]),
-    ('P05', '/p/viaje', Rol.pasajero, '', [
-      _viaje(_servicio(EstadoServicio.aceptado)),
-    ]),
-    ('P06', '/p/viaje', Rol.pasajero, '', [
-      _viaje(_servicio(EstadoServicio.aceptado, llegada: DateTime.now())),
-    ]),
-    ('P07', '/p/viaje', Rol.pasajero, '', [
-      _viaje(_servicio(EstadoServicio.enCurso, llegada: DateTime.now())),
-    ]),
-    ('P08', '/p/calificar', Rol.pasajero, '', [
-      _viaje(_servicio(EstadoServicio.finalizado, llegada: DateTime.now())),
-    ]),
+    (
+      'P04',
+      '/p/viaje',
+      Rol.pasajero,
+      '',
+      [_viaje(_servicio(EstadoServicio.solicitado))],
+    ),
+    (
+      'P05',
+      '/p/viaje',
+      Rol.pasajero,
+      '',
+      [_viaje(_servicio(EstadoServicio.aceptado))],
+    ),
+    (
+      'P06',
+      '/p/viaje',
+      Rol.pasajero,
+      '',
+      [_viaje(_servicio(EstadoServicio.aceptado, llegada: DateTime.now()))],
+    ),
+    (
+      'P07',
+      '/p/viaje',
+      Rol.pasajero,
+      '',
+      [_viaje(_servicio(EstadoServicio.enCurso, llegada: DateTime.now()))],
+    ),
+    (
+      'P08',
+      '/p/calificar',
+      Rol.pasajero,
+      '',
+      [_viaje(_servicio(EstadoServicio.finalizado, llegada: DateTime.now()))],
+    ),
     ('P10', '/p/viajes', Rol.pasajero, '', []),
     ('P11', '/p/niveles', Rol.pasajero, '', []),
     ('P12', '/p/perfil', Rol.pasajero, '', []),

@@ -1,4 +1,7 @@
-import '../../../../core/theme/theme_x.dart';
+import 'dart:async';
+
+import '../../../../core/theme/nexa_texto.dart';
+import 'piezas_viaje.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/tokens.dart';
@@ -12,6 +15,7 @@ import '../controllers/sin_conexion_controller.dart';
 import '../controllers/viaje_conductor_controller.dart';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// A cuántos km del destino se considera que el conductor "llegó" para avisar
@@ -111,16 +115,10 @@ class _ViajeActivoCardState extends ConsumerState<ViajeActivoCard> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final t = Theme.of(context).textTheme;
     final s = widget.servicio;
     final fase = widget.fase ?? FaseConductor.aRecoger;
     final pos = widget.posicion;
     final acciones = ref.read(accionesExternasProvider);
-    final titulo = switch (fase) {
-      FaseConductor.aRecoger => l.yendoAPasajero,
-      FaseConductor.enElPunto => l.esperandoPasajero,
-      FaseConductor.enViaje => l.enViaje,
-    };
     final boton = switch (fase) {
       FaseConductor.aRecoger => l.llegueAlPunto,
       FaseConductor.enElPunto => l.iniciarViaje,
@@ -136,238 +134,192 @@ class _ViajeActivoCardState extends ConsumerState<ViajeActivoCard> {
         (e) => e.pendientes.any((a) => a.servicioId == s.id),
       ),
     );
+    final detalle = <String>[
+      if (s.nivelPasajero > 0) l.pasajeraNivel(s.nivelPasajero),
+      if (fase != FaseConductor.enElPunto &&
+          pos != null &&
+          pos.etaMinutos > 0) ...[
+        l.minutosValor(pos.etaMinutos),
+        ?km,
+      ],
+    ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _Fases(fase: fase),
+        FasesViaje(
+          etiquetas: [
+            l.faseAceptado,
+            l.faseARecoger,
+            l.faseEnPunto,
+            l.faseEnViaje,
+          ],
+          actual: fase.index + 1,
+        ),
         if (pendiente) ...[
           const SizedBox(height: Sp.md),
           _AvisoPendiente(texto: l.pendienteDeEnviar),
         ],
         const SizedBox(height: Sp.lg),
+        if (fase == FaseConductor.enElPunto && s.fechaLlegada != null) ...[
+          _Esperando(nombre: nombre, desde: s.fechaLlegada!),
+          const SizedBox(height: Sp.lg),
+        ],
         Row(
           children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [NexaColors.cyan, NexaColors.sky],
-                ),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                _iniciales(nombre),
-                style: const TextStyle(
-                  color: NexaColors.bg,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
+            AvatarIniciales(nombre: nombre, dorado: true, diametro: 48),
             const SizedBox(width: Sp.md),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    titulo,
-                    style: t.bodySmall?.copyWith(
-                      color: context.acento,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
                     nombre,
-                    style: t.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                    style: NexaTexto.subtitulo.copyWith(fontSize: 16),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
+                  if (detalle.isNotEmpty)
+                    Text(
+                      detalle.join(' · '),
+                      style: NexaTexto.pequeno.copyWith(
+                        color: NexaColors.muted,
+                      ),
+                    ),
                 ],
               ),
             ),
-            _Redondo(
-              icono: Icons.phone_outlined,
-              tooltip: l.llamar,
-              onTap: () => _contactar(acciones.llamar),
-            ),
             const SizedBox(width: Sp.sm),
-            _Redondo(
-              icono: Icons.chat_bubble_outline,
-              tooltip: l.mensaje,
-              onTap: () => _contactar(acciones.enviarSms),
+            // Un solo monto: lo que cobra en efectivo (el servidor ya suma el
+            // cargo anterior del pasajero, sin mostrarlo por separado).
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  l.cobra,
+                  style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
+                ),
+                Text(
+                  Fmt.cop(s.tarifa + s.extraVoluntario),
+                  style: NexaTexto.numeroMedio.copyWith(
+                    fontSize: 20,
+                    color: NexaColors.ok,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
-        const SizedBox(height: Sp.md),
-        Text('${s.origen} → ${s.destino}', style: t.bodyMedium),
-        if (pos != null && pos.etaMinutos > 0)
-          Text(
-            '${l.minutosValor(pos.etaMinutos)}  ·  $km',
-            style: t.labelLarge?.copyWith(color: context.muted),
-          ),
-        if (fase == FaseConductor.aRecoger && widget.pasajero != null)
+        if (fase == FaseConductor.aRecoger && widget.pasajero != null) ...[
+          const SizedBox(height: Sp.sm),
           Text(
             '${l.distanciaPasajero}: ${widget.pasajero!.distanciaRecogidaMetros} m',
-            style: t.bodySmall?.copyWith(color: context.muted),
+            style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
           ),
-        const SizedBox(height: Sp.md),
-        // Un solo monto: lo que cobra en efectivo (el servidor ya suma el
-        // cargo anterior del pasajero, sin mostrarlo por separado).
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: NexaColors.card,
-            borderRadius: BorderRadius.circular(Rad.lg),
-            border: Border.all(color: NexaColors.cyan.withValues(alpha: 0.45)),
-            boxShadow: [
-              BoxShadow(
-                color: NexaColors.cyan.withValues(alpha: 0.18),
-                blurRadius: 24,
+        ],
+        const SizedBox(height: Sp.lg),
+        Row(
+          children: [
+            Expanded(
+              child: BotonIcono(
+                icono: Icons.phone_outlined,
+                etiqueta: l.llamar,
+                tooltip: l.llamar,
+                onTap: () => _contactar(acciones.llamar),
               ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: Sp.lg,
-              vertical: Sp.md,
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l.cobraAlPasajero,
-                        style: t.bodySmall?.copyWith(color: context.muted),
-                      ),
-                      Text(
-                        Fmt.cop(s.tarifa + s.extraVoluntario),
-                        style: t.headlineSmall?.copyWith(
-                          color: NexaColors.cyan,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (_cargando)
-                  const SizedBox.square(
-                    dimension: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-              ],
+            const SizedBox(width: Sp.md),
+            Expanded(
+              child: BotonIcono(
+                icono: Icons.chat_bubble_outline,
+                etiqueta: l.mensaje,
+                tooltip: l.mensaje,
+                onTap: () => _contactar(acciones.enviarSms),
+              ),
             ),
-          ),
+          ],
         ),
         const SizedBox(height: Sp.lg),
-        NexaDeslizar(texto: boton, onConfirmado: _cargando ? null : _avanzar),
-        TextButton(
-          style: TextButton.styleFrom(
-            minimumSize: const Size.fromHeight(Sizes.touch),
-            foregroundColor: context.colors.error,
+        if (_cargando)
+          const Padding(
+            padding: EdgeInsets.only(bottom: Sp.sm),
+            child: LinearProgressIndicator(minHeight: 2),
           ),
-          onPressed: _cancelar,
-          child: Text(l.cancelarViaje),
-        ),
+        NexaDeslizar(texto: boton, onConfirmado: _cargando ? null : _avanzar),
+        if (fase == FaseConductor.enViaje)
+          Padding(
+            padding: const EdgeInsets.only(top: Sp.sm),
+            child: Text(
+              l.finalizarLejosAviso,
+              textAlign: TextAlign.center,
+              style: NexaTexto.pequeno.copyWith(color: NexaColors.tenue),
+            ),
+          )
+        else
+          NexaButton(
+            label: l.cancelarViaje,
+            variant: NexaButtonVariant.fantasma,
+            onPressed: _cancelar,
+          ),
       ],
     );
   }
-
-  static String _iniciales(String nombre) {
-    final p = nombre.trim().split(RegExp(r'\s+'));
-    if (p.isEmpty || p.first.isEmpty) return '?';
-    return (p.first[0] + (p.length > 1 ? p[1][0] : '')).toUpperCase();
-  }
 }
 
-/// Tres pasos del viaje del conductor: a recoger, en el punto, en viaje.
-class _Fases extends StatelessWidget {
-  const _Fases({required this.fase});
-  final FaseConductor fase;
+/// «Esperando a Laura»: reloj desde que el conductor marcó «Llegué» (C04).
+class _Esperando extends StatefulWidget {
+  const _Esperando({required this.nombre, required this.desde});
+  final String nombre;
+  final DateTime desde;
+
+  @override
+  State<_Esperando> createState() => _EsperandoState();
+}
+
+class _EsperandoState extends State<_Esperando> {
+  late final Timer _reloj = Timer.periodic(
+    const Duration(seconds: 1),
+    (_) => setState(() {}),
+  );
+
+  @override
+  void dispose() {
+    _reloj.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final etiquetas = [l.faseARecoger, l.faseEnPunto, l.faseEnViaje];
-    final actual = fase.index;
-    return Semantics(
-      container: true,
-      label: etiquetas[actual],
-      child: ExcludeSemantics(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            for (var i = 0; i < etiquetas.length; i++)
-              Expanded(
-                child: Column(
-                  children: [
-                    Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: i < actual
-                            ? NexaColors.cyan
-                            : context.colors.surface,
-                        border: Border.all(
-                          color: i <= actual
-                              ? NexaColors.cyan
-                              : context.colors.outline,
-                          width: i == actual ? 5 : 2,
-                        ),
-                        boxShadow: i == actual ? NexaShadows.glow : null,
-                      ),
-                      child: i < actual
-                          ? const Icon(
-                              Icons.check,
-                              size: 14,
-                              color: NexaColors.bg,
-                            )
-                          : null,
-                    ),
-                    const SizedBox(height: Sp.xs),
-                    Text(
-                      etiquetas[i],
-                      textAlign: TextAlign.center,
-                      style: context.textos.labelSmall?.copyWith(
-                        fontWeight: i == actual ? FontWeight.w700 : null,
-                        color: i <= actual ? null : context.muted,
-                      ),
-                    ),
-                  ],
+    final seg = DateTime.now().difference(widget.desde).inSeconds.clamp(0, 5999);
+    return NexaCard(
+      child: Row(
+        children: [
+          CronoCircular(
+            texto: '${seg ~/ 60}:${(seg % 60).toString().padLeft(2, '0')}',
+            avance: (seg % 60) / 60,
+            color: NexaColors.gold,
+          ),
+          const SizedBox(width: Sp.lg),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l.esperandoA(widget.nombre.split(' ').first),
+                  style: NexaTexto.subtitulo,
                 ),
-              ),
-          ],
-        ),
+                const SizedBox(height: Sp.xs),
+                Text(
+                  l.esperaConductorTexto,
+                  style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
-}
-
-class _Redondo extends StatelessWidget {
-  const _Redondo({
-    required this.icono,
-    required this.tooltip,
-    required this.onTap,
-  });
-  final IconData icono;
-  final String tooltip;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => IconButton(
-    tooltip: tooltip,
-    onPressed: onTap,
-    icon: Icon(icono, color: context.acento),
-    style: IconButton.styleFrom(
-      minimumSize: const Size.square(Sizes.touch),
-      backgroundColor: NexaColors.raised,
-      side: BorderSide(color: NexaColors.cyan.withValues(alpha: 0.25)),
-    ),
-  );
 }
 
 /// Resumen del viaje que acaba de terminar: cuánto cobrar en efectivo.
@@ -386,45 +338,134 @@ class ResumenViajeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final t = Theme.of(context).textTheme;
     final cobrar =
         desglose?.cobrarAlPasajero ??
         (servicio.tarifa + servicio.extraVoluntario);
-    return NexaCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
+    final nombre = (servicio.pasajero?.nombre ?? '').split(' ').first;
+    final km = NumberFormat('0.0', 'es_CO').format(servicio.distanciaKM);
+    final ganancia = desglose?.gananciaConductor ?? 0;
+    final extra = desglose?.extraVoluntario ?? servicio.extraVoluntario;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          l.viajeTerminado.toUpperCase(),
+          textAlign: TextAlign.center,
+          style: NexaTexto.etiqueta.copyWith(color: NexaColors.ok),
+        ),
+        const SizedBox(height: Sp.md),
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: Sp.lg,
+            vertical: Sp.xl,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(Rad.lg),
+            border: Border.all(color: NexaColors.ok.withValues(alpha: 0.4)),
+            gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF0B2E2A), Color(0xFF07231F)],
+            ),
+          ),
+          child: Column(
             children: [
-              const Icon(Icons.check_circle, color: NexaColors.ok),
-              const SizedBox(width: Sp.sm),
-              Text(l.viajeTerminado, style: t.titleMedium),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.payments_outlined,
+                    size: 18,
+                    color: NexaColors.ok,
+                  ),
+                  const SizedBox(width: Sp.sm),
+                  Flexible(
+                    child: Text(
+                      nombre.isEmpty
+                          ? l.cobraAlPasajero
+                          : l.cobraAEnEfectivo(nombre),
+                      style: NexaTexto.cuerpo.copyWith(
+                        color: NexaColors.ok,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: Sp.sm),
+              FittedBox(
+                child: Text(
+                  Fmt.cop(cobrar),
+                  style: NexaTexto.numero.copyWith(fontSize: 52),
+                ),
+              ),
+              const SizedBox(height: Sp.xs),
+              Text(
+                '${servicio.destino} · $km km',
+                textAlign: TextAlign.center,
+                style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
+              ),
+              if (servicio.finalizadoAntesDelDestino) ...[
+                const SizedBox(height: Sp.sm),
+                Text(
+                  l.finalizarAntesTexto,
+                  textAlign: TextAlign.center,
+                  style: NexaTexto.pequeno.copyWith(color: NexaColors.gold),
+                ),
+              ],
             ],
           ),
+        ),
+        if (ganancia > 0) ...[
           const SizedBox(height: Sp.md),
-          Text(l.cobraAlPasajero, style: t.labelMedium),
-          Text(Fmt.cop(cobrar), style: t.headlineMedium),
-          if (servicio.finalizadoAntesDelDestino)
-            Padding(
-              padding: const EdgeInsets.only(top: Sp.xs),
-              child: Text(
-                l.finalizarAntesTexto,
-                style: t.bodySmall?.copyWith(color: context.muted),
-              ),
+          NexaCard(
+            child: Column(
+              children: [
+                _Linea(
+                  texto: l.tuGanancia,
+                  valor: Fmt.cop(ganancia),
+                  color: NexaColors.ok,
+                ),
+                if (extra > 0) ...[
+                  const SizedBox(height: Sp.sm),
+                  _Linea(
+                    texto: l.incluyeExtra,
+                    valor: '+${Fmt.cop(extra)}',
+                    color: NexaColors.gold,
+                  ),
+                ],
+              ],
             ),
-          if (desglose != null && desglose!.gananciaConductor > 0) ...[
-            const SizedBox(height: Sp.sm),
-            Text(
-              '${l.gananciaPeriodo}: ${Fmt.cop(desglose!.gananciaConductor)}',
-              style: t.bodyMedium,
-            ),
-          ],
-          const SizedBox(height: Sp.md),
-          NexaButton(label: l.listo, onPressed: onCerrar),
+          ),
         ],
-      ),
+        const SizedBox(height: Sp.lg),
+        NexaButton(label: l.listo, onPressed: onCerrar),
+      ],
     );
   }
+}
+
+class _Linea extends StatelessWidget {
+  const _Linea({required this.texto, required this.valor, required this.color});
+  final String texto;
+  final String valor;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Expanded(
+        child: Text(
+          texto,
+          style: NexaTexto.cuerpo.copyWith(color: NexaColors.muted),
+        ),
+      ),
+      Text(
+        valor,
+        style: NexaTexto.subtitulo.copyWith(fontSize: 16, color: color),
+      ),
+    ],
+  );
 }
 
 /// «Pendiente de enviar»: el paso se hizo sin señal y se registrará con su hora.

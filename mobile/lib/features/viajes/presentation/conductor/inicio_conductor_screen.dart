@@ -2,6 +2,7 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/rumbo/orientacion_mapa.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/theme_x.dart';
+import '../../../../core/theme/nexa_texto.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/mapa/polyline.dart';
 import '../../../../core/mapa/reglas_marcadores.dart';
@@ -142,7 +143,20 @@ class _Panel extends ConsumerWidget {
             padding: const EdgeInsets.all(Sp.md),
             child: Align(
               alignment: Alignment.topLeft,
-              child: _EstadoFlotante(enLinea: estado.enLinea),
+              child: _EstadoFlotante(
+                enLinea: estado.enLinea,
+                // Sin viaje se conecta o desconecta desde aquí (diseño C01).
+                onTap: enViaje
+                    ? null
+                    : () async {
+                        // Antes de conectarse: ubicación y, la primera vez, N03.
+                        if (!estado.enLinea &&
+                            !await prepararConexion(context, ref)) {
+                          return;
+                        }
+                        await ctrl.alternarLinea();
+                      },
+              ),
             ),
           ),
         ),
@@ -151,33 +165,32 @@ class _Panel extends ConsumerWidget {
           minimo: 0.3,
           children: [
             if (!enViaje) ...[
-              _BotonConexion(
-                enLinea: estado.enLinea,
-                onTap: () async {
-                  // Antes de conectarse: ubicación y, la primera vez, N03.
-                  if (!estado.enLinea &&
-                      !await prepararConexion(context, ref)) {
-                    return;
-                  }
-                  await ctrl.alternarLinea();
-                },
-              ),
-              const SizedBox(height: Sp.md),
-              Text(
-                estado.enLinea ? l.buscandoSolicitudes : l.estasFueraDeLinea,
-                textAlign: TextAlign.center,
-                style: context.textos.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              if (estado.enLinea)
-                Text(
-                  l.estasEnLinea,
-                  textAlign: TextAlign.center,
-                  style: context.textos.bodySmall?.copyWith(
-                    color: context.muted,
+              Row(
+                children: [
+                  Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: estado.enLinea ? NexaColors.cyan : NexaColors.tenue,
+                    ),
                   ),
-                ),
+                  const SizedBox(width: Sp.md),
+                  Expanded(
+                    child: Text(
+                      estado.enLinea
+                          ? l.buscandoSolicitudes
+                          : l.estasFueraDeLinea,
+                      style: NexaTexto.subtitulo,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: Sp.sm),
+              Text(
+                estado.enLinea ? l.estasEnLinea : l.conectateTexto,
+                style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
+              ),
               const SizedBox(height: Sp.lg),
             ],
             const NivelBanner(rutaNiveles: '/c/niveles', irEnLugar: true),
@@ -270,104 +283,58 @@ class _Panel extends ConsumerWidget {
   }
 }
 
-/// «En línea» / «Fuera de línea» flotando sobre el mapa.
+/// «En línea» con su interruptor, flotando sobre el mapa (diseño C01).
 class _EstadoFlotante extends StatelessWidget {
-  const _EstadoFlotante({required this.enLinea});
+  const _EstadoFlotante({required this.enLinea, this.onTap});
   final bool enLinea;
+
+  /// null = con un viaje no se puede desconectar desde aquí.
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: NexaColors.glass,
-        borderRadius: BorderRadius.circular(Rad.pill),
-        border: Border.all(color: NexaColors.cyan.withValues(alpha: 0.3)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: Sp.lg - 2,
-          vertical: Sp.sm + 2,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: enLinea ? NexaColors.ok : context.muted,
-                boxShadow: enLinea
-                    ? [
-                        BoxShadow(
-                          color: NexaColors.ok.withValues(alpha: 0.8),
-                          blurRadius: 8,
-                        ),
-                      ]
-                    : null,
-              ),
-            ),
-            const SizedBox(width: Sp.sm),
-            Flexible(
-              child: Text(
-                enLinea ? l.enLinea : l.fueraDeLinea,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: context.textos.labelLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Botón grande para conectarse o desconectarse.
-class _BotonConexion extends StatelessWidget {
-  const _BotonConexion({required this.enLinea, required this.onTap});
-  final bool enLinea;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context);
-    return Center(
-      child: Semantics(
-        button: true,
-        toggled: enLinea,
-        label: enLinea ? l.desconectarme : l.conectarme,
-        child: ExcludeSemantics(
-          child: GestureDetector(
+    final color = enLinea ? NexaColors.ok : NexaColors.muted;
+    return Semantics(
+      button: onTap != null,
+      toggled: enLinea,
+      label: onTap == null
+          ? (enLinea ? l.enLinea : l.fueraDeLinea)
+          : (enLinea ? l.desconectarme : l.conectarme),
+      child: ExcludeSemantics(
+        child: Material(
+          color: NexaColors.glass,
+          shape: StadiumBorder(
+            side: BorderSide(color: color.withValues(alpha: 0.5)),
+          ),
+          child: InkWell(
+            customBorder: const StadiumBorder(),
             onTap: onTap,
-            child: Container(
-              width: 84,
-              height: 84,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: enLinea ? NexaColors.cyan : NexaColors.raised,
-                border: Border.all(
-                  color: NexaColors.cyan.withValues(alpha: enLinea ? 0 : 0.45),
-                  width: 2,
-                ),
-                boxShadow: enLinea
-                    ? [
-                        BoxShadow(
-                          color: NexaColors.cyan.withValues(alpha: 0.2),
-                          blurRadius: 0,
-                          spreadRadius: 8,
-                        ),
-                        ...NexaShadows.glow,
-                      ]
-                    : null,
-              ),
-              child: Icon(
-                Icons.power_settings_new,
-                size: 38,
-                color: enLinea ? NexaColors.bg : NexaColors.cyan,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(Sp.lg, Sp.xs, Sp.xs, Sp.xs),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    enLinea ? l.enLinea : l.fueraDeLinea,
+                    style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(width: Sp.sm),
+                  IgnorePointer(
+                    child: Switch(
+                      value: enLinea,
+                      onChanged: onTap == null ? null : (_) {},
+                      activeThumbColor: NexaColors.texto,
+                      activeTrackColor: NexaColors.ok,
+                      inactiveThumbColor: NexaColors.muted,
+                      inactiveTrackColor: NexaColors.raised,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -408,14 +375,14 @@ class _BotonNavegar extends ConsumerWidget {
                 children: [
                   Icon(
                     activo ? Icons.close : Icons.navigation,
-                    color: activo ? NexaColors.brand : Colors.white,
+                    color: activo ? NexaColors.bg : NexaColors.texto,
                     size: 20,
                   ),
                   const SizedBox(width: Sp.sm),
                   Text(
                     activo ? l.navegacionSalir : l.navegacionActivar,
                     style: TextStyle(
-                      color: activo ? NexaColors.brand : Colors.white,
+                      color: activo ? NexaColors.bg : NexaColors.texto,
                       fontWeight: FontWeight.w700,
                     ),
                   ),

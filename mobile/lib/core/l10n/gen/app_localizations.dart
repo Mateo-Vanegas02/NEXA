@@ -169,19 +169,19 @@ abstract class AppLocalizations {
   /// No description provided for @onb1Titulo.
   ///
   /// In es, this message translates to:
-  /// **'Pide tu mototaxi'**
+  /// **'Muévete por la ciudad en minutos.'**
   String get onb1Titulo;
 
   /// No description provided for @onb1Texto.
   ///
   /// In es, this message translates to:
-  /// **'Solicita un viaje en segundos y sigue a tu conductor en el mapa.'**
+  /// **'Pide una moto, sigue a tu conductor en vivo y gana descuentos cada vez que viajas.'**
   String get onb1Texto;
 
   /// No description provided for @onb2Titulo.
   ///
   /// In es, this message translates to:
-  /// **'Sube de nivel'**
+  /// **'Cada viaje te sube de nivel.'**
   String get onb2Titulo;
 
   /// No description provided for @onb2Texto.
@@ -193,7 +193,7 @@ abstract class AppLocalizations {
   /// No description provided for @onb3Titulo.
   ///
   /// In es, this message translates to:
-  /// **'Viaja con confianza'**
+  /// **'Viaja con confianza.'**
   String get onb3Titulo;
 
   /// No description provided for @onb3Texto.
@@ -211,13 +211,13 @@ abstract class AppLocalizations {
   /// No description provided for @loginSubtitulo.
   ///
   /// In es, this message translates to:
-  /// **'Entra para pedir o recibir viajes.'**
+  /// **'Entra con el correo de tu cuenta NEXA.'**
   String get loginSubtitulo;
 
   /// No description provided for @email.
   ///
   /// In es, this message translates to:
-  /// **'Correo electrónico'**
+  /// **'Correo'**
   String get email;
 
   /// No description provided for @password.
@@ -235,7 +235,7 @@ abstract class AppLocalizations {
   /// No description provided for @ingresar.
   ///
   /// In es, this message translates to:
-  /// **'Ingresar'**
+  /// **'Entrar'**
   String get ingresar;
 
   /// No description provided for @noTienesCuenta.
@@ -243,6 +243,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'¿No tienes cuenta? Regístrate'**
   String get noTienesCuenta;
+
+  /// No description provided for @noTienesCuentaPregunta.
+  ///
+  /// In es, this message translates to:
+  /// **'¿No tienes cuenta?'**
+  String get noTienesCuentaPregunta;
 
   /// No description provided for @yaTienesCuenta.
   ///
@@ -1543,8 +1549,32 @@ abstract class AppLocalizations {
   /// No description provided for @registroPaso1Sub.
   ///
   /// In es, this message translates to:
-  /// **'Empecemos con tus datos básicos.'**
+  /// **'¿Cómo quieres usar NEXA?'**
   String get registroPaso1Sub;
+
+  /// No description provided for @rolViajar.
+  ///
+  /// In es, this message translates to:
+  /// **'Viajar'**
+  String get rolViajar;
+
+  /// No description provided for @rolViajarSub.
+  ///
+  /// In es, this message translates to:
+  /// **'Pide motos y sube de nivel'**
+  String get rolViajarSub;
+
+  /// No description provided for @rolConducir.
+  ///
+  /// In es, this message translates to:
+  /// **'Conducir'**
+  String get rolConducir;
+
+  /// No description provided for @rolConducirSub.
+  ///
+  /// In es, this message translates to:
+  /// **'Gana con tu moto. Pide tus documentos.'**
+  String get rolConducirSub;
 
   /// No description provided for @registroPaso2Titulo.
   ///
@@ -3453,6 +3483,192 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No se registró «{accion}»: {motivo}'**
   String sinConexionRechazo(String accion, String motivo);
+
+  /// No description provided for @faseAceptado.
+  ///
+  /// In es, this message translates to:
+  /// **'Aceptado'**
+  String get faseAceptado;
+
+  /// No description provided for @faseEnCamino.
+  ///
+  /// In es, this message translates to:
+  /// **'En camino'**
+  String get faseEnCamino;
+
+  /// No description provided for @faseEnElPunto.
+  ///
+  /// In es, this message translates to:
+  /// **'En el punto'**
+  String get faseEnElPunto;
+
+  /// No description provided for @llegaEnMin.
+  ///
+  /// In es, this message translates to:
+  /// **'Llega en {min} min'**
+  String llegaEnMin(int min);
+
+  /// No description provided for @vaHaciaTuPunto.
+  ///
+  /// In es, this message translates to:
+  /// **'{nombre} va hacia tu punto de recogida'**
+  String vaHaciaTuPunto(String nombre);
+
+  /// No description provided for @estaEnTuPunto.
+  ///
+  /// In es, this message translates to:
+  /// **'{nombre} está en tu punto'**
+  String estaEnTuPunto(String nombre);
+
+  /// No description provided for @llegasEnMinHora.
+  ///
+  /// In es, this message translates to:
+  /// **'Llegas en {min} min · {hora}'**
+  String llegasEnMinHora(int min, String hora);
+
+  /// No description provided for @vasHacia.
+  ///
+  /// In es, this message translates to:
+  /// **'Vas hacia {destino}'**
+  String vasHacia(String destino);
+
+  /// No description provided for @ladoDeFrente.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo tienes de frente'**
+  String get ladoDeFrente;
+
+  /// No description provided for @ladoDerecha.
+  ///
+  /// In es, this message translates to:
+  /// **'Viene por tu derecha'**
+  String get ladoDerecha;
+
+  /// No description provided for @ladoIzquierda.
+  ///
+  /// In es, this message translates to:
+  /// **'Viene por tu izquierda'**
+  String get ladoIzquierda;
+
+  /// No description provided for @ladoDetras.
+  ///
+  /// In es, this message translates to:
+  /// **'Viene por detrás de ti'**
+  String get ladoDetras;
+
+  /// No description provided for @buscaEstaPlaca.
+  ///
+  /// In es, this message translates to:
+  /// **'Busca esta placa'**
+  String get buscaEstaPlaca;
+
+  /// No description provided for @esperaSinCosto.
+  ///
+  /// In es, this message translates to:
+  /// **'Espera sin costo'**
+  String get esperaSinCosto;
+
+  /// No description provided for @esperaSinCostoTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Después se cobra un recargo por minuto, con un tope.'**
+  String get esperaSinCostoTexto;
+
+  /// No description provided for @buscandoTuConductor.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscando tu conductor'**
+  String get buscandoTuConductor;
+
+  /// No description provided for @buscandoTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Avisamos a los conductores cerca de ti. Si nadie acepta, ampliamos el radio.'**
+  String get buscandoTexto;
+
+  /// No description provided for @avisamosA.
+  ///
+  /// In es, this message translates to:
+  /// **'Avisamos a {n} conductores cerca de ti. Si nadie acepta, ampliamos el radio.'**
+  String avisamosA(int n);
+
+  /// No description provided for @llegarMasRapido.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Quieres llegar más rápido?'**
+  String get llegarMasRapido;
+
+  /// No description provided for @llegarMasRapidoTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Suma un extra para el conductor: tu solicitud se adelanta una ola.'**
+  String get llegarMasRapidoTexto;
+
+  /// No description provided for @topeExtra.
+  ///
+  /// In es, this message translates to:
+  /// **'Tope {valor}'**
+  String topeExtra(String valor);
+
+  /// No description provided for @totalConExtra.
+  ///
+  /// In es, this message translates to:
+  /// **'Total con extra'**
+  String get totalConExtra;
+
+  /// No description provided for @cancelarSolicitud.
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelar solicitud'**
+  String get cancelarSolicitud;
+
+  /// No description provided for @pagasEnEfectivo.
+  ///
+  /// In es, this message translates to:
+  /// **'Pagas en efectivo'**
+  String get pagasEnEfectivo;
+
+  /// No description provided for @pagasEnEfectivoExtra.
+  ///
+  /// In es, this message translates to:
+  /// **'Pagas en efectivo · incluye {extra} extra'**
+  String pagasEnEfectivoExtra(String extra);
+
+  /// No description provided for @kmRecorridos.
+  ///
+  /// In es, this message translates to:
+  /// **'{km} km recorridos'**
+  String kmRecorridos(String km);
+
+  /// No description provided for @kmPorRecorrer.
+  ///
+  /// In es, this message translates to:
+  /// **'{km} km por recorrer'**
+  String kmPorRecorrer(String km);
+
+  /// No description provided for @compartirViaje.
+  ///
+  /// In es, this message translates to:
+  /// **'Compartir viaje'**
+  String get compartirViaje;
+
+  /// No description provided for @sos.
+  ///
+  /// In es, this message translates to:
+  /// **'SOS'**
+  String get sos;
+
+  /// No description provided for @nivelViajes.
+  ///
+  /// In es, this message translates to:
+  /// **'Nivel {nivel} · {viajes}'**
+  String nivelViajes(int nivel, String viajes);
+
+  /// No description provided for @nivelPalabra.
+  ///
+  /// In es, this message translates to:
+  /// **'Nivel'**
+  String get nivelPalabra;
 }
 
 class _AppLocalizationsDelegate

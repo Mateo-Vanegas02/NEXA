@@ -69,14 +69,12 @@ abstract final class AppTheme {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          minimumSize: const Size.fromHeight(Sizes.boton),
           shape: const StadiumBorder(),
           textStyle: NexaTexto.boton,
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          minimumSize: const Size.fromHeight(Sizes.boton),
           shape: const StadiumBorder(),
           side: BorderSide(color: scheme.outline, width: 1.5),
           textStyle: NexaTexto.boton,

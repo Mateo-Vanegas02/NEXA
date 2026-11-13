@@ -87,7 +87,7 @@ void main() {
         ),
       );
 
-      expect(find.text('Llegué al punto de recogida'), findsOneWidget);
+      expect(find.text('Llegué'), findsOneWidget);
       expect(find.textContaining('4 min'), findsOneWidget);
       expect(find.textContaining('1.2 km'), findsOneWidget);
       expect(find.textContaining('80 m'), findsOneWidget);
@@ -103,8 +103,7 @@ void main() {
   testWidgets('en el punto: espera al pasajero y permite iniciar', (t) async {
     await _montar(t, FaseConductor.enElPunto);
 
-    expect(find.text('Esperando al pasajero'), findsOneWidget);
-    expect(find.text('Pasajero recogido'), findsOneWidget);
+    expect(find.text('Iniciar viaje'), findsOneWidget);
   });
 
   testWidgets(

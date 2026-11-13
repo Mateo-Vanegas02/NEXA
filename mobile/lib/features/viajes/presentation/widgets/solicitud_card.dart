@@ -1,5 +1,5 @@
 import '../../../../core/errors/app_exception.dart';
-import '../../../../core/theme/theme_x.dart';
+import '../../../../core/theme/nexa_texto.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/utils/formatters.dart';
@@ -8,6 +8,7 @@ import '../../domain/servicio.dart';
 import '../controllers/viaje_conductor_controller.dart';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Solicitud entrante: lo que cobra el conductor en grande, la ruta en dos líneas
@@ -42,138 +43,107 @@ class _SolicitudCardState extends ConsumerState<SolicitudCard> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final t = Theme.of(context).textTheme;
     final servicio = widget.servicio;
     final ctrl = ref.read(conductorProvider.notifier);
     final extra = servicio.extraVoluntario;
+    final total = servicio.tarifa + extra;
+    final porKm = servicio.distanciaKM > 0
+        ? Fmt.cop(servicio.tarifa / servicio.distanciaKM)
+        : null;
+    final km = NumberFormat('0.0', 'es_CO').format(servicio.distanciaKM);
     return DecoratedBox(
       decoration: BoxDecoration(
         color: NexaColors.card,
         borderRadius: BorderRadius.circular(Rad.lg + 4),
-        border: Border.all(color: NexaColors.cyan.withValues(alpha: 0.45)),
+        border: Border.all(color: NexaColors.cyan.withValues(alpha: 0.6)),
         boxShadow: [
           BoxShadow(
-            color: NexaColors.cyan.withValues(alpha: 0.18),
-            blurRadius: 24,
+            color: NexaColors.cyan.withValues(alpha: 0.16),
+            blurRadius: 28,
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(Sp.lg),
+        padding: const EdgeInsets.all(Sp.lg + 2),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            Text(
+              l.nuevaSolicitud.toUpperCase(),
+              style: NexaTexto.etiqueta.copyWith(color: NexaColors.cyan),
+            ),
+            const SizedBox(height: Sp.xs),
+            Text(
+              '${l.cobraAlPasajero} ${Fmt.cop(total)}',
+              style: NexaTexto.titulo,
+            ),
+            Text(
+              [
+                if (porKm != null) l.porKm(porKm),
+                l.efectivo.toLowerCase(),
+              ].join(' · '),
+              style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
+            ),
+            const SizedBox(height: Sp.md),
+            Wrap(
+              spacing: Sp.sm,
+              runSpacing: Sp.sm,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l.nuevaSolicitud.toUpperCase(),
-                        style: t.labelSmall?.copyWith(
-                          color: NexaColors.cyan,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                      Text(
-                        servicio.pasajero?.nombre ?? '',
-                        style: t.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        l.nivelActual('${servicio.nivelPasajero}'),
-                        style: t.bodySmall?.copyWith(color: context.muted),
-                      ),
-                    ],
-                  ),
-                ),
                 if (extra > 0)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: Sp.md,
-                      vertical: Sp.xs + 1,
-                    ),
-                    decoration: BoxDecoration(
-                      color: NexaColors.gold.withValues(alpha: 0.14),
-                      borderRadius: BorderRadius.circular(Rad.pill),
-                    ),
-                    child: Text(
-                      '+${Fmt.cop(extra)}',
-                      style: const TextStyle(
-                        color: NexaColors.gold,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      ),
-                    ),
+                  _Etiqueta(
+                    icono: Icons.bolt_rounded,
+                    texto: '+${Fmt.cop(extra)} ${l.extra}',
+                    color: NexaColors.gold,
                   ),
+                if (servicio.nivelPasajero > 0)
+                  _Etiqueta(
+                    texto: l.nivelActual('${servicio.nivelPasajero}'),
+                    color: NexaColors.cyan,
+                  ),
+                _Etiqueta(texto: '$km km', color: NexaColors.ok),
               ],
             ),
             const SizedBox(height: Sp.md),
-            Container(
-              padding: const EdgeInsets.all(Sp.lg - 2),
+            DecoratedBox(
               decoration: BoxDecoration(
-                color: NexaColors.cyan.withValues(alpha: 0.08),
+                color: NexaColors.bg.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(Rad.lg),
+                border: Border.all(color: NexaColors.line),
               ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l.cobraAlPasajero,
-                          style: t.bodySmall?.copyWith(color: context.muted),
-                        ),
-                        Text(
-                          Fmt.cop(servicio.tarifa + extra),
-                          style: t.headlineSmall?.copyWith(
-                            color: NexaColors.cyan,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
+              child: Padding(
+                padding: const EdgeInsets.all(Sp.md),
+                child: Column(
+                  children: [
+                    _Punto(
+                      icono: Icons.my_location,
+                      texto: servicio.origen,
+                      detalle: servicio.pasajero?.nombre,
                     ),
-                  ),
-                  Text(
-                    '${servicio.distanciaKM.toStringAsFixed(1)} km',
-                    style: t.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: Sp.md),
-            _Punto(esOrigen: true, texto: servicio.origen),
-            Padding(
-              padding: const EdgeInsets.only(left: 5),
-              child: SizedBox(
-                height: 10,
-                child: VerticalDivider(
-                  width: 2,
-                  thickness: 2,
-                  color: NexaColors.cyan.withValues(alpha: 0.45),
+                    const SizedBox(height: Sp.md),
+                    _Punto(icono: Icons.place_outlined, texto: servicio.destino),
+                  ],
                 ),
               ),
             ),
-            _Punto(esOrigen: false, texto: servicio.destino),
             const SizedBox(height: Sp.lg),
-            NexaButton(
-              label: l.aceptar,
-              cargando: _aceptando,
-              onPressed: _aceptar,
-            ),
-            TextButton(
-              style: TextButton.styleFrom(
-                minimumSize: const Size.fromHeight(Sizes.touch),
-              ),
-              onPressed: _aceptando ? null : () => ctrl.rechazar(servicio),
-              child: Text(l.rechazar),
+            Row(
+              children: [
+                Expanded(
+                  child: NexaButton(
+                    label: l.ahoraNo,
+                    variant: NexaButtonVariant.secundario,
+                    onPressed: _aceptando ? null : () => ctrl.rechazar(servicio),
+                  ),
+                ),
+                const SizedBox(width: Sp.md),
+                Expanded(
+                  child: NexaButton(
+                    label: l.aceptar,
+                    cargando: _aceptando,
+                    onPressed: _aceptar,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -182,42 +152,74 @@ class _SolicitudCardState extends ConsumerState<SolicitudCard> {
   }
 }
 
-class _Punto extends StatelessWidget {
-  const _Punto({required this.esOrigen, required this.texto});
-  final bool esOrigen;
+class _Etiqueta extends StatelessWidget {
+  const _Etiqueta({required this.texto, required this.color, this.icono});
   final String texto;
+  final Color color;
+  final IconData? icono;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: Sp.md, vertical: 6),
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: 0.14),
+      borderRadius: BorderRadius.circular(Rad.pill),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (icono != null) ...[
+          Icon(icono, size: 14, color: color),
+          const SizedBox(width: Sp.xs),
+        ],
+        Text(
+          texto,
+          style: TextStyle(
+            color: color,
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _Punto extends StatelessWidget {
+  const _Punto({required this.icono, required this.texto, this.detalle});
+  final IconData icono;
+  final String texto;
+  final String? detalle;
 
   @override
   Widget build(BuildContext context) => Row(
     children: [
-      if (esOrigen)
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 3),
-          ),
-        )
-      else
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(
-            color: NexaColors.cyan,
-            borderRadius: BorderRadius.circular(4),
-            boxShadow: NexaShadows.glow,
-          ),
+      Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: NexaColors.raised,
+          borderRadius: BorderRadius.circular(Rad.sm + 2),
         ),
+        child: Icon(icono, size: 18, color: NexaColors.cyan),
+      ),
       const SizedBox(width: Sp.md),
       Expanded(
-        child: Text(
-          texto,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: context.textos.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              texto,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: NexaTexto.cuerpo.copyWith(fontWeight: FontWeight.w600),
+            ),
+            if (detalle != null)
+              Text(
+                detalle!,
+                style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
+              ),
+          ],
         ),
       ),
     ],

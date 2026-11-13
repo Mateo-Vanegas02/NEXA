@@ -100,7 +100,12 @@ class _Seguimiento extends ConsumerWidget {
     final enElPunto =
         s.estado == EstadoServicio.aceptado && s.fechaLlegada != null;
     final nombre = (s.conductor?.nombre ?? l.tuConductor).split(' ').first;
-    final fases = [l.faseAceptado, l.faseEnCamino, l.faseEnElPunto, l.faseEnViaje];
+    final fases = [
+      l.faseAceptado,
+      l.faseEnCamino,
+      l.faseEnElPunto,
+      l.faseEnViaje,
+    ];
     final fase = switch (s.estado) {
       EstadoServicio.enCurso || EstadoServicio.finalizado => 3,
       EstadoServicio.aceptado when enElPunto => 2,
@@ -280,7 +285,10 @@ class _EsperaSinCostoState extends State<_EsperaSinCosto> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final seg = DateTime.now().difference(widget.desde).inSeconds.clamp(0, 5999);
+    final seg = DateTime.now()
+        .difference(widget.desde)
+        .inSeconds
+        .clamp(0, 5999);
     final texto = '${seg ~/ 60}:${(seg % 60).toString().padLeft(2, '0')}';
     return NexaCard(
       child: Row(
@@ -405,9 +413,13 @@ class _Avance extends StatelessWidget {
                   style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
                 ),
               ),
-              Text(
-                l.kmPorRecorrer(km.format(resta)),
-                style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
+              const SizedBox(width: Sp.sm),
+              Expanded(
+                child: Text(
+                  l.kmPorRecorrer(km.format(resta)),
+                  textAlign: TextAlign.end,
+                  style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
+                ),
               ),
             ],
           ),
@@ -438,7 +450,11 @@ class _Pago extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: Sp.lg, vertical: Sp.md),
       child: Row(
         children: [
-          const Icon(Icons.payments_outlined, color: NexaColors.muted, size: 20),
+          const Icon(
+            Icons.payments_outlined,
+            color: NexaColors.muted,
+            size: 20,
+          ),
           const SizedBox(width: Sp.md),
           Expanded(
             child: Text(
@@ -492,7 +508,10 @@ class _ExtraVoluntarioState extends ConsumerState<_ExtraVoluntario> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(l.llegarMasRapido, style: NexaTexto.subtitulo.copyWith(fontSize: 16)),
+          Text(
+            l.llegarMasRapido,
+            style: NexaTexto.subtitulo.copyWith(fontSize: 16),
+          ),
           const SizedBox(height: Sp.xs),
           Text(
             l.llegarMasRapidoTexto,
@@ -670,7 +689,11 @@ class _BotonCancelar extends ConsumerWidget {
         mensaje: l.cancelarViajeTexto,
         tipo: NexaPopupTipo.peligro,
         acciones: [
-          NexaPopupAccion(etiqueta: l.cancelarViaje, valor: true, peligro: true),
+          NexaPopupAccion(
+            etiqueta: l.cancelarViaje,
+            valor: true,
+            peligro: true,
+          ),
           NexaPopupAccion(etiqueta: l.mantenerViaje, valor: false),
         ],
       );

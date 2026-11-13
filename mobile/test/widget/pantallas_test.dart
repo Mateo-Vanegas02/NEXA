@@ -132,17 +132,14 @@ void main() {
 
       testWidgets('bienvenida: mensaje y las dos salidas', (t) async {
         await montar(t, const OnboardingScreen());
-        expect(
-          find.text('Muévete por la ciudad en minutos.'),
-          findsOneWidget,
-        );
+        expect(find.text('Muévete por la ciudad en minutos.'), findsOneWidget);
         expect(find.text('Crear cuenta'), findsOneWidget);
         expect(find.text('Ya tengo cuenta'), findsOneWidget);
       });
 
       testWidgets('login: valida campos obligatorios', (t) async {
         await montar(t, const LoginScreen(), esperar: false);
-        await t.tap(find.widgetWithText(FilledButton, 'Ingresar'));
+        await t.tap(find.widgetWithText(FilledButton, 'Entrar'));
         await t.pump();
         expect(find.text('Este campo es obligatorio'), findsNWidgets(2));
         _sinErroresDeLayout(t);
@@ -153,7 +150,7 @@ void main() {
 
       testWidgets('registro: conductor muestra aviso', (t) async {
         await montar(t, const RegistroScreen(), esperar: false);
-        await t.tap(find.text('Conductor'));
+        await t.tap(find.text('Conducir'));
         await t.pump();
         expect(
           find.textContaining('Un administrador los revisará'),
@@ -225,14 +222,13 @@ void main() {
           const ViajeEnCursoScreen(),
           overrides: [_sesion(Rol.pasajero), _viaje(EstadoServicio.enCurso)],
         );
-        expect(find.text('Viaje en curso'), findsWidgets);
+        expect(find.text('En viaje'.toUpperCase()), findsOneWidget);
+        expect(find.text('Vas hacia Centro Comercial Plaza'), findsOneWidget);
         expect(find.text('Carlos Mendoza'), findsOneWidget);
         expect(find.text('ABC 12D'), findsOneWidget);
-        expect(find.text('Llamar'), findsOneWidget);
-        expect(find.text('Mensaje'), findsOneWidget);
-        expect(find.text('Compartir'), findsOneWidget);
+        expect(find.text('Compartir viaje'), findsOneWidget);
         expect(find.byTooltip('Asistencia en ruta (SOS)'), findsOneWidget);
-        expect(find.textContaining('Llegada estimada'), findsOneWidget);
+        expect(find.textContaining('Llegas en'), findsOneWidget);
         // Regresión: la hoja inferior no debe tapar todo el mapa.
         expect(
           t.getTopLeft(find.text('Carlos Mendoza')).dy,
@@ -246,10 +242,10 @@ void main() {
           const ViajeEnCursoScreen(),
           overrides: [_sesion(Rol.pasajero), _viaje(EstadoServicio.solicitado)],
         );
-        expect(find.text('Buscando conductor…'), findsOneWidget);
-        expect(find.text('Tu oferta ahora'), findsOneWidget);
+        expect(find.text('Buscando tu conductor'), findsOneWidget);
+        expect(find.text('Total con extra'), findsOneWidget);
         expect(find.byType(ActionChip), findsNWidgets(3));
-        expect(find.text('Cancelar viaje'), findsOneWidget);
+        expect(find.text('Cancelar solicitud'), findsOneWidget);
         expect(find.byTooltip('Asistencia en ruta (SOS)'), findsNothing);
       });
 
@@ -259,7 +255,8 @@ void main() {
           const ViajeEnCursoScreen(),
           overrides: [_sesion(Rol.pasajero), _viaje(EstadoServicio.aceptado)],
         );
-        expect(find.text('Tu conductor va en camino'), findsOneWidget);
+        expect(find.textContaining('Llega en'), findsOneWidget);
+        expect(find.text('Carlos va hacia tu punto de recogida'), findsOneWidget);
         expect(find.text('Cancelar viaje'), findsOneWidget);
         expect(find.byTooltip('Asistencia en ruta (SOS)'), findsOneWidget);
         expect(find.byType(ActionChip), findsNothing);

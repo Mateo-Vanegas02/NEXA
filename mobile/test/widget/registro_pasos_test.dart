@@ -48,7 +48,7 @@ void main() {
           'Teléfono (10 dígitos, empieza con 3)',
           '3001234567',
         );
-        await _escribir(t, 'Correo electrónico', 'frank@correo.com');
+        await _escribir(t, 'Correo', 'frank@correo.com');
         await t.tap(find.widgetWithText(FilledButton, 'Continuar'));
         await t.pump();
 

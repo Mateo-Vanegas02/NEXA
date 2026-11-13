@@ -47,21 +47,21 @@ class AppLocalizationsEs extends AppLocalizations {
       'Cuando completes un viaje aparecerá aquí.';
 
   @override
-  String get onb1Titulo => 'Pide tu mototaxi';
+  String get onb1Titulo => 'Muévete por la ciudad en minutos.';
 
   @override
   String get onb1Texto =>
-      'Solicita un viaje en segundos y sigue a tu conductor en el mapa.';
+      'Pide una moto, sigue a tu conductor en vivo y gana descuentos cada vez que viajas.';
 
   @override
-  String get onb2Titulo => 'Sube de nivel';
+  String get onb2Titulo => 'Cada viaje te sube de nivel.';
 
   @override
   String get onb2Texto =>
       'Cada viaje te da XP. Desbloquea descuentos, prioridad y más beneficios.';
 
   @override
-  String get onb3Titulo => 'Viaja con confianza';
+  String get onb3Titulo => 'Viaja con confianza.';
 
   @override
   String get onb3Texto =>
@@ -71,10 +71,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get loginTitulo => 'Hola de nuevo';
 
   @override
-  String get loginSubtitulo => 'Entra para pedir o recibir viajes.';
+  String get loginSubtitulo => 'Entra con el correo de tu cuenta NEXA.';
 
   @override
-  String get email => 'Correo electrónico';
+  String get email => 'Correo';
 
   @override
   String get password => 'Contraseña';
@@ -83,10 +83,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get confirmarPassword => 'Confirmar contraseña';
 
   @override
-  String get ingresar => 'Ingresar';
+  String get ingresar => 'Entrar';
 
   @override
   String get noTienesCuenta => '¿No tienes cuenta? Regístrate';
+
+  @override
+  String get noTienesCuentaPregunta => '¿No tienes cuenta?';
 
   @override
   String get yaTienesCuenta => '¿Ya tienes cuenta? Inicia sesión';
@@ -782,7 +785,19 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get registroPaso1Sub => 'Empecemos con tus datos básicos.';
+  String get registroPaso1Sub => '¿Cómo quieres usar NEXA?';
+
+  @override
+  String get rolViajar => 'Viajar';
+
+  @override
+  String get rolViajarSub => 'Pide motos y sube de nivel';
+
+  @override
+  String get rolConducir => 'Conducir';
+
+  @override
+  String get rolConducirSub => 'Gana con tu moto. Pide tus documentos.';
 
   @override
   String get registroPaso2Titulo => 'Elige tu contraseña';
@@ -1843,4 +1858,122 @@ class AppLocalizationsEs extends AppLocalizations {
   String sinConexionRechazo(String accion, String motivo) {
     return 'No se registró «$accion»: $motivo';
   }
+
+  @override
+  String get faseAceptado => 'Aceptado';
+
+  @override
+  String get faseEnCamino => 'En camino';
+
+  @override
+  String get faseEnElPunto => 'En el punto';
+
+  @override
+  String llegaEnMin(int min) {
+    return 'Llega en $min min';
+  }
+
+  @override
+  String vaHaciaTuPunto(String nombre) {
+    return '$nombre va hacia tu punto de recogida';
+  }
+
+  @override
+  String estaEnTuPunto(String nombre) {
+    return '$nombre está en tu punto';
+  }
+
+  @override
+  String llegasEnMinHora(int min, String hora) {
+    return 'Llegas en $min min · $hora';
+  }
+
+  @override
+  String vasHacia(String destino) {
+    return 'Vas hacia $destino';
+  }
+
+  @override
+  String get ladoDeFrente => 'Lo tienes de frente';
+
+  @override
+  String get ladoDerecha => 'Viene por tu derecha';
+
+  @override
+  String get ladoIzquierda => 'Viene por tu izquierda';
+
+  @override
+  String get ladoDetras => 'Viene por detrás de ti';
+
+  @override
+  String get buscaEstaPlaca => 'Busca esta placa';
+
+  @override
+  String get esperaSinCosto => 'Espera sin costo';
+
+  @override
+  String get esperaSinCostoTexto =>
+      'Después se cobra un recargo por minuto, con un tope.';
+
+  @override
+  String get buscandoTuConductor => 'Buscando tu conductor';
+
+  @override
+  String get buscandoTexto =>
+      'Avisamos a los conductores cerca de ti. Si nadie acepta, ampliamos el radio.';
+
+  @override
+  String avisamosA(int n) {
+    return 'Avisamos a $n conductores cerca de ti. Si nadie acepta, ampliamos el radio.';
+  }
+
+  @override
+  String get llegarMasRapido => '¿Quieres llegar más rápido?';
+
+  @override
+  String get llegarMasRapidoTexto =>
+      'Suma un extra para el conductor: tu solicitud se adelanta una ola.';
+
+  @override
+  String topeExtra(String valor) {
+    return 'Tope $valor';
+  }
+
+  @override
+  String get totalConExtra => 'Total con extra';
+
+  @override
+  String get cancelarSolicitud => 'Cancelar solicitud';
+
+  @override
+  String get pagasEnEfectivo => 'Pagas en efectivo';
+
+  @override
+  String pagasEnEfectivoExtra(String extra) {
+    return 'Pagas en efectivo · incluye $extra extra';
+  }
+
+  @override
+  String kmRecorridos(String km) {
+    return '$km km recorridos';
+  }
+
+  @override
+  String kmPorRecorrer(String km) {
+    return '$km km por recorrer';
+  }
+
+  @override
+  String get compartirViaje => 'Compartir viaje';
+
+  @override
+  String get sos => 'SOS';
+
+  @override
+  String nivelViajes(int nivel, String viajes) {
+    return 'Nivel $nivel · $viajes';
+  }
+
+  @override
+  String get nivelPalabra => 'Nivel';
 }

@@ -97,8 +97,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         const SizedBox(height: Sp.xl),
         NexaButton(label: l.ingresar, onPressed: _enviar, cargando: _cargando),
       ],
-      pie: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      pie: Wrap(
+        alignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           Text(
             l.noTienesCuentaPregunta,

@@ -147,15 +147,15 @@
   },
   "enLinea": "En línea",
   "fueraDeLinea": "Fuera de línea",
-  "estasEnLinea": "Recibes solicitudes de viaje",
-  "estasFueraDeLinea": "Conéctate para recibir solicitudes",
+  "estasEnLinea": "Mantén la app abierta: las solicitudes aparecen aquí con lo que cobras.",
+  "estasFueraDeLinea": "Estás fuera de línea",
   "solicitudesEntrantes": "Solicitudes entrantes",
   "sinSolicitudes": "No hay solicitudes por ahora",
   "aceptar": "Aceptar",
   "rechazar": "Rechazar",
   "yendoAPasajero": "En camino al pasajero",
-  "iniciarViaje": "Pasajero recogido",
-  "finalizarViaje": "Completar viaje",
+  "iniciarViaje": "Iniciar viaje",
+  "finalizarViaje": "Finalizar viaje",
   "viajeActivo": "Viaje activo",
   "gananciasTitulo": "Ganancias",
   "gananciaTotal": "Total ganado",
@@ -428,7 +428,7 @@
   "faseEnViaje": "En viaje",
   "conectarme": "Conectarme",
   "desconectarme": "Desconectarme",
-  "buscandoSolicitudes": "Buscando solicitudes…",
+  "buscandoSolicitudes": "Buscando solicitudes cerca de ti",
   "gananciaPorViaje": "Ganancia por viaje",
   "estasAqui": "Estás aquí",
   "inactividadNota": "Si pasas 90 días sin viajar bajas un nivel.",
@@ -479,7 +479,7 @@
   "extraTexto": "Suma un extra voluntario para que tu solicitud llegue antes a los conductores.",
   "deudaAnterior": "Cargo anterior",
   "errorCotizar": "No se pudo calcular el precio. Intenta de nuevo.",
-  "llegueAlPunto": "Llegué al punto de recogida",
+  "llegueAlPunto": "Llegué",
   "esperandoPasajero": "Esperando al pasajero",
   "distanciaPasajero": "Distancia del pasajero a la recogida",
   "cobraAlPasajero": "Cobra al pasajero",
@@ -1094,5 +1094,45 @@
       }
     }
   },
-  "nivelPalabra": "Nivel"
+  "nivelPalabra": "Nivel",
+  "porKm": "{valor} por km",
+  "@porKm": {
+    "placeholders": {
+      "valor": {
+        "type": "String"
+      }
+    }
+  },
+  "extra": "extra",
+  "ahoraNo": "Ahora no",
+  "pasajeraNivel": "pasajero nivel {n}",
+  "@pasajeraNivel": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "cobra": "Cobra",
+  "esperandoA": "Esperando a {nombre}",
+  "@esperandoA": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "esperaConductorTexto": "Tras unos minutos de espera, el servidor suma un recargo por minuto a tu favor.",
+  "finalizarLejosAviso": "Si finalizas lejos del destino, se cobra según lo recorrido.",
+  "cobraAEnEfectivo": "Cobra a {nombre} en efectivo",
+  "tuGanancia": "Tu ganancia",
+  "incluyeExtra": "Incluye extra voluntario",
+  "@cobraAEnEfectivo": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "conectateTexto": "Activa «En línea» arriba para recibir solicitudes."
 }

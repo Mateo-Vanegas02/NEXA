@@ -33,7 +33,11 @@ class TarjetaFlotante extends StatelessWidget {
         borderRadius: BorderRadius.circular(Rad.lg),
         border: Border.all(color: NexaColors.line),
         boxShadow: const [
-          BoxShadow(color: Color(0x99000000), blurRadius: 24, offset: Offset(0, 8)),
+          BoxShadow(
+            color: Color(0x99000000),
+            blurRadius: 24,
+            offset: Offset(0, 8),
+          ),
         ],
       ),
       child: Padding(
@@ -379,7 +383,9 @@ class BotonIcono extends StatelessWidget {
         minimumSize: const Size.fromHeight(Sizes.touch),
         foregroundColor: color,
         backgroundColor: peligro ? NexaColors.errorSuave : NexaColors.raised,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Rad.md)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Rad.md),
+        ),
         textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
         padding: const EdgeInsets.symmetric(horizontal: Sp.md),
       ),

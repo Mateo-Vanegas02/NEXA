@@ -43,7 +43,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final paginas = [
       (const _Radar(), l.onb1Titulo, l.onb1Texto),
       (const _Insignia(Icons.bolt_rounded), l.onb2Titulo, l.onb2Texto),
-      (const _Insignia(Icons.verified_user_outlined), l.onb3Titulo, l.onb3Texto),
+      (
+        const _Insignia(Icons.verified_user_outlined),
+        l.onb3Titulo,
+        l.onb3Texto,
+      ),
     ];
     return Scaffold(
       body: FondoNexa(
@@ -153,16 +157,13 @@ class _Radar extends StatelessWidget {
   Widget build(BuildContext context) => Stack(
     children: [
       const Positioned.fill(child: CustomPaint(painter: _RadarPainter())),
-      const Align(
-        alignment: Alignment(-0.05, 0.02),
-        child: _Moto(),
-      ),
+      const Align(alignment: Alignment(-0.05, 0.02), child: _Moto()),
       Align(
-        alignment: const Alignment(-0.45, -0.52),
+        alignment: const Alignment(-0.6, -0.52),
         child: _Etiqueta(icono: Icons.bolt_rounded, texto: '+7 XP por viaje'),
       ),
       Align(
-        alignment: const Alignment(0.55, 0.1),
+        alignment: const Alignment(0.75, 0.1),
         child: _Etiqueta(icono: Icons.timer_outlined, texto: 'Llega en 3 min'),
       ),
     ],
@@ -178,7 +179,12 @@ class _RadarPainter extends CustomPainter {
     final onda = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2;
-    for (final (r, a) in [(0.95, 0.10), (0.7, 0.16), (0.46, 0.22), (0.24, 0.3)]) {
+    for (final (r, a) in [
+      (0.95, 0.10),
+      (0.7, 0.16),
+      (0.46, 0.22),
+      (0.24, 0.3),
+    ]) {
       onda.color = NexaColors.cyan.withValues(alpha: a);
       canvas.drawCircle(c, size.height * 0.5 * r, onda);
     }
@@ -221,7 +227,11 @@ class _RadarPainter extends CustomPainter {
           ..color = NexaColors.cyan,
       )
       // Origen: punto con halo.
-      ..drawCircle(inicio, 16, Paint()..color = NexaColors.cyan.withValues(alpha: 0.2))
+      ..drawCircle(
+        inicio,
+        16,
+        Paint()..color = NexaColors.cyan.withValues(alpha: 0.2),
+      )
       ..drawCircle(inicio, 8, Paint()..color = NexaColors.texto)
       ..drawCircle(inicio, 5, Paint()..color = NexaColors.navy);
     // Destino: cuadro blanco.
@@ -268,6 +278,7 @@ class _Etiqueta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
+    constraints: const BoxConstraints(maxWidth: 180),
     padding: const EdgeInsets.symmetric(horizontal: Sp.md, vertical: Sp.sm),
     decoration: BoxDecoration(
       color: NexaColors.card,
@@ -279,9 +290,13 @@ class _Etiqueta extends StatelessWidget {
       children: [
         Icon(icono, size: 16, color: NexaColors.gold),
         const SizedBox(width: Sp.sm),
-        Text(
-          texto,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+        Flexible(
+          child: Text(
+            texto,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+          ),
         ),
       ],
     ),

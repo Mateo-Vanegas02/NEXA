@@ -42,14 +42,10 @@ class AuthScaffold extends StatelessWidget {
     return Scaffold(
       body: FondoNexa(
         child: SafeArea(
-          child: CustomScrollView(
+          child: SingleChildScrollView(
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            slivers: [
-              SliverPadding(
-                padding: EdgeInsets.all(context.gutter),
-                sliver: SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: ContenidoCentrado(
+            padding: EdgeInsets.all(context.gutter),
+            child: ContenidoCentrado(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -107,16 +103,12 @@ class AuthScaffold extends StatelessWidget {
                         const SizedBox(height: Sp.xl),
                         ...children,
                         if (pie != null) ...[
-                          const Spacer(),
-                          const SizedBox(height: Sp.xl),
+                          const SizedBox(height: Sp.xxl),
                           pie!,
                         ],
                       ],
                     ),
                   ),
-                ),
-              ),
-            ],
           ),
         ),
       ),

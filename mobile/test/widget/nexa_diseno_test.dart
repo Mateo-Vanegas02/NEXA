@@ -74,7 +74,7 @@ void main() {
     semantica.dispose();
   });
 
-  testWidgets('NexaBarraFlotante muestra la etiqueta solo del activo', (
+  testWidgets('NexaBarraFlotante muestra todas las etiquetas y elige', (
     t,
   ) async {
     var elegido = -1;
@@ -91,7 +91,7 @@ void main() {
       ),
     );
     expect(find.text('Inicio'), findsOneWidget);
-    expect(find.text('Historial'), findsNothing);
+    expect(find.text('Historial'), findsOneWidget);
     await t.tap(find.byIcon(Icons.history));
     expect(elegido, 1);
   });
