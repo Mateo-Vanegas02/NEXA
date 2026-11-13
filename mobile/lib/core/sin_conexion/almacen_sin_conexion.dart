@@ -14,7 +14,9 @@ abstract class AlmacenSinConexion {
   Future<void> guardarPunto(PuntoGuardado punto);
 
   /// Los más viejos primero.
-  Future<List<PuntoGuardado>> puntos({int limite = ReglasSinConexion.puntosPorLote});
+  Future<List<PuntoGuardado>> puntos({
+    int limite = ReglasSinConexion.puntosPorLote,
+  });
   Future<void> quitarPuntos(List<int> ids);
 
   /// Copia del viaje (JSON de la vista que entregó el servidor) por rol.

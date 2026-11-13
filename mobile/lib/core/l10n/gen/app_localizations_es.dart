@@ -1810,21 +1810,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String avisoBuscandoHacia(String destino) {
     return 'Hacia $destino';
   }
-  @override
-  String get sinConexionBanda =>
-      'Sin conexión · reintentando';
 
   @override
-  String get pendienteLlegue =>
-      'Llegué';
+  String get sinConexionBanda => 'Sin conexión · reintentando';
 
   @override
-  String get pendienteIniciar =>
-      'Iniciar viaje';
+  String get pendienteLlegue => 'Llegué';
 
   @override
-  String get pendienteFinalizar =>
-      'Finalizar viaje';
+  String get pendienteIniciar => 'Iniciar viaje';
+
+  @override
+  String get pendienteFinalizar => 'Finalizar viaje';
 
   @override
   String get pendienteDeEnviar =>
@@ -1835,8 +1832,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Viaje finalizado sin señal. El cobro final aparecerá al volver la conexión.';
 
   @override
-  String get copiaDelViaje =>
-      'Sin señal: mostramos la última copia del viaje';
+  String get copiaDelViaje => 'Sin señal: mostramos la última copia del viaje';
 
   @override
   String sinConexionUltimoDato(int minutos) {

@@ -276,65 +276,67 @@ void main() {
       },
     );
 
-    test(
-      'sin señal, «Iniciar» queda en cola, avanza en el teléfono y se envía '
-      'después con la misma llave y su hora',
-      () async {
-        final falso = _Repo(
-          activo: _viaje(
-            EstadoServicio.aceptado,
-          ).copyWith(fechaLlegada: DateTime(2026, 11, 13, 9)),
-        );
-        final c = contenedor(falso, gps: const LatLng(10.40, -75.50));
-        await c.read(sesionProvider.notifier).login('conductor@x.co', '123456');
-        await c.read(conductorProvider.future);
-        final ctrl = c.read(conductorProvider.notifier);
-
-        falso.sinRed = true;
-        await ctrl.avanzar();
-
-        expect(c.read(conductorProvider).requireValue.fase, FaseConductor.enViaje);
-        final cola = c.read(sinConexionProvider).pendientes;
-        expect(cola.single.tipo, TipoPendiente.iniciar);
-        expect(falso.llaves, isEmpty);
-
-        // Sin señal el ciclo guarda la posición para el recorrido real.
-        await ctrl.sondear();
-        expect(c.read(sinConexionProvider).puntos, 1);
-
-        falso.sinRed = false;
-        await ctrl.sondear();
-
-        expect(falso.lotes.single, hasLength(1));
-        expect(falso.llaves.single, cola.single.llave);
-        expect(falso.horas.single, cola.single.ocurridoEn);
-        expect(c.read(sinConexionProvider).hayAlgo, isFalse);
-        expect(falso.activo?.estado, EstadoServicio.enCurso);
-      },
-    );
-
-    test('sin señal al abrir, el viaje sale de la copia del teléfono', () async {
-      final falso = _Repo(activo: _viaje(EstadoServicio.aceptado));
-      final almacen = AlmacenEnMemoria();
-      final c = ProviderContainer(
-        overrides: [
-          ...overridesTest(),
-          conductorRepositoryProvider.overrideWithValue(falso),
-          almacenSinConexionProvider.overrideWithValue(almacen),
-        ],
+    test('sin señal, «Iniciar» queda en cola, avanza en el teléfono y se envía '
+        'después con la misma llave y su hora', () async {
+      final falso = _Repo(
+        activo: _viaje(EstadoServicio.aceptado)
+            .copyWith(fechaLlegada: DateTime(2026, 11, 13, 9)),
       );
-      addTearDown(c.dispose);
+      final c = contenedor(falso, gps: const LatLng(10.40, -75.50));
       await c.read(sesionProvider.notifier).login('conductor@x.co', '123456');
       await c.read(conductorProvider.future);
-      await Future<void>.delayed(Duration.zero);
-      expect(await almacen.instantanea('conductor'), isNotNull);
+      final ctrl = c.read(conductorProvider.notifier);
 
       falso.sinRed = true;
-      c.invalidate(conductorProvider);
-      final estado = await c.read(conductorProvider.future);
-      expect(estado.activo?.id, 'v1');
-      expect(estado.copiaDe, isNotNull);
+      await ctrl.avanzar();
+
+      expect(
+        c.read(conductorProvider).requireValue.fase,
+        FaseConductor.enViaje,
+      );
+      final cola = c.read(sinConexionProvider).pendientes;
+      expect(cola.single.tipo, TipoPendiente.iniciar);
+      expect(falso.llaves, isEmpty);
+
+      // Sin señal el ciclo guarda la posición para el recorrido real.
+      await ctrl.sondear();
+      expect(c.read(sinConexionProvider).puntos, 1);
+
+      falso.sinRed = false;
+      await ctrl.sondear();
+
+      expect(falso.lotes.single, hasLength(1));
+      expect(falso.llaves.single, cola.single.llave);
+      expect(falso.horas.single, cola.single.ocurridoEn);
+      expect(c.read(sinConexionProvider).hayAlgo, isFalse);
+      expect(falso.activo?.estado, EstadoServicio.enCurso);
     });
+
+    test(
+      'sin señal al abrir, el viaje sale de la copia del teléfono',
+      () async {
+        final falso = _Repo(activo: _viaje(EstadoServicio.aceptado));
+        final almacen = AlmacenEnMemoria();
+        final c = ProviderContainer(
+          overrides: [
+            ...overridesTest(),
+            conductorRepositoryProvider.overrideWithValue(falso),
+            almacenSinConexionProvider.overrideWithValue(almacen),
+          ],
+        );
+        addTearDown(c.dispose);
+        await c.read(sesionProvider.notifier).login('conductor@x.co', '123456');
+        await c.read(conductorProvider.future);
+        await Future<void>.delayed(Duration.zero);
+        expect(await almacen.instantanea('conductor'), isNotNull);
+
+        falso.sinRed = true;
+        c.invalidate(conductorProvider);
+        final estado = await c.read(conductorProvider.future);
+        expect(estado.activo?.id, 'v1');
+        expect(estado.copiaDe, isNotNull);
+      },
+    );
 
     test('«Llegué» sin GPS explica por qué no puede continuar', () async {
       final falso = _Repo(activo: _viaje(EstadoServicio.aceptado));
@@ -504,6 +506,7 @@ class _Repo implements ConductorRepository {
     _red();
     return activo;
   }
+
   @override
   Future<PosicionPasajero?> ubicacionPasajero(String id) async => pasajero;
   @override
@@ -544,6 +547,7 @@ class _Repo implements ConductorRepository {
     horas.add(ocurridoEn);
     return activo = activo!.copyWith(estado: EstadoServicio.enCurso);
   }
+
   @override
   Future<Servicio> finalizar(
     String id, {

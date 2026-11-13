@@ -23,7 +23,8 @@ class ConexionController extends Notifier<EstadoRed> {
   void reportar({required bool hayRed}) {
     final ahora = DateTime.now();
     if (hayRed) {
-      if (state.conRed && state.ultimoDato != null &&
+      if (state.conRed &&
+          state.ultimoDato != null &&
           ahora.difference(state.ultimoDato!) < const Duration(seconds: 5)) {
         return; // Sin cambios visibles: no repinta en cada petición.
       }

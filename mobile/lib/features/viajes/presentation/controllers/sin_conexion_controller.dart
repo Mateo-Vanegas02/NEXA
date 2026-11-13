@@ -28,9 +28,8 @@ class EstadoSinConexion {
   /// El servidor dijo que una acción ya no aplicaba (gana el servidor).
   final String? rechazo;
 
-  bool tienePendiente(String servicioId, TipoPendiente tipo) => pendientes.any(
-    (a) => a.servicioId == servicioId && a.tipo == tipo,
-  );
+  bool tienePendiente(String servicioId, TipoPendiente tipo) =>
+      pendientes.any((a) => a.servicioId == servicioId && a.tipo == tipo);
 
   bool get hayAlgo => pendientes.isNotEmpty || puntos > 0;
 }

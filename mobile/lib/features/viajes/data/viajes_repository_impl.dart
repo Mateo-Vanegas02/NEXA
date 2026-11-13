@@ -276,29 +276,21 @@ class ApiConductorRepository implements ConductorRepository {
   Future<Servicio> aceptar(String id) => _accion('aceptar-servicio', id);
   @override
   Future<Servicio> iniciar(String id, {String? llave, DateTime? ocurridoEn}) =>
-      _accion(
-        'iniciar-servicio',
-        id,
-        llave: llave,
-        ocurridoEn: ocurridoEn,
-      );
+      _accion('iniciar-servicio', id, llave: llave, ocurridoEn: ocurridoEn);
   @override
   Future<Servicio> finalizar(
     String id, {
     String? llave,
     DateTime? ocurridoEn,
-  }) => _accion(
-    'finalizar-servicio',
-    id,
-    llave: llave,
-    ocurridoEn: ocurridoEn,
-  );
+  }) => _accion('finalizar-servicio', id, llave: llave, ocurridoEn: ocurridoEn);
 
   @override
   Future<void> reportarLote(List<PuntoGuardado> puntos) => _guard(() async {
     await _dio.post<Object?>(
       '/conductor/ubicacion/lote',
-      data: {'puntos': [for (final p in puntos) p.toJson()]},
+      data: {
+        'puntos': [for (final p in puntos) p.toJson()],
+      },
     );
   });
 

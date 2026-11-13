@@ -39,10 +39,7 @@ class InicioConductorScreen extends ConsumerWidget {
     ref.listen(sinConexionProvider.select((e) => e.rechazo), (_, rechazo) {
       if (rechazo == null) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(rechazo),
-          duration: const Duration(seconds: 8),
-        ),
+        SnackBar(content: Text(rechazo), duration: const Duration(seconds: 8)),
       );
       ref.read(sinConexionProvider.notifier).descartarRechazo();
     });

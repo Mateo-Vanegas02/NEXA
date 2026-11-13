@@ -78,10 +78,7 @@ abstract final class ReglasSinConexion {
   /// Llave de idempotencia nueva: 24 caracteres hexadecimales al azar.
   static String nuevaLlave([Random? azar]) {
     final r = azar ?? Random.secure();
-    return List.generate(
-      24,
-      (_) => r.nextInt(16).toRadixString(16),
-    ).join();
+    return List.generate(24, (_) => r.nextInt(16).toRadixString(16)).join();
   }
 
   /// ¿El error fue por falta de señal (no hubo respuesta del servidor)?
