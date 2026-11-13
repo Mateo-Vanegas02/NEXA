@@ -28,6 +28,7 @@ import 'segundo_plano/rastreador_ubicacion.dart';
 import 'utils/selector_imagen.dart';
 import 'network/api_client.dart';
 import 'network/token_storage.dart';
+import 'push/bandeja_avisos.dart';
 
 /// Tiempo mínimo que se muestra el splash (la sesión se restaura casi al instante).
 final splashMinimoProvider = Provider<Duration>(
@@ -198,3 +199,8 @@ final satisfaccionRepositoryProvider = Provider<SatisfaccionRepository>((ref) {
   }
   return ApiSatisfaccionRepository(ref.watch(satisfaccionDioProvider));
 });
+
+/// Bandeja de avisos del teléfono (N08).
+final bandejaAvisosProvider = Provider<BandejaAvisos>(
+  (ref) => BandejaAvisos(ref.watch(secureStoreProvider)),
+);

@@ -242,6 +242,7 @@ void main() {
     ('D02', '/a/satisfaccion/factores', Rol.admin, 'admin@nexa.co', []),
     ('D03', '/a/satisfaccion/riesgo', Rol.admin, 'admin@nexa.co', []),
     ('D04', '/a/satisfaccion/modelo', Rol.admin, 'admin@nexa.co', []),
+    ('N08', '/notificaciones', Rol.pasajero, '', []),
     ('N01', '/permisos/notificaciones', Rol.pasajero, '', []),
     ('N02', '/permisos/ubicacion', Rol.pasajero, '', []),
     ('E01', '/permisos/sin-ubicacion', Rol.pasajero, '', []),

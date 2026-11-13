@@ -11,7 +11,9 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../l10n/gen/app_localizations.dart';
 import '../notificaciones/canales_notificacion.dart';
+import '../network/token_storage.dart';
 import 'aviso_push.dart';
+import 'bandeja_avisos.dart';
 import 'servicio_push.dart';
 
 /// Cuánto se ve una solicitud en la bandeja: igual a `nexa.avisos.solicitud`
@@ -25,8 +27,17 @@ const vigenciaSolicitud = Duration(seconds: 45);
 @pragma('vm:entry-point')
 Future<void> avisoEnSegundoPlano(RemoteMessage mensaje) async {
   final aviso = AvisoPush.desdeDatos(mensaje.data);
-  // Los avisos del viaje ya traen su notificación: aquí no hay nada que hacer.
-  if (!aviso.esSolicitud && aviso.tipo != TipoAviso.solicitudRetirada) return;
+  // Los avisos del viaje ya traen su notificación: solo van a la bandeja.
+  if (!aviso.esSolicitud && aviso.tipo != TipoAviso.solicitudRetirada) {
+    try {
+      WidgetsFlutterBinding.ensureInitialized();
+      DartPluginRegistrant.ensureInitialized();
+      await const BandejaAvisos(FlutterSecureStore()).registrar(aviso);
+    } on Object catch (e) {
+      debugPrint('Bandeja de avisos: $e');
+    }
+    return;
+  }
   try {
     WidgetsFlutterBinding.ensureInitialized();
     DartPluginRegistrant.ensureInitialized();

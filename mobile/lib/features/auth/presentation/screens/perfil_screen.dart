@@ -140,6 +140,12 @@ class PerfilScreen extends ConsumerWidget {
                               ),
                             ),
                           _Opcion(
+                            icono: Icons.notifications_none,
+                            titulo: l.notificaciones,
+                            detalle: l.notificacionesSub,
+                            onTap: () => context.push('/notificaciones'),
+                          ),
+                          _Opcion(
                             icono: Icons.star_outline,
                             titulo: l.nivelesTitulo,
                             detalle: nivel == null

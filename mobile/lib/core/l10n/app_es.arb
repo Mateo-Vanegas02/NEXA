@@ -1305,5 +1305,33 @@
   "precisionBaja": "Baja",
   "precisionMedia": "Media",
   "precisionAlta": "Alta",
-  "calibraBrujulaNota": "Si no mejora, NEXA usa la dirección en la que te mueves."
+  "calibraBrujulaNota": "Si no mejora, NEXA usa la dirección en la que te mueves.",
+  "navGiraDerecha": "Gira a la derecha",
+  "navGiraIzquierda": "Gira a la izquierda",
+  "navLigeraDerecha": "Ligeramente a la derecha",
+  "navLigeraIzquierda": "Ligeramente a la izquierda",
+  "navDaLaVuelta": "Da la vuelta",
+  "navSigueRecto": "Sigue derecho",
+  "navLlegasA": "Llegas a {lugar}",
+  "navHaciaPunto": "Hacia el punto de {nombre}",
+  "navVuelveARuta": "Vuelve a la ruta",
+  "navLuego": "Luego",
+  "@navLlegasA": {
+    "placeholders": {
+      "lugar": {
+        "type": "String"
+      }
+    }
+  },
+  "@navHaciaPunto": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "sinConexionGuardamos": "Sigue el viaje: guardamos todo en tu teléfono",
+  "ayer": "Ayer",
+  "sinNotificacionesDetalle": "Aquí verás los avisos de tus viajes: cuando te aceptan, cuando llega tu conductor y cuando termina.",
+  "notificacionesSub": "Avisos de tus viajes"
 }

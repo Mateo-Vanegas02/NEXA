@@ -16,6 +16,7 @@ import '../controllers/avisos_push_controller.dart';
 import '../controllers/sin_conexion_controller.dart';
 import '../controllers/viaje_conductor_controller.dart';
 import '../widgets/cuenta_bloqueada.dart';
+import '../widgets/navegacion_conductor.dart';
 import '../widgets/solicitud_card.dart';
 import '../widgets/viaje_activo_card.dart';
 import '../../../permisos/presentation/flujo_permisos.dart';
@@ -138,6 +139,31 @@ class _Panel extends ConsumerWidget {
               ),
             ),
           ),
+        if (navegando &&
+            activo != null &&
+            moto != null &&
+            (estado.fase ?? FaseConductor.aRecoger) != FaseConductor.enElPunto)
+          SafeArea(
+            child: Padding(
+              // A la derecha quedan la brújula y «Navegar».
+              padding: const EdgeInsets.fromLTRB(
+                Sp.md,
+                Sp.md,
+                Sizes.touch + Sp.md + Sp.sm,
+                0,
+              ),
+              child: NavegacionConductor(
+                fase: estado.fase ?? FaseConductor.aRecoger,
+                moto: moto,
+                ruta: rutaDe(activo.rutaGeometria),
+                recogida: recogida,
+                destino: activo.destino,
+                pasajero: activo.pasajero?.nombre ?? '',
+                restanteKm: pos?.distanciaRestanteKm,
+              ),
+            ),
+          )
+        else
         SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(Sp.md),

@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../avisos/notificaciones_screen.dart';
+
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/providers.dart';
@@ -104,6 +106,12 @@ class AvisosPushController extends Notifier<String?> {
 
   Future<void> _recibido(AvisoPush aviso) async {
     if (!_deduplicador.nuevo(aviso.eventoId) || !_conSesion) return;
+    try {
+      await ref.read(bandejaAvisosProvider).registrar(aviso);
+      ref.invalidate(bandejaProvider);
+    } on Object catch (e) {
+      debugPrint('Bandeja de avisos: $e');
+    }
     if (aviso.tipo == TipoAviso.solicitudRetirada) {
       await ref
           .read(servicioPushProvider)

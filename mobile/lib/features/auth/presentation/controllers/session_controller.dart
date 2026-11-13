@@ -89,6 +89,7 @@ class SesionController extends Notifier<SesionState> {
       // Nada de la cuenta queda en el teléfono (cola, puntos, copia del viaje).
       try {
         await ref.read(almacenSinConexionProvider).vaciar();
+        await ref.read(bandejaAvisosProvider).vaciar();
       } on Object catch (e) {
         debugPrint('No se pudo vaciar la base local: $e');
       }

@@ -16,6 +16,7 @@ import '../../features/viajes/presentation/conductor/inicio_conductor_screen.dar
 import '../../features/viajes/presentation/conductor/calificar_pasajero_screen.dart';
 import '../../features/viajes/presentation/conductor/ganancias_screen.dart';
 import '../../features/viajes/domain/servicio.dart';
+import '../../features/avisos/notificaciones_screen.dart';
 import '../../features/permisos/presentation/pantallas_permisos.dart';
 import '../../features/satisfaccion/presentation/admin_shell.dart';
 import '../../features/satisfaccion/presentation/screens/entrenando_screen.dart';
@@ -68,6 +69,8 @@ String? redirigir(SesionState s, String ubicacion) {
   if (_publicas.contains(ubicacion)) return _inicio(sesion.rol);
   // Pantallas de permisos comunes a todos los roles (N01, N02, E01)
   if (ubicacion.startsWith('/permisos/')) return null;
+  // Bandeja de avisos (N08), de cualquier rol.
+  if (ubicacion == '/notificaciones') return null;
   return ubicacion.startsWith(_prefijo(sesion.rol))
       ? null
       : _inicio(sesion.rol);
@@ -113,6 +116,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/c/permisos/bateria',
         builder: (_, _) => const GuiaBateriaScreen(),
+      ),
+      GoRoute(
+        path: '/notificaciones',
+        builder: (_, _) => const NotificacionesScreen(),
       ),
       GoRoute(path: '/p/viaje', builder: (_, _) => const ViajeEnCursoScreen()),
       GoRoute(

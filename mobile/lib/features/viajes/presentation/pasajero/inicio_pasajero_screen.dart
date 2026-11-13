@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/theme_x.dart';
+import '../../../avisos/notificaciones_screen.dart';
 import '../../../../core/theme/nexa_texto.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/widgets/mapa_nexa.dart';
@@ -180,10 +181,13 @@ class _Encabezado extends ConsumerWidget {
         const Spacer(),
         IconButton(
           tooltip: l.notificaciones,
-          onPressed: () =>
-              ScaffoldMessenger.of(context)
-                  .showSnackBar(SnackBar(content: Text(l.sinNotificaciones))),
-          icon: const Icon(Icons.notifications_none),
+          onPressed: () => context.push('/notificaciones'),
+          icon: Badge(
+            isLabelVisible: ref.watch(sinLeerProvider) > 0,
+            backgroundColor: NexaColors.cyan,
+            smallSize: 8,
+            child: const Icon(Icons.notifications_none),
+          ),
           style: IconButton.styleFrom(
             minimumSize: const Size.square(Sizes.touch),
             backgroundColor: NexaColors.glass,
