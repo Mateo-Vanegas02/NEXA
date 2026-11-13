@@ -11,6 +11,7 @@ import '../../domain/viajes_repository.dart';
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:latlong2/latlong.dart';
 
 /// Dónde va el conductor del viaje activo (ETA y distancia las calcula el servidor).
 class PosicionConductorNotifier extends Notifier<PosicionViaje?> {
@@ -24,6 +25,21 @@ class PosicionConductorNotifier extends Notifier<PosicionViaje?> {
 final posicionConductorProvider =
     NotifierProvider<PosicionConductorNotifier, PosicionViaje?>(
       PosicionConductorNotifier.new,
+    );
+
+/// Dónde está el pasajero mientras espera la moto (la última que se reportó
+/// al servidor): el mapa lo pinta como personita con su haz.
+class MiUbicacionViajeNotifier extends Notifier<LatLng?> {
+  @override
+  LatLng? build() => null;
+
+  // ignore: use_setters_to_change_properties
+  void poner(LatLng? p) => state = p;
+}
+
+final miUbicacionViajeProvider =
+    NotifierProvider<MiUbicacionViajeNotifier, LatLng?>(
+      MiUbicacionViajeNotifier.new,
     );
 
 /// Viaje en curso del pasajero (o recién finalizado, hasta que se califica).
@@ -114,9 +130,14 @@ class ViajePasajeroController extends AsyncNotifier<Servicio?> {
     } on Object {
       // Sin posición por ahora: se conserva la anterior.
     }
-    if (s.estado != EstadoServicio.aceptado) return;
+    if (s.estado != EstadoServicio.aceptado) {
+      // Ya va en la moto: solo se ve la moto.
+      ref.read(miUbicacionViajeProvider.notifier).poner(null);
+      return;
+    }
     final yo = await ref.read(miPosicionProvider)();
     if (yo == null) return;
+    ref.read(miUbicacionViajeProvider.notifier).poner(yo);
     try {
       await _repo.reportarUbicacion(
         s.id,

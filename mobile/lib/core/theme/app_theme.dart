@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'nexa_texto.dart';
 import 'tokens.dart';
 
 abstract final class AppTheme {
@@ -15,8 +16,10 @@ abstract final class AppTheme {
       onPrimary: NexaColors.bg,
       secondary: NexaColors.sky,
       surface: NexaColors.surface,
-      onSurface: Colors.white,
+      onSurface: NexaColors.texto,
+      onSurfaceVariant: NexaColors.muted,
       surfaceContainerHighest: NexaColors.raised,
+      surfaceContainer: NexaColors.card,
       outline: NexaColors.line,
       error: NexaColors.error,
     ),
@@ -50,10 +53,34 @@ abstract final class AppTheme {
         elevation: 0,
         centerTitle: false,
       ),
-      textTheme: Typography.material2021().black.apply(
-        fontFamily: fuente,
-        bodyColor: scheme.onSurface,
-        displayColor: scheme.onSurface,
+      textTheme: NexaTexto.tema(scheme),
+      cardTheme: CardThemeData(
+        color: oscuro ? NexaColors.card : scheme.surface,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Rad.lg),
+          side: BorderSide(color: scheme.outline),
+        ),
+      ),
+      dividerTheme: DividerThemeData(color: scheme.outline, thickness: 1),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          minimumSize: const Size.fromHeight(Sizes.boton),
+          shape: const StadiumBorder(),
+          textStyle: NexaTexto.boton,
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size.fromHeight(Sizes.boton),
+          shape: const StadiumBorder(),
+          side: BorderSide(color: scheme.outline, width: 1.5),
+          textStyle: NexaTexto.boton,
+        ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -61,7 +88,9 @@ abstract final class AppTheme {
         border: OutlineInputBorder(borderRadius: radius),
         enabledBorder: OutlineInputBorder(
           borderRadius: radius,
-          borderSide: BorderSide(color: scheme.outline.withValues(alpha: 0.5)),
+          borderSide: BorderSide(
+            color: oscuro ? scheme.outline : scheme.outline.withValues(alpha: 0.5),
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: radius,
@@ -78,7 +107,9 @@ abstract final class AppTheme {
           minimumSize: const Size.fromHeight(Sizes.touch),
           selectedBackgroundColor: scheme.primary,
           selectedForegroundColor: scheme.onPrimary,
-          side: BorderSide(color: scheme.outline.withValues(alpha: 0.5)),
+          side: BorderSide(
+            color: oscuro ? scheme.outline : scheme.outline.withValues(alpha: 0.5),
+          ),
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(

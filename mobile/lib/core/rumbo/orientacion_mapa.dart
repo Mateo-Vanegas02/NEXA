@@ -75,11 +75,19 @@ class OrientacionMapaController extends Notifier<EstadoOrientacion> {
   /// horizontal no coincide con la pantalla, así que solo vale el GPS.
   bool vertical = true;
 
+  bool _quiereRumbo = false;
+
+  /// Un mapa con el haz del pasajero necesita el rumbo aunque esté con el
+  /// norte arriba.
+  bool get quiereRumbo => _quiereRumbo;
+
+  bool get _activo => state.orientado || _quiereRumbo;
+
   @override
   EstadoOrientacion build() {
     ref.onDispose(_apagar);
     ref.listen(primerPlanoProvider, (_, aLaVista) {
-      if (!state.orientado) return;
+      if (!_activo) return;
       aLaVista ? _encender() : _apagar();
     });
     return const EstadoOrientacion();
@@ -88,12 +96,26 @@ class OrientacionMapaController extends Notifier<EstadoOrientacion> {
   void cambiarModo(ModoOrientacion modo) {
     if (modo == state.modo) return;
     if (modo == ModoOrientacion.norte) {
-      _apagar();
-      state = const EstadoOrientacion();
+      if (!_quiereRumbo) _apagar();
+      state = _quiereRumbo
+          ? EstadoOrientacion(rumbo: state.rumbo, fuente: state.fuente)
+          : const EstadoOrientacion();
       return;
     }
     state = state.copyWith(modo: modo);
     if (ref.read(primerPlanoProvider)) _encender();
+  }
+
+  /// Pide (o suelta) el rumbo sin girar el mapa: para el haz del pasajero.
+  void pedirRumbo(bool quiere) {
+    if (quiere == _quiereRumbo) return;
+    _quiereRumbo = quiere;
+    if (_activo) {
+      if (ref.read(primerPlanoProvider)) _encender();
+    } else {
+      _apagar();
+      state = const EstadoOrientacion();
+    }
   }
 
   /// Botón de brújula: alterna entre norte arriba y girar con el teléfono.
@@ -142,7 +164,7 @@ class OrientacionMapaController extends Notifier<EstadoOrientacion> {
   }
 
   void _calcular() {
-    if (!state.orientado) return;
+    if (!_activo) return;
     final ahora = DateTime.now();
     _fusion.actualizar(
       gravedad: _gravedad,

@@ -52,7 +52,7 @@ class InicioPasajeroScreen extends ConsumerWidget {
             Positioned.fill(
               child: MapaNexa(
                 centro: centro,
-                origen: centro,
+                pasajero: centro,
                 orientable: true,
                 // Debajo del encabezado.
                 brujulaArriba: Sp.md + Sizes.boton + Sp.md,

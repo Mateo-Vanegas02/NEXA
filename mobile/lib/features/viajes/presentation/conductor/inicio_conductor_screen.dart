@@ -4,6 +4,7 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/theme_x.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/mapa/polyline.dart';
+import '../../../../core/mapa/reglas_marcadores.dart';
 import '../../../../core/widgets/mapa_nexa.dart';
 import '../../../../core/widgets/nexa_diseno.dart';
 import '../../../../core/widgets/nexa_widgets.dart';
@@ -111,6 +112,14 @@ class _Panel extends ConsumerWidget {
             destino: destino,
             ruta: rutaDe(activo?.rutaGeometria),
             conductor: moto,
+            motoPropia: true,
+            pasajero: estado.pasajero == null
+                ? null
+                : LatLng(estado.pasajero!.latitud, estado.pasajero!.longitud),
+            pasajeroPropio: false,
+            pasajeroSinSenal:
+                estado.pasajero != null &&
+                ReglasMarcadores.sinSenal(estado.pasajero!.haceSegundos),
             orientable: true,
             navegacion: navegando,
           ),

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 
 /// Tokens de diseño de NEXA (alineados con `nexa-design.css` de la web).
+/// Tokens de diseño de NEXA: variables `NEXA` del Figma del rediseño
+/// (archivo 9q1xR3WvWNOReyqi5S9mIK) y del prototipo HTML.
 abstract final class NexaColors {
   static const Color cyan = Color(0xFF00C4FF);
   static const Color navy = Color(0xFF004F78);
-  static const Color sky = Color(0xFF5EBDDA);
+
+  /// «Cielo»: la personita del pasajero y acentos suaves.
+  static const Color sky = Color(0xFF5FD4FF);
   static const Color bg = Color(0xFF020A12);
   static const Color surface = Color(0xFF001A33);
   static const Color raised = Color(0xFF07324F);
@@ -12,13 +16,25 @@ abstract final class NexaColors {
   /// Tarjetas y hojas inferiores del rediseño (más oscuro que [surface]).
   static const Color card = Color(0xFF03192E);
 
-  /// Vidrio sobre el mapa (72 % de opacidad).
-  static const Color glass = Color(0xB8001A33);
-  static const Color muted = Color(0xFFA9C1D1);
-  static const Color line = Color(0xFF3F7FA3);
-  static const Color ok = Color(0xFF6EE7A8);
-  static const Color error = Color(0xFFFF8A8A);
+  /// Vidrio sobre el mapa.
+  static const Color glass = Color(0xEB03192E);
+
+  /// Texto principal, secundario y terciario sobre fondo oscuro.
+  static const Color texto = Color(0xFFEAF6FF);
+  static const Color muted = Color(0xFF9FB7CC);
+  static const Color tenue = Color(0xFF5F7A92);
+
+  /// Separadores y bordes de tarjeta.
+  static const Color line = Color(0xFF12324D);
+  static const Color ok = Color(0xFF2FD08A);
+  static const Color error = Color(0xFFFF5C6C);
   static const Color gold = Color(0xFFFFC857);
+
+  /// Translúcidos con alfa propio (en Figma la opacidad ligada se pierde).
+  static const Color cyanSuave = Color(0x2900C4FF);
+  static const Color errorSuave = Color(0x29FF5C6C);
+  static const Color okSuave = Color(0x292FD08A);
+  static const Color goldSuave = Color(0x29FFC857);
 
   // Tema claro: mismo cian, texto navy para contraste AA.
   static const Color brand = Color(0xFF0B5A82);

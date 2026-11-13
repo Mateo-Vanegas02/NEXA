@@ -107,6 +107,9 @@ class _Seguimiento extends ConsumerWidget {
             destino: destino,
             ruta: rutaDe(s.rutaGeometria),
             conductor: pos == null ? null : LatLng(pos.latitud, pos.longitud),
+            pasajero: s.estado == EstadoServicio.aceptado
+                ? ref.watch(miUbicacionViajeProvider)
+                : null,
             orientable: true,
             // Debajo del botón SOS.
             brujulaArriba: enMarcha ? Sp.md + Sizes.boton + Sp.sm : Sp.md,

@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'dart:typed_data';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +10,8 @@ import 'package:maplibre_gl/maplibre_gl.dart' as ml;
 
 import '../config/env.dart';
 import '../l10n/gen/app_localizations.dart';
+import '../mapa/imagenes_marcadores.dart';
+import '../mapa/reglas_marcadores.dart';
 import '../rumbo/orientacion_mapa.dart';
 import '../rumbo/reglas_rumbo.dart';
 import '../theme/tokens.dart';
@@ -59,6 +60,12 @@ String _hex(Color c) =>
 /// Mapa vectorial de OpenFreeMap dibujado con MapLibre (sin API key): origen,
 /// destino, ruta por calles y conductor.
 ///
+/// Marcadores «Quién es quién» (prototipo M01–M05): personita = pasajero
+/// (celeste si es quien mira, dorada si la ve el conductor), motico = moto
+/// (siempre derecha; la proa del aro gira con su rumbo), pin cian = recogida
+/// y cuadro blanco = destino. El pasajero propio lleva un haz con el rumbo del
+/// teléfono y una marca en el aro que señala dónde está la moto.
+///
 /// La ruta es [ruta] (el trazado que calculó el servidor con OSRM); sin ella,
 /// la línea recta origen→destino.
 ///
@@ -73,6 +80,11 @@ class MapaNexa extends ConsumerStatefulWidget {
     this.destino,
     this.ruta,
     this.conductor,
+    this.conductorSinSenal = false,
+    this.motoPropia = false,
+    this.pasajero,
+    this.pasajeroPropio = true,
+    this.pasajeroSinSenal = false,
     this.etiquetaRuta,
     this.zoom = 14,
     this.onTap,
@@ -93,6 +105,22 @@ class MapaNexa extends ConsumerStatefulWidget {
 
   /// Posición (aproximada) de la moto del conductor.
   final LatLng? conductor;
+
+  /// La última posición de la moto es vieja: se pinta gris.
+  final bool conductorSinSenal;
+
+  /// La moto es la de quien mira (panel del conductor): más grande.
+  final bool motoPropia;
+
+  /// Posición del pasajero (personita).
+  final LatLng? pasajero;
+
+  /// true = es quien mira (celeste, con haz y marca hacia la moto);
+  /// false = la pasajera vista por el conductor (dorada, sin haz).
+  final bool pasajeroPropio;
+
+  /// La posición del pasajero ya venció: personita gris.
+  final bool pasajeroSinSenal;
 
   /// Texto sobre el mapa, p. ej. "12 min · 4,2 km".
   final String? etiquetaRuta;
@@ -128,15 +156,19 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
 
   ml.Line? _linea;
   List<LatLng> _lineaPuntos = const [];
-  ml.Circle? _origen;
-  LatLng? _origenEn;
-  ml.Circle? _destino;
-  LatLng? _destinoEn;
-  ml.Symbol? _moto;
-  (LatLng, String, double)? _motoEn;
+  final _simbolos = <String, ml.Symbol>{};
+  final _firmas = <String, Object>{};
+  bool _solapePermitido = false;
+  LatLng? _motoAnterior;
+  double? _rumboMoto;
   ModoOrientacion _modoAplicado = ModoOrientacion.norte;
+  bool? _rumboPedido;
 
-  bool get _usaOrientacion => widget.orientable || widget.navegacion;
+  /// El haz necesita el rumbo del teléfono aunque el mapa no gire.
+  bool get _conHaz => widget.pasajero != null && widget.pasajeroPropio;
+
+  bool get _usaOrientacion =>
+      widget.orientable || widget.navegacion || _conHaz;
 
   /// Los cambios en el mapa nativo van en fila: así nunca se pisan.
   void _enCola(Future<void> Function() tarea) {
@@ -153,6 +185,16 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
         widget.origen != anterior.origen ||
         widget.destino != anterior.destino ||
         widget.ruta != anterior.ruta;
+    if (widget.conductor != anterior.conductor && widget.conductor != null) {
+      final r = ReglasMarcadores.rumboDeAvance(
+        _motoAnterior,
+        widget.conductor!,
+      );
+      if (r != null || _motoAnterior == null) {
+        if (r != null) _rumboMoto = r;
+        _motoAnterior = widget.conductor;
+      }
+    }
     if (widget.encuadrarRuta && cambioRuta) _enCola(_encuadrar);
     if (_usaOrientacion &&
         (widget.navegacion != anterior.navegacion ||
@@ -174,19 +216,13 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
     if (c == null) return;
     // Un estilo nuevo borra lo dibujado: se vuelve a crear.
     _linea = null;
-    _origen = _destino = null;
-    _moto = null;
     _lineaPuntos = const [];
-    _origenEn = _destinoEn = null;
-    _motoEn = null;
-    await c.addImage(
-      'nexa-moto',
-      await _iconoPng(Icons.two_wheeler, NexaColors.brand, Colors.white),
-    );
-    await c.addImage(
-      'nexa-flecha',
-      await _iconoPng(Icons.navigation, Colors.white, NexaColors.cyan),
-    );
+    _simbolos.clear();
+    _firmas.clear();
+    _solapePermitido = false;
+    for (final e in (await _imagenes()).entries) {
+      await c.addImage(e.key, e.value);
+    }
     _estiloListo = true;
     await _sincronizar();
     if (widget.encuadrarRuta) await _encuadrar();
@@ -207,78 +243,166 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
           ml.LineOptions(
             geometry: puntos.map(_aMl).toList(),
             lineColor: _hex(NexaColors.cyan),
-            lineWidth: 5,
+            lineWidth: 6,
             lineJoin: 'round',
           ),
         );
       }
       _lineaPuntos = puntos;
     }
-    if (widget.origen != _origenEn) {
-      _origen = await _pin(c, _origen, widget.origen, NexaColors.brand);
-      _origenEn = widget.origen;
-    }
-    if (widget.destino != _destinoEn) {
-      _destino = await _pin(c, _destino, widget.destino, NexaColors.cyan);
-      _destinoEn = widget.destino;
-    }
-    await _dibujarMoto(c);
+    await _marcadores(c);
   }
 
-  Future<ml.Circle?> _pin(
-    ml.MapLibreMapController c,
-    ml.Circle? actual,
-    LatLng? en,
-    Color color,
-  ) async {
-    if (en == null) {
-      if (actual != null) await c.removeCircle(actual);
-      return null;
-    }
-    if (actual != null) {
-      await c.updateCircle(actual, ml.CircleOptions(geometry: _aMl(en)));
-      return actual;
-    }
-    return c.addCircle(
-      ml.CircleOptions(
-        geometry: _aMl(en),
-        circleRadius: 9,
-        circleColor: _hex(color),
-        circleStrokeColor: '#ffffff',
-        circleStrokeWidth: 3,
-      ),
+  /// Dibuja (o mueve, o quita) cada marcador; solo toca los que cambiaron.
+  Future<void> _marcadores(ml.MapLibreMapController c) async {
+    if (!_estiloListo || !mounted) return;
+    final o = _usaOrientacion
+        ? ref.read(orientacionMapaProvider)
+        : const EstadoOrientacion();
+    final giroMapa = o.orientado ? o.rotacionMapa : 0.0;
+    double enPantalla(double rumbo) =>
+        ReglasRumbo.anguloEnPantalla(rumbo, giroMapa);
+
+    final recogida = widget.origen;
+    await _simbolo(
+      c,
+      'recogida',
+      recogida == null
+          ? null
+          : _op(recogida, ImagenMarcador.recogida, z: 5, ancla: 'bottom'),
+    );
+    final destino = widget.destino;
+    await _simbolo(
+      c,
+      'destino',
+      destino == null ? null : _op(destino, ImagenMarcador.destino, z: 5),
+    );
+
+    final pasajero = widget.pasajero;
+    final moto = widget.conductor;
+    final propio = widget.pasajeroPropio;
+    final rumboTel = o.rumbo;
+    await _simbolo(
+      c,
+      'haz',
+      pasajero == null || !propio || rumboTel == null
+          ? null
+          : _op(pasajero, ImagenMarcador.hazCielo, z: 1, giro: enPantalla(rumboTel)),
+    );
+    await _simbolo(
+      c,
+      'persona',
+      pasajero == null
+          ? null
+          : _op(
+              pasajero,
+              widget.pasajeroSinSenal
+                  ? ImagenMarcador.personaGris
+                  : propio
+                  ? ImagenMarcador.personaCielo
+                  : ImagenMarcador.personaOro,
+              z: 3,
+            ),
+    );
+    await _simbolo(
+      c,
+      'marca',
+      pasajero == null || moto == null || !propio
+          ? null
+          : _op(
+              pasajero,
+              ImagenMarcador.marcaHacia,
+              z: 4,
+              giro: enPantalla(ReglasMarcadores.rumboEntre(pasajero, moto)),
+            ),
+    );
+
+    final gris = widget.conductorSinSenal;
+    await _simbolo(
+      c,
+      'moto',
+      moto == null
+          ? null
+          : _op(
+              moto,
+              gris
+                  ? ImagenMarcador.motoGris
+                  : widget.motoPropia
+                  ? ImagenMarcador.motoPropia
+                  : ImagenMarcador.moto,
+              z: 7,
+            ),
+    );
+    // En navegación manda la brújula/GPS del propio conductor; si no, el
+    // avance entre posiciones.
+    final rumboMoto = widget.navegacion && o.rumbo != null
+        ? o.rumbo
+        : _rumboMoto;
+    await _simbolo(
+      c,
+      'proa',
+      moto == null || rumboMoto == null
+          ? null
+          : _op(
+              moto,
+              gris ? ImagenMarcador.proaGris : ImagenMarcador.proa,
+              z: 8,
+              giro: enPantalla(rumboMoto),
+              tam: widget.motoPropia && !gris ? 0.6 : 0.5,
+            ),
     );
   }
 
-  Future<void> _dibujarMoto(ml.MapLibreMapController c) async {
-    final en = widget.conductor;
-    final o = ref.read(orientacionMapaProvider);
-    final flecha = widget.navegacion && o.rumbo != null;
-    final icono = flecha ? 'nexa-flecha' : 'nexa-moto';
-    // Con el mapa girado, la flecha se gira lo que falte para apuntar al rumbo.
-    final giro = flecha
-        ? ReglasRumbo.anguloEnPantalla(o.rumbo!, o.rotacionMapa)
-        : 0.0;
-    final nuevo = en == null ? null : (en, icono, giro);
-    if (nuevo == _motoEn) return;
-    _motoEn = nuevo;
-    final actual = _moto;
-    if (en == null) {
-      _moto = null;
-      if (actual != null) await c.removeSymbol(actual);
+  ml.SymbolOptions _op(
+    LatLng en,
+    String imagen, {
+    required int z,
+    double giro = 0,
+    String ancla = 'center',
+    double tam = 1 / kEscalaMarcador,
+  }) => ml.SymbolOptions(
+    geometry: _aMl(en),
+    iconImage: imagen,
+    iconSize: tam,
+    iconRotate: giro,
+    iconAnchor: ancla,
+    zIndex: z,
+  );
+
+  Future<void> _simbolo(
+    ml.MapLibreMapController c,
+    String clave,
+    ml.SymbolOptions? op,
+  ) async {
+    final actual = _simbolos[clave];
+    if (op == null) {
+      _firmas.remove(clave);
+      if (actual != null) {
+        _simbolos.remove(clave);
+        await c.removeSymbol(actual);
+      }
       return;
     }
-    final opciones = ml.SymbolOptions(
-      geometry: _aMl(en),
-      iconImage: icono,
-      iconSize: 0.5,
-      iconRotate: giro,
-      zIndex: 10,
+    // Giros de menos de un grado no se reenvían al mapa nativo.
+    final firma = (
+      op.geometry,
+      op.iconImage,
+      (op.iconRotate ?? 0).round(),
+      op.iconSize,
     );
+    if (actual != null && _firmas[clave] == firma) return;
+    _firmas[clave] = firma;
     if (actual != null) {
-      await c.updateSymbol(actual, opciones);
-    } else {
-      _moto = await c.addSymbol(opciones);
+      await c.updateSymbol(actual, op);
+      return;
+    }
+    _simbolos[clave] = await c.addSymbol(op);
+    if (!_solapePermitido) {
+      // Los marcadores se encimen (haz bajo la personita, proa sobre la
+      // moto) en vez de esconderse unos a otros.
+      _solapePermitido = true;
+      await c.symbolManager?.setIconAllowOverlap(true);
+      await c.symbolManager?.setIconIgnorePlacement(true);
     }
   }
 
@@ -343,7 +467,6 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
         );
       }
     });
-    if (widget.navegacion) _enCola(() => _dibujarMoto(c));
   }
 
   @override
@@ -361,7 +484,19 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
       ref.read(orientacionMapaProvider.notifier)
         ..sinAnimacion = MediaQuery.disableAnimationsOf(context)
         ..vertical = MediaQuery.orientationOf(context) == Orientation.portrait;
-      ref.listen(orientacionMapaProvider, (_, e) => _aplicar(e));
+      ref.listen(orientacionMapaProvider, (_, e) {
+        _aplicar(e);
+        final c = _ml;
+        if (c != null) _enCola(() => _marcadores(c));
+      });
+      if (_rumboPedido != _conHaz) {
+        _rumboPedido = _conHaz;
+        final quiere = _conHaz;
+        final ctrl = ref.read(orientacionMapaProvider.notifier);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) ctrl.pedirRumbo(quiere);
+        });
+      }
     }
     final oscuro = Theme.of(context).brightness == Brightness.dark;
     final inicio = widget.navegacion
@@ -428,43 +563,13 @@ bool _mismos(List<LatLng> a, List<LatLng> b) {
   return true;
 }
 
-/// Ícono redondo como imagen PNG para el mapa nativo (a 2×, se muestra a la
-/// mitad con `iconSize: 0.5`).
-Future<Uint8List> _iconoPng(IconData icono, Color color, Color fondo) async {
-  const lado = 88.0;
-  final grabadora = ui.PictureRecorder();
-  final lienzo = Canvas(grabadora);
-  const centro = Offset(lado / 2, lado / 2);
-  lienzo
-    ..drawCircle(centro, lado / 2 - 2, Paint()..color = const Color(0x55000000))
-    ..drawCircle(centro, lado / 2 - 6, Paint()..color = Colors.white)
-    ..drawCircle(centro, lado / 2 - 12, Paint()..color = fondo);
-  final texto = TextPainter(
-    text: TextSpan(
-      text: String.fromCharCode(icono.codePoint),
-      style: TextStyle(
-        fontSize: 44,
-        fontFamily: icono.fontFamily,
-        package: icono.fontPackage,
-        color: color,
-      ),
-    ),
-    textDirection: TextDirection.ltr,
-  )..layout();
-  texto.paint(
-    lienzo,
-    Offset((lado - texto.width) / 2, (lado - texto.height) / 2),
-  );
-  final imagen = await grabadora.endRecording().toImage(
-    lado.toInt(),
-    lado.toInt(),
-  );
-  final datos = await imagen.toByteData(format: ui.ImageByteFormat.png);
-  return datos!.buffer.asUint8List();
-}
+/// Las imágenes de los marcadores se dibujan una vez por proceso.
+Future<Map<String, Uint8List>>? _cacheImagenes;
+Future<Map<String, Uint8List>> _imagenes() =>
+    _cacheImagenes ??= dibujarMarcadores();
 
-/// Brújula sobre el mapa: la aguja señala el norte; tocarla alterna entre
-/// norte arriba y girar con el teléfono.
+/// Brújula sobre el mapa (diseño G01): disco de vidrio con la aguja roja al
+/// norte; tocarla alterna entre norte arriba y girar con el teléfono.
 class BotonBrujula extends ConsumerWidget {
   const BotonBrujula({required this.estado, super.key});
   final EstadoOrientacion estado;
@@ -480,28 +585,73 @@ class BotonBrujula extends ConsumerWidget {
       toggled: activo,
       label: activo ? l.mapaVolverNorte : l.mapaGirarConTelefono,
       child: Material(
-        color: activo ? NexaColors.cyan : Colors.white,
-        shape: const CircleBorder(),
-        elevation: 3,
+        color: NexaColors.glass,
+        shape: CircleBorder(
+          side: BorderSide(
+            color: activo ? NexaColors.cyan : NexaColors.line,
+            width: activo ? 2 : 1,
+          ),
+        ),
+        elevation: 6,
+        shadowColor: Colors.black,
         child: InkWell(
           customBorder: const CircleBorder(),
           onTap: estado.modo == ModoOrientacion.navegacion
               ? null
               : ref.read(orientacionMapaProvider.notifier).alternarBrujula,
           child: SizedBox.square(
-            dimension: Sizes.touch,
+            dimension: Sizes.touch + 4,
             child: Transform.rotate(
               angle: angulo,
-              child: Icon(
-                Icons.navigation,
-                color: activo ? Colors.white : NexaColors.brand,
-              ),
+              child: const CustomPaint(painter: _AgujaPainter()),
             ),
           ),
         ),
       ),
     );
   }
+}
+
+class _AgujaPainter extends CustomPainter {
+  const _AgujaPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final c = size.center(Offset.zero);
+    canvas
+      ..drawPath(
+        Path()
+          ..moveTo(c.dx, c.dy - 17)
+          ..lineTo(c.dx + 6, c.dy)
+          ..lineTo(c.dx - 6, c.dy)
+          ..close(),
+        Paint()..color = NexaColors.error,
+      )
+      ..drawPath(
+        Path()
+          ..moveTo(c.dx, c.dy + 17)
+          ..lineTo(c.dx - 6, c.dy)
+          ..lineTo(c.dx + 6, c.dy)
+          ..close(),
+        Paint()..color = NexaColors.muted,
+      );
+    final n = TextPainter(
+      text: const TextSpan(
+        text: 'N',
+        style: TextStyle(
+          fontFamily: 'Montserrat',
+          fontSize: 8,
+          fontWeight: FontWeight.w700,
+          color: NexaColors.texto,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    n.paint(canvas, Offset(c.dx - n.width / 2, c.dy - 26));
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _AvisoOrientacion extends StatelessWidget {
@@ -516,10 +666,13 @@ class _AvisoOrientacion extends StatelessWidget {
         : l.mapaSinBrujula;
     return Semantics(
       liveRegion: true,
-      child: Material(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(Rad.md),
-        elevation: 3,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: NexaColors.glass,
+          borderRadius: BorderRadius.circular(Rad.lg),
+          border: Border.all(color: NexaColors.gold.withValues(alpha: 0.5)),
+          boxShadow: NexaShadows.card,
+        ),
         child: Padding(
           padding: const EdgeInsets.all(Sp.md),
           child: Row(
@@ -528,13 +681,13 @@ class _AvisoOrientacion extends StatelessWidget {
                 aviso == AvisoOrientacion.calibrar
                     ? Icons.screen_rotation_alt
                     : Icons.explore_off,
-                color: NexaColors.brand,
+                color: NexaColors.gold,
               ),
               const SizedBox(width: Sp.md),
               Expanded(
                 child: Text(
                   texto,
-                  style: const TextStyle(color: NexaColors.brand),
+                  style: const TextStyle(color: NexaColors.texto, fontSize: 13),
                 ),
               ),
             ],
@@ -552,16 +705,17 @@ class _Etiqueta extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Center(
     child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: Sp.md, vertical: Sp.xs),
+      padding: const EdgeInsets.symmetric(horizontal: Sp.md, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: NexaColors.glass,
         borderRadius: BorderRadius.circular(Rad.pill),
+        border: Border.all(color: NexaColors.line),
         boxShadow: NexaShadows.card,
       ),
       child: Text(
         texto,
         style: const TextStyle(
-          color: NexaColors.brand,
+          color: NexaColors.texto,
           fontWeight: FontWeight.w700,
           fontSize: 12,
         ),
