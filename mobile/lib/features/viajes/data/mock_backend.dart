@@ -6,6 +6,7 @@ import '../../niveles/domain/nivel.dart';
 import '../../niveles/domain/niveles_repository.dart';
 import '../../../core/sin_conexion/reglas_sin_conexion.dart';
 import '../domain/perfil_pasajero.dart';
+import '../domain/oferta_activa.dart';
 import '../domain/servicio.dart';
 import '../domain/viajes_repository.dart';
 
@@ -485,6 +486,22 @@ class MockPasajeroRepository implements PasajeroRepository {
   Future<List<Servicio>> historial() => _t(_b.historialPasajero);
   @override
   Future<Servicio> detalle(String id) => _t(() => _b.detallePasajero(id));
+  @override
+  Future<OfertaActiva?> ofertaActiva() => _t(() {
+    final s = _b.historialPasajero().where((s) => s.estado.activo).firstOrNull;
+    if (s == null || s.estado != EstadoServicio.solicitado) return null;
+    return OfertaActiva(
+      servicioId: s.id,
+      topeExtra: 5000,
+      despacho: const AvisoDespacho(
+        ola: 2,
+        totalOlas: 4,
+        conductoresAvisados: 6,
+        radioKm: 2.5,
+        segundosSiguienteOla: 20,
+      ),
+    );
+  });
   @override
   Future<String?> viajeAbiertoId() => _t(
     () => _b.historialPasajero().where((s) => s.estado.activo).firstOrNull?.id,

@@ -8,6 +8,7 @@ import 'package:nexa_mobile/core/providers.dart';
 import 'package:nexa_mobile/features/auth/presentation/controllers/session_controller.dart';
 import 'package:nexa_mobile/features/viajes/data/viajes_repository_impl.dart';
 import 'package:nexa_mobile/features/viajes/domain/perfil_pasajero.dart';
+import 'package:nexa_mobile/features/viajes/domain/oferta_activa.dart';
 import 'package:nexa_mobile/features/viajes/domain/servicio.dart';
 import 'package:nexa_mobile/features/viajes/domain/viajes_repository.dart';
 import 'package:nexa_mobile/features/viajes/presentation/controllers/viaje_pasajero_controller.dart';
@@ -390,6 +391,8 @@ class _RepoFalso implements PasajeroRepository {
   Future<Servicio> detalle(String id) async => _s;
   @override
   Future<String?> viajeAbiertoId() async => estado.activo ? 's1' : null;
+  @override
+  Future<OfertaActiva?> ofertaActiva() async => null;
   @override
   Future<PosicionViaje?> posicionConductor(String id) async {
     consultasPosicion++;

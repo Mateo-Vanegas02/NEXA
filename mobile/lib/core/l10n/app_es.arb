@@ -1260,5 +1260,50 @@
         "type": "String"
       }
     }
-  }
+  },
+  "olaDe": "Ola {ola} de {total}",
+  "@olaDe": {
+    "placeholders": {
+      "ola": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "olaDeRadio": "Ola {ola} de {total} · radio {km} km",
+  "@olaDeRadio": {
+    "placeholders": {
+      "ola": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "nadieAcepto": "Nadie aceptó todavía",
+  "nadieAceptoTexto": "Avisamos a {n} conductores en {km} km. A esta hora hay poca oferta cerca de ti.",
+  "@nadieAceptoTexto": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "cancelarSinCargo": "Cancelar sin cargo",
+  "calibraBrujula": "Calibra la brújula",
+  "calibraBrujulaTexto": "El metal y los imanes cercanos desvían el rumbo. Mueve el teléfono dibujando un 8 en el aire, 3 veces.",
+  "precisionRumbo": "Precisión del rumbo",
+  "precisionBaja": "Baja",
+  "precisionMedia": "Media",
+  "precisionAlta": "Alta",
+  "calibraBrujulaNota": "Si no mejora, NEXA usa la dirección en la que te mueves."
 }

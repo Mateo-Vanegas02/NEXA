@@ -127,7 +127,26 @@ class _Seguimiento extends ConsumerWidget {
       };
     }
 
+    // Ola del despacho (la calcula el servidor; P04 y E03).
+    final despacho = s.estado == EstadoServicio.solicitado
+        ? ref.watch(ofertaActivaProvider)?.despacho
+        : null;
+    final topeExtra = ref.watch(ofertaActivaProvider)?.topeExtra;
+    final kmFmt = NumberFormat('0.#', 'es_CO');
     final Widget? arriba = switch (s.estado) {
+      EstadoServicio.solicitado when despacho != null => Center(
+        child: PildoraEstado(
+          icono: Icons.waves,
+          color: despacho.ultima ? NexaColors.muted : NexaColors.cyan,
+          texto: despacho.radioKm == null
+              ? l.olaDe(despacho.ola, despacho.totalOlas)
+              : l.olaDeRadio(
+                  despacho.ola,
+                  despacho.totalOlas,
+                  kmFmt.format(despacho.radioKm),
+                ),
+        ),
+      ),
       EstadoServicio.aceptado when enElPunto => Center(
         child: PildoraEstado(texto: l.estaEnTuPunto(nombre)),
       ),
@@ -176,24 +195,42 @@ class _Seguimiento extends ConsumerWidget {
           minimo: 0.3,
           children: [
             if (s.estado == EstadoServicio.solicitado) ...[
-              Text(l.buscandoTuConductor, style: NexaTexto.titulo),
-              const SizedBox(height: Sp.sm),
               Text(
-                l.buscandoTexto,
-                style: NexaTexto.cuerpo.copyWith(color: NexaColors.muted),
+                despacho?.ultima ?? false
+                    ? l.nadieAcepto
+                    : l.buscandoTuConductor,
+                style: NexaTexto.titulo,
               ),
-              const SizedBox(height: Sp.lg),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(Rad.pill),
-                child: LinearProgressIndicator(
-                  minHeight: 4,
-                  color: NexaColors.cyan,
-                  backgroundColor: NexaColors.line,
-                  semanticsLabel: l.buscandoConductor,
+              const SizedBox(height: Sp.sm),
+              Semantics(
+                liveRegion: true,
+                child: Text(
+                  despacho == null
+                      ? l.buscandoTexto
+                      : despacho.ultima
+                      ? l.nadieAceptoTexto(
+                          despacho.conductoresAvisados,
+                          kmFmt.format(despacho.radioKm ?? 0),
+                        )
+                      : l.avisamosA(despacho.conductoresAvisados),
+                  style: NexaTexto.cuerpo.copyWith(color: NexaColors.muted),
                 ),
               ),
+              const SizedBox(height: Sp.lg),
+              if (despacho != null)
+                _BarraOlas(ola: despacho.ola, total: despacho.totalOlas)
+              else
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(Rad.pill),
+                  child: LinearProgressIndicator(
+                    minHeight: 4,
+                    color: NexaColors.cyan,
+                    backgroundColor: NexaColors.line,
+                    semanticsLabel: l.buscandoConductor,
+                  ),
+                ),
               const SizedBox(height: Sp.xl),
-              _ExtraVoluntario(servicio: s),
+              _ExtraVoluntario(servicio: s, tope: topeExtra),
               const SizedBox(height: Sp.lg),
               Row(
                 children: [
@@ -210,7 +247,10 @@ class _Seguimiento extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: Sp.lg),
-              const _BotonCancelar(solicitud: true),
+              _BotonCancelar(
+                solicitud: true,
+                sinCargo: despacho?.ultima ?? false,
+              ),
             ] else if (s.estado == EstadoServicio.cancelado) ...[
               Text(l.viajeCancelado, style: NexaTexto.titulo),
               const SizedBox(height: Sp.lg),
@@ -476,8 +516,11 @@ class _Pago extends StatelessWidget {
 /// Opciones de extra voluntario mientras se busca conductor. El tope por viaje lo
 /// pone el servidor (responde 409 si se pasa); aquí solo se muestra lo ofrecido.
 class _ExtraVoluntario extends ConsumerStatefulWidget {
-  const _ExtraVoluntario({required this.servicio});
+  const _ExtraVoluntario({required this.servicio, this.tope});
   final Servicio servicio;
+
+  /// Tope del extra por viaje (lo dice el servidor).
+  final double? tope;
 
   @override
   ConsumerState<_ExtraVoluntario> createState() => _ExtraVoluntarioState();
@@ -508,9 +551,20 @@ class _ExtraVoluntarioState extends ConsumerState<_ExtraVoluntario> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            l.llegarMasRapido,
-            style: NexaTexto.subtitulo.copyWith(fontSize: 16),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  l.llegarMasRapido,
+                  style: NexaTexto.subtitulo.copyWith(fontSize: 16),
+                ),
+              ),
+              if (widget.tope != null)
+                Text(
+                  l.topeExtra(Fmt.cop(widget.tope!)),
+                  style: NexaTexto.pequeno.copyWith(color: NexaColors.tenue),
+                ),
+            ],
           ),
           const SizedBox(height: Sp.xs),
           Text(
@@ -674,8 +728,11 @@ class _AccionesEnViaje extends ConsumerWidget {
 /// solicitud»); con el conductor en camino, un texto discreto. Siempre pide
 /// confirmación.
 class _BotonCancelar extends ConsumerWidget {
-  const _BotonCancelar({required this.solicitud});
+  const _BotonCancelar({required this.solicitud, this.sinCargo = false});
   final bool solicitud;
+
+  /// Última ola sin conductor (E03): cancelar no cobra nada.
+  final bool sinCargo;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -704,11 +761,43 @@ class _BotonCancelar extends ConsumerWidget {
     }
 
     return NexaButton(
-      label: solicitud ? l.cancelarSolicitud : l.cancelarViaje,
+      label: !solicitud
+          ? l.cancelarViaje
+          : sinCargo
+          ? l.cancelarSinCargo
+          : l.cancelarSolicitud,
       variant: solicitud
           ? NexaButtonVariant.peligro
           : NexaButtonVariant.fantasma,
       onPressed: cancelar,
     );
   }
+}
+
+/// Avance del despacho: un tramo por ola, encendidos hasta la actual.
+class _BarraOlas extends StatelessWidget {
+  const _BarraOlas({required this.ola, required this.total});
+  final int ola;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    label: AppLocalizations.of(context).olaDe(ola, total),
+    child: Row(
+      children: [
+        for (var i = 1; i <= total; i++) ...[
+          if (i > 1) const SizedBox(width: Sp.sm),
+          Expanded(
+            child: Container(
+              height: 4,
+              decoration: BoxDecoration(
+                color: i <= ola ? NexaColors.cyan : NexaColors.line,
+                borderRadius: BorderRadius.circular(Rad.pill),
+              ),
+            ),
+          ),
+        ],
+      ],
+    ),
+  );
 }

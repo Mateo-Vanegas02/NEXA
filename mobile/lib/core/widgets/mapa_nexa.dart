@@ -151,6 +151,9 @@ class MapaNexa extends ConsumerStatefulWidget {
 
 class _MapaNexaState extends ConsumerState<MapaNexa> {
   ml.MapLibreMapController? _ml;
+
+  /// Densidad de la pantalla (px por dp), para el tamaño de los marcadores.
+  double _densidad = 2.625;
   bool _estiloListo = false;
   Future<void> _cola = Future.value();
 
@@ -352,7 +355,7 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
               gris ? ImagenMarcador.proaGris : ImagenMarcador.proa,
               z: 8,
               giro: enPantalla(rumboMoto),
-              tam: widget.motoPropia && !gris ? 0.6 : 0.5,
+              escala: widget.motoPropia && !gris ? 1.2 : 1,
             ),
     );
   }
@@ -363,11 +366,13 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
     required int z,
     double giro = 0,
     String ancla = 'center',
-    double tam = 1 / kEscalaMarcador,
+    double escala = 1,
   }) => ml.SymbolOptions(
     geometry: _aMl(en),
     iconImage: imagen,
-    iconSize: tam,
+    // MapLibre (Android) toma la imagen en píxeles físicos: se lleva a su
+    // tamaño en dp con la densidad de la pantalla.
+    iconSize: escala * _densidad / kEscalaMarcador,
     iconRotate: giro,
     iconAnchor: ancla,
     zIndex: z,
@@ -475,6 +480,7 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
 
   @override
   Widget build(BuildContext context) {
+    _densidad = MediaQuery.devicePixelRatioOf(context);
     if (!ref.watch(mapasHabilitadosProvider)) {
       return Container(
         color: Theme.of(context).colorScheme.surface,
@@ -665,34 +671,173 @@ class _AvisoOrientacion extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final texto = aviso == AvisoOrientacion.calibrar
-        ? l.mapaCalibrarBrujula
-        : l.mapaSinBrujula;
+    final calibrar = aviso == AvisoOrientacion.calibrar;
+    final texto = calibrar ? l.mapaCalibrarBrujula : l.mapaSinBrujula;
     return Semantics(
       liveRegion: true,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: NexaColors.glass,
+      button: calibrar,
+      child: Material(
+        color: NexaColors.glass,
+        shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(Rad.lg),
-          border: Border.all(color: NexaColors.gold.withValues(alpha: 0.5)),
-          boxShadow: NexaShadows.card,
+          side: BorderSide(color: NexaColors.gold.withValues(alpha: 0.5)),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(Sp.md),
-          child: Row(
-            children: [
-              Icon(
-                aviso == AvisoOrientacion.calibrar
-                    ? Icons.screen_rotation_alt
-                    : Icons.explore_off,
-                color: NexaColors.gold,
-              ),
-              const SizedBox(width: Sp.md),
-              Expanded(
-                child: Text(
-                  texto,
-                  style: const TextStyle(color: NexaColors.texto, fontSize: 13),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(Rad.lg),
+          // Interferencia: abre la guía para calibrar (diseño G03).
+          onTap: calibrar ? () => mostrarCalibrarBrujula(context) : null,
+          child: Padding(
+            padding: const EdgeInsets.all(Sp.md),
+            child: Row(
+              children: [
+                Icon(
+                  calibrar ? Icons.screen_rotation_alt : Icons.explore_off,
+                  color: NexaColors.gold,
                 ),
+                const SizedBox(width: Sp.md),
+                Expanded(
+                  child: Text(
+                    texto,
+                    style: const TextStyle(
+                      color: NexaColors.texto,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+                if (calibrar)
+                  const Icon(Icons.chevron_right, color: NexaColors.muted),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// «Calibra la brújula» (G03): el ocho en el aire y qué tan fiable es el
+/// rumbo ahora. Se cierra solo cuando la brújula vuelve a ser fiable.
+Future<void> mostrarCalibrarBrujula(BuildContext context) =>
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => const _HojaCalibrar(),
+    );
+
+class _HojaCalibrar extends ConsumerWidget {
+  const _HojaCalibrar();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final aviso = ref.watch(orientacionMapaProvider.select((o) => o.aviso));
+    final rumbo = ref.watch(orientacionMapaProvider.select((o) => o.rumbo));
+    // Sin interferencia y con rumbo: alta; con interferencia: baja.
+    final nivel = aviso == AvisoOrientacion.calibrar
+        ? 1
+        : rumbo == null
+        ? 2
+        : 3;
+    final (texto, color) = switch (nivel) {
+      1 => (l.precisionBaja, NexaColors.error),
+      2 => (l.precisionMedia, NexaColors.gold),
+      _ => (l.precisionAlta, NexaColors.ok),
+    };
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        color: NexaColors.card,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(Rad.sheet)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(Sp.xl, Sp.md, Sp.xl, Sp.xl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: NexaColors.tenue,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+              const SizedBox(height: Sp.lg),
+              Text(
+                l.calibraBrujula,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: Sp.sm),
+              Text(
+                l.calibraBrujulaTexto,
+                style: const TextStyle(color: NexaColors.muted, fontSize: 15),
+              ),
+              const SizedBox(height: Sp.lg),
+              Container(
+                height: 170,
+                decoration: BoxDecoration(
+                  color: NexaColors.bg.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(Rad.lg),
+                  border: Border.all(color: NexaColors.line),
+                ),
+                child: const ExcludeSemantics(
+                  child: CustomPaint(painter: _OchoPainter()),
+                ),
+              ),
+              const SizedBox(height: Sp.lg),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      l.precisionRumbo,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  Text(
+                    texto,
+                    style: TextStyle(color: color, fontWeight: FontWeight.w700),
+                  ),
+                ],
+              ),
+              const SizedBox(height: Sp.sm),
+              Semantics(
+                label: '${l.precisionRumbo}: $texto',
+                child: Row(
+                  children: [
+                    for (var i = 1; i <= 3; i++) ...[
+                      if (i > 1) const SizedBox(width: Sp.sm),
+                      Expanded(
+                        child: Container(
+                          height: 5,
+                          decoration: BoxDecoration(
+                            color: i <= nivel ? color : NexaColors.line,
+                            borderRadius: BorderRadius.circular(Rad.pill),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(height: Sp.md),
+              Text(
+                l.calibraBrujulaNota,
+                style: const TextStyle(color: NexaColors.tenue, fontSize: 12),
+              ),
+              const SizedBox(height: Sp.lg),
+              FilledButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(Sizes.boton),
+                ),
+                child: Text(l.listo),
               ),
             ],
           ),
@@ -700,6 +845,66 @@ class _AvisoOrientacion extends StatelessWidget {
       ),
     );
   }
+}
+
+/// El ocho en el aire con el teléfono en un extremo.
+class _OchoPainter extends CustomPainter {
+  const _OchoPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final c = size.center(Offset.zero);
+    final a = size.width * 0.28;
+    final camino = Path();
+    for (var i = 0; i <= 120; i++) {
+      final t = i / 120 * 2 * math.pi;
+      // Lemniscata de Bernoulli.
+      final d = 1 + math.pow(math.sin(t), 2);
+      final p = Offset(
+        c.dx + a * math.cos(t) / d,
+        c.dy + a * math.sin(t) * math.cos(t) / d,
+      );
+      i == 0 ? camino.moveTo(p.dx, p.dy) : camino.lineTo(p.dx, p.dy);
+    }
+    canvas
+      ..drawPath(
+        camino,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 10
+          ..color = NexaColors.cyan.withValues(alpha: 0.15)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
+      )
+      ..drawPath(
+        camino,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 4
+          ..strokeCap = StrokeCap.round
+          ..color = NexaColors.cyan,
+      );
+    final telefono = RRect.fromRectAndRadius(
+      Rect.fromCenter(center: c.translate(a * 0.82, -a * 0.22), width: 30, height: 48),
+      const Radius.circular(7),
+    );
+    canvas
+      ..save()
+      ..translate(telefono.center.dx, telefono.center.dy)
+      ..rotate(0.4)
+      ..translate(-telefono.center.dx, -telefono.center.dy)
+      ..drawRRect(telefono, Paint()..color = NexaColors.navy)
+      ..drawRRect(
+        telefono,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.5
+          ..color = NexaColors.cyan,
+      )
+      ..restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _Etiqueta extends StatelessWidget {

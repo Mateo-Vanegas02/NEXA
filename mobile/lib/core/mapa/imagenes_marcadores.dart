@@ -23,9 +23,10 @@ abstract final class ImagenMarcador {
   static const destino = 'nx-destino';
 }
 
-/// Las imágenes se dibujan al doble y se muestran con `iconSize: 0.5`
-/// (nítidas en pantallas de alta densidad).
-const double kEscalaMarcador = 2;
+/// Las imágenes se dibujan al triple; el mapa las muestra con
+/// `iconSize = densidad / 3` para que midan lo mismo en dp en cualquier
+/// pantalla (y sigan nítidas en las de alta densidad).
+const double kEscalaMarcador = 3;
 
 /// Dibuja todos los marcadores del sistema «Quién es quién» como PNG.
 ///

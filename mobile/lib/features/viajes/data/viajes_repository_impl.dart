@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../../core/errors/app_exception.dart';
 import '../domain/perfil_pasajero.dart';
+import '../domain/oferta_activa.dart';
 import '../domain/servicio.dart';
 import '../../../core/sin_conexion/reglas_sin_conexion.dart';
 import '../domain/viajes_repository.dart';
@@ -84,6 +85,14 @@ class ApiPasajeroRepository implements PasajeroRepository {
       return c['id'] as String;
     }
     return null;
+  });
+
+  @override
+  Future<OfertaActiva?> ofertaActiva() => _guard(() async {
+    final r = await _dio.get<_Json>('/pasajero/solicitud-activa');
+    final d = r.data;
+    if (d == null || d['activa'] != true) return null;
+    return OfertaActiva.fromJson(d);
   });
 
   @override

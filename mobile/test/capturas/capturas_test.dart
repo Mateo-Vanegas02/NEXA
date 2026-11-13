@@ -17,6 +17,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nexa_mobile/core/router/app_router.dart';
 import 'package:nexa_mobile/features/auth/domain/auth.dart';
 import 'package:nexa_mobile/features/auth/presentation/controllers/session_controller.dart';
+import 'package:nexa_mobile/features/viajes/domain/oferta_activa.dart';
 import 'package:nexa_mobile/features/viajes/domain/servicio.dart';
 import 'package:nexa_mobile/features/viajes/presentation/controllers/viaje_pasajero_controller.dart';
 
@@ -81,6 +82,25 @@ Servicio _servicio(EstadoServicio estado, {DateTime? llegada}) => Servicio(
     placa: 'KZT 38F',
   ),
 );
+
+class _OfertaFija extends OfertaActivaNotifier {
+  _OfertaFija(this.ola);
+  final int ola;
+
+  @override
+  OfertaActiva? build() => OfertaActiva(
+    servicioId: 'v1',
+    topeExtra: 5000,
+    despacho: AvisoDespacho(
+      ola: ola,
+      totalOlas: 4,
+      conductoresAvisados: ola == 4 ? 12 : 6,
+      radioKm: const [1.5, 2.5, 4.0, 6.0][ola - 1],
+    ),
+  );
+}
+
+Override _ola(int ola) => ofertaActivaProvider.overrideWith(() => _OfertaFija(ola));
 
 Override _viaje(Servicio s) =>
     viajePasajeroProvider.overrideWith(() => _ViajeFijo(s));
@@ -174,7 +194,14 @@ void main() {
       '/p/viaje',
       Rol.pasajero,
       '',
-      [_viaje(_servicio(EstadoServicio.solicitado))],
+      [_viaje(_servicio(EstadoServicio.solicitado)), _ola(2)],
+    ),
+    (
+      'E03',
+      '/p/viaje',
+      Rol.pasajero,
+      '',
+      [_viaje(_servicio(EstadoServicio.solicitado)), _ola(4)],
     ),
     (
       'P05',

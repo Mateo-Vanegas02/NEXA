@@ -1,5 +1,6 @@
 import '../../../core/sin_conexion/reglas_sin_conexion.dart';
 import 'perfil_pasajero.dart';
+import 'oferta_activa.dart';
 import 'servicio.dart';
 
 abstract interface class PasajeroRepository {
@@ -23,6 +24,10 @@ abstract interface class PasajeroRepository {
   /// Id de la solicitud que espera conductor o del viaje aceptado/en curso
   /// del pasajero (para retomarlo al abrir la app), o `null`.
   Future<String?> viajeAbiertoId();
+
+  /// Ola del despacho y tope del extra de la solicitud que espera conductor;
+  /// null si ya no hay una.
+  Future<OfertaActiva?> ofertaActiva();
   Future<Servicio> detalle(String id);
   /// [factores]: códigos de `FactoresCalificacion` (se guardan aparte del
   /// comentario).

@@ -4,6 +4,7 @@ import '../../../../core/providers.dart';
 import '../../../../core/utils/mi_posicion.dart';
 import '../../../auth/presentation/controllers/session_controller.dart';
 import '../../../niveles/presentation/controllers/niveles_controller.dart';
+import '../../domain/oferta_activa.dart';
 import '../../domain/perfil_pasajero.dart';
 import '../../domain/servicio.dart';
 import '../../domain/viajes_repository.dart';
@@ -25,6 +26,20 @@ class PosicionConductorNotifier extends Notifier<PosicionViaje?> {
 final posicionConductorProvider =
     NotifierProvider<PosicionConductorNotifier, PosicionViaje?>(
       PosicionConductorNotifier.new,
+    );
+
+/// Ola del despacho mientras la solicitud espera conductor (P04/E03).
+class OfertaActivaNotifier extends Notifier<OfertaActiva?> {
+  @override
+  OfertaActiva? build() => null;
+
+  // ignore: use_setters_to_change_properties
+  void poner(OfertaActiva? o) => state = o;
+}
+
+final ofertaActivaProvider =
+    NotifierProvider<OfertaActivaNotifier, OfertaActiva?>(
+      OfertaActivaNotifier.new,
     );
 
 /// Dónde está el pasajero mientras espera la moto (la última que se reportó
@@ -121,8 +136,14 @@ class ViajePasajeroController extends AsyncNotifier<Servicio?> {
   Future<void> _seguimiento(Servicio s) async {
     if (s.estado == EstadoServicio.solicitado) {
       ref.read(posicionConductorProvider.notifier).poner(null);
+      try {
+        ref.read(ofertaActivaProvider.notifier).poner(await _repo.ofertaActiva());
+      } on Object {
+        // Sin la ola por ahora: la pantalla muestra el texto general.
+      }
       return;
     }
+    ref.read(ofertaActivaProvider.notifier).poner(null);
     try {
       ref
           .read(posicionConductorProvider.notifier)
