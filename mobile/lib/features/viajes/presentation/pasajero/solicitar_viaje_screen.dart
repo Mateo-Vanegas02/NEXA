@@ -11,6 +11,7 @@ import '../../../../core/geocoding/geocoding_service.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/providers.dart';
 import '../../../../core/theme/theme_x.dart';
+import '../../../../core/theme/nexa_texto.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/mapa/polyline.dart';
@@ -354,7 +355,7 @@ class _SolicitarViajeScreenState extends ConsumerState<SolicitarViajeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _BotonRedondo(
-                    icono: Icons.arrow_back,
+                    icono: Icons.chevron_left,
                     tooltip: l.volver,
                     onTap: () => context.canPop()
                         ? context.pop()
@@ -401,19 +402,45 @@ class _SolicitarViajeScreenState extends ConsumerState<SolicitarViajeScreen> {
                 ),
                 const SizedBox(height: Sp.md),
               ],
-              _FilaRuta(
-                esOrigen: true,
-                etiqueta: l.origen,
-                texto: _origenTxt,
-                onTap: () => _elegir(_Campo.origen),
-              ),
-              const _UnionRuta(),
-              _FilaRuta(
-                esOrigen: false,
-                etiqueta: l.destino,
-                texto: _destinoTxt,
-                hint: l.buscadorHint,
-                onTap: () => _elegir(_Campo.destino),
+              if (cot != null) ...[
+                _TarjetaPrecio(
+                  detalle:
+                      '$kmTxt km · ${l.minutosValor(minutos)} · '
+                      '${l.llegasALas(DateFormat('H:mm', 'es_CO').format(DateTime.now().add(Duration(minutes: minutos))))}',
+                  precio: Fmt.cop(cot.totalAPagar),
+                  antes: cot.descuento > 0
+                      ? Fmt.cop(cot.totalAPagar + cot.descuento)
+                      : null,
+                ),
+                if (cot.descuento > 0) ...[
+                  const SizedBox(height: Sp.md),
+                  _BarraAhorro(texto: l.ahorroNivel(Fmt.cop(cot.descuento))),
+                ],
+                const SizedBox(height: Sp.md),
+              ],
+              NexaCard(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: Sp.md,
+                  vertical: Sp.xs,
+                ),
+                child: Column(
+                  children: [
+                    _FilaRuta(
+                      esOrigen: true,
+                      etiqueta: l.origen,
+                      texto: _origenTxt,
+                      onTap: () => _elegir(_Campo.origen),
+                    ),
+                    const Divider(height: 1),
+                    _FilaRuta(
+                      esOrigen: false,
+                      etiqueta: l.destino,
+                      texto: _destinoTxt,
+                      hint: l.buscadorHint,
+                      onTap: () => _elegir(_Campo.destino),
+                    ),
+                  ],
+                ),
               ),
               if (_cotizando) ...[
                 const SizedBox(height: Sp.lg),
@@ -450,26 +477,11 @@ class _SolicitarViajeScreenState extends ConsumerState<SolicitarViajeScreen> {
                 ),
               ],
               if (cot != null) ...[
-                const SizedBox(height: Sp.lg),
-                _TarjetaPrecio(
-                  nombreMetodo: _nombreMetodo(l, _metodo),
-                  detalle: '${l.minutosValor(minutos)} · $kmTxt km',
-                  precio: Fmt.cop(cot.totalAPagar),
-                ),
-                const SizedBox(height: Sp.md),
+                const SizedBox(height: Sp.sm),
                 Wrap(
                   spacing: Sp.sm,
                   runSpacing: Sp.sm,
                   children: [
-                    if (cot.descuento > 0)
-                      Chip(
-                        avatar: Icon(
-                          Icons.percent,
-                          size: 16,
-                          color: context.acento,
-                        ),
-                        label: Text(l.ahorroNivel(Fmt.cop(cot.descuento))),
-                      ),
                     ActionChip(
                       label: Text(
                         _verDesglose ? l.ocultarDesglose : l.verDesglose,
@@ -516,37 +528,50 @@ class _SolicitarViajeScreenState extends ConsumerState<SolicitarViajeScreen> {
               ],
               const SizedBox(height: Sp.md),
               NexaCard(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: Sp.lg,
-                  vertical: Sp.sm,
-                ),
+                onTap: _elegirMetodo,
+                padding: const EdgeInsets.all(Sp.md),
                 child: Row(
                   children: [
-                    Icon(Icons.payments_outlined, color: context.acento),
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: NexaColors.raised,
+                        borderRadius: BorderRadius.circular(Rad.md),
+                      ),
+                      child: const Icon(
+                        Icons.payments_outlined,
+                        color: NexaColors.cyan,
+                        size: 20,
+                      ),
+                    ),
                     const SizedBox(width: Sp.md),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            l.metodoPago,
-                            style: context.textos.bodySmall?.copyWith(
-                              color: context.muted,
+                            _nombreMetodo(l, _metodo),
+                            style: NexaTexto.cuerpo.copyWith(
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                           Text(
-                            _nombreMetodo(l, _metodo),
-                            style: context.textos.titleSmall,
+                            l.pagasAlLlegar,
+                            style: NexaTexto.pequeno.copyWith(
+                              color: NexaColors.muted,
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    TextButton(
-                      onPressed: _elegirMetodo,
-                      style: TextButton.styleFrom(
-                        minimumSize: const Size(Sizes.touch, Sizes.touch),
+                    Semantics(
+                      button: true,
+                      label: l.cambiar,
+                      child: const Icon(
+                        Icons.chevron_right,
+                        color: NexaColors.muted,
                       ),
-                      child: Text(l.cambiar),
                     ),
                   ],
                 ),
@@ -607,25 +632,19 @@ class _FilaRuta extends StatelessWidget {
             constraints: const BoxConstraints(minHeight: 56),
             child: Row(
               children: [
-                if (esOrigen)
-                  Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 3),
-                    ),
-                  )
-                else
-                  Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: NexaColors.cyan,
-                      borderRadius: BorderRadius.circular(4),
-                      boxShadow: NexaShadows.glow,
-                    ),
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: NexaColors.raised,
+                    borderRadius: BorderRadius.circular(Rad.sm + 2),
                   ),
+                  child: Icon(
+                    esOrigen ? Icons.my_location : Icons.place_outlined,
+                    size: 18,
+                    color: NexaColors.cyan,
+                  ),
+                ),
                 const SizedBox(width: Sp.md),
                 Expanded(
                   child: Column(
@@ -633,18 +652,18 @@ class _FilaRuta extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        etiqueta,
-                        style: context.textos.bodySmall?.copyWith(
-                          color: context.muted,
-                        ),
-                      ),
-                      Text(
                         vacio ? (hint ?? '') : texto,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: context.textos.bodyLarge?.copyWith(
+                        style: NexaTexto.cuerpo.copyWith(
                           fontWeight: FontWeight.w600,
                           color: vacio ? context.muted : null,
+                        ),
+                      ),
+                      Text(
+                        etiqueta,
+                        style: NexaTexto.pequeno.copyWith(
+                          color: NexaColors.muted,
                         ),
                       ),
                     ],
@@ -660,111 +679,99 @@ class _FilaRuta extends StatelessWidget {
   }
 }
 
-class _UnionRuta extends StatelessWidget {
-  const _UnionRuta();
-
-  @override
-  Widget build(BuildContext context) => Align(
-    alignment: Alignment.centerLeft,
-    child: Padding(
-      padding: const EdgeInsets.only(left: 5),
-      child: SizedBox(
-        height: 10,
-        child: VerticalDivider(
-          width: 2,
-          thickness: 2,
-          color: NexaColors.cyan.withValues(alpha: 0.45),
-        ),
-      ),
-    ),
-  );
-}
-
-/// Opción única de vehículo con el precio que fijó el servidor.
+/// Opción única de vehículo con el precio que fijó el servidor (diseño P03).
+/// [antes] tachado = el precio sin el descuento por nivel.
 class _TarjetaPrecio extends StatelessWidget {
   const _TarjetaPrecio({
-    required this.nombreMetodo,
     required this.detalle,
     required this.precio,
+    this.antes,
   });
 
-  final String nombreMetodo;
   final String detalle;
   final String precio;
+  final String? antes;
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: NexaColors.card,
-        borderRadius: BorderRadius.circular(Rad.lg + 4),
-        border: Border.all(color: NexaColors.cyan.withValues(alpha: 0.45)),
-        boxShadow: [
-          BoxShadow(
-            color: NexaColors.cyan.withValues(alpha: 0.18),
-            blurRadius: 24,
+    return NexaCard(
+      child: Row(
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: NexaColors.raised,
+              borderRadius: BorderRadius.circular(Rad.md),
+              border: Border.all(color: NexaColors.cyan.withValues(alpha: 0.5)),
+            ),
+            child: const Icon(Icons.two_wheeler, color: NexaColors.cyan),
           ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(Sp.lg),
-        child: Row(
-          children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: NexaColors.cyan,
-                borderRadius: BorderRadius.circular(Rad.lg - 4),
-                boxShadow: NexaShadows.glow,
-              ),
-              child: const Icon(Icons.two_wheeler, color: NexaColors.bg),
-            ),
-            const SizedBox(width: Sp.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l.motoNexa,
-                    style: context.textos.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    detalle,
-                    style: context.textos.bodySmall?.copyWith(
-                      color: NexaColors.ok,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+          const SizedBox(width: Sp.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(l.motoNexa, style: NexaTexto.subtitulo),
                 Text(
-                  precio,
-                  style: context.textos.titleLarge?.copyWith(
-                    color: NexaColors.cyan,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                Text(
-                  nombreMetodo,
-                  style: context.textos.bodySmall?.copyWith(
-                    color: context.muted,
-                  ),
+                  detalle,
+                  style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+          const SizedBox(width: Sp.sm),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(precio, style: NexaTexto.numeroMedio),
+              if (antes != null)
+                Text(
+                  antes!,
+                  style: NexaTexto.pequeno.copyWith(
+                    color: NexaColors.tenue,
+                    decoration: TextDecoration.lineThrough,
+                    decorationColor: NexaColors.tenue,
+                  ),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }
+}
+
+/// Barra dorada con lo que ahorra el nivel en este viaje.
+class _BarraAhorro extends StatelessWidget {
+  const _BarraAhorro({required this.texto});
+  final String texto;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: Sp.lg, vertical: Sp.md),
+    decoration: BoxDecoration(
+      color: NexaColors.goldSuave,
+      borderRadius: BorderRadius.circular(Rad.md),
+      border: Border.all(color: NexaColors.gold.withValues(alpha: 0.45)),
+    ),
+    child: Row(
+      children: [
+        const Icon(Icons.bolt_rounded, size: 18, color: NexaColors.gold),
+        const SizedBox(width: Sp.sm),
+        Expanded(
+          child: Text(
+            texto,
+            style: NexaTexto.pequeno.copyWith(
+              color: NexaColors.gold,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 class _BotonRedondo extends StatelessWidget {
@@ -786,8 +793,11 @@ class _BotonRedondo extends StatelessWidget {
     style: IconButton.styleFrom(
       minimumSize: const Size(Sizes.touch, Sizes.touch),
       backgroundColor: NexaColors.glass,
-      foregroundColor: context.colors.onSurface,
-      side: BorderSide(color: NexaColors.cyan.withValues(alpha: 0.3)),
+      foregroundColor: NexaColors.texto,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(Rad.md),
+        side: const BorderSide(color: NexaColors.line),
+      ),
     ),
   );
 }

@@ -2,12 +2,15 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../../../core/geocoding/geocoding_service.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/theme_x.dart';
+import '../../../../core/theme/nexa_texto.dart';
 import '../../../../core/theme/tokens.dart';
+import '../../../../core/widgets/nexa_icono_app.dart';
 
 /// Lo que devuelve [ElegirLugarScreen]: un lugar buscado, o la petición de
 /// fijar el punto en el mapa o de usar la ubicación actual (solo en el origen).
@@ -99,7 +102,6 @@ class _ElegirLugarScreenState extends ConsumerState<ElegirLugarScreen> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final t = context.textos;
     final otro = widget.esOrigen ? widget.destinoTexto : widget.origenTexto;
     final campo = _Campo(
       esOrigen: widget.esOrigen,
@@ -126,47 +128,26 @@ class _ElegirLugarScreenState extends ConsumerState<ElegirLugarScreen> {
             children: [
               Row(
                 children: [
-                  IconButton(
-                    tooltip: l.cancelar,
-                    onPressed: _cerrar,
-                    icon: const Icon(Icons.close),
-                    style: IconButton.styleFrom(
-                      minimumSize: const Size.square(Sizes.touch),
-                      side: BorderSide(
-                        color: context.colors.outline.withValues(alpha: 0.5),
-                      ),
-                    ),
-                  ),
+                  NexaBotonAtras(onPressed: _cerrar, tooltip: l.cancelar),
+                  const SizedBox(width: Sp.lg),
                   Expanded(
-                    child: Text(
-                      l.tuRuta,
-                      textAlign: TextAlign.center,
-                      style: t.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    child: Text(l.planeaTuViaje, style: NexaTexto.subtitulo),
                   ),
-                  const SizedBox(width: Sizes.touch),
                 ],
               ),
-              const SizedBox(height: Sp.md),
+              const SizedBox(height: Sp.lg),
               DecoratedBox(
                 decoration: BoxDecoration(
                   color: NexaColors.card,
                   borderRadius: BorderRadius.circular(Rad.lg),
-                  border: Border.all(
-                    color: context.colors.outline.withValues(alpha: 0.4),
-                  ),
+                  border: Border.all(color: NexaColors.line),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: Sp.lg,
-                    vertical: Sp.sm,
-                  ),
+                  padding: const EdgeInsets.all(Sp.md),
                   child: Column(
                     children: widget.esOrigen
-                        ? [campo, _Union(), fijo]
-                        : [fijo, _Union(), campo],
+                        ? [campo, const SizedBox(height: Sp.sm), fijo]
+                        : [fijo, const SizedBox(height: Sp.sm), campo],
                   ),
                 ),
               ),
@@ -176,15 +157,29 @@ class _ElegirLugarScreenState extends ConsumerState<ElegirLugarScreen> {
                 runSpacing: Sp.sm,
                 children: [
                   ActionChip(
-                    avatar: const Icon(Icons.map_outlined, size: 18),
+                    avatar: const Icon(
+                      Icons.my_location,
+                      size: 16,
+                      color: NexaColors.cyan,
+                    ),
                     label: Text(l.fijarEnMapa),
+                    shape: const StadiumBorder(),
+                    side: const BorderSide(color: NexaColors.line),
+                    backgroundColor: NexaColors.card,
                     onPressed: () =>
                         _cerrar(const ResultadoLugar(fijarEnMapa: true)),
                   ),
                   if (widget.esOrigen)
                     ActionChip(
-                      avatar: const Icon(Icons.my_location, size: 18),
+                      avatar: const Icon(
+                        Icons.near_me_outlined,
+                        size: 16,
+                        color: NexaColors.cyan,
+                      ),
                       label: Text(l.usarMiUbicacion),
+                      shape: const StadiumBorder(),
+                      side: const BorderSide(color: NexaColors.line),
+                      backgroundColor: NexaColors.card,
                       onPressed: () =>
                           _cerrar(const ResultadoLugar(miUbicacion: true)),
                     ),
@@ -193,11 +188,7 @@ class _ElegirLugarScreenState extends ConsumerState<ElegirLugarScreen> {
               const SizedBox(height: Sp.lg),
               Text(
                 l.resultadosCerca.toUpperCase(),
-                style: t.labelSmall?.copyWith(
-                  color: context.muted,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.8,
-                ),
+                style: NexaTexto.etiqueta.copyWith(color: NexaColors.tenue),
               ),
               const SizedBox(height: Sp.xs),
               Expanded(child: _Lista(estado: this)),
@@ -240,15 +231,19 @@ class _Lista extends StatelessWidget {
             )
           : const SizedBox.shrink();
     }
+    const distancia = Distance();
+    final km = NumberFormat('0.0', 'es_CO');
     return ListView.separated(
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       itemCount: estado._resultados.length,
-      separatorBuilder: (_, _) => Divider(
-        height: 1,
-        color: context.colors.outline.withValues(alpha: 0.3),
-      ),
+      separatorBuilder: (_, _) => const SizedBox(height: Sp.xs),
       itemBuilder: (context, i) {
         final lugar = estado._resultados[i];
+        final lejos = distancia.as(
+          LengthUnit.Kilometer,
+          estado.widget.cerca,
+          lugar.punto,
+        );
         return InkWell(
           onTap: () => estado._cerrar(ResultadoLugar(lugar: lugar)),
           child: ConstrainedBox(
@@ -259,10 +254,14 @@ class _Lista extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: NexaColors.cyan.withValues(alpha: 0.14),
+                    color: NexaColors.raised,
                     borderRadius: BorderRadius.circular(Rad.md),
                   ),
-                  child: Icon(Icons.place_outlined, color: context.acento),
+                  child: const Icon(
+                    Icons.place_outlined,
+                    color: NexaColors.cyan,
+                    size: 22,
+                  ),
                 ),
                 const SizedBox(width: Sp.md),
                 Expanded(
@@ -289,6 +288,11 @@ class _Lista extends StatelessWidget {
                         ),
                     ],
                   ),
+                ),
+                const SizedBox(width: Sp.sm),
+                Text(
+                  '${km.format(lejos)} km',
+                  style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
                 ),
               ],
             ),
@@ -324,21 +328,25 @@ class _Punto extends StatelessWidget {
         );
 }
 
-class _Union extends StatelessWidget {
+/// Recuadro de cada extremo; el que se edita lleva el borde cian.
+class _Caja extends StatelessWidget {
+  const _Caja({required this.activa, required this.child});
+  final bool activa;
+  final Widget child;
+
   @override
-  Widget build(BuildContext context) => Align(
-    alignment: Alignment.centerLeft,
-    child: Padding(
-      padding: const EdgeInsets.only(left: 5),
-      child: SizedBox(
-        height: 12,
-        child: VerticalDivider(
-          width: 2,
-          thickness: 2,
-          color: NexaColors.cyan.withValues(alpha: 0.45),
-        ),
+  Widget build(BuildContext context) => Container(
+    constraints: const BoxConstraints(minHeight: 60),
+    padding: const EdgeInsets.symmetric(horizontal: Sp.md, vertical: Sp.sm),
+    decoration: BoxDecoration(
+      color: activa ? NexaColors.bg : NexaColors.raised.withValues(alpha: 0.5),
+      borderRadius: BorderRadius.circular(Rad.md),
+      border: Border.all(
+        color: activa ? NexaColors.cyan : Colors.transparent,
+        width: 1.5,
       ),
     ),
+    child: child,
   );
 }
 
@@ -354,8 +362,8 @@ class _Fijo extends StatelessWidget {
   final String texto;
 
   @override
-  Widget build(BuildContext context) => ConstrainedBox(
-    constraints: const BoxConstraints(minHeight: 56),
+  Widget build(BuildContext context) => _Caja(
+    activa: false,
     child: Row(
       children: [
         _Punto(esOrigen: esOrigen),
@@ -366,8 +374,11 @@ class _Fijo extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                etiqueta,
-                style: context.textos.bodySmall?.copyWith(color: context.muted),
+                etiqueta.toUpperCase(),
+                style: NexaTexto.etiqueta.copyWith(
+                  color: NexaColors.tenue,
+                  fontSize: 10,
+                ),
               ),
               Text(
                 texto,
@@ -406,8 +417,8 @@ class _Campo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    return ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: 56),
+    return _Caja(
+      activa: true,
       child: Row(
         children: [
           _Punto(esOrigen: esOrigen),
@@ -418,9 +429,10 @@ class _Campo extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  esOrigen ? l.origen : l.destino,
-                  style: context.textos.bodySmall?.copyWith(
-                    color: context.muted,
+                  (esOrigen ? l.origen : l.destino).toUpperCase(),
+                  style: NexaTexto.etiqueta.copyWith(
+                    color: NexaColors.cyan,
+                    fontSize: 10,
                   ),
                 ),
                 TextField(

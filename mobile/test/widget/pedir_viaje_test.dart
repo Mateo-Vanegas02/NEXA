@@ -70,7 +70,7 @@ void main() {
         await t.tap(find.text('abrir'));
         await _ratos(t, 400);
 
-        expect(find.text('Tu ruta'), findsOneWidget);
+        expect(find.text('Planea tu viaje'), findsOneWidget);
         expect(find.text('Mi ubicación'), findsOneWidget);
         await t.enterText(find.byType(TextField), 'Bocagrande');
         await _ratos(t, 900); // debounce de 700 ms + respuesta

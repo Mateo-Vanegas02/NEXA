@@ -100,7 +100,7 @@ void main() {
 
     expect(repo.cotizaciones, 1);
     expect(find.text('Moto NEXA'), findsOneWidget);
-    expect(find.textContaining('Tu nivel ahorra'), findsOneWidget);
+    expect(find.textContaining('Tu nivel te ahorra'), findsOneWidget);
     expect(find.textContaining('Pedir NEXA · '), findsOneWidget);
     expect(find.textContaining('8.910'), findsWidgets);
     expect(_boton(t).onPressed, isNotNull);

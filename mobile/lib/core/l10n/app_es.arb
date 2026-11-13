@@ -207,7 +207,7 @@
   "notificaciones": "Notificaciones",
   "sinNotificaciones": "No tienes notificaciones nuevas",
   "aDondeVamos": "¿A dónde vamos?",
-  "origen": "Origen",
+  "origen": "Recogida",
   "miUbicacion": "Mi ubicación",
   "destino": "Destino",
   "tiempoEstimado": "Tiempo est.",
@@ -418,7 +418,7 @@
   "pedirNexaSinPrecio": "Pedir NEXA",
   "tuRuta": "Tu ruta",
   "fijarEnMapa": "Fijar en el mapa",
-  "resultadosCerca": "Resultados cerca de ti",
+  "resultadosCerca": "Resultados",
   "buscarLugarHint": "Busca una dirección o un lugar",
   "tocaMapaDestino": "Toca el mapa para fijar tu destino",
   "tocaMapaOrigen": "Toca el mapa para fijar tu origen",
@@ -438,7 +438,7 @@
   "editarPerfilSub": "Nombre y celular",
   "ofertaAhora": "Tu oferta ahora",
   "ocultarDesglose": "Ocultar desglose",
-  "ahorroNivel": "Tu nivel ahorra {monto}",
+  "ahorroNivel": "Tu nivel te ahorra {monto} en este viaje",
   "@ahorroNivel": {
     "placeholders": {
       "monto": {
@@ -1224,5 +1224,15 @@
   "tuNivelSub": "Se calcula con tu XP de los últimos 90 días",
   "nivelesSub": "Viaja, suma XP y desbloquea beneficios",
   "seccionCuenta": "Cuenta",
-  "ultimosViajes": "Últimos viajes"
+  "ultimosViajes": "Últimos viajes",
+  "planeaTuViaje": "Planea tu viaje",
+  "pagasAlLlegar": "Pagas al conductor al llegar",
+  "llegasALas": "llegas {hora}",
+  "@llegasALas": {
+    "placeholders": {
+      "hora": {
+        "type": "String"
+      }
+    }
+  }
 }
