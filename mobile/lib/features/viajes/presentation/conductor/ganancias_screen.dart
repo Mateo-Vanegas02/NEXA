@@ -1,6 +1,7 @@
 import '../../../../core/theme/theme_x.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../core/theme/nexa_texto.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/responsive.dart';
@@ -131,9 +132,9 @@ class GananciasScreen extends ConsumerWidget {
     final t = Theme.of(context).textTheme;
     final ingresos = ref.watch(ingresosProvider);
     return Scaffold(
-      appBar: AppBar(title: Text(l.gananciasTitulo)),
       body: FondoNexa(
         child: SafeArea(
+          bottom: false,
           child: ingresos.when(
             loading: () => const CargandoSkeleton(),
             error: (e, _) => EstadoError(
@@ -150,12 +151,22 @@ class GananciasScreen extends ConsumerWidget {
                   .reversed
                   .toList();
               return ListView(
-                padding: EdgeInsets.all(context.gutter),
+                padding: EdgeInsets.fromLTRB(
+                  context.gutter,
+                  Sp.lg,
+                  context.gutter,
+                  Sp.xl + MediaQuery.paddingOf(context).bottom,
+                ),
                 children: [
                   ContenidoCentrado(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        Text(
+                          l.gananciasTitulo,
+                          style: NexaTexto.titulo.copyWith(fontSize: 28),
+                        ),
+                        const SizedBox(height: Sp.lg),
                         DecoratedBox(
                           decoration: BoxDecoration(
                             color: NexaColors.card,
@@ -181,11 +192,12 @@ class GananciasScreen extends ConsumerWidget {
                                     color: context.muted,
                                   ),
                                 ),
-                                Text(
-                                  Fmt.cop(total),
-                                  style: t.headlineLarge?.copyWith(
-                                    color: NexaColors.cyan,
-                                    fontWeight: FontWeight.w700,
+                                FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    Fmt.cop(total),
+                                    style: NexaTexto.numero,
                                   ),
                                 ),
                                 if (recientes.length > 1) ...[
@@ -215,7 +227,20 @@ class GananciasScreen extends ConsumerWidget {
                               icon: Icons.payments_outlined,
                             ),
                           )
-                        else
+                        else ...[
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              left: Sp.xs,
+                              top: Sp.sm,
+                              bottom: Sp.sm,
+                            ),
+                            child: Text(
+                              l.ultimosViajes.toUpperCase(),
+                              style: NexaTexto.etiqueta.copyWith(
+                                color: NexaColors.tenue,
+                              ),
+                            ),
+                          ),
                           NexaCard(
                             padding: const EdgeInsets.symmetric(
                               horizontal: Sp.lg,
@@ -240,6 +265,7 @@ class GananciasScreen extends ConsumerWidget {
                               ],
                             ),
                           ),
+                        ],
                       ],
                     ),
                   ),
@@ -277,7 +303,7 @@ class _FilaIngreso extends StatelessWidget {
               color: NexaColors.cyan.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(Icons.route, size: 18, color: context.acento),
+            child: Icon(Icons.place_outlined, size: 18, color: context.acento),
           ),
           const SizedBox(width: Sp.md),
           Expanded(
@@ -296,7 +322,7 @@ class _FilaIngreso extends StatelessWidget {
           Text(
             Fmt.cop(monto),
             style: t.titleSmall?.copyWith(
-              color: NexaColors.cyan,
+              color: NexaColors.ok,
               fontWeight: FontWeight.w700,
             ),
           ),

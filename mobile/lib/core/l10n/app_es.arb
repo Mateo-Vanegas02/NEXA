@@ -1223,5 +1223,6 @@
   "tuNivel": "Tu nivel",
   "tuNivelSub": "Se calcula con tu XP de los últimos 90 días",
   "nivelesSub": "Viaja, suma XP y desbloquea beneficios",
-  "seccionCuenta": "Cuenta"
+  "seccionCuenta": "Cuenta",
+  "ultimosViajes": "Últimos viajes"
 }

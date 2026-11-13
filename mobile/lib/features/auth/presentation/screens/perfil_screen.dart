@@ -28,7 +28,6 @@ class PerfilScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
-    final t = Theme.of(context).textTheme;
     final sesion = ref.watch(sesionProvider).sesion;
     final perfil = ref.watch(perfilProvider).asData?.value;
     final nivel = ref.watch(nivelProvider).asData?.value;
