@@ -89,7 +89,9 @@ abstract final class AppTheme {
         enabledBorder: OutlineInputBorder(
           borderRadius: radius,
           borderSide: BorderSide(
-            color: oscuro ? scheme.outline : scheme.outline.withValues(alpha: 0.5),
+            color: oscuro
+                ? scheme.outline
+                : scheme.outline.withValues(alpha: 0.5),
           ),
         ),
         focusedBorder: OutlineInputBorder(
@@ -108,7 +110,9 @@ abstract final class AppTheme {
           selectedBackgroundColor: scheme.primary,
           selectedForegroundColor: scheme.onPrimary,
           side: BorderSide(
-            color: oscuro ? scheme.outline : scheme.outline.withValues(alpha: 0.5),
+            color: oscuro
+                ? scheme.outline
+                : scheme.outline.withValues(alpha: 0.5),
           ),
         ),
       ),

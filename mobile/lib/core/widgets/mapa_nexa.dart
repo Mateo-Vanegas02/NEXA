@@ -5,7 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:latlong2/latlong.dart' hide Path;
 import 'package:maplibre_gl/maplibre_gl.dart' as ml;
 
 import '../config/env.dart';
@@ -167,8 +167,7 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
   /// El haz necesita el rumbo del teléfono aunque el mapa no gire.
   bool get _conHaz => widget.pasajero != null && widget.pasajeroPropio;
 
-  bool get _usaOrientacion =>
-      widget.orientable || widget.navegacion || _conHaz;
+  bool get _usaOrientacion => widget.orientable || widget.navegacion || _conHaz;
 
   /// Los cambios en el mapa nativo van en fila: así nunca se pisan.
   void _enCola(Future<void> Function() tarea) {
@@ -287,7 +286,12 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
       'haz',
       pasajero == null || !propio || rumboTel == null
           ? null
-          : _op(pasajero, ImagenMarcador.hazCielo, z: 1, giro: enPantalla(rumboTel)),
+          : _op(
+              pasajero,
+              ImagenMarcador.hazCielo,
+              z: 1,
+              giro: enPantalla(rumboTel),
+            ),
     );
     await _simbolo(
       c,

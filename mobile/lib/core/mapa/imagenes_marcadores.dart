@@ -45,7 +45,10 @@ Future<Map<String, Uint8List>> dibujarMarcadores() async => {
     76,
     (c, s) => _persona(c, s, NexaColors.muted, apagada: true),
   ),
-  ImagenMarcador.hazCielo: await _png(220, (c, s) => _haz(c, s, NexaColors.sky)),
+  ImagenMarcador.hazCielo: await _png(
+    220,
+    (c, s) => _haz(c, s, NexaColors.sky),
+  ),
   ImagenMarcador.hazOro: await _png(220, (c, s) => _haz(c, s, NexaColors.gold)),
   ImagenMarcador.marcaHacia: await _png(84, _marcaHacia),
   ImagenMarcador.moto: await _png(82, (c, s) => _moto(c, s, diametro: 46)),
@@ -105,8 +108,16 @@ void _persona(Canvas c, Size s, Color color, {bool apagada = false}) {
         ..color = _sombra
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
     )
-    ..drawCircle(centro, 19, Paint()..color = apagada ? NexaColors.muted : NexaColors.texto)
-    ..drawCircle(centro, 16, Paint()..color = apagada ? NexaColors.raised : color);
+    ..drawCircle(
+      centro,
+      19,
+      Paint()..color = apagada ? NexaColors.muted : NexaColors.texto,
+    )
+    ..drawCircle(
+      centro,
+      16,
+      Paint()..color = apagada ? NexaColors.raised : color,
+    );
   final tinta = Paint()..color = apagada ? NexaColors.muted : NexaColors.bg;
   // Cabeza y hombros (glifo de 22 × 22 centrado).
   final o = centro.translate(-11, -11);

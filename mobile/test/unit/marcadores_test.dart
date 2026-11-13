@@ -7,10 +7,22 @@ void main() {
 
   group('rumboEntre', () {
     test('norte, este, sur y oeste', () {
-      expect(ReglasMarcadores.rumboEntre(centro, const LatLng(10.41, -75.5)), closeTo(0, 0.5));
-      expect(ReglasMarcadores.rumboEntre(centro, const LatLng(10.4, -75.49)), closeTo(90, 0.5));
-      expect(ReglasMarcadores.rumboEntre(centro, const LatLng(10.39, -75.5)), closeTo(180, 0.5));
-      expect(ReglasMarcadores.rumboEntre(centro, const LatLng(10.4, -75.51)), closeTo(270, 0.5));
+      expect(
+        ReglasMarcadores.rumboEntre(centro, const LatLng(10.41, -75.5)),
+        closeTo(0, 0.5),
+      );
+      expect(
+        ReglasMarcadores.rumboEntre(centro, const LatLng(10.4, -75.49)),
+        closeTo(90, 0.5),
+      );
+      expect(
+        ReglasMarcadores.rumboEntre(centro, const LatLng(10.39, -75.5)),
+        closeTo(180, 0.5),
+      );
+      expect(
+        ReglasMarcadores.rumboEntre(centro, const LatLng(10.4, -75.51)),
+        closeTo(270, 0.5),
+      );
     });
   });
 

@@ -69,6 +69,14 @@ jobs:
         # Una prueba colgada falla a los 3 min en vez de los 10 por defecto.
         run: flutter test --reporter expanded --timeout 3m
 
+      # Capturas de las pantallas (PNG en base64 en el log, sin artefactos) para
+      # compararlas con el Figma del rediseño. No bloquean la CI.
+      - name: Capturas
+        continue-on-error: true
+        env:
+          NEXA_CAPTURAS: '1'
+        run: flutter test test/capturas --reporter expanded --timeout 3m
+
       # Compila el APK debug (sin firmar con la clave real ni subirlo) para detectar a tiempo errores
       # de Gradle, del manifiesto o de plugins nativos que el análisis de Dart no ve.
       - name: Compilación Android (debug)
