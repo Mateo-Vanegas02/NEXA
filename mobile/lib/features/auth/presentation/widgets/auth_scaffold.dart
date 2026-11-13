@@ -6,7 +6,8 @@ import '../../../../core/widgets/nexa_diseno.dart';
 
 import 'package:flutter/material.dart';
 
-import '../../../../core/widgets/nexa_logo.dart';
+import '../../../../core/theme/nexa_texto.dart';
+import '../../../../core/widgets/nexa_icono_app.dart';
 
 /// Marco común de login/registro: scroll con teclado abierto, ancho acotado.
 ///
@@ -22,6 +23,7 @@ class AuthScaffold extends StatelessWidget {
     this.paso,
     this.pasos,
     this.onAtras,
+    this.pie,
   });
   final String titulo;
   final String? subtitulo;
@@ -30,111 +32,91 @@ class AuthScaffold extends StatelessWidget {
   final int? pasos;
   final VoidCallback? onAtras;
 
+  /// Va pegado abajo (p. ej. «¿No tienes cuenta? Crear cuenta»).
+  final Widget? pie;
+
   @override
   Widget build(BuildContext context) {
-    final t = Theme.of(context).textTheme;
     final l = AppLocalizations.of(context);
     final porPasos = paso != null && pasos != null;
     return Scaffold(
       body: FondoNexa(
         child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, c) => SingleChildScrollView(
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              padding: EdgeInsets.all(context.gutter),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: c.maxHeight - 2 * context.gutter,
-                ),
-                child: ContenidoCentrado(
-                  child: Column(
-                    crossAxisAlignment: porPasos
-                        ? CrossAxisAlignment.start
-                        : CrossAxisAlignment.stretch,
-                    mainAxisAlignment: porPasos
-                        ? MainAxisAlignment.start
-                        : MainAxisAlignment.center,
-                    children: [
-                      if (onAtras != null || porPasos)
-                        Row(
-                          children: [
-                            if (onAtras != null)
-                              IconButton(
-                                tooltip: l.volver,
-                                onPressed: onAtras,
-                                icon: const Icon(Icons.arrow_back),
-                                style: IconButton.styleFrom(
-                                  minimumSize: const Size.square(Sizes.touch),
-                                  side: BorderSide(
-                                    color: context.colors.outline.withValues(
-                                      alpha: 0.5,
+          child: CustomScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            slivers: [
+              SliverPadding(
+                padding: EdgeInsets.all(context.gutter),
+                sliver: SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: ContenidoCentrado(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (onAtras != null || porPasos)
+                          Row(
+                            children: [
+                              if (onAtras != null)
+                                NexaBotonAtras(
+                                  onPressed: onAtras!,
+                                  tooltip: l.volver,
+                                ),
+                              if (porPasos)
+                                Expanded(
+                                  child: Text(
+                                    l.pasoDe(paso!, pasos!),
+                                    textAlign: TextAlign.end,
+                                    style: NexaTexto.pequeno.copyWith(
+                                      color: context.muted,
                                     ),
                                   ),
-                                ),
-                              ),
-                            if (porPasos)
-                              Expanded(
-                                child: Text(
-                                  l.pasoDe(paso!, pasos!),
-                                  textAlign: TextAlign.end,
-                                  style: t.labelLarge?.copyWith(
-                                    color: context.muted,
-                                  ),
-                                ),
-                              )
-                            else
-                              const Spacer(),
-                          ],
-                        ),
-                      if (porPasos) ...[
-                        const SizedBox(height: Sp.sm),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(Rad.pill),
-                          child: LinearProgressIndicator(
-                            value: paso! / pasos!,
-                            minHeight: 6,
-                            color: NexaColors.cyan,
-                            backgroundColor: context.colors.outline.withValues(
-                              alpha: 0.25,
+                                )
+                              else
+                                const Spacer(),
+                            ],
+                          ),
+                        const SizedBox(height: Sp.xl),
+                        if (porPasos) ...[
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(Rad.pill),
+                            child: LinearProgressIndicator(
+                              value: paso! / pasos!,
+                              minHeight: 4,
+                              color: NexaColors.cyan,
+                              backgroundColor: NexaColors.line,
                             ),
                           ),
-                        ),
+                          const SizedBox(height: Sp.xl),
+                        ] else ...[
+                          const Align(
+                            alignment: Alignment.centerLeft,
+                            child: NexaIconoApp(tamano: 52),
+                          ),
+                          const SizedBox(height: Sp.xl),
+                        ],
+                        Text(titulo, style: NexaTexto.titulo),
+                        if (subtitulo != null) ...[
+                          const SizedBox(height: Sp.sm),
+                          Text(
+                            subtitulo!,
+                            style: NexaTexto.cuerpo.copyWith(
+                              color: context.muted,
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: Sp.xl),
-                      ] else ...[
-                        const NexaLogo(tamano: 72, brillo: true),
-                        const SizedBox(height: Sp.lg),
-                      ],
-                      Text(
-                        titulo,
-                        style: t.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                        textAlign: porPasos
-                            ? TextAlign.start
-                            : TextAlign.center,
-                      ),
-                      if (subtitulo != null) ...[
-                        const SizedBox(height: Sp.xs + 2),
-                        Text(
-                          subtitulo!,
-                          style: t.bodyMedium?.copyWith(color: context.muted),
-                          textAlign: porPasos
-                              ? TextAlign.start
-                              : TextAlign.center,
-                        ),
-                      ],
-                      const SizedBox(height: Sp.xl),
-                      if (porPasos)
-                        ...children.map(
-                          (w) => SizedBox(width: double.infinity, child: w),
-                        )
-                      else
                         ...children,
-                    ],
+                        if (pie != null) ...[
+                          const Spacer(),
+                          const SizedBox(height: Sp.xl),
+                          pie!,
+                        ],
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
+            ],
           ),
         ),
       ),

@@ -62,6 +62,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               NexaTextField(
                 controller: _email,
                 label: l.email,
+                icono: Icons.mail_outline,
+                pista: 'tu@correo.co',
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.email],
@@ -71,6 +73,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               NexaTextField(
                 controller: _pass,
                 label: l.password,
+                icono: Icons.lock_outline,
                 obscure: true,
                 textInputAction: TextInputAction.done,
                 onSubmitted: (_) => _enviar(),
@@ -91,17 +94,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
           ),
         ],
-        const SizedBox(height: Sp.lg),
+        const SizedBox(height: Sp.xl),
         NexaButton(label: l.ingresar, onPressed: _enviar, cargando: _cargando),
-        const SizedBox(height: Sp.sm),
-        TextButton(
-          onPressed: () => context.go('/registro'),
-          style: TextButton.styleFrom(
-            minimumSize: const Size.fromHeight(Sizes.touch),
-          ),
-          child: Text(l.noTienesCuenta, textAlign: TextAlign.center),
-        ),
       ],
+      pie: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            l.noTienesCuentaPregunta,
+            style: const TextStyle(color: NexaColors.muted, fontSize: 13),
+          ),
+          TextButton(
+            onPressed: () => context.go('/registro'),
+            style: TextButton.styleFrom(
+              minimumSize: const Size(Sizes.touch, Sizes.touch),
+              foregroundColor: NexaColors.cyan,
+              textStyle: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            child: Text(l.crearCuenta),
+          ),
+        ],
+      ),
     );
   }
 }

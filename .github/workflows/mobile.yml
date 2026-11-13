@@ -72,6 +72,7 @@ jobs:
       # Capturas de las pantallas (PNG en base64 en el log, sin artefactos) para
       # compararlas con el Figma del rediseño. No bloquean la CI.
       - name: Capturas
+        if: success() || failure()
         continue-on-error: true
         env:
           NEXA_CAPTURAS: '1'

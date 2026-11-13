@@ -7,6 +7,8 @@ import 'package:nexa_mobile/core/providers.dart';
 import 'package:nexa_mobile/core/theme/app_theme.dart';
 import 'package:nexa_mobile/features/auth/presentation/screens/registro_conductor_screen.dart';
 
+import 'package:nexa_mobile/core/widgets/nexa_widgets.dart';
+
 import '../helpers.dart';
 import '../helpers_foto.dart';
 
@@ -42,7 +44,11 @@ Widget _app(SelectorFalso selector) {
 }
 
 Future<void> _escribir(WidgetTester t, String etiqueta, String texto) async {
-  final campo = find.widgetWithText(TextFormField, etiqueta);
+  // La etiqueta va encima del campo (NexaTextField), no dentro.
+  final nexa = find.widgetWithText(NexaTextField, etiqueta);
+  final campo = nexa.evaluate().isNotEmpty
+      ? find.descendant(of: nexa, matching: find.byType(TextFormField))
+      : find.widgetWithText(TextFormField, etiqueta);
   await t.ensureVisible(campo);
   await t.enterText(campo, texto);
 }

@@ -14,7 +14,6 @@ import '../../features/niveles/presentation/widgets/celebracion_listener.dart';
 import '../../features/niveles/presentation/screens/niveles_screen.dart';
 import '../../features/viajes/presentation/conductor/inicio_conductor_screen.dart';
 import '../../features/viajes/presentation/conductor/ganancias_screen.dart';
-import '../../features/home/presentation/home_screen.dart';
 import '../../features/permisos/presentation/pantallas_permisos.dart';
 import '../../features/satisfaccion/presentation/admin_shell.dart';
 import '../../features/satisfaccion/presentation/screens/entrenando_screen.dart';
@@ -83,7 +82,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: '/splash', builder: (_, _) => const SplashScreen()),
       GoRoute(path: '/onboarding', builder: (_, _) => const OnboardingScreen()),
-      GoRoute(path: '/inicio', builder: (_, _) => const HomeScreen()),
+      // Bienvenida (A02) para quien no tiene sesión.
+      GoRoute(path: '/inicio', builder: (_, _) => const OnboardingScreen()),
       GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
       GoRoute(path: '/registro', builder: (_, _) => const RegistroScreen()),
       GoRoute(

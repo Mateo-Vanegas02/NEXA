@@ -12,7 +12,7 @@ import 'package:nexa_mobile/features/auth/presentation/controllers/session_contr
 import 'package:nexa_mobile/features/auth/presentation/screens/login_screen.dart';
 import 'package:nexa_mobile/features/auth/presentation/screens/perfil_screen.dart';
 import 'package:nexa_mobile/features/auth/presentation/screens/registro_screen.dart';
-import 'package:nexa_mobile/features/home/presentation/home_screen.dart';
+import 'package:nexa_mobile/features/auth/presentation/screens/onboarding_screen.dart';
 import 'package:nexa_mobile/features/niveles/domain/nivel.dart';
 import 'package:nexa_mobile/features/niveles/presentation/screens/niveles_screen.dart';
 import 'package:nexa_mobile/features/niveles/presentation/widgets/level_progress_bar.dart';
@@ -130,13 +130,14 @@ void main() {
         _sinErroresDeLayout(t);
       }
 
-      testWidgets('home pública: hero, CTA y servicios', (t) async {
-        await montar(t, const HomeScreen());
-        expect(find.text('Conecta con el movimiento'), findsOneWidget);
-        expect(find.text('Solicita ahora'), findsOneWidget);
-        expect(find.text('Regístrate'), findsOneWidget);
-        expect(find.text('Reserva de viajes'), findsOneWidget);
-        expect(find.text('Pagos seguros'), findsOneWidget);
+      testWidgets('bienvenida: mensaje y las dos salidas', (t) async {
+        await montar(t, const OnboardingScreen());
+        expect(
+          find.text('Muévete por la ciudad en minutos.'),
+          findsOneWidget,
+        );
+        expect(find.text('Crear cuenta'), findsOneWidget);
+        expect(find.text('Ya tengo cuenta'), findsOneWidget);
       });
 
       testWidgets('login: valida campos obligatorios', (t) async {

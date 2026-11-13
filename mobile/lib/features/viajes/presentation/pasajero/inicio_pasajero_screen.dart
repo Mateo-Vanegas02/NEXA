@@ -129,17 +129,18 @@ class _Encabezado extends ConsumerWidget {
             decoration: BoxDecoration(
               color: NexaColors.glass,
               borderRadius: BorderRadius.circular(Rad.pill),
-              border: Border.all(color: NexaColors.cyan.withValues(alpha: 0.3)),
+              border: Border.all(color: NexaColors.line),
+              boxShadow: NexaShadows.card,
             ),
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(Sp.sm, Sp.sm, Sp.lg, Sp.sm),
+              padding: const EdgeInsets.fromLTRB(Sp.sm, Sp.sm, Sp.xl, Sp.sm),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   NexaAvatarAnillo(
                     iniciales: p?.iniciales ?? '·',
                     progreso: nivel?.progreso ?? 0,
-                    diametro: 52,
+                    diametro: 46,
                   ),
                   const SizedBox(width: Sp.md),
                   Flexible(
@@ -163,20 +164,7 @@ class _Encabezado extends ConsumerWidget {
                         ),
                         if (perfil.hasError)
                           Text(AppException.from(perfil.error!).mensaje)
-                        else if (nivel != null)
-                          Text(
-                            l.nivelDescuento(
-                              nivel.nombre,
-                              (nivel.descuento * 100).round(),
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: context.textos.bodySmall?.copyWith(
-                              color: NexaColors.cyan,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          )
-                        else
+                        else if (nivel == null)
                           _Reputacion(perfil: p, viajes: viajes),
                       ],
                     ),
@@ -196,7 +184,10 @@ class _Encabezado extends ConsumerWidget {
           style: IconButton.styleFrom(
             minimumSize: const Size.square(Sizes.touch),
             backgroundColor: NexaColors.glass,
-            side: BorderSide(color: NexaColors.cyan.withValues(alpha: 0.3)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(Rad.md),
+              side: const BorderSide(color: NexaColors.line),
+            ),
           ),
         ),
       ],

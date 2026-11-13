@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,8 +8,10 @@ import 'package:latlong2/latlong.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
-import '../../../../core/theme/theme_x.dart';
+import '../../../../core/theme/nexa_texto.dart';
 import '../../../../core/theme/tokens.dart';
+import '../../../../core/mapa/reglas_marcadores.dart';
+import '../../../../core/rumbo/orientacion_mapa.dart';
 import '../../../../core/utils/acciones_externas.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/mapa/polyline.dart';
@@ -19,7 +23,7 @@ import '../../domain/estimado_tarifa.dart';
 import '../../domain/servicio.dart';
 import '../controllers/viaje_pasajero_controller.dart';
 import '../widgets/conductor_card.dart';
-import '../widgets/pasos_viaje.dart';
+import '../widgets/piezas_viaje.dart';
 
 /// Seguimiento del viaje sobre el mapa. Con la solicitud abierta: búsqueda de
 /// conductor y extra voluntario. Con el viaje aceptado o en curso: minutos de
@@ -77,6 +81,10 @@ class _Seguimiento extends ConsumerWidget {
         : LatLng(s.ubicacionDestino!.latitud, s.ubicacionDestino!.longitud);
     // Posición, distancia y ETA reales del conductor (los calcula el servidor).
     final pos = ref.watch(posicionConductorProvider);
+    final moto = pos == null ? null : LatLng(pos.latitud, pos.longitud);
+    final yo = s.estado == EstadoServicio.aceptado
+        ? ref.watch(miUbicacionViajeProvider)
+        : null;
     final total = s.duracionEstimadaMin > 0
         ? s.duracionEstimadaMin.ceil()
         : minutosEstimados(s.distanciaKM);
@@ -86,18 +94,52 @@ class _Seguimiento extends ConsumerWidget {
         ? pos.etaMinutos
         : total;
     final llegada = DateFormat(
-      'h:mm a',
+      'H:mm',
       'es_CO',
     ).format(DateTime.now().add(Duration(minutes: restantes)));
-    final titulo = switch (s.estado) {
-      EstadoServicio.solicitado => l.buscandoConductor,
-      EstadoServicio.aceptado => l.conductorEnCamino,
-      EstadoServicio.cancelado => l.viajeCancelado,
-      _ => l.viajeEnCursoTitulo,
+    final enElPunto =
+        s.estado == EstadoServicio.aceptado && s.fechaLlegada != null;
+    final nombre = (s.conductor?.nombre ?? l.tuConductor).split(' ').first;
+    final fases = [l.faseAceptado, l.faseEnCamino, l.faseEnElPunto, l.faseEnViaje];
+    final fase = switch (s.estado) {
+      EstadoServicio.enCurso || EstadoServicio.finalizado => 3,
+      EstadoServicio.aceptado when enElPunto => 2,
+      _ => 1,
     };
-    final enMarcha =
-        s.estado == EstadoServicio.aceptado ||
-        s.estado == EstadoServicio.enCurso;
+
+    // Dónde queda la moto según hacia dónde apunta el teléfono (diseño M02).
+    final rumbo = ref.watch(orientacionMapaProvider.select((o) => o.rumbo));
+    String? lado;
+    if (yo != null && moto != null && rumbo != null && !enElPunto) {
+      lado = switch (ReglasMarcadores.ladoRelativo(
+        rumboTelefono: rumbo,
+        haciaObjetivo: ReglasMarcadores.rumboEntre(yo, moto),
+      )) {
+        LadoRelativo.deFrente => l.ladoDeFrente,
+        LadoRelativo.derecha => l.ladoDerecha,
+        LadoRelativo.izquierda => l.ladoIzquierda,
+        LadoRelativo.detras => l.ladoDetras,
+      };
+    }
+
+    final Widget? arriba = switch (s.estado) {
+      EstadoServicio.aceptado when enElPunto => Center(
+        child: PildoraEstado(texto: l.estaEnTuPunto(nombre)),
+      ),
+      EstadoServicio.aceptado => TarjetaFlotante(
+        icono: Icons.timer_outlined,
+        titulo: l.llegaEnMin(restantes),
+        detalle: lado ?? l.vaHaciaTuPunto(nombre),
+        colorDetalle: lado == null ? null : NexaColors.cyan,
+      ),
+      EstadoServicio.enCurso => TarjetaFlotante(
+        icono: Icons.flag_outlined,
+        titulo: l.llegasEnMinHora(restantes, llegada),
+        detalle: l.vasHacia(s.destino),
+      ),
+      _ => null,
+    };
+
     return Stack(
       children: [
         Positioned.fill(
@@ -106,58 +148,68 @@ class _Seguimiento extends ConsumerWidget {
             origen: origen,
             destino: destino,
             ruta: rutaDe(s.rutaGeometria),
-            conductor: pos == null ? null : LatLng(pos.latitud, pos.longitud),
-            pasajero: s.estado == EstadoServicio.aceptado
-                ? ref.watch(miUbicacionViajeProvider)
-                : null,
+            conductor: moto,
+            pasajero: yo,
             orientable: true,
-            // Debajo del botón SOS.
-            brujulaArriba: enMarcha ? Sp.md + Sizes.boton + Sp.sm : Sp.md,
           ),
         ),
-        if (enMarcha)
-          const SafeArea(
+        if (arriba != null)
+          SafeArea(
             child: Padding(
-              padding: EdgeInsets.all(Sp.md),
-              child: Align(alignment: Alignment.topRight, child: _BotonSos()),
+              // A la derecha queda la brújula.
+              padding: const EdgeInsets.fromLTRB(
+                Sp.lg,
+                Sp.md,
+                Sizes.touch + Sp.md + Sp.sm,
+                0,
+              ),
+              child: Align(alignment: Alignment.topLeft, child: arriba),
             ),
           ),
         NexaHojaArrastrable(
-          inicial: s.estado == EstadoServicio.solicitado ? 0.6 : 0.55,
+          inicial: s.estado == EstadoServicio.solicitado ? 0.62 : 0.56,
           minimo: 0.3,
           children: [
             if (s.estado == EstadoServicio.solicitado) ...[
+              Text(l.buscandoTuConductor, style: NexaTexto.titulo),
+              const SizedBox(height: Sp.sm),
               Text(
-                titulo,
-                style: context.textos.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+                l.buscandoTexto,
+                style: NexaTexto.cuerpo.copyWith(color: NexaColors.muted),
               ),
-              const SizedBox(height: Sp.md),
+              const SizedBox(height: Sp.lg),
               ClipRRect(
                 borderRadius: BorderRadius.circular(Rad.pill),
                 child: LinearProgressIndicator(
-                  minHeight: 6,
+                  minHeight: 4,
                   color: NexaColors.cyan,
-                  backgroundColor: NexaColors.raised,
+                  backgroundColor: NexaColors.line,
                   semanticsLabel: l.buscandoConductor,
                 ),
               ),
-              const SizedBox(height: Sp.lg + 2),
+              const SizedBox(height: Sp.xl),
               _ExtraVoluntario(servicio: s),
-              const SizedBox(height: Sp.md),
-              _DestinoPrecio(servicio: s),
-              const SizedBox(height: Sp.sm),
-              const _BotonCancelar(),
-            ] else if (s.estado == EstadoServicio.cancelado) ...[
-              Text(
-                titulo,
-                style: context.textos.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+              const SizedBox(height: Sp.lg),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      l.totalConExtra,
+                      style: NexaTexto.cuerpo.copyWith(color: NexaColors.muted),
+                    ),
+                  ),
+                  Text(
+                    Fmt.cop(s.tarifa + s.extraVoluntario),
+                    style: NexaTexto.numeroMedio.copyWith(fontSize: 20),
+                  ),
+                ],
               ),
               const SizedBox(height: Sp.lg),
-              _DestinoPrecio(servicio: s),
+              const _BotonCancelar(solicitud: true),
+            ] else if (s.estado == EstadoServicio.cancelado) ...[
+              Text(l.viajeCancelado, style: NexaTexto.titulo),
+              const SizedBox(height: Sp.lg),
+              _Pago(servicio: s),
               const SizedBox(height: Sp.lg),
               NexaButton(
                 label: l.continuar,
@@ -167,25 +219,33 @@ class _Seguimiento extends ConsumerWidget {
                 },
               ),
             ] else ...[
-              _Llegada(
-                titulo: titulo,
-                minutos: restantes,
-                llegada: llegada,
-                estado: s.estado,
-              ),
-              const SizedBox(height: Sp.md),
-              PasosViaje(estado: s.estado),
-              if (s.conductor != null) ...[
+              FasesViaje(etiquetas: fases, actual: fase),
+              const SizedBox(height: Sp.xl),
+              if (enElPunto) ...[
+                _EsperaSinCosto(desde: s.fechaLlegada!),
+                const SizedBox(height: Sp.md),
+                if (s.conductor?.placa != null)
+                  _BuscaPlaca(conductor: s.conductor!),
                 const SizedBox(height: Sp.lg),
-                ConductorCard(conductor: s.conductor!),
-              ],
-              const SizedBox(height: Sp.lg),
-              _Acciones(servicio: s),
-              const SizedBox(height: Sp.lg),
-              _DestinoPrecio(servicio: s),
-              if (s.estado == EstadoServicio.aceptado) ...[
+                _Acciones(servicio: s),
+              ] else if (s.estado == EstadoServicio.enCurso) ...[
+                _Avance(
+                  destino: s.destino,
+                  totalKm: s.distanciaKM,
+                  restanteKm: pos?.distanciaRestanteKm,
+                ),
+                const SizedBox(height: Sp.lg),
+                if (s.conductor != null) ConductorCard(conductor: s.conductor!),
+                const SizedBox(height: Sp.lg),
+                _AccionesEnViaje(servicio: s),
+              ] else ...[
+                if (s.conductor != null) ConductorCard(conductor: s.conductor!),
+                const SizedBox(height: Sp.lg),
+                _Acciones(servicio: s),
+                const SizedBox(height: Sp.lg),
+                _Pago(servicio: s),
                 const SizedBox(height: Sp.sm),
-                const _BotonCancelar(),
+                const _BotonCancelar(solicitud: false),
               ],
             ],
           ],
@@ -195,145 +255,203 @@ class _Seguimiento extends ConsumerWidget {
   }
 }
 
-/// Minutos de llegada en grande, hora estimada y estado del viaje.
-class _Llegada extends StatelessWidget {
-  const _Llegada({
-    required this.titulo,
-    required this.minutos,
-    required this.llegada,
-    required this.estado,
-  });
+/// «Espera sin costo»: cuánto lleva el conductor en el punto (solo reloj; el
+/// recargo lo decide el servidor).
+class _EsperaSinCosto extends StatefulWidget {
+  const _EsperaSinCosto({required this.desde});
+  final DateTime desde;
 
-  final String titulo;
-  final int minutos;
-  final String llegada;
-  final EstadoServicio estado;
+  @override
+  State<_EsperaSinCosto> createState() => _EsperaSinCostoState();
+}
+
+class _EsperaSinCostoState extends State<_EsperaSinCosto> {
+  late final Timer _reloj = Timer.periodic(
+    const Duration(seconds: 1),
+    (_) => setState(() {}),
+  );
+
+  @override
+  void dispose() {
+    _reloj.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final t = context.textos;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                titulo,
-                style: t.bodyMedium?.copyWith(
-                  color: context.muted,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              if (minutos > 0)
+    final seg = DateTime.now().difference(widget.desde).inSeconds.clamp(0, 5999);
+    final texto = '${seg ~/ 60}:${(seg % 60).toString().padLeft(2, '0')}';
+    return NexaCard(
+      child: Row(
+        children: [
+          CronoCircular(texto: texto, avance: (seg % 60) / 60),
+          const SizedBox(width: Sp.lg),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l.esperaSinCosto, style: NexaTexto.subtitulo),
+                const SizedBox(height: Sp.xs),
                 Text(
-                  l.minutosValor(minutos),
-                  style: t.displaySmall?.copyWith(fontWeight: FontWeight.w700),
+                  l.esperaSinCostoTexto,
+                  style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
                 ),
-              Text(
-                l.llegadaEstimada(llegada),
-                style: t.bodySmall?.copyWith(color: context.muted),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: Sp.sm),
-        Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: Sp.md,
-            vertical: Sp.xs + 2,
-          ),
-          decoration: BoxDecoration(
-            color: NexaColors.ok.withValues(alpha: 0.14),
-            borderRadius: BorderRadius.circular(Rad.pill),
-          ),
-          child: Text(
-            estado == EstadoServicio.aceptado
-                ? l.paso_aceptado
-                : l.paso_en_curso,
-            style: const TextStyle(
-              color: NexaColors.ok,
-              fontWeight: FontWeight.w600,
-              fontSize: 12,
+              ],
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
-class _DestinoPrecio extends StatelessWidget {
-  const _DestinoPrecio({required this.servicio});
+/// «Busca esta placa»: la placa grande en dorado para reconocer la moto.
+class _BuscaPlaca extends StatelessWidget {
+  const _BuscaPlaca({required this.conductor});
+  final Participante conductor;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    return Container(
+      padding: const EdgeInsets.all(Sp.lg),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(Rad.lg),
+        border: Border.all(color: NexaColors.gold.withValues(alpha: 0.35)),
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF2B2410), NexaColors.card],
+        ),
+      ),
+      child: Column(
+        children: [
+          Text(
+            l.buscaEstaPlaca.toUpperCase(),
+            style: NexaTexto.etiqueta.copyWith(color: NexaColors.gold),
+          ),
+          const SizedBox(height: Sp.md),
+          PlacaMoto(placa: conductor.placa!, grande: true),
+          const SizedBox(height: Sp.md),
+          Text(
+            [?conductor.vehiculo, conductor.nombre].join(' · '),
+            textAlign: TextAlign.center,
+            style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Avance hacia el destino con el viaje en curso (km del servidor).
+class _Avance extends StatelessWidget {
+  const _Avance({
+    required this.destino,
+    required this.totalKm,
+    required this.restanteKm,
+  });
+
+  final String destino;
+  final double totalKm;
+  final double? restanteKm;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final km = NumberFormat('0.0', 'es_CO');
+    final resta = (restanteKm ?? totalKm).clamp(0.0, totalKm);
+    final hecho = totalKm <= 0 ? 0.0 : 1 - resta / totalKm;
+    return NexaCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  destino,
+                  style: NexaTexto.subtitulo.copyWith(fontSize: 16),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Text(
+                '${(hecho * 100).round()} %',
+                style: NexaTexto.subtitulo.copyWith(
+                  fontSize: 16,
+                  color: NexaColors.cyan,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: Sp.md),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(Rad.pill),
+            child: LinearProgressIndicator(
+              value: hecho,
+              minHeight: 6,
+              color: NexaColors.cyan,
+              backgroundColor: NexaColors.line,
+            ),
+          ),
+          const SizedBox(height: Sp.md),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  l.kmRecorridos(km.format(totalKm - resta)),
+                  style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
+                ),
+              ),
+              Text(
+                l.kmPorRecorrer(km.format(resta)),
+                style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Forma de pago y total (incluye el extra voluntario, si lo hay).
+class _Pago extends StatelessWidget {
+  const _Pago({required this.servicio});
   final Servicio servicio;
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final t = context.textos;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: NexaColors.card,
-        borderRadius: BorderRadius.circular(Rad.lg),
-        border: Border.all(color: NexaColors.cyan.withValues(alpha: 0.18)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(Sp.lg - 2),
-        child: Row(
-          children: [
-            Container(
-              width: 12,
-              height: 12,
-              margin: const EdgeInsets.only(right: Sp.md),
-              decoration: BoxDecoration(
-                color: NexaColors.cyan,
-                borderRadius: BorderRadius.circular(4),
-                boxShadow: NexaShadows.glow,
-              ),
+    final extra = servicio.extraVoluntario;
+    final metodo = switch (servicio.metodoPago) {
+      'tarjeta' => l.metodoTarjeta,
+      'billetera' => l.metodoBilletera,
+      _ =>
+        extra > 0
+            ? l.pagasEnEfectivoExtra('+${Fmt.cop(extra)}')
+            : l.pagasEnEfectivo,
+    };
+    return NexaCard(
+      padding: const EdgeInsets.symmetric(horizontal: Sp.lg, vertical: Sp.md),
+      child: Row(
+        children: [
+          const Icon(Icons.payments_outlined, color: NexaColors.muted, size: 20),
+          const SizedBox(width: Sp.md),
+          Expanded(
+            child: Text(
+              metodo,
+              style: NexaTexto.pequeno.copyWith(color: NexaColors.texto),
             ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l.destino,
-                    style: t.bodySmall?.copyWith(color: context.muted),
-                  ),
-                  Text(
-                    servicio.destino,
-                    style: t.titleSmall?.copyWith(fontWeight: FontWeight.w700),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: Sp.sm),
-            Flexible(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    Fmt.cop(servicio.tarifa + servicio.extraVoluntario),
-                    style: t.titleSmall?.copyWith(fontWeight: FontWeight.w700),
-                  ),
-                  if (servicio.extraVoluntario > 0)
-                    Text(
-                      '${l.extraVoluntario}: ${Fmt.cop(servicio.extraVoluntario)}',
-                      style: t.bodySmall?.copyWith(color: context.muted),
-                    ),
-                  Text(switch (servicio.metodoPago) {
-                    'tarjeta' => l.metodoTarjeta,
-                    'billetera' => l.metodoBilletera,
-                    _ => l.efectivo,
-                  }, style: t.bodySmall?.copyWith(color: context.muted)),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(width: Sp.sm),
+          Text(
+            Fmt.cop(servicio.tarifa + extra),
+            style: NexaTexto.subtitulo.copyWith(fontSize: 16),
+          ),
+        ],
       ),
     );
   }
@@ -370,68 +488,76 @@ class _ExtraVoluntarioState extends ConsumerState<_ExtraVoluntario> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final s = widget.servicio;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: NexaColors.card,
-        borderRadius: BorderRadius.circular(Rad.lg),
-        border: Border.all(color: NexaColors.cyan.withValues(alpha: 0.18)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(Sp.lg),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l.extraTitulo,
-              style: context.textos.titleSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: Sp.xs),
-            Text(
-              l.extraTexto,
-              style: context.textos.bodySmall?.copyWith(color: context.muted),
-            ),
-            const SizedBox(height: Sp.md),
-            Wrap(
-              spacing: Sp.sm,
-              runSpacing: Sp.sm,
-              children: [
-                for (final v in _opciones)
-                  ActionChip(
-                    label: Text('+${Fmt.cop(v.toDouble())}'),
-                    onPressed: _enviando ? null : () => _subir(v),
-                  ),
-              ],
-            ),
-            const SizedBox(height: Sp.md),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    l.ofertaAhora,
-                    style: context.textos.bodySmall?.copyWith(
-                      color: context.muted,
-                    ),
-                  ),
-                ),
-                Text(
-                  Fmt.cop(s.tarifa + s.extraVoluntario),
-                  style: context.textos.titleSmall?.copyWith(
-                    color: NexaColors.cyan,
+    return NexaCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l.llegarMasRapido, style: NexaTexto.subtitulo.copyWith(fontSize: 16)),
+          const SizedBox(height: Sp.xs),
+          Text(
+            l.llegarMasRapidoTexto,
+            style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
+          ),
+          const SizedBox(height: Sp.md),
+          Wrap(
+            spacing: Sp.sm,
+            runSpacing: Sp.sm,
+            children: [
+              for (final v in _opciones)
+                ActionChip(
+                  label: Text('+${Fmt.cop(v.toDouble())}'),
+                  onPressed: _enviando ? null : () => _subir(v),
+                  labelStyle: const TextStyle(
                     fontWeight: FontWeight.w700,
+                    color: NexaColors.texto,
+                  ),
+                  backgroundColor: NexaColors.raised,
+                  side: const BorderSide(color: NexaColors.line),
+                  shape: const StadiumBorder(),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: Sp.sm,
+                    vertical: Sp.sm,
                   ),
                 ),
-              ],
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
       ),
     );
   }
 }
 
+Future<void> _pedirSos(BuildContext context, WidgetRef ref) async {
+  final l = AppLocalizations.of(context);
+  final llamar = await mostrarNexaPopup<bool>(
+    context,
+    titulo: l.sosTitulo,
+    mensaje: l.sosTexto,
+    tipo: NexaPopupTipo.alerta,
+    acciones: [
+      NexaPopupAccion(
+        etiqueta: '${l.llamar} $kLineaEmergencias',
+        valor: true,
+        peligro: true,
+      ),
+      NexaPopupAccion(etiqueta: l.cancelar, valor: false),
+    ],
+  );
+  if (llamar ?? false) {
+    await ref.read(accionesExternasProvider).llamar(kLineaEmergencias);
+  }
+}
+
+void _compartir(BuildContext context, WidgetRef ref, Servicio s) {
+  final l = AppLocalizations.of(context);
+  ref
+      .read(accionesExternasProvider)
+      .compartir(
+        l.compartirTexto(s.destino, s.conductor?.nombre ?? l.tuConductor),
+      );
+}
+
+/// Llamar, Mensaje, Compartir y SOS (diseño P05/P06).
 class _Acciones extends ConsumerWidget {
   const _Acciones({required this.servicio});
   final Servicio servicio;
@@ -458,29 +584,33 @@ class _Acciones extends ConsumerWidget {
     return Row(
       children: [
         Expanded(
-          child: _Accion(
+          child: AccionCuadro(
             icono: Icons.phone_outlined,
             etiqueta: l.llamar,
             onTap: () => _conTelefono(context, acciones.llamar),
           ),
         ),
         Expanded(
-          child: _Accion(
+          child: AccionCuadro(
             icono: Icons.chat_bubble_outline,
             etiqueta: l.mensaje,
             onTap: () => _conTelefono(context, acciones.enviarSms),
           ),
         ),
         Expanded(
-          child: _Accion(
-            icono: Icons.share_outlined,
+          child: AccionCuadro(
+            icono: Icons.ios_share,
             etiqueta: l.compartir,
-            onTap: () => acciones.compartir(
-              l.compartirTexto(
-                servicio.destino,
-                servicio.conductor?.nombre ?? l.tuConductor,
-              ),
-            ),
+            onTap: () => _compartir(context, ref, servicio),
+          ),
+        ),
+        Expanded(
+          child: AccionCuadro(
+            icono: Icons.shield_outlined,
+            etiqueta: l.sos,
+            tooltip: l.asistenciaRuta,
+            peligro: true,
+            onTap: () => _pedirSos(context, ref),
           ),
         ),
       ],
@@ -488,137 +618,74 @@ class _Acciones extends ConsumerWidget {
   }
 }
 
-/// Acción redonda con su etiqueta debajo (llamar, mensaje, compartir).
-class _Accion extends StatelessWidget {
-  const _Accion({
-    required this.icono,
-    required this.etiqueta,
-    required this.onTap,
-  });
-
-  final IconData icono;
-  final String etiqueta;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => Semantics(
-    button: true,
-    label: etiqueta,
-    child: ExcludeSemantics(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(Rad.lg),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: Sp.xs,
-            vertical: Sp.xs,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: NexaColors.raised,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: NexaColors.cyan.withValues(alpha: 0.25),
-                  ),
-                ),
-                child: Icon(icono, color: context.acento),
-              ),
-              const SizedBox(height: Sp.xs + 2),
-              Text(
-                etiqueta,
-                style: context.textos.labelMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-      ),
-    ),
-  );
-}
-
-/// Cancelar el viaje: texto discreto (para evitar toques accidentales) con
-/// confirmación.
-class _BotonCancelar extends ConsumerWidget {
-  const _BotonCancelar();
+/// En viaje: compartir el viaje y SOS (diseño P07).
+class _AccionesEnViaje extends ConsumerWidget {
+  const _AccionesEnViaje({required this.servicio});
+  final Servicio servicio;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
-    return TextButton(
-      style: TextButton.styleFrom(
-        minimumSize: const Size.fromHeight(Sizes.touch),
-        foregroundColor: context.colors.error,
-      ),
-      onPressed: () async {
-        final router = GoRouter.of(context);
-        final notifier = ref.read(viajePasajeroProvider.notifier);
-        final confirmar = await mostrarNexaPopup<bool>(
-          context,
-          titulo: l.cancelarViajeTitulo,
-          mensaje: l.cancelarViajeTexto,
-          tipo: NexaPopupTipo.peligro,
-          acciones: [
-            NexaPopupAccion(
-              etiqueta: l.cancelarViaje,
-              valor: true,
-              peligro: true,
-            ),
-            NexaPopupAccion(etiqueta: l.mantenerViaje, valor: false),
-          ],
-        );
-        if (confirmar ?? false) {
-          await notifier.cancelar();
-          router.go('/p/inicio');
-        }
-      },
-      child: Text(l.cancelarViaje),
+    return Row(
+      children: [
+        Expanded(
+          flex: 2,
+          child: BotonIcono(
+            icono: Icons.ios_share,
+            etiqueta: l.compartirViaje,
+            onTap: () => _compartir(context, ref, servicio),
+          ),
+        ),
+        const SizedBox(width: Sp.md),
+        Expanded(
+          child: BotonIcono(
+            icono: Icons.shield_outlined,
+            etiqueta: l.sos,
+            tooltip: l.asistenciaRuta,
+            peligro: true,
+            onTap: () => _pedirSos(context, ref),
+          ),
+        ),
+      ],
     );
   }
 }
 
-/// Asistencia en ruta: botón flotante sobre el mapa que ofrece llamar a emergencias.
-class _BotonSos extends ConsumerWidget {
-  const _BotonSos();
+/// Cancelar: con la solicitud abierta es un botón rojo («Cancelar
+/// solicitud»); con el conductor en camino, un texto discreto. Siempre pide
+/// confirmación.
+class _BotonCancelar extends ConsumerWidget {
+  const _BotonCancelar({required this.solicitud});
+  final bool solicitud;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
-    return IconButton(
-      tooltip: l.asistenciaRuta,
-      onPressed: () async {
-        final llamar = await mostrarNexaPopup<bool>(
-          context,
-          titulo: l.sosTitulo,
-          mensaje: l.sosTexto,
-          tipo: NexaPopupTipo.alerta,
-          acciones: [
-            NexaPopupAccion(
-              etiqueta: '${l.llamar} $kLineaEmergencias',
-              valor: true,
-              peligro: true,
-            ),
-            NexaPopupAccion(etiqueta: l.cancelar, valor: false),
-          ],
-        );
-        if (llamar ?? false) {
-          await ref.read(accionesExternasProvider).llamar(kLineaEmergencias);
-        }
-      },
-      icon: const Icon(Icons.shield_outlined, color: NexaColors.cyan),
-      style: IconButton.styleFrom(
-        minimumSize: const Size.square(Sizes.touch),
-        backgroundColor: NexaColors.glass,
-        side: BorderSide(color: NexaColors.cyan.withValues(alpha: 0.45)),
-      ),
+    Future<void> cancelar() async {
+      final router = GoRouter.of(context);
+      final notifier = ref.read(viajePasajeroProvider.notifier);
+      final confirmar = await mostrarNexaPopup<bool>(
+        context,
+        titulo: l.cancelarViajeTitulo,
+        mensaje: l.cancelarViajeTexto,
+        tipo: NexaPopupTipo.peligro,
+        acciones: [
+          NexaPopupAccion(etiqueta: l.cancelarViaje, valor: true, peligro: true),
+          NexaPopupAccion(etiqueta: l.mantenerViaje, valor: false),
+        ],
+      );
+      if (confirmar ?? false) {
+        await notifier.cancelar();
+        router.go('/p/inicio');
+      }
+    }
+
+    return NexaButton(
+      label: solicitud ? l.cancelarSolicitud : l.cancelarViaje,
+      variant: solicitud
+          ? NexaButtonVariant.peligro
+          : NexaButtonVariant.fantasma,
+      onPressed: cancelar,
     );
   }
 }

@@ -1,51 +1,31 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
-import '../../../../core/theme/theme_x.dart';
+import '../../../../core/theme/nexa_texto.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../domain/servicio.dart';
+import 'piezas_viaje.dart';
 
-/// Conductor del viaje: avatar, nombre, calificación, nivel, moto y placa.
-/// Los datos de reputación/vehículo son opcionales.
+/// Conductor del viaje (diseño P05): avatar, nombre, «★ 4,9 · Nivel 4 ·
+/// 1.284 viajes», la moto y la placa amarilla. Los datos de reputación y
+/// vehículo son opcionales (los completa el servidor al aceptar).
 class ConductorCard extends StatelessWidget {
   const ConductorCard({required this.conductor, super.key});
 
   final Participante conductor;
 
-  String get _iniciales {
-    final p = conductor.nombre.trim().split(RegExp(r'\s+'));
-    if (p.isEmpty || p.first.isEmpty) return '?';
-    return (p.first[0] + (p.length > 1 ? p[1][0] : '')).toUpperCase();
-  }
-
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final t = context.textos;
+    final partes = <String>[
+      if (conductor.calificacion != null)
+        conductor.calificacion!.toStringAsFixed(1).replaceAll('.', ','),
+      if (conductor.nivel != null) '${l.nivelPalabra} ${conductor.nivel}',
+      if (conductor.viajes != null) l.viajesCantidadCorto(conductor.viajes!),
+    ];
     return Row(
       children: [
-        Container(
-          width: 56,
-          height: 56,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [NexaColors.cyan, NexaColors.sky],
-            ),
-            boxShadow: NexaShadows.glow,
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            _iniciales,
-            style: const TextStyle(
-              color: NexaColors.bg,
-              fontWeight: FontWeight.w700,
-              fontSize: 17,
-            ),
-          ),
-        ),
+        AvatarIniciales(nombre: conductor.nombre),
         const SizedBox(width: Sp.md),
         Expanded(
           child: Column(
@@ -53,72 +33,42 @@ class ConductorCard extends StatelessWidget {
             children: [
               Text(
                 conductor.nombre,
-                style: t.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                style: NexaTexto.subtitulo,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              if (conductor.calificacion != null || conductor.viajes != null)
-                Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
+              if (partes.isNotEmpty)
+                Row(
                   children: [
                     if (conductor.calificacion != null) ...[
-                      const Icon(Icons.star, size: 16, color: NexaColors.gold),
+                      const Icon(Icons.star, size: 14, color: NexaColors.gold),
                       const SizedBox(width: Sp.xs),
-                      Text(
-                        conductor.calificacion!
-                            .toStringAsFixed(1)
-                            .replaceAll('.', ','),
-                        style: t.bodySmall?.copyWith(
-                          fontWeight: FontWeight.w700,
+                    ],
+                    Flexible(
+                      child: Text(
+                        partes.join(' · '),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: NexaTexto.pequeno.copyWith(
+                          color: NexaColors.muted,
                         ),
                       ),
-                    ],
-                    if (conductor.viajes != null)
-                      Text(
-                        ' · ${l.viajesCantidadCorto(conductor.viajes!)}',
-                        style: t.bodySmall?.copyWith(color: context.muted),
-                      ),
+                    ),
                   ],
                 ),
               if (conductor.vehiculo != null)
                 Text(
                   conductor.vehiculo!,
-                  style: t.bodySmall?.copyWith(color: context.muted),
-                  maxLines: 2,
+                  style: NexaTexto.pequeno.copyWith(color: NexaColors.tenue),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
             ],
           ),
         ),
         if (conductor.placa != null) ...[
           const SizedBox(width: Sp.sm),
-          Semantics(
-            label: '${l.placa} ${conductor.placa}',
-            child: ExcludeSemantics(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: Sp.md,
-                  vertical: Sp.sm - 2,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  border: const Border(
-                    bottom: BorderSide(color: Color(0xFFCDD7DF), width: 3),
-                  ),
-                ),
-                child: Text(
-                  conductor.placa!,
-                  textScaler: TextScaler.noScaling,
-                  style: const TextStyle(
-                    color: NexaColors.bg,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1,
-                    fontSize: 15,
-                  ),
-                ),
-              ),
-            ),
-          ),
+          PlacaMoto(placa: conductor.placa!),
         ],
       ],
     );

@@ -5,7 +5,10 @@ import 'package:flutter/material.dart';
 import '../l10n/gen/app_localizations.dart';
 import '../theme/tokens.dart';
 
-enum NexaButtonVariant { primario, secundario, peligro }
+/// Variantes del componente «Botón» del Figma: primario cian con brillo,
+/// secundario oscuro, peligro (texto rojo sobre fondo rojizo) y fantasma
+/// (solo texto, para «Ahora no» o «Ya tengo cuenta»).
+enum NexaButtonVariant { primario, secundario, peligro, fantasma }
 
 /// Botón de NEXA: alto mínimo 48dp, estado de carga y variantes.
 class NexaButton extends StatelessWidget {
@@ -48,9 +51,21 @@ class NexaButton extends StatelessWidget {
     final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(Rad.pill),
     );
-    const texto = TextStyle(fontSize: 16, fontWeight: FontWeight.w600);
+    const texto = TextStyle(fontSize: 16, fontWeight: FontWeight.w700);
     final callback = enabled ? onPressed : null;
+    final oscuro = Theme.of(context).brightness == Brightness.dark;
     return switch (variant) {
+      NexaButtonVariant.secundario when oscuro => FilledButton(
+        onPressed: callback,
+        style: FilledButton.styleFrom(
+          minimumSize: minimo,
+          shape: shape,
+          backgroundColor: NexaColors.raised,
+          foregroundColor: NexaColors.texto,
+          textStyle: texto,
+        ),
+        child: child,
+      ),
       NexaButtonVariant.secundario => OutlinedButton(
         onPressed: callback,
         style: OutlinedButton.styleFrom(
@@ -65,8 +80,18 @@ class NexaButton extends StatelessWidget {
         style: FilledButton.styleFrom(
           minimumSize: minimo,
           shape: shape,
-          backgroundColor: scheme.error,
-          foregroundColor: scheme.onError,
+          backgroundColor: oscuro ? const Color(0xFF2A1A26) : scheme.error,
+          foregroundColor: oscuro ? NexaColors.error : scheme.onError,
+          textStyle: texto,
+        ),
+        child: child,
+      ),
+      NexaButtonVariant.fantasma => TextButton(
+        onPressed: callback,
+        style: TextButton.styleFrom(
+          minimumSize: minimo,
+          shape: shape,
+          foregroundColor: oscuro ? NexaColors.muted : scheme.primary,
           textStyle: texto,
         ),
         child: child,
@@ -104,11 +129,19 @@ class NexaTextField extends StatefulWidget {
     this.textInputAction,
     this.onSubmitted,
     this.autofillHints,
+    this.icono,
+    this.pista,
     super.key,
   });
 
   final TextEditingController controller;
   final String label;
+
+  /// Icono a la izquierda del texto (correo, candado, teléfono…).
+  final IconData? icono;
+
+  /// Ejemplo dentro del campo vacío.
+  final String? pista;
   final String? Function(String?)? validator;
   final TextInputType? keyboardType;
   final bool obscure;
@@ -124,7 +157,26 @@ class _NexaTextFieldState extends State<NexaTextField> {
   late bool _oculto = widget.obscure;
 
   @override
-  Widget build(BuildContext context) => TextFormField(
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      // La etiqueta va encima del campo (diseño A03/A04); el campo la
+      // repite para lectores de pantalla.
+      ExcludeSemantics(
+        child: Padding(
+          padding: const EdgeInsets.only(left: Sp.xs, bottom: Sp.sm),
+          child: Text(
+            widget.label,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ),
+      ),
+      Semantics(label: widget.label, child: _campo(context)),
+    ],
+  );
+
+  Widget _campo(BuildContext context) => TextFormField(
     controller: widget.controller,
     validator: widget.validator,
     keyboardType: widget.keyboardType,
@@ -132,8 +184,12 @@ class _NexaTextFieldState extends State<NexaTextField> {
     textInputAction: widget.textInputAction,
     onFieldSubmitted: widget.onSubmitted,
     autofillHints: widget.autofillHints,
+    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
     decoration: InputDecoration(
-      labelText: widget.label,
+      hintText: widget.pista,
+      prefixIcon: widget.icono == null
+          ? null
+          : Icon(widget.icono, size: 20, color: NexaColors.muted),
       suffixIcon: widget.obscure
           ? IconButton(
               tooltip: _oculto ? 'Mostrar' : 'Ocultar',
@@ -165,16 +221,21 @@ class NexaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final oscuro = Theme.of(context).brightness == Brightness.dark;
     return Material(
-      color: scheme.surface,
-      borderRadius: BorderRadius.circular(Rad.md),
+      color: oscuro ? NexaColors.card : scheme.surface,
+      borderRadius: BorderRadius.circular(Rad.lg),
       child: InkWell(
-        borderRadius: BorderRadius.circular(Rad.md),
+        borderRadius: BorderRadius.circular(Rad.lg),
         onTap: onTap,
         child: Ink(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(Rad.md),
-            border: Border.all(color: scheme.outline.withValues(alpha: 0.35)),
+            borderRadius: BorderRadius.circular(Rad.lg),
+            border: Border.all(
+              color: oscuro
+                  ? NexaColors.line
+                  : scheme.outline.withValues(alpha: 0.35),
+            ),
           ),
           padding: padding,
           child: child,

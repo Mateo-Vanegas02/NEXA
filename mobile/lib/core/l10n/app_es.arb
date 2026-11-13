@@ -12,19 +12,20 @@
   "errorGenerico": "Algo salió mal",
   "vacioHistorial": "Aún no tienes viajes",
   "vacioHistorialDetalle": "Cuando completes un viaje aparecerá aquí.",
-  "onb1Titulo": "Pide tu mototaxi",
-  "onb1Texto": "Solicita un viaje en segundos y sigue a tu conductor en el mapa.",
-  "onb2Titulo": "Sube de nivel",
+  "onb1Titulo": "Muévete por la ciudad en minutos.",
+  "onb1Texto": "Pide una moto, sigue a tu conductor en vivo y gana descuentos cada vez que viajas.",
+  "onb2Titulo": "Cada viaje te sube de nivel.",
   "onb2Texto": "Cada viaje te da XP. Desbloquea descuentos, prioridad y más beneficios.",
-  "onb3Titulo": "Viaja con confianza",
+  "onb3Titulo": "Viaja con confianza.",
   "onb3Texto": "Conductores verificados, tarifa clara y calificaciones en cada viaje.",
   "loginTitulo": "Hola de nuevo",
-  "loginSubtitulo": "Entra para pedir o recibir viajes.",
-  "email": "Correo electrónico",
+  "loginSubtitulo": "Entra con el correo de tu cuenta NEXA.",
+  "email": "Correo",
   "password": "Contraseña",
   "confirmarPassword": "Confirmar contraseña",
-  "ingresar": "Ingresar",
+  "ingresar": "Entrar",
   "noTienesCuenta": "¿No tienes cuenta? Regístrate",
+  "noTienesCuentaPregunta": "¿No tienes cuenta?",
   "yaTienesCuenta": "¿Ya tienes cuenta? Inicia sesión",
   "registroTitulo": "Crea tu cuenta",
   "soy": "Quiero usar NEXA como",
@@ -115,10 +116,10 @@
       }
     }
   },
-  "xpGanado": "+{xp} XP",
+  "xpGanado": "Ganaste {n} XP",
   "@xpGanado": {
     "placeholders": {
-      "xp": {
+      "n": {
         "type": "int"
       }
     }
@@ -378,7 +379,11 @@
       }
     }
   },
-  "registroPaso1Sub": "Empecemos con tus datos básicos.",
+  "registroPaso1Sub": "¿Cómo quieres usar NEXA?",
+  "rolViajar": "Viajar",
+  "rolViajarSub": "Pide motos y sube de nivel",
+  "rolConducir": "Conducir",
+  "rolConducirSub": "Gana con tu moto. Pide tus documentos.",
   "registroPaso2Titulo": "Elige tu contraseña",
   "registroPaso2Sub": "La usarás para entrar a tu cuenta.",
   "docsTitulo": "Tus documentos",
@@ -432,14 +437,6 @@
   "statNivel": "nivel",
   "editarPerfilSub": "Nombre y celular",
   "ofertaAhora": "Tu oferta ahora",
-  "xpGanado": "Ganaste {n} XP",
-  "@xpGanado": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
   "ocultarDesglose": "Ocultar desglose",
   "ahorroNivel": "Tu nivel ahorra {monto}",
   "@ahorroNivel": {
@@ -983,5 +980,119 @@
         "type": "String"
       }
     }
-  }
+  },
+  "faseAceptado": "Aceptado",
+  "faseEnCamino": "En camino",
+  "faseEnElPunto": "En el punto",
+  "llegaEnMin": "Llega en {min} min",
+  "@llegaEnMin": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "vaHaciaTuPunto": "{nombre} va hacia tu punto de recogida",
+  "@vaHaciaTuPunto": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "estaEnTuPunto": "{nombre} está en tu punto",
+  "@estaEnTuPunto": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "llegasEnMinHora": "Llegas en {min} min · {hora}",
+  "@llegasEnMinHora": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "hora": {
+        "type": "String"
+      }
+    }
+  },
+  "vasHacia": "Vas hacia {destino}",
+  "@vasHacia": {
+    "placeholders": {
+      "destino": {
+        "type": "String"
+      }
+    }
+  },
+  "ladoDeFrente": "Lo tienes de frente",
+  "ladoDerecha": "Viene por tu derecha",
+  "ladoIzquierda": "Viene por tu izquierda",
+  "ladoDetras": "Viene por detrás de ti",
+  "buscaEstaPlaca": "Busca esta placa",
+  "esperaSinCosto": "Espera sin costo",
+  "esperaSinCostoTexto": "Después se cobra un recargo por minuto, con un tope.",
+  "buscandoTuConductor": "Buscando tu conductor",
+  "buscandoTexto": "Avisamos a los conductores cerca de ti. Si nadie acepta, ampliamos el radio.",
+  "avisamosA": "Avisamos a {n} conductores cerca de ti. Si nadie acepta, ampliamos el radio.",
+  "@avisamosA": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "llegarMasRapido": "¿Quieres llegar más rápido?",
+  "llegarMasRapidoTexto": "Suma un extra para el conductor: tu solicitud se adelanta una ola.",
+  "topeExtra": "Tope {valor}",
+  "@topeExtra": {
+    "placeholders": {
+      "valor": {
+        "type": "String"
+      }
+    }
+  },
+  "totalConExtra": "Total con extra",
+  "cancelarSolicitud": "Cancelar solicitud",
+  "pagasEnEfectivo": "Pagas en efectivo",
+  "pagasEnEfectivoExtra": "Pagas en efectivo · incluye {extra} extra",
+  "@pagasEnEfectivoExtra": {
+    "placeholders": {
+      "extra": {
+        "type": "String"
+      }
+    }
+  },
+  "kmRecorridos": "{km} km recorridos",
+  "@kmRecorridos": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "kmPorRecorrer": "{km} km por recorrer",
+  "@kmPorRecorrer": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "compartirViaje": "Compartir viaje",
+  "sos": "SOS",
+  "nivelViajes": "Nivel {nivel} · {viajes}",
+  "@nivelViajes": {
+    "placeholders": {
+      "nivel": {
+        "type": "int"
+      },
+      "viajes": {
+        "type": "String"
+      }
+    }
+  },
+  "nivelPalabra": "Nivel"
 }

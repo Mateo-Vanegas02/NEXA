@@ -283,14 +283,12 @@ class NexaHojaInferior extends StatelessWidget {
   );
 }
 
-final BoxDecoration _decoracionHoja = BoxDecoration(
-  color: NexaColors.card.withValues(alpha: 0.97),
-  borderRadius: const BorderRadius.vertical(top: Radius.circular(Rad.sheet)),
-  border: Border(
-    top: BorderSide(color: NexaColors.cyan.withValues(alpha: 0.45)),
-  ),
-  boxShadow: const [
-    BoxShadow(color: Color(0x80000000), blurRadius: 40, offset: Offset(0, -14)),
+const BoxDecoration _decoracionHoja = BoxDecoration(
+  color: NexaColors.card,
+  borderRadius: BorderRadius.vertical(top: Radius.circular(Rad.sheet)),
+  border: Border(top: BorderSide(color: NexaColors.line)),
+  boxShadow: [
+    BoxShadow(color: Color(0x99000000), blurRadius: 40, offset: Offset(0, -12)),
   ],
 );
 
@@ -303,7 +301,7 @@ class _AsaHoja extends StatelessWidget {
       width: 40,
       height: 4,
       decoration: BoxDecoration(
-        color: NexaColors.cyan.withValues(alpha: 0.45),
+        color: NexaColors.tenue,
         borderRadius: BorderRadius.circular(4),
       ),
     ),
@@ -484,8 +482,9 @@ class NexaItemBarra {
   final String etiqueta;
 }
 
-/// Barra de navegación en forma de píldora que flota sobre el contenido.
-/// El elemento activo muestra su etiqueta.
+/// Barra de pestañas flotante del rediseño (componente «Barra de pestañas»
+/// del Figma): cada opción con icono y etiqueta; la activa en cian sobre una
+/// píldora oscura.
 class NexaBarraFlotante extends StatelessWidget {
   const NexaBarraFlotante({
     required this.items,
@@ -500,37 +499,30 @@ class NexaBarraFlotante extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ClipRRect(
-    borderRadius: BorderRadius.circular(Rad.pill),
+    borderRadius: BorderRadius.circular(Rad.sheet),
     child: BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
       child: Container(
-        height: 64,
-        padding: const EdgeInsets.symmetric(horizontal: Sp.sm),
+        height: 68,
+        padding: const EdgeInsets.all(Sp.sm - 2),
         decoration: BoxDecoration(
-          color: NexaColors.card.withValues(alpha: 0.88),
-          borderRadius: BorderRadius.circular(Rad.pill),
-          border: Border.all(color: NexaColors.cyan.withValues(alpha: 0.45)),
+          color: NexaColors.card.withValues(alpha: 0.94),
+          borderRadius: BorderRadius.circular(Rad.sheet),
+          border: Border.all(color: NexaColors.line),
+          boxShadow: const [
+            BoxShadow(color: Color(0x80000000), blurRadius: 24),
+          ],
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             for (var i = 0; i < items.length; i++)
-              if (i == indice)
-                // Solo el activo es flexible: su etiqueta se recorta si no cabe
-                // (pantallas angostas o letra grande) en vez de desbordar.
-                Flexible(
-                  child: _Opcion(
-                    item: items[i],
-                    activo: true,
-                    onTap: () => onSeleccion(i),
-                  ),
-                )
-              else
-                _Opcion(
+              Expanded(
+                child: _Opcion(
                   item: items[i],
-                  activo: false,
+                  activo: i == indice,
                   onTap: () => onSeleccion(i),
                 ),
+              ),
           ],
         ),
       ),
@@ -551,45 +543,37 @@ class _Opcion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = activo ? NexaColors.bg : NexaColors.muted;
+    final color = activo ? NexaColors.cyan : NexaColors.muted;
     return Semantics(
       button: true,
       selected: activo,
       label: item.etiqueta,
       child: InkWell(
-        borderRadius: BorderRadius.circular(Rad.pill),
+        borderRadius: BorderRadius.circular(Rad.lg),
         onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          constraints: const BoxConstraints(minWidth: Sizes.touch),
-          height: Sizes.touch,
-          padding: EdgeInsets.symmetric(horizontal: activo ? Sp.lg + 2 : Sp.md),
           decoration: BoxDecoration(
-            color: activo ? NexaColors.cyan : Colors.transparent,
-            borderRadius: BorderRadius.circular(Rad.pill),
-            boxShadow: activo ? NexaShadows.glow : null,
+            color: activo ? NexaColors.raised : Colors.transparent,
+            borderRadius: BorderRadius.circular(Rad.lg),
           ),
           child: ExcludeSemantics(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(item.icono, size: 22, color: color),
-                if (activo) ...[
-                  const SizedBox(width: Sp.sm),
-                  Flexible(
-                    child: Text(
-                      item.etiqueta,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: color,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                      ),
-                    ),
+                const SizedBox(height: 3),
+                Text(
+                  item.etiqueta,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 11,
+                    letterSpacing: 0.3,
                   ),
-                ],
+                ),
               ],
             ),
           ),
