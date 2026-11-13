@@ -55,7 +55,9 @@ abstract final class ReglasSegundoPlano {
     bool buscando = false,
   }) {
     if (conductorEnCamino) return ModoSegundoPlano.pasajeroEnCamino;
-    return buscando ? ModoSegundoPlano.pasajeroBuscando : ModoSegundoPlano.apagado;
+    return buscando
+        ? ModoSegundoPlano.pasajeroBuscando
+        : ModoSegundoPlano.apagado;
   }
 
   static AjustesRastreo? ajustes(ModoSegundoPlano modo) => switch (modo) {
@@ -108,5 +110,4 @@ abstract final class ReglasSegundoPlano {
     required ModoSegundoPlano nuevo,
     required bool primerPlano,
   }) => primerPlano || nuevo == ModoSegundoPlano.apagado;
-
 }
