@@ -134,7 +134,8 @@ class _Seguimiento extends ConsumerWidget {
     final topeExtra = ref.watch(ofertaActivaProvider)?.topeExtra;
     final kmFmt = NumberFormat('0.#', 'es_CO');
     final Widget? arriba = switch (s.estado) {
-      EstadoServicio.solicitado when despacho != null => Center(
+      EstadoServicio.solicitado when despacho != null => Align(
+        alignment: Alignment.topCenter,
         child: PildoraEstado(
           icono: Icons.waves,
           color: despacho.ultima ? NexaColors.muted : NexaColors.cyan,
@@ -147,7 +148,8 @@ class _Seguimiento extends ConsumerWidget {
                 ),
         ),
       ),
-      EstadoServicio.aceptado when enElPunto => Center(
+      EstadoServicio.aceptado when enElPunto => Align(
+        alignment: Alignment.topCenter,
         child: PildoraEstado(texto: l.estaEnTuPunto(nombre)),
       ),
       EstadoServicio.aceptado => TarjetaFlotante(
