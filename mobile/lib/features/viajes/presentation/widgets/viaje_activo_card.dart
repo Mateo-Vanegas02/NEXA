@@ -8,6 +8,7 @@ import '../../../../core/widgets/nexa_diseno.dart';
 import '../../../../core/widgets/nexa_popup.dart';
 import '../../../../core/widgets/nexa_widgets.dart';
 import '../../domain/servicio.dart';
+import '../controllers/sin_conexion_controller.dart';
 import '../controllers/viaje_conductor_controller.dart';
 
 import 'package:flutter/material.dart';
@@ -129,10 +130,20 @@ class _ViajeActivoCardState extends ConsumerState<ViajeActivoCard> {
         ? null
         : '${pos.distanciaRestanteKm.toStringAsFixed(1)} km';
     final nombre = s.pasajero?.nombre ?? '';
+    // Un paso hecho sin señal que aún no llega al servidor.
+    final pendiente = ref.watch(
+      sinConexionProvider.select(
+        (e) => e.pendientes.any((a) => a.servicioId == s.id),
+      ),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _Fases(fase: fase),
+        if (pendiente) ...[
+          const SizedBox(height: Sp.md),
+          _AvisoPendiente(texto: l.pendienteDeEnviar),
+        ],
         const SizedBox(height: Sp.lg),
         Row(
           children: [
@@ -414,4 +425,30 @@ class ResumenViajeCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// «Pendiente de enviar»: el paso se hizo sin señal y se registrará con su hora.
+class _AvisoPendiente extends StatelessWidget {
+  const _AvisoPendiente({required this.texto});
+  final String texto;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    liveRegion: true,
+    child: Container(
+      padding: const EdgeInsets.all(Sp.md),
+      decoration: BoxDecoration(
+        color: NexaColors.gold.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(Rad.md),
+        border: Border.all(color: NexaColors.gold),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.cloud_upload_outlined, color: NexaColors.gold),
+          const SizedBox(width: Sp.md),
+          Expanded(child: Text(texto)),
+        ],
+      ),
+    ),
+  );
 }

@@ -13,11 +13,13 @@ const String kSinToken = 'sinToken';
 ///
 /// El backend no tiene refresh de token (ver docs/PENDIENTES_BACKEND.md): ante un
 /// 401 en una ruta autenticada se invoca [onSesionExpirada] para cerrar sesión.
+/// [alResponder] dice tras cada petición si hubo respuesta (modo sin conexión).
 Dio crearDio({
   required TokenStorage tokens,
   required void Function() onSesionExpirada,
   String? baseUrl,
   String prefijo = '/api',
+  void Function({required bool hayRed})? alResponder,
 }) {
   final dio = Dio(
     BaseOptions(
@@ -37,7 +39,13 @@ Dio crearDio({
         }
         handler.next(options);
       },
+      onResponse: (r, handler) {
+        alResponder?.call(hayRed: true);
+        handler.next(r);
+      },
       onError: (e, handler) {
+        // Sin respuesta = sin señal; con respuesta (aunque sea error), hay red.
+        alResponder?.call(hayRed: e.response != null);
         final publica = e.requestOptions.extra[kSinToken] == true;
         if (e.response?.statusCode == 401 && !publica) {
           onSesionExpirada();

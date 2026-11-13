@@ -1,3 +1,4 @@
+import '../../../core/sin_conexion/reglas_sin_conexion.dart';
 import 'perfil_pasajero.dart';
 import 'servicio.dart';
 
@@ -48,13 +49,23 @@ abstract interface class ConductorRepository {
   Future<PosicionPasajero?> ubicacionPasajero(String id);
 
   /// "Llegué": el servidor verifica que esté a ≤ 50 m de la recogida (409 si no).
-  Future<Servicio> llegue(String id, Coordenada posicion);
+  /// [llave] (idempotencia) y [ocurridoEn] sirven para enviarlo tras un corte
+  /// de señal sin repetirlo y con la hora en que se tocó el botón.
+  Future<Servicio> llegue(
+    String id,
+    Coordenada posicion, {
+    String? llave,
+    DateTime? ocurridoEn,
+  });
+
+  /// Posiciones guardadas sin señal, con su hora (`POST /conductor/ubicacion/lote`).
+  Future<void> reportarLote(List<PuntoGuardado> puntos);
 
   Future<SaldoConductor> saldo({int dias = 30});
 
   Future<Servicio> aceptar(String id);
-  Future<Servicio> iniciar(String id);
-  Future<Servicio> finalizar(String id);
+  Future<Servicio> iniciar(String id, {String? llave, DateTime? ocurridoEn});
+  Future<Servicio> finalizar(String id, {String? llave, DateTime? ocurridoEn});
   Future<Servicio> cancelar(String id);
   Future<List<Servicio>> enCurso();
   Future<List<Servicio>> historial();

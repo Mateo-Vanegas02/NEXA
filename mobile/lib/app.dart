@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/l10n/gen/app_localizations.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/widgets/banda_sin_conexion.dart';
 import 'features/viajes/presentation/controllers/avisos_push_controller.dart';
+import 'features/viajes/presentation/controllers/sin_conexion_controller.dart';
 import 'features/viajes/presentation/controllers/segundo_plano_controller.dart';
 
 class NexaApp extends ConsumerWidget {
@@ -17,6 +19,8 @@ class NexaApp extends ConsumerWidget {
     ref.watch(coordinadorSegundoPlanoProvider);
     // Avisos push: registra el teléfono y atiende los toques.
     ref.watch(avisosPushProvider);
+    // Envía lo hecho sin señal apenas vuelve la conexión.
+    ref.watch(sinConexionProvider);
     return _app(context, ref);
   }
 
@@ -40,7 +44,8 @@ class NexaApp extends ConsumerWidget {
       final mq = MediaQuery.of(context);
       return MediaQuery(
         data: mq.copyWith(textScaler: mq.textScaler.clamp(maxScaleFactor: 1.3)),
-        child: child!,
+        // Sin señal: banda «Sin conexión · reintentando» sobre todo (fase 5).
+        child: BandaSinConexion(child: child!),
       );
     },
   );

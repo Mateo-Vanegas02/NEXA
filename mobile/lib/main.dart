@@ -12,6 +12,8 @@ import 'core/providers.dart';
 import 'core/push/aviso_push.dart';
 import 'core/push/push_firebase.dart';
 import 'core/push/servicio_push.dart';
+import 'core/sin_conexion/almacen_sin_conexion.dart';
+import 'core/sin_conexion/base_local.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,6 +26,7 @@ Future<void> main() async {
       overrides: [
         notificacionesProvider.overrideWithValue(notificaciones),
         servicioPushProvider.overrideWithValue(push),
+        almacenSinConexionProvider.overrideWithValue(_abrirBaseLocal()),
       ],
       child: const NexaApp(),
     ),
@@ -64,5 +67,16 @@ Future<ServicioPush> _prepararPush(
   } catch (e) {
     debugPrint('Push desactivado: $e');
     return const PushInactivo();
+  }
+}
+
+/// Base local del modo sin conexión (drift). Si no abre, la app sigue con la
+/// cola en memoria (se pierde al cerrarla, pero nada se rompe).
+AlmacenSinConexion _abrirBaseLocal() {
+  try {
+    return BaseLocal();
+  } catch (e) {
+    debugPrint('Base local no disponible: $e');
+    return AlmacenEnMemoria();
   }
 }

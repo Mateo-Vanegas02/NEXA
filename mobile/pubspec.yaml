@@ -51,6 +51,9 @@ dependencies:
   firebase_messaging: ^17.0.1
   # Brújula, giroscopio y acelerómetro para girar el mapa (fase 4)
   sensors_plus: ^7.1.1
+  # Base local del modo sin conexión (cola, puntos de GPS, copia del viaje)
+  drift: ^2.35.0
+  drift_flutter: ^0.3.1
   intl: ^0.20.3
   flutter_localizations:
     sdk: flutter
@@ -59,6 +62,7 @@ dependencies:
   image_picker: ^1.2.4
 
 dev_dependencies:
+  drift_dev: ^2.35.0
   flutter_test:
     sdk: flutter
 

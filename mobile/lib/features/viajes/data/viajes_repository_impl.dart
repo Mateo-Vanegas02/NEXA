@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import '../../../core/errors/app_exception.dart';
 import '../domain/perfil_pasajero.dart';
 import '../domain/servicio.dart';
+import '../../../core/sin_conexion/reglas_sin_conexion.dart';
 import '../domain/viajes_repository.dart';
 
 typedef _Json = Map<String, dynamic>;
@@ -173,8 +174,17 @@ class ApiConductorRepository implements ConductorRepository {
 
   /// Las acciones responden `{mensaje, servicioId, …}`, no el viaje: se
   /// busca después (el activo si sigue en marcha; si no, en el historial).
-  Future<Servicio> _accion(String ruta, String id) => _guard(() async {
-    final r = await _dio.post<_Json>('/conductor/$ruta/$id');
+  Future<Servicio> _accion(
+    String ruta,
+    String id, {
+    String? llave,
+    DateTime? ocurridoEn,
+  }) => _guard(() async {
+    final r = await _dio.post<_Json>(
+      '/conductor/$ruta/$id',
+      data: ocurridoEn == null ? null : _hora(ocurridoEn),
+      options: _conLlave(llave),
+    );
     final datos = r.data;
     if (esServicio(datos)) return Servicio.fromJson(datos!);
     return _viajeTrasAccion(id);
@@ -237,10 +247,16 @@ class ApiConductorRepository implements ConductorRepository {
   });
 
   @override
-  Future<Servicio> llegue(String id, Coordenada posicion) => _guard(() async {
+  Future<Servicio> llegue(
+    String id,
+    Coordenada posicion, {
+    String? llave,
+    DateTime? ocurridoEn,
+  }) => _guard(() async {
     final r = await _dio.post<_Json>(
       '/conductor/llegue/$id',
-      data: posicion.toJson(),
+      data: {...posicion.toJson(), ...?_horaSiHay(ocurridoEn)},
+      options: _conLlave(llave),
     );
     final datos = r.data;
     if (esServicio(datos)) return Servicio.fromJson(datos!);
@@ -259,9 +275,42 @@ class ApiConductorRepository implements ConductorRepository {
   @override
   Future<Servicio> aceptar(String id) => _accion('aceptar-servicio', id);
   @override
-  Future<Servicio> iniciar(String id) => _accion('iniciar-servicio', id);
+  Future<Servicio> iniciar(String id, {String? llave, DateTime? ocurridoEn}) =>
+      _accion(
+        'iniciar-servicio',
+        id,
+        llave: llave,
+        ocurridoEn: ocurridoEn,
+      );
   @override
-  Future<Servicio> finalizar(String id) => _accion('finalizar-servicio', id);
+  Future<Servicio> finalizar(
+    String id, {
+    String? llave,
+    DateTime? ocurridoEn,
+  }) => _accion(
+    'finalizar-servicio',
+    id,
+    llave: llave,
+    ocurridoEn: ocurridoEn,
+  );
+
+  @override
+  Future<void> reportarLote(List<PuntoGuardado> puntos) => _guard(() async {
+    await _dio.post<Object?>(
+      '/conductor/ubicacion/lote',
+      data: {'puntos': [for (final p in puntos) p.toJson()]},
+    );
+  });
+
+  static Options? _conLlave(String? llave) =>
+      llave == null ? null : Options(headers: {'Idempotency-Key': llave});
+
+  static Map<String, String> _hora(DateTime en) => {
+    'ocurridoEn': en.toUtc().toIso8601String(),
+  };
+
+  static Map<String, String>? _horaSiHay(DateTime? en) =>
+      en == null ? null : _hora(en);
   @override
   Future<Servicio> cancelar(String id) => _accion('cancelar-servicio', id);
 

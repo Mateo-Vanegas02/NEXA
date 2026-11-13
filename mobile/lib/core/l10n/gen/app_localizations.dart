@@ -3399,6 +3399,60 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Hacia {destino}'**
   String avisoBuscandoHacia(String destino);
+
+  /// No description provided for @sinConexionBanda.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin conexión · reintentando'**
+  String get sinConexionBanda;
+
+  /// No description provided for @pendienteLlegue.
+  ///
+  /// In es, this message translates to:
+  /// **'Llegué'**
+  String get pendienteLlegue;
+
+  /// No description provided for @pendienteIniciar.
+  ///
+  /// In es, this message translates to:
+  /// **'Iniciar viaje'**
+  String get pendienteIniciar;
+
+  /// No description provided for @pendienteFinalizar.
+  ///
+  /// In es, this message translates to:
+  /// **'Finalizar viaje'**
+  String get pendienteFinalizar;
+
+  /// No description provided for @pendienteDeEnviar.
+  ///
+  /// In es, this message translates to:
+  /// **'Pendiente de enviar: se registrará con su hora al volver la señal'**
+  String get pendienteDeEnviar;
+
+  /// No description provided for @finalPendienteTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Viaje finalizado sin señal. El cobro final aparecerá al volver la conexión.'**
+  String get finalPendienteTexto;
+
+  /// No description provided for @copiaDelViaje.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin señal: mostramos la última copia del viaje'**
+  String get copiaDelViaje;
+
+  /// No description provided for @sinConexionUltimoDato.
+  ///
+  /// In es, this message translates to:
+  /// **'último dato hace {minutos} min'**
+  String sinConexionUltimoDato(int minutos);
+
+  /// No description provided for @sinConexionRechazo.
+  ///
+  /// In es, this message translates to:
+  /// **'No se registró «{accion}»: {motivo}'**
+  String sinConexionRechazo(String accion, String motivo);
 }
 
 class _AppLocalizationsDelegate

@@ -2,13 +2,16 @@ import '../../../../core/config/env.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/providers.dart';
 import '../../../../core/segundo_plano/modo_segundo_plano.dart';
+import '../../../../core/sin_conexion/reglas_sin_conexion.dart';
 import '../../../../core/utils/mi_posicion.dart';
 import '../../../auth/presentation/controllers/session_controller.dart';
 import '../../../niveles/presentation/controllers/niveles_controller.dart';
 import '../../domain/servicio.dart';
 import '../../domain/viajes_repository.dart';
+import 'sin_conexion_controller.dart';
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -26,6 +29,7 @@ class ConductorState {
     this.terminado,
     this.desgloseTerminado,
     this.pasajeroCancelo = false,
+    this.copiaDe,
   });
 
   final EstadoAprobacion aprobacion;
@@ -45,6 +49,9 @@ class ConductorState {
 
   /// El pasajero canceló el viaje que tenía activo el conductor.
   final bool pasajeroCancelo;
+
+  /// Sin señal al abrir: el viaje sale de la copia guardada a esta hora.
+  final DateTime? copiaDe;
 
   FaseConductor? get fase {
     final a = activo;
@@ -69,6 +76,8 @@ class ConductorState {
     DesgloseConductor? desgloseTerminado,
     bool limpiarTerminado = false,
     bool? pasajeroCancelo,
+    DateTime? copiaDe,
+    bool limpiarCopia = false,
   }) => ConductorState(
     aprobacion: aprobacion ?? this.aprobacion,
     enLinea: enLinea ?? this.enLinea,
@@ -81,6 +90,7 @@ class ConductorState {
         ? null
         : (desgloseTerminado ?? this.desgloseTerminado),
     pasajeroCancelo: pasajeroCancelo ?? this.pasajeroCancelo,
+    copiaDe: limpiarCopia ? null : (copiaDe ?? this.copiaDe),
   );
 }
 
@@ -105,15 +115,69 @@ class ConductorController extends AsyncNotifier<ConductorState> {
     if (sinSesionActiva(ref)) {
       return Completer<ConductorState>().future;
     }
-    final aprobacion = await ref
-        .read(authRepositoryProvider)
-        .estadoAprobacion();
-    if (aprobacion != EstadoAprobacion.aprobado) {
-      return ConductorState(aprobacion: aprobacion);
+    _guardarCopiaAlCambiar();
+    try {
+      final aprobacion = await ref
+          .read(authRepositoryProvider)
+          .estadoAprobacion();
+      if (aprobacion != EstadoAprobacion.aprobado) {
+        return ConductorState(aprobacion: aprobacion);
+      }
+      final activo = await _repo.viajeActivo();
+      if (activo != null) _iniciarPolling();
+      return ConductorState(aprobacion: aprobacion, activo: activo);
+    } on Object catch (e) {
+      // Sin señal al abrir: el viaje que tenía, desde la copia del teléfono.
+      if (!ReglasSinConexion.esFaltaDeRed(e)) rethrow;
+      final copia = await _leerCopia();
+      if (copia == null) rethrow;
+      _iniciarPolling();
+      return ConductorState(
+        aprobacion: EstadoAprobacion.aprobado,
+        activo: copia.viaje,
+        copiaDe: copia.en,
+      );
     }
-    final activo = await _repo.viajeActivo();
-    if (activo != null) _iniciarPolling();
-    return ConductorState(aprobacion: aprobacion, activo: activo);
+  }
+
+  static const _claveCopia = 'conductor';
+
+  /// Guarda en el teléfono el viaje activo cada vez que cambia de paso (no en
+  /// cada sondeo) y lo borra al terminar.
+  void _guardarCopiaAlCambiar() {
+    listenSelf((antes, ahora) {
+      final a = antes?.value?.activo;
+      final n = ahora.value?.activo;
+      if (a?.id == n?.id &&
+          a?.estado == n?.estado &&
+          a?.fechaLlegada == n?.fechaLlegada) {
+        return;
+      }
+      final almacen = ref.read(almacenSinConexionProvider);
+      unawaited(
+        (n == null
+                ? almacen.borrarInstantanea(_claveCopia)
+                : almacen.guardarInstantanea(
+                    _claveCopia,
+                    jsonEncode(n.toJson()),
+                  ))
+            .catchError((Object _) {}),
+      );
+    });
+  }
+
+  Future<({Servicio viaje, DateTime en})?> _leerCopia() async {
+    try {
+      final c = await ref
+          .read(almacenSinConexionProvider)
+          .instantanea(_claveCopia);
+      if (c == null) return null;
+      final datos = jsonDecode(c.json);
+      if (datos is! Map<String, dynamic>) return null;
+      return (viaje: Servicio.fromJson(datos), en: c.en);
+    } on Object {
+      return null;
+    }
   }
 
   ConductorRepository get _repo => ref.read(conductorRepositoryProvider);
@@ -151,9 +215,12 @@ class ConductorController extends AsyncNotifier<ConductorState> {
     }
     _sondeando = true;
     try {
+      // Lo hecho sin señal va primero: hasta enviarlo, el viaje que se ve es el
+      // del teléfono (si no, el servidor «desharía» el paso aún no enviado).
+      final alDia = await ref.read(sinConexionProvider.notifier).enviar();
       final gps = await _gps();
       if (actual.activo != null) {
-        await _sondearViaje(actual.activo!, gps);
+        await _sondearViaje(actual.activo!, gps, alDia: alDia);
       } else {
         PosicionViaje? aVer;
         if (gps != null) {
@@ -182,11 +249,29 @@ class ConductorController extends AsyncNotifier<ConductorState> {
 
   Future<void> _sondearViaje(
     Servicio activo,
-    ({double lat, double lng})? gps,
-  ) async {
+    ({double lat, double lng})? gps, {
+    bool alDia = true,
+  }) async {
     PosicionViaje? posicion;
     if (gps != null) {
-      posicion = await _repo.reportarUbicacion(_coord(gps), disponible: false);
+      try {
+        posicion = await _repo.reportarUbicacion(
+          _coord(gps),
+          disponible: false,
+        );
+      } on Object catch (e) {
+        // Sin señal: la posición se guarda con su hora para el recorrido real.
+        if (ReglasSinConexion.esFaltaDeRed(e)) {
+          await ref
+              .read(sinConexionProvider.notifier)
+              .guardarPunto(gps.lat, gps.lng);
+        }
+        rethrow;
+      }
+    }
+    if (!alDia) {
+      state = AsyncData(_s.copyWith(posicion: posicion));
+      return;
     }
     final vigente = await _repo.viajeActivo();
     if (vigente == null) {
@@ -209,6 +294,7 @@ class ConductorController extends AsyncNotifier<ConductorState> {
     state = AsyncData(
       _s.copyWith(
         activo: vigente,
+        limpiarCopia: true,
         posicion: posicion,
         limpiarPosicion: posicion == null,
         pasajero: pasajero,
@@ -279,10 +365,17 @@ class ConductorController extends AsyncNotifier<ConductorState> {
 
   /// Avanza el viaje: "Llegué" → iniciar → finalizar. El servidor valida cada
   /// paso (llegada a ≤ 50 m de la recogida; sin "llegué" no deja iniciar).
+  ///
+  /// Sin señal, el paso se guarda en la cola del teléfono con su hora (y la
+  /// posición, en «Llegué») y la pantalla avanza marcándolo «Pendiente de
+  /// enviar»; al volver la señal se envía con la misma llave, así nunca se
+  /// repite. Si el servidor dice que ya no aplica, gana el servidor.
   Future<void> avanzar() async {
     final activo = _s.activo;
     final fase = _s.fase;
     if (activo == null || fase == null) return;
+    final llave = ReglasSinConexion.nuevaLlave();
+    final ahora = DateTime.now();
     switch (fase) {
       case FaseConductor.aRecoger:
         final gps = await _gps();
@@ -292,17 +385,69 @@ class ConductorController extends AsyncNotifier<ConductorState> {
             'No pudimos obtener tu ubicación. Activa el GPS e inténtalo de nuevo.',
           );
         }
-        final nuevo = await _repo.llegue(activo.id, _coord(gps));
-        state = AsyncData(_s.copyWith(activo: nuevo));
+        await _paso(
+          () => _repo.llegue(
+            activo.id,
+            _coord(gps),
+            llave: llave,
+            ocurridoEn: ahora,
+          ),
+          AccionPendiente(
+            llave: llave,
+            tipo: TipoPendiente.llegue,
+            servicioId: activo.id,
+            ocurridoEn: ahora,
+            latitud: gps.lat,
+            longitud: gps.lng,
+          ),
+          enCola: () => activo.copyWith(fechaLlegada: ahora),
+        );
       case FaseConductor.enElPunto:
-        state = AsyncData(_s.copyWith(activo: await _repo.iniciar(activo.id)));
+        await _paso(
+          () => _repo.iniciar(activo.id, llave: llave, ocurridoEn: ahora),
+          AccionPendiente(
+            llave: llave,
+            tipo: TipoPendiente.iniciar,
+            servicioId: activo.id,
+            ocurridoEn: ahora,
+          ),
+          enCola: () => activo.copyWith(
+            estado: EstadoServicio.enCurso,
+            fechaInicio: ahora,
+          ),
+        );
       case FaseConductor.enViaje:
-        final fin = await _repo.finalizar(activo.id);
-        DesgloseConductor? desglose;
+        Servicio fin;
+        var enCola = false;
         try {
-          desglose = await _repo.desglose(fin.id);
-        } on Object {
-          // El resumen se muestra igual con el total del viaje.
+          fin = await _repo.finalizar(
+            activo.id,
+            llave: llave,
+            ocurridoEn: ahora,
+          );
+        } on Object catch (e) {
+          if (!ReglasSinConexion.esFaltaDeRed(e)) rethrow;
+          await ref
+              .read(sinConexionProvider.notifier)
+              .encolar(
+                AccionPendiente(
+                  llave: llave,
+                  tipo: TipoPendiente.finalizar,
+                  servicioId: activo.id,
+                  ocurridoEn: ahora,
+                ),
+              );
+          // El cobro lo calcula el servidor al recibirlo: aquí solo se cierra.
+          fin = activo.copyWith(estado: EstadoServicio.finalizado);
+          enCola = true;
+        }
+        DesgloseConductor? desglose;
+        if (!enCola) {
+          try {
+            desglose = await _repo.desglose(fin.id);
+          } on Object {
+            // El resumen se muestra igual con el total del viaje.
+          }
         }
         state = AsyncData(
           _s.copyWith(
@@ -314,11 +459,29 @@ class ConductorController extends AsyncNotifier<ConductorState> {
           ),
         );
         if (!_s.enLinea) _timer?.cancel();
+        if (enCola) return;
         ref.invalidate(ingresosProvider);
         ref.invalidate(saldoProvider);
         await ref
             .read(nivelProvider.notifier)
             .viajeCompletado(fin.xpGanadoConductor);
+    }
+  }
+
+  /// Un paso del viaje: en línea, lo que diga el servidor; sin señal, a la cola
+  /// y el viaje avanza en el teléfono.
+  Future<void> _paso(
+    Future<Servicio> Function() enviar,
+    AccionPendiente accion, {
+    required Servicio Function() enCola,
+  }) async {
+    try {
+      final nuevo = await enviar();
+      state = AsyncData(_s.copyWith(activo: nuevo, limpiarCopia: true));
+    } on Object catch (e) {
+      if (!ReglasSinConexion.esFaltaDeRed(e)) rethrow;
+      await ref.read(sinConexionProvider.notifier).encolar(accion);
+      state = AsyncData(_s.copyWith(activo: enCola()));
     }
   }
 

@@ -4,6 +4,7 @@ import '../../../core/errors/app_exception.dart';
 import '../../../core/utils/geo.dart';
 import '../../niveles/domain/nivel.dart';
 import '../../niveles/domain/niveles_repository.dart';
+import '../../../core/sin_conexion/reglas_sin_conexion.dart';
 import '../domain/perfil_pasajero.dart';
 import '../domain/servicio.dart';
 import '../domain/viajes_repository.dart';
@@ -521,16 +522,27 @@ class MockConductorRepository implements ConductorRepository {
   @override
   Future<PosicionPasajero?> ubicacionPasajero(String id) async => null;
   @override
-  Future<Servicio> llegue(String id, Coordenada posicion) =>
-      _t(() => _b.llegue(id));
+  Future<Servicio> llegue(
+    String id,
+    Coordenada posicion, {
+    String? llave,
+    DateTime? ocurridoEn,
+  }) => _t(() => _b.llegue(id));
+  @override
+  Future<void> reportarLote(List<PuntoGuardado> puntos) async {}
   @override
   Future<SaldoConductor> saldo({int dias = 30}) => _t(_b.saldoConductor);
   @override
   Future<Servicio> aceptar(String id) => _t(() => _b.aceptar(id));
   @override
-  Future<Servicio> iniciar(String id) => _t(() => _b.iniciar(id));
+  Future<Servicio> iniciar(String id, {String? llave, DateTime? ocurridoEn}) =>
+      _t(() => _b.iniciar(id));
   @override
-  Future<Servicio> finalizar(String id) => _t(() => _b.finalizar(id));
+  Future<Servicio> finalizar(
+    String id, {
+    String? llave,
+    DateTime? ocurridoEn,
+  }) => _t(() => _b.finalizar(id));
   @override
   Future<Servicio> cancelar(String id) => _t(() => _b.cancelarConductor(id));
   @override

@@ -86,6 +86,12 @@ class SesionController extends Notifier<SesionState> {
     _cerrando = true;
     try {
       await _quitarDispositivo();
+      // Nada de la cuenta queda en el teléfono (cola, puntos, copia del viaje).
+      try {
+        await ref.read(almacenSinConexionProvider).vaciar();
+      } on Object catch (e) {
+        debugPrint('No se pudo vaciar la base local: $e');
+      }
       await _repo.logout();
     } finally {
       _cerrando = false;

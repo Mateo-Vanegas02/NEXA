@@ -957,5 +957,31 @@
         "type": "String"
       }
     }
+  },
+  "sinConexionBanda": "Sin conexión · reintentando",
+  "pendienteLlegue": "Llegué",
+  "pendienteIniciar": "Iniciar viaje",
+  "pendienteFinalizar": "Finalizar viaje",
+  "pendienteDeEnviar": "Pendiente de enviar: se registrará con su hora al volver la señal",
+  "finalPendienteTexto": "Viaje finalizado sin señal. El cobro final aparecerá al volver la conexión.",
+  "copiaDelViaje": "Sin señal: mostramos la última copia del viaje",
+  "sinConexionUltimoDato": "último dato hace {minutos} min",
+  "@sinConexionUltimoDato": {
+    "placeholders": {
+      "minutos": {
+        "type": "int"
+      }
+    }
+  },
+  "sinConexionRechazo": "No se registró «{accion}»: {motivo}",
+  "@sinConexionRechazo": {
+    "placeholders": {
+      "accion": {
+        "type": "String"
+      },
+      "motivo": {
+        "type": "String"
+      }
+    }
   }
 }

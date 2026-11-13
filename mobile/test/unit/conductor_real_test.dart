@@ -5,6 +5,9 @@ import 'package:nexa_mobile/core/errors/app_exception.dart';
 import 'package:nexa_mobile/core/network/api_client.dart';
 import 'package:nexa_mobile/core/network/token_storage.dart';
 import 'package:nexa_mobile/core/providers.dart';
+import 'package:nexa_mobile/core/sin_conexion/almacen_sin_conexion.dart';
+import 'package:nexa_mobile/core/sin_conexion/reglas_sin_conexion.dart';
+import 'package:nexa_mobile/features/viajes/presentation/controllers/sin_conexion_controller.dart';
 import 'package:nexa_mobile/features/auth/presentation/controllers/session_controller.dart';
 import 'package:nexa_mobile/features/viajes/data/viajes_repository_impl.dart';
 import 'package:nexa_mobile/features/viajes/domain/servicio.dart';
@@ -273,6 +276,66 @@ void main() {
       },
     );
 
+    test(
+      'sin señal, «Iniciar» queda en cola, avanza en el teléfono y se envía '
+      'después con la misma llave y su hora',
+      () async {
+        final falso = _Repo(
+          activo: _viaje(
+            EstadoServicio.aceptado,
+          ).copyWith(fechaLlegada: DateTime(2026, 11, 13, 9)),
+        );
+        final c = contenedor(falso, gps: const LatLng(10.40, -75.50));
+        await c.read(sesionProvider.notifier).login('conductor@x.co', '123456');
+        await c.read(conductorProvider.future);
+        final ctrl = c.read(conductorProvider.notifier);
+
+        falso.sinRed = true;
+        await ctrl.avanzar();
+
+        expect(c.read(conductorProvider).requireValue.fase, FaseConductor.enViaje);
+        final cola = c.read(sinConexionProvider).pendientes;
+        expect(cola.single.tipo, TipoPendiente.iniciar);
+        expect(falso.llaves, isEmpty);
+
+        // Sin señal el ciclo guarda la posición para el recorrido real.
+        await ctrl.sondear();
+        expect(c.read(sinConexionProvider).puntos, 1);
+
+        falso.sinRed = false;
+        await ctrl.sondear();
+
+        expect(falso.lotes.single, hasLength(1));
+        expect(falso.llaves.single, cola.single.llave);
+        expect(falso.horas.single, cola.single.ocurridoEn);
+        expect(c.read(sinConexionProvider).hayAlgo, isFalse);
+        expect(falso.activo?.estado, EstadoServicio.enCurso);
+      },
+    );
+
+    test('sin señal al abrir, el viaje sale de la copia del teléfono', () async {
+      final falso = _Repo(activo: _viaje(EstadoServicio.aceptado));
+      final almacen = AlmacenEnMemoria();
+      final c = ProviderContainer(
+        overrides: [
+          ...overridesTest(),
+          conductorRepositoryProvider.overrideWithValue(falso),
+          almacenSinConexionProvider.overrideWithValue(almacen),
+        ],
+      );
+      addTearDown(c.dispose);
+      await c.read(sesionProvider.notifier).login('conductor@x.co', '123456');
+      await c.read(conductorProvider.future);
+      await Future<void>.delayed(Duration.zero);
+      expect(await almacen.instantanea('conductor'), isNotNull);
+
+      falso.sinRed = true;
+      c.invalidate(conductorProvider);
+      final estado = await c.read(conductorProvider.future);
+      expect(estado.activo?.id, 'v1');
+      expect(estado.copiaDe, isNotNull);
+    });
+
     test('«Llegué» sin GPS explica por qué no puede continuar', () async {
       final falso = _Repo(activo: _viaje(EstadoServicio.aceptado));
       final c = contenedor(falso);
@@ -408,17 +471,39 @@ class _Repo implements ConductorRepository {
   final List<(double?, double?)> coordsDisponibles = [];
   final List<String> llegadas = [];
 
+  /// Simula estar sin señal: las peticiones no llegan al servidor.
+  bool sinRed = false;
+  final List<String?> llaves = [];
+  final List<DateTime?> horas = [];
+  final List<List<PuntoGuardado>> lotes = [];
+
+  void _red() {
+    if (sinRed) {
+      throw const AppException(ErrorKind.red, 'Sin conexión con el servidor.');
+    }
+  }
+
   @override
   Future<PosicionViaje?> reportarUbicacion(
     Coordenada p, {
     required bool disponible,
   }) async {
+    _red();
     reportes.add((p, disponible));
     return activo == null ? null : posicion;
   }
 
   @override
-  Future<Servicio?> viajeActivo() async => activo;
+  Future<void> reportarLote(List<PuntoGuardado> puntos) async {
+    _red();
+    lotes.add(puntos);
+  }
+
+  @override
+  Future<Servicio?> viajeActivo() async {
+    _red();
+    return activo;
+  }
   @override
   Future<PosicionPasajero?> ubicacionPasajero(String id) async => pasajero;
   @override
@@ -435,16 +520,39 @@ class _Repo implements ConductorRepository {
   }
 
   @override
-  Future<Servicio> llegue(String id, Coordenada posicion) async {
+  Future<Servicio> llegue(
+    String id,
+    Coordenada posicion, {
+    String? llave,
+    DateTime? ocurridoEn,
+  }) async {
+    _red();
+    llaves.add(llave);
+    horas.add(ocurridoEn);
     llegadas.add(id);
     return activo = activo!.copyWith(fechaLlegada: DateTime(2026));
   }
 
   @override
-  Future<Servicio> iniciar(String id) async =>
-      activo = activo!.copyWith(estado: EstadoServicio.enCurso);
+  Future<Servicio> iniciar(
+    String id, {
+    String? llave,
+    DateTime? ocurridoEn,
+  }) async {
+    _red();
+    llaves.add(llave);
+    horas.add(ocurridoEn);
+    return activo = activo!.copyWith(estado: EstadoServicio.enCurso);
+  }
   @override
-  Future<Servicio> finalizar(String id) async {
+  Future<Servicio> finalizar(
+    String id, {
+    String? llave,
+    DateTime? ocurridoEn,
+  }) async {
+    _red();
+    llaves.add(llave);
+    horas.add(ocurridoEn);
     final fin = activo!.copyWith(estado: EstadoServicio.finalizado);
     activo = null;
     return fin;

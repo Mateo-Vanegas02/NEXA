@@ -20,6 +20,8 @@ import 'notificaciones/notificaciones_locales.dart';
 import 'permisos/guia_permisos.dart';
 import 'push/dispositivos_repository.dart';
 import 'rumbo/sensores_movimiento.dart';
+import 'sin_conexion/almacen_sin_conexion.dart';
+import 'sin_conexion/conexion.dart';
 import 'push/servicio_push.dart';
 import 'permisos/permisos_dispositivo.dart';
 import 'segundo_plano/rastreador_ubicacion.dart';
@@ -126,7 +128,15 @@ final dioProvider = Provider<Dio>(
   (ref) => crearDio(
     tokens: ref.watch(tokenStorageProvider),
     onSesionExpirada: () => ref.read(sesionHookProvider).alExpirar?.call(),
+    alResponder: ({required hayRed}) =>
+        ref.read(conexionProvider.notifier).reportar(hayRed: hayRed),
   ),
+);
+
+/// Cola, puntos de GPS y copia del viaje para aguantar sin señal. `main` lo
+/// sustituye por la base drift; en pruebas queda en memoria.
+final almacenSinConexionProvider = Provider<AlmacenSinConexion>(
+  (ref) => AlmacenEnMemoria(),
 );
 
 final mockBackendProvider = Provider<MockBackend>((ref) => MockBackend());

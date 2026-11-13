@@ -9,7 +9,9 @@ import '../../../../core/widgets/nexa_diseno.dart';
 import '../../../../core/widgets/nexa_widgets.dart';
 import '../../../niveles/presentation/widgets/nivel_banner.dart';
 import '../../domain/servicio.dart';
+import '../../../../core/sin_conexion/reglas_sin_conexion.dart';
 import '../controllers/avisos_push_controller.dart';
+import '../controllers/sin_conexion_controller.dart';
 import '../controllers/viaje_conductor_controller.dart';
 import '../widgets/cuenta_bloqueada.dart';
 import '../widgets/solicitud_card.dart';
@@ -32,6 +34,17 @@ class InicioConductorScreen extends ConsumerWidget {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(mensaje)));
       ref.read(avisosPushProvider.notifier).consumirMensaje();
+    });
+    // Un paso hecho sin señal que el servidor ya no aceptó: gana el servidor.
+    ref.listen(sinConexionProvider.select((e) => e.rechazo), (_, rechazo) {
+      if (rechazo == null) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(rechazo),
+          duration: const Duration(seconds: 8),
+        ),
+      );
+      ref.read(sinConexionProvider.notifier).descartarRechazo();
     });
     return RevisionPermisos(
       child: Scaffold(
@@ -174,6 +187,36 @@ class _Panel extends ConsumerWidget {
                       onPressed: ctrl.descartarAvisoCancelacion,
                       child: Text(l.listo),
                     ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: Sp.md),
+            ],
+            if (estado.copiaDe != null && estado.activo != null) ...[
+              NexaCard(
+                child: Row(
+                  children: [
+                    const Icon(Icons.wifi_off),
+                    const SizedBox(width: Sp.md),
+                    Expanded(child: Text(l.copiaDelViaje)),
+                  ],
+                ),
+              ),
+              const SizedBox(height: Sp.md),
+            ],
+            if (estado.terminado != null &&
+                ref
+                    .watch(sinConexionProvider)
+                    .tienePendiente(
+                      estado.terminado!.id,
+                      TipoPendiente.finalizar,
+                    )) ...[
+              NexaCard(
+                child: Row(
+                  children: [
+                    const Icon(Icons.cloud_upload_outlined),
+                    const SizedBox(width: Sp.md),
+                    Expanded(child: Text(l.finalPendienteTexto)),
                   ],
                 ),
               ),
