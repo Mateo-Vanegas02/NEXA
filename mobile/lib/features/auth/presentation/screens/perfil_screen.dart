@@ -186,11 +186,13 @@ class PerfilScreen extends ConsumerWidget {
                                 ),
                               ),
                               const SizedBox(width: Sp.md),
-                              Text(
-                                l.cerrarSesion,
-                                style: NexaTexto.cuerpo.copyWith(
-                                  color: NexaColors.error,
-                                  fontWeight: FontWeight.w600,
+                              Expanded(
+                                child: Text(
+                                  l.cerrarSesion,
+                                  style: NexaTexto.cuerpo.copyWith(
+                                    color: NexaColors.error,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                             ],

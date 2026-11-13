@@ -188,12 +188,15 @@ class _Etiqueta extends StatelessWidget {
           Icon(icono, size: 14, color: color),
           const SizedBox(width: Sp.xs),
         ],
-        Text(
-          texto,
-          style: TextStyle(
-            color: color,
-            fontWeight: FontWeight.w600,
-            fontSize: 12,
+        Flexible(
+          child: Text(
+            texto,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+            ),
           ),
         ),
       ],
