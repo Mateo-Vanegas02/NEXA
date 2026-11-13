@@ -24,11 +24,14 @@ abstract interface class PasajeroRepository {
   /// del pasajero (para retomarlo al abrir la app), o `null`.
   Future<String?> viajeAbiertoId();
   Future<Servicio> detalle(String id);
+  /// [factores]: códigos de `FactoresCalificacion` (se guardan aparte del
+  /// comentario).
   Future<Servicio> calificar(
     String id,
     double calificacion,
-    String comentarios,
-  );
+    String comentarios, {
+    List<String> factores = const [],
+  });
   Future<DesglosePasajero> desglose(String id);
 }
 

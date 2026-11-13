@@ -70,7 +70,7 @@ class InicioPasajeroScreen extends ConsumerWidget {
               children: [
                 _Buscador(onTap: () => _elegirDestino(context, ref)),
                 const SizedBox(height: Sp.md),
-                const NivelBanner(rutaNiveles: '/p/niveles'),
+                const NivelBanner(rutaNiveles: '/p/niveles', irEnLugar: true),
                 if (viaje != null) ...[
                   const SizedBox(height: Sp.md),
                   NexaCard(

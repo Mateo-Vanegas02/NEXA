@@ -3,6 +3,7 @@ import '../theme/theme_x.dart';
 import 'package:flutter/material.dart';
 
 import '../l10n/gen/app_localizations.dart';
+import '../theme/nexa_texto.dart';
 import '../theme/tokens.dart';
 
 /// Variantes del componente «Botón» del Figma: primario cian con brillo,
@@ -51,7 +52,7 @@ class NexaButton extends StatelessWidget {
     final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(Rad.pill),
     );
-    const texto = TextStyle(fontSize: 16, fontWeight: FontWeight.w700);
+    const texto = NexaTexto.boton;
     final callback = enabled ? onPressed : null;
     final oscuro = Theme.of(context).brightness == Brightness.dark;
     return switch (variant) {

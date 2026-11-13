@@ -126,17 +126,24 @@ class _SolicitudCardState extends ConsumerState<SolicitudCard> {
               ),
             ),
             const SizedBox(height: Sp.lg),
-            Row(
+            // Con letra muy grande los botones se apilan.
+            Flex(
+              direction: MediaQuery.textScalerOf(context).scale(10) > 15
+                  ? Axis.vertical
+                  : Axis.horizontal,
+              verticalDirection: VerticalDirection.up,
               children: [
-                Expanded(
+                Flexible(
+                  fit: FlexFit.tight,
                   child: NexaButton(
                     label: l.ahoraNo,
                     variant: NexaButtonVariant.secundario,
                     onPressed: _aceptando ? null : () => ctrl.rechazar(servicio),
                   ),
                 ),
-                const SizedBox(width: Sp.md),
-                Expanded(
+                const SizedBox(width: Sp.md, height: Sp.sm),
+                Flexible(
+                  fit: FlexFit.tight,
                   child: NexaButton(
                     label: l.aceptar,
                     cargando: _aceptando,

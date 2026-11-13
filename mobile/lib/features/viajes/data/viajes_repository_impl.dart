@@ -152,11 +152,16 @@ class ApiPasajeroRepository implements PasajeroRepository {
   Future<Servicio> calificar(
     String id,
     double calificacion,
-    String comentarios,
-  ) => _guard(() async {
+    String comentarios, {
+    List<String> factores = const [],
+  }) => _guard(() async {
     final r = await _dio.post<_Json>(
       '/pasajero/calificar-servicio/$id',
-      data: {'calificacion': calificacion, 'comentarios': comentarios},
+      data: {
+        'calificacion': calificacion,
+        'comentarios': comentarios,
+        if (factores.isNotEmpty) 'factores': factores,
+      },
     );
     return Servicio.fromJson(r.data!);
   });

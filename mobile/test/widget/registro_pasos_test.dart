@@ -29,6 +29,7 @@ void main() {
         await t.pump();
         expect(find.text('Paso 1 de 2'), findsOneWidget);
 
+        await t.ensureVisible(find.widgetWithText(FilledButton, 'Continuar'));
         await t.tap(find.widgetWithText(FilledButton, 'Continuar'));
         await t.pump();
         expect(find.text('Este campo es obligatorio'), findsWidgets);
@@ -49,6 +50,7 @@ void main() {
           '3001234567',
         );
         await _escribir(t, 'Correo', 'frank@correo.com');
+        await t.ensureVisible(find.widgetWithText(FilledButton, 'Continuar'));
         await t.tap(find.widgetWithText(FilledButton, 'Continuar'));
         await t.pump();
 

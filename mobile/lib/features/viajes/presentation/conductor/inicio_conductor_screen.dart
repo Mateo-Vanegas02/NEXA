@@ -315,12 +315,16 @@ class _EstadoFlotante extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    enLinea ? l.enLinea : l.fueraDeLinea,
-                    style: TextStyle(
-                      color: color,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15,
+                  Flexible(
+                    child: Text(
+                      enLinea ? l.enLinea : l.fueraDeLinea,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: color,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                      ),
                     ),
                   ),
                   const SizedBox(width: Sp.sm),

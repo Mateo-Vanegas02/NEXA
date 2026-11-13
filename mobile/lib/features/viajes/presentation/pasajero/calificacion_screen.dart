@@ -5,20 +5,21 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
-import '../../../../core/theme/theme_x.dart';
+import '../../../../core/theme/nexa_texto.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/widgets/nexa_diseno.dart';
 import '../../../../core/widgets/nexa_widgets.dart';
-import '../../domain/estimado_tarifa.dart';
+import '../../../niveles/presentation/controllers/niveles_controller.dart';
+import '../../domain/factores_calificacion.dart';
 import '../../domain/servicio.dart';
 import '../controllers/viaje_pasajero_controller.dart';
-import '../widgets/desglose_card.dart';
-import '../widgets/estrellas.dart';
+import '../widgets/piezas_viaje.dart';
 
-/// Cierre del viaje: resumen, calificación con estrellas, etiquetas, comentario
-/// y el XP ganado.
+/// Cierre del viaje en dos pasos (diseño P08 y P09): «¡Llegaste!» con lo que
+/// se pagó y el XP ganado; después, la calificación opcional con estrellas,
+/// factores («¿Qué estuvo bien?» / «¿Qué falló?») y comentario.
 class CalificacionScreen extends ConsumerStatefulWidget {
   const CalificacionScreen({super.key});
 
@@ -29,8 +30,9 @@ class CalificacionScreen extends ConsumerStatefulWidget {
 class _CalificacionScreenState extends ConsumerState<CalificacionScreen> {
   static const _maxComentario = 250;
   final _comentario = TextEditingController();
-  final Set<String> _etiquetas = {};
-  double _estrellas = 4;
+  final Set<String> _factores = {};
+  double _estrellas = 5;
+  bool _calificando = false;
   bool _enviando = false;
 
   @override
@@ -49,15 +51,14 @@ class _CalificacionScreenState extends ConsumerState<CalificacionScreen> {
     final messenger = ScaffoldMessenger.of(context);
     final router = GoRouter.of(context);
     setState(() => _enviando = true);
-    // El backend solo recibe `comentarios`: las etiquetas se anteponen.
-    final texto = [
-      if (_etiquetas.isNotEmpty) '[${_etiquetas.join(', ')}]',
-      _comentario.text.trim(),
-    ].where((e) => e.isNotEmpty).join(' ');
     try {
       await ref
           .read(viajePasajeroProvider.notifier)
-          .calificar(_estrellas, texto);
+          .calificar(
+            _estrellas,
+            _comentario.text.trim(),
+            factores: FactoresCalificacion.validos(_estrellas, _factores),
+          );
       messenger.showSnackBar(SnackBar(content: Text(l.gracias)));
       router.go('/p/inicio');
     } on Object catch (e) {
@@ -68,29 +69,10 @@ class _CalificacionScreenState extends ConsumerState<CalificacionScreen> {
     }
   }
 
-  String _textoCalificacion(AppLocalizations l) {
-    final n = _estrellas.round();
-    final texto = switch (n) {
-      1 => l.calif1,
-      2 => l.calif2,
-      3 => l.calif3,
-      4 => l.calif4,
-      _ => l.calif5,
-    };
-    return l.califDe5(texto, n);
-  }
-
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final s = ref.watch(viajePasajeroProvider).value;
-    final etiquetas = {
-      'segura': l.etiquetaSegura,
-      'puntual': l.etiquetaPuntual,
-      'amable': l.etiquetaAmable,
-      'moto': l.etiquetaMoto,
-      'casco': l.etiquetaCasco,
-    };
     return Scaffold(
       body: FondoNexa(
         child: SafeArea(
@@ -101,150 +83,14 @@ class _CalificacionScreenState extends ConsumerState<CalificacionScreen> {
                       ScrollViewKeyboardDismissBehavior.onDrag,
                   padding: EdgeInsets.all(context.gutter),
                   child: ContenidoCentrado(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: IconButton(
-                            tooltip: l.cerrar,
-                            onPressed: _enviando ? null : _salir,
-                            icon: const Icon(Icons.close),
-                            style: IconButton.styleFrom(
-                              minimumSize: const Size.square(Sizes.touch),
-                              side: BorderSide(
-                                color: context.colors.outline.withValues(
-                                  alpha: 0.5,
-                                ),
-                              ),
-                            ),
+                    child: _calificando
+                        ? _calificacion(context, l, s)
+                        : _Llegaste(
+                            servicio: s,
+                            onCalificar: () =>
+                                setState(() => _calificando = true),
+                            onAhoraNo: _salir,
                           ),
-                        ),
-                        _Resumen(servicio: s),
-                        const SizedBox(height: Sp.lg),
-                        DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: NexaColors.card,
-                            borderRadius: BorderRadius.circular(Rad.lg + 4),
-                            border: Border.all(
-                              color: NexaColors.cyan.withValues(alpha: 0.18),
-                            ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(Sp.lg),
-                            child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 24,
-                                      backgroundColor: NexaColors.cyan,
-                                      foregroundColor: NexaColors.bg,
-                                      child: Text(
-                                        _iniciales(s.conductor?.nombre),
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: Sp.md),
-                                    Flexible(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            l.calificaExperiencia,
-                                            style: context.textos.titleMedium
-                                                ?.copyWith(
-                                                  fontWeight: FontWeight.w700,
-                                                ),
-                                          ),
-                                          Text(
-                                            l.comoCalificarias(
-                                              s.conductor?.nombre ??
-                                                  l.tuConductor,
-                                            ),
-                                            style: context.textos.bodySmall
-                                                ?.copyWith(
-                                                  color: context.muted,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: Sp.md),
-                                Estrellas(
-                                  valor: _estrellas,
-                                  onChanged: (v) =>
-                                      setState(() => _estrellas = v),
-                                ),
-                                Semantics(
-                                  liveRegion: true,
-                                  child: Text(
-                                    _textoCalificacion(l),
-                                    style: context.textos.titleSmall?.copyWith(
-                                      color: context.acento,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: Sp.md),
-                                Wrap(
-                                  alignment: WrapAlignment.center,
-                                  spacing: Sp.sm,
-                                  runSpacing: Sp.sm,
-                                  children: [
-                                    for (final e in etiquetas.entries)
-                                      FilterChip(
-                                        label: Text(e.value),
-                                        selected: _etiquetas.contains(e.value),
-                                        onSelected: (v) => setState(
-                                          () => v
-                                              ? _etiquetas.add(e.value)
-                                              : _etiquetas.remove(e.value),
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        if (s.xpGanadoPasajero > 0) ...[
-                          const SizedBox(height: Sp.md),
-                          _XpGanado(xp: s.xpGanadoPasajero),
-                        ],
-                        const SizedBox(height: Sp.md),
-                        TextField(
-                          controller: _comentario,
-                          maxLength: _maxComentario,
-                          maxLines: 4,
-                          minLines: 3,
-                          decoration: InputDecoration(
-                            hintText: l.comentarioHint,
-                            alignLabelWithHint: true,
-                          ),
-                        ),
-                        const SizedBox(height: Sp.md),
-                        NexaButton(
-                          label: l.enviarCalificacion,
-                          cargando: _enviando,
-                          onPressed: _enviar,
-                        ),
-                        const SizedBox(height: Sp.sm),
-                        TextButton(
-                          onPressed: _enviando ? null : _salir,
-                          style: TextButton.styleFrom(
-                            minimumSize: const Size.fromHeight(Sizes.touch),
-                          ),
-                          child: Text(l.omitirPorAhora),
-                        ),
-                      ],
-                    ),
                   ),
                 ),
         ),
@@ -252,156 +98,459 @@ class _CalificacionScreenState extends ConsumerState<CalificacionScreen> {
     );
   }
 
-  static String _iniciales(String? nombre) {
-    final p = (nombre ?? '').trim().split(RegExp(r'\s+'));
-    if (p.isEmpty || p.first.isEmpty) return '?';
-    return (p.first[0] + (p.length > 1 ? p[1][0] : '')).toUpperCase();
+  Widget _calificacion(BuildContext context, AppLocalizations l, Servicio s) {
+    final nombre = (s.conductor?.nombre ?? l.tuConductor).split(' ').first;
+    final n = _estrellas.round();
+    final textoNota = switch (n) {
+      1 => l.calif1,
+      2 => l.calif2,
+      3 => l.calif3,
+      4 => l.calif4,
+      _ => l.calif5,
+    };
+    final bien = FactoresCalificacion.satisfecho(_estrellas);
+    final colorNota = bien ? NexaColors.cyan : NexaColors.error;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Align(
+          alignment: Alignment.centerRight,
+          child: _AhoraNo(onTap: _enviando ? null : _salir),
+        ),
+        const SizedBox(height: Sp.lg),
+        Center(child: AvatarIniciales(nombre: s.conductor?.nombre ?? '?')),
+        const SizedBox(height: Sp.lg),
+        Text(
+          l.comoTeFueCon(nombre),
+          textAlign: TextAlign.center,
+          style: NexaTexto.titulo,
+        ),
+        const SizedBox(height: Sp.xs),
+        Text(
+          l.calificarOpcional,
+          textAlign: TextAlign.center,
+          style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
+        ),
+        const SizedBox(height: Sp.lg),
+        _Estrellas(
+          valor: n,
+          onChanged: (v) => setState(() => _estrellas = v.toDouble()),
+        ),
+        const SizedBox(height: Sp.sm),
+        Semantics(
+          liveRegion: true,
+          child: Text(
+            textoNota,
+            textAlign: TextAlign.center,
+            style: NexaTexto.subtitulo.copyWith(color: colorNota),
+          ),
+        ),
+        const SizedBox(height: Sp.lg),
+        NexaCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(
+                    bien ? l.queEstuvoBien : l.queFallo,
+                    style: NexaTexto.subtitulo.copyWith(fontSize: 16),
+                  ),
+                  Text(
+                    l.puedesMarcarVarios,
+                    style: NexaTexto.pequeno.copyWith(color: NexaColors.tenue),
+                  ),
+                ],
+              ),
+              const SizedBox(height: Sp.md),
+              Wrap(
+                spacing: Sp.sm,
+                runSpacing: Sp.sm,
+                children: [
+                  for (final f in FactoresCalificacion.paraNota(_estrellas))
+                    _ChipFactor(
+                      texto: _textoFactor(l, f.codigo),
+                      elegido: _factores.contains(f.codigo),
+                      positivo: f.positivo,
+                      onTap: () => setState(
+                        () => _factores.contains(f.codigo)
+                            ? _factores.remove(f.codigo)
+                            : _factores.add(f.codigo),
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: Sp.md),
+        TextField(
+          controller: _comentario,
+          maxLength: _maxComentario,
+          maxLines: 4,
+          minLines: 2,
+          decoration: InputDecoration(hintText: l.comentarioOpcional),
+        ),
+        const SizedBox(height: Sp.md),
+        NexaButton(
+          label: l.enviarCalificacion,
+          cargando: _enviando,
+          onPressed: _enviar,
+        ),
+      ],
+    );
   }
 }
 
-/// Recompensa del viaje: los XP que ganó el pasajero.
-class _XpGanado extends StatelessWidget {
-  const _XpGanado({required this.xp});
-  final int xp;
+String _textoFactor(AppLocalizations l, String codigo) => switch (codigo) {
+  'ACEPTACION_LENTA' => l.factor_ACEPTACION_LENTA,
+  'LLEGADA_TARDE' => l.factor_LLEGADA_TARDE,
+  'DEJO_ANTES_DEL_DESTINO' => l.factor_DEJO_ANTES_DEL_DESTINO,
+  'PRECIO' => l.factor_PRECIO,
+  'RUTA_LARGA' => l.factor_RUTA_LARGA,
+  'CONDUCCION' => l.factor_CONDUCCION,
+  'ACEPTACION_RAPIDA' => l.factor_ACEPTACION_RAPIDA,
+  'LLEGO_A_TIEMPO' => l.factor_LLEGO_A_TIEMPO,
+  'BUEN_PRECIO' => l.factor_BUEN_PRECIO,
+  'BUENA_RUTA' => l.factor_BUENA_RUTA,
+  'CONDUCCION_SEGURA' => l.factor_CONDUCCION_SEGURA,
+  'AMABLE' => l.factor_AMABLE,
+  _ => codigo,
+};
+
+/// Píldora «Ahora no ×» arriba a la derecha.
+class _AhoraNo extends StatelessWidget {
+  const _AhoraNo({required this.onTap});
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: NexaColors.card,
-        borderRadius: BorderRadius.circular(Rad.lg),
-        border: Border.all(color: NexaColors.cyan.withValues(alpha: 0.45)),
-        boxShadow: [
-          BoxShadow(
-            color: NexaColors.cyan.withValues(alpha: 0.18),
-            blurRadius: 24,
-          ),
-        ],
+    return TextButton.icon(
+      onPressed: onTap,
+      iconAlignment: IconAlignment.end,
+      icon: const Icon(Icons.close, size: 18),
+      label: Text(l.ahoraNo),
+      style: TextButton.styleFrom(
+        minimumSize: const Size(Sizes.touch, Sizes.touch - 8),
+        foregroundColor: NexaColors.muted,
+        backgroundColor: NexaColors.card,
+        side: const BorderSide(color: NexaColors.line),
+        shape: const StadiumBorder(),
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: Sp.lg, vertical: Sp.md),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: const BoxDecoration(
-                color: NexaColors.cyan,
-                shape: BoxShape.circle,
-                boxShadow: NexaShadows.glow,
+    );
+  }
+}
+
+/// Cinco estrellas grandes (48 dp de área táctil cada una).
+class _Estrellas extends StatelessWidget {
+  const _Estrellas({required this.valor, required this.onChanged});
+  final int valor;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      for (var i = 1; i <= 5; i++)
+        IconButton(
+          tooltip: '$i',
+          constraints: const BoxConstraints(
+            minWidth: Sizes.touch + 8,
+            minHeight: Sizes.touch + 8,
+          ),
+          onPressed: () => onChanged(i),
+          icon: Icon(
+            i <= valor ? Icons.star_rounded : Icons.star_outline_rounded,
+            color: i <= valor ? NexaColors.gold : NexaColors.tenue,
+            size: 40,
+          ),
+        ),
+    ],
+  );
+}
+
+class _ChipFactor extends StatelessWidget {
+  const _ChipFactor({
+    required this.texto,
+    required this.elegido,
+    required this.positivo,
+    required this.onTap,
+  });
+
+  final String texto;
+  final bool elegido;
+  final bool positivo;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = positivo ? NexaColors.cyan : NexaColors.error;
+    return Semantics(
+      button: true,
+      selected: elegido,
+      child: Material(
+        color: elegido ? color : NexaColors.raised,
+        shape: StadiumBorder(
+          side: BorderSide(color: elegido ? color : NexaColors.line),
+        ),
+        child: InkWell(
+          customBorder: const StadiumBorder(),
+          onTap: onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 40),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: Sp.md,
+                vertical: Sp.sm,
               ),
-              alignment: Alignment.center,
-              child: Text(
-                '+$xp',
-                style: const TextStyle(
-                  color: NexaColors.bg,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (elegido) ...[
+                    const Icon(Icons.check, size: 16, color: NexaColors.bg),
+                    const SizedBox(width: Sp.xs + 2),
+                  ],
+                  Flexible(
+                    child: Text(
+                      texto,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: elegido ? NexaColors.bg : NexaColors.texto,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(width: Sp.md),
-            Expanded(
-              child: Text(
-                l.xpGanado(xp),
-                style: context.textos.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _Resumen extends ConsumerWidget {
-  const _Resumen({required this.servicio});
+/// «¡Llegaste!» (P08): lo que se pagó y el XP del viaje.
+class _Llegaste extends ConsumerWidget {
+  const _Llegaste({
+    required this.servicio,
+    required this.onCalificar,
+    required this.onAhoraNo,
+  });
+
   final Servicio servicio;
+  final VoidCallback onCalificar;
+  final VoidCallback onAhoraNo;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
-    final t = context.textos;
-    final inicio = servicio.fechaInicio;
-    final fin = servicio.fechaFinalizacion ?? DateTime.now();
-    final minutos = inicio != null
-        ? fin.difference(inicio).inMinutes.clamp(1, 999)
-        : minutosEstimados(servicio.distanciaKM);
-    final hora = DateFormat('h:mm a', 'es_CO').format(fin);
-    final desglose = ref.watch(desglosePasajeroProvider(servicio.id));
-    // Lo que realmente se cobra: el viaje más el cargo anterior, si se cobró con él.
-    final total = desglose.value?.totalAPagar ?? servicio.tarifa;
-    final metodo = switch (servicio.metodoPago) {
+    final s = servicio;
+    final fin = s.fechaFinalizacion ?? DateTime.now();
+    final hora = DateFormat('H:mm', 'es_CO').format(fin);
+    final km = NumberFormat('0.0', 'es_CO').format(s.distanciaKM);
+    final desglose = ref.watch(desglosePasajeroProvider(s.id)).value;
+    final nivel = ref.watch(nivelProvider).value;
+    final nombre = (s.conductor?.nombre ?? l.tuConductor).split(' ').first;
+    final total = desglose?.totalAPagar ?? (s.tarifa + s.extraVoluntario);
+    final metodo = switch (s.metodoPago) {
       'tarjeta' => l.metodoTarjeta,
       'billetera' => l.metodoBilletera,
-      _ => l.efectivo,
+      _ => l.enEfectivo,
     };
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        const SizedBox(height: Sp.xl),
         Center(
           child: Container(
-            width: 64,
-            height: 64,
-            decoration: const BoxDecoration(
-              color: NexaColors.cyan,
+            width: 88,
+            height: 88,
+            decoration: BoxDecoration(
+              color: NexaColors.ok,
               shape: BoxShape.circle,
-              boxShadow: NexaShadows.glow,
-            ),
-            child: const Icon(Icons.check, color: NexaColors.bg, size: 32),
-          ),
-        ),
-        const SizedBox(height: Sp.md),
-        Text(
-          l.llegasteDestino,
-          textAlign: TextAlign.center,
-          style: t.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: Sp.xs),
-        Text(
-          '${servicio.destino} · $hora',
-          textAlign: TextAlign.center,
-          style: t.bodySmall?.copyWith(color: context.muted),
-        ),
-        const SizedBox(height: Sp.xs),
-        Text(
-          '${l.duracionMin(minutos)} · ${Fmt.cop(total)} · $metodo',
-          textAlign: TextAlign.center,
-          style: t.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-        ),
-        if (desglose.value != null)
-          Theme(
-            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-            child: ExpansionTile(
-              tilePadding: EdgeInsets.zero,
-              title: Text(
-                l.verDesglose,
-                textAlign: TextAlign.center,
-                style: t.bodyMedium?.copyWith(color: context.acento),
-              ),
-              children: [
-                DesgloseCard(
-                  titulo: l.total,
-                  filas: [
-                    (l.tarifaBase, desglose.value!.tarifa),
-                    if (desglose.value!.descuentoNivel > 0)
-                      (l.descuentoNivel, -desglose.value!.descuentoNivel),
-                    if (desglose.value!.recargoEspera > 0)
-                      (l.recargoEspera, desglose.value!.recargoEspera),
-                    if (desglose.value!.extraVoluntario > 0)
-                      (l.extraVoluntario, desglose.value!.extraVoluntario),
-                    if (desglose.value!.deudaAnterior > 0)
-                      (l.deudaAnterior, desglose.value!.deudaAnterior),
-                  ],
-                  total: desglose.value!.totalAPagar,
+              boxShadow: [
+                BoxShadow(
+                  color: NexaColors.ok.withValues(alpha: 0.35),
+                  blurRadius: 30,
                 ),
               ],
             ),
+            child: const Icon(Icons.check_rounded, color: NexaColors.bg, size: 48),
           ),
+        ),
+        const SizedBox(height: Sp.lg),
+        Text(l.llegaste, textAlign: TextAlign.center, style: NexaTexto.display),
+        const SizedBox(height: Sp.xs),
+        Text(
+          '${s.destino} · $hora · $km km',
+          textAlign: TextAlign.center,
+          style: NexaTexto.cuerpo.copyWith(color: NexaColors.muted),
+        ),
+        const SizedBox(height: Sp.xl),
+        NexaCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (desglose != null) ...[
+                _Fila(texto: l.tarifaBase, valor: Fmt.cop(desglose.tarifa)),
+                if (desglose.descuentoNivel > 0)
+                  _Fila(
+                    texto: nivel == null
+                        ? l.descuentoNivel
+                        : l.descuentoNivelN(nivel.nivel),
+                    valor: '−${Fmt.cop(desglose.descuentoNivel)}',
+                    color: NexaColors.gold,
+                  ),
+                if (desglose.recargoEspera > 0)
+                  _Fila(
+                    texto: l.recargoEspera,
+                    valor: '+${Fmt.cop(desglose.recargoEspera)}',
+                  ),
+                if (desglose.extraVoluntario > 0)
+                  _Fila(
+                    texto: l.extraPara(nombre),
+                    valor: '+${Fmt.cop(desglose.extraVoluntario)}',
+                  ),
+                if (desglose.deudaAnterior > 0)
+                  _Fila(
+                    texto: l.deudaAnterior,
+                    valor: '+${Fmt.cop(desglose.deudaAnterior)}',
+                  ),
+                const Divider(height: Sp.xl),
+              ],
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(l.totalPagado, style: NexaTexto.subtitulo),
+                        Text(
+                          metodo,
+                          style: NexaTexto.pequeno.copyWith(
+                            color: NexaColors.muted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Text(Fmt.cop(total), style: NexaTexto.numeroMedio),
+                ],
+              ),
+            ],
+          ),
+        ),
+        if (s.xpGanadoPasajero > 0) ...[
+          const SizedBox(height: Sp.md),
+          _XpGanado(xp: s.xpGanadoPasajero),
+        ],
+        const SizedBox(height: Sp.xxl),
+        NexaButton(label: l.calificarA(nombre), onPressed: onCalificar),
+        const SizedBox(height: Sp.sm),
+        NexaButton(
+          label: l.ahoraNo,
+          variant: NexaButtonVariant.fantasma,
+          onPressed: onAhoraNo,
+        ),
       ],
+    );
+  }
+}
+
+class _Fila extends StatelessWidget {
+  const _Fila({required this.texto, required this.valor, this.color});
+  final String texto;
+  final String valor;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: Sp.xs + 2),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(
+            texto,
+            style: NexaTexto.cuerpo.copyWith(color: NexaColors.muted),
+          ),
+        ),
+        Text(
+          valor,
+          style: NexaTexto.cuerpo.copyWith(
+            fontWeight: FontWeight.w700,
+            color: color ?? NexaColors.texto,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+/// «Ganaste 7 XP» con la barra hacia el siguiente nivel (P08).
+class _XpGanado extends ConsumerWidget {
+  const _XpGanado({required this.xp});
+  final int xp;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final nivel = ref.watch(nivelProvider).value;
+    return Container(
+      padding: const EdgeInsets.all(Sp.lg),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(Rad.lg),
+        border: Border.all(color: NexaColors.gold.withValues(alpha: 0.35)),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF2B2410), NexaColors.card],
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: NexaColors.goldSuave,
+              borderRadius: BorderRadius.circular(Rad.md),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              '+$xp',
+              style: NexaTexto.subtitulo.copyWith(color: NexaColors.gold),
+            ),
+          ),
+          const SizedBox(width: Sp.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l.xpGanado(xp), style: NexaTexto.subtitulo.copyWith(fontSize: 16)),
+                if (nivel != null) ...[
+                  const SizedBox(height: Sp.sm),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(Rad.pill),
+                    child: LinearProgressIndicator(
+                      value: nivel.progreso,
+                      minHeight: 6,
+                      color: NexaColors.gold,
+                      backgroundColor: NexaColors.line,
+                    ),
+                  ),
+                  const SizedBox(height: Sp.xs),
+                  Text(
+                    l.nivelFaltan(nivel.nivel, nivel.xpFaltante, nivel.nivel + 1),
+                    style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

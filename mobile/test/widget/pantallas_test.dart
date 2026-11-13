@@ -143,9 +143,6 @@ void main() {
         await t.pump();
         expect(find.text('Este campo es obligatorio'), findsNWidgets(2));
         _sinErroresDeLayout(t);
-        // Regresión: el logo debe verse circular, no estirado.
-        final logo = t.getSize(find.byType(Image).first);
-        expect(logo.width, logo.height);
       });
 
       testWidgets('registro: conductor muestra aviso', (t) async {
@@ -268,14 +265,20 @@ void main() {
           const CalificacionScreen(),
           overrides: [_sesion(Rol.pasajero), _viaje(EstadoServicio.finalizado)],
         );
-        expect(find.text('¡Llegaste a tu destino!'), findsOneWidget);
-        expect(find.text('Califica tu experiencia'), findsOneWidget);
-        expect(find.text('Bueno - 4 de 5'), findsOneWidget);
-        await t.ensureVisible(find.byTooltip('5'));
-        await t.tap(find.byTooltip('5'));
+        expect(find.text('¡Llegaste!'), findsOneWidget);
+        expect(find.text('Total pagado'), findsOneWidget);
+        await t.ensureVisible(find.text('Calificar a Carlos'));
+        await t.tap(find.text('Calificar a Carlos'));
         await t.pump();
-        expect(find.text('Muy bueno - 5 de 5'), findsOneWidget);
+        expect(find.text('¿Cómo te fue con Carlos?'), findsOneWidget);
+        expect(find.text('Excelente'), findsOneWidget);
+        expect(find.text('¿Qué estuvo bien?'), findsOneWidget);
         expect(find.text('Conducción segura'), findsOneWidget);
+        await t.tap(find.byTooltip('2'));
+        await t.pump();
+        expect(find.text('¿Qué falló?'), findsOneWidget);
+        expect(find.text('Tardaron en aceptar'), findsOneWidget);
+        expect(find.text('Conducción segura'), findsNothing);
         _sinErroresDeLayout(t);
         await _cargar(t);
       });

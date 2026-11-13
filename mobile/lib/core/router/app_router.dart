@@ -28,6 +28,8 @@ import '../../features/viajes/presentation/pasajero/solicitar_viaje_screen.dart'
 import '../../features/viajes/presentation/pasajero/viaje_en_curso_screen.dart';
 import '../geocoding/geocoding_service.dart';
 import '../l10n/gen/app_localizations.dart';
+import '../theme/tokens.dart';
+import '../widgets/nexa_diseno.dart';
 
 const _publicas = {
   '/splash',
@@ -115,7 +117,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/p/calificar',
         builder: (_, _) => const CalificacionScreen(),
       ),
-      GoRoute(path: '/p/niveles', builder: (_, _) => const NivelesScreen()),
+      GoRoute(
+        path: '/p/pedir',
+        // El destino ya elegido en el inicio llega como `extra`.
+        builder: (_, state) => SolicitarViajeScreen(
+          destinoInicial: state.extra is Lugar ? state.extra! as Lugar : null,
+        ),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (_, _, shell) => _Shell(shell: shell, rol: Rol.pasajero),
         branches: [
@@ -138,13 +146,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/p/pedir',
-                // El destino ya elegido en "Tu ruta" llega como `extra`.
-                builder: (_, state) => SolicitarViajeScreen(
-                  destinoInicial: state.extra is Lugar
-                      ? state.extra! as Lugar
-                      : null,
-                ),
+                path: '/p/niveles',
+                builder: (_, _) => const NivelesScreen(),
               ),
             ],
           ),
@@ -256,6 +259,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   );
 });
 
+/// Pestañas de pasajero y conductor: la barra flotante del rediseño (P01/C01).
 class _Shell extends StatelessWidget {
   const _Shell({required this.shell, required this.rol});
   final StatefulNavigationShell shell;
@@ -264,34 +268,34 @@ class _Shell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final destinos = rol == Rol.pasajero
+    final items = rol == Rol.pasajero
         ? [
-            (Icons.home_outlined, Icons.home, l.navInicio),
-            (Icons.history, Icons.history, l.historialCorto),
-            (Icons.two_wheeler_outlined, Icons.two_wheeler, l.pedirViaje),
-            (Icons.person_outline, Icons.person, l.navPerfil),
+            NexaItemBarra(icono: Icons.home_outlined, etiqueta: l.navInicio),
+            NexaItemBarra(icono: Icons.schedule, etiqueta: l.navActividad),
+            NexaItemBarra(icono: Icons.star_outline, etiqueta: l.navNiveles),
+            NexaItemBarra(icono: Icons.person_outline, etiqueta: l.navPerfil),
           ]
         : [
-            (Icons.two_wheeler_outlined, Icons.two_wheeler, l.navSolicitudes),
-            (Icons.payments_outlined, Icons.payments, l.navGanancias),
-            (Icons.military_tech_outlined, Icons.military_tech, l.navNiveles),
-            (Icons.person_outline, Icons.person, l.navPerfil),
+            NexaItemBarra(icono: Icons.home_outlined, etiqueta: l.navInicio),
+            NexaItemBarra(
+              icono: Icons.account_balance_wallet_outlined,
+              etiqueta: l.navGanancias,
+            ),
+            NexaItemBarra(icono: Icons.star_outline, etiqueta: l.navNiveles),
+            NexaItemBarra(icono: Icons.person_outline, etiqueta: l.navPerfil),
           ];
     return CelebracionListener(
       child: Scaffold(
+        extendBody: true,
         body: shell,
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: shell.currentIndex,
-          onDestinationSelected: (i) =>
-              shell.goBranch(i, initialLocation: i == shell.currentIndex),
-          destinations: [
-            for (final d in destinos)
-              NavigationDestination(
-                icon: Icon(d.$1),
-                selectedIcon: Icon(d.$2),
-                label: d.$3,
-              ),
-          ],
+        bottomNavigationBar: SafeArea(
+          minimum: const EdgeInsets.fromLTRB(Sp.lg, 0, Sp.lg, Sp.md),
+          child: NexaBarraFlotante(
+            indice: shell.currentIndex,
+            onSeleccion: (i) =>
+                shell.goBranch(i, initialLocation: i == shell.currentIndex),
+            items: items,
+          ),
         ),
       ),
     );

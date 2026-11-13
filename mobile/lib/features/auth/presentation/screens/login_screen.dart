@@ -111,6 +111,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               minimumSize: const Size(Sizes.touch, Sizes.touch),
               foregroundColor: NexaColors.cyan,
               textStyle: const TextStyle(
+                fontFamily: 'Montserrat',
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),

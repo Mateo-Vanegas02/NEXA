@@ -338,7 +338,14 @@ class NexaHojaArrastrable extends StatelessWidget {
       child: SingleChildScrollView(
         controller: scroll,
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-        padding: const EdgeInsets.fromLTRB(Sp.xl, Sp.sm, Sp.xl, Sp.xl),
+        // Con la barra de pestañas flotando encima, el final de la hoja queda
+        // por encima de ella (el Scaffold la suma al padding inferior).
+        padding: EdgeInsets.fromLTRB(
+          Sp.xl,
+          Sp.sm,
+          Sp.xl,
+          Sp.xl + MediaQuery.paddingOf(context).bottom,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

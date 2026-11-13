@@ -289,7 +289,7 @@
   "calif2": "Malo",
   "calif3": "Regular",
   "calif4": "Bueno",
-  "calif5": "Muy bueno",
+  "calif5": "Excelente",
   "califDe5": "{texto} - {n} de 5",
   "@califDe5": {
     "placeholders": {
@@ -1134,5 +1134,73 @@
       }
     }
   },
-  "conectateTexto": "Activa «En línea» arriba para recibir solicitudes."
+  "conectateTexto": "Activa «En línea» arriba para recibir solicitudes.",
+  "factor_ACEPTACION_LENTA": "Tardaron en aceptar",
+  "factor_LLEGADA_TARDE": "Tardó en llegar a recogerme",
+  "factor_DEJO_ANTES_DEL_DESTINO": "Me dejó antes del destino",
+  "factor_PRECIO": "El precio o el cobro",
+  "factor_RUTA_LARGA": "La ruta fue más larga",
+  "factor_CONDUCCION": "La forma de conducir",
+  "factor_ACEPTACION_RAPIDA": "Aceptaron rápido",
+  "factor_LLEGO_A_TIEMPO": "Llegó a tiempo",
+  "factor_BUEN_PRECIO": "Buen precio",
+  "factor_BUENA_RUTA": "Buena ruta",
+  "factor_CONDUCCION_SEGURA": "Conducción segura",
+  "factor_AMABLE": "Amable",
+  "queEstuvoBien": "¿Qué estuvo bien?",
+  "queFallo": "¿Qué falló?",
+  "puedesMarcarVarios": "Puedes marcar varios",
+  "comoTeFueCon": "¿Cómo te fue con {nombre}?",
+  "@comoTeFueCon": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "calificarOpcional": "Calificar es opcional · solo tú ves lo que marcas",
+  "llegaste": "¡Llegaste!",
+  "calificarA": "Calificar a {nombre}",
+  "@calificarA": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "totalPagado": "Total pagado",
+  "enEfectivo": "En efectivo",
+  "descuentoNivelN": "Descuento nivel {n}",
+  "@descuentoNivelN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "extraPara": "Extra para {nombre}",
+  "@extraPara": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "comentarioOpcional": "Cuéntanos algo más (opcional)",
+  "excelente": "Excelente",
+  "nivelFaltan": "Nivel {nivel} · te faltan {xp} XP para el {siguiente}",
+  "@nivelFaltan": {
+    "placeholders": {
+      "nivel": {
+        "type": "int"
+      },
+      "xp": {
+        "type": "int"
+      },
+      "siguiente": {
+        "type": "int"
+      }
+    }
+  },
+  "navActividad": "Actividad"
 }

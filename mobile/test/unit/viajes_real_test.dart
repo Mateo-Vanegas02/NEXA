@@ -422,8 +422,12 @@ class _RepoFalso implements PasajeroRepository {
   @override
   Future<Servicio> cancelar(String id) => throw UnimplementedError();
   @override
-  Future<Servicio> calificar(String id, double c, String t) =>
-      throw UnimplementedError();
+  Future<Servicio> calificar(
+    String id,
+    double c,
+    String t, {
+    List<String> factores = const [],
+  }) => throw UnimplementedError();
   @override
   Future<DesglosePasajero> desglose(String id) => throw UnimplementedError();
 }

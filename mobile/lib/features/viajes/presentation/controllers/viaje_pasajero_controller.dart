@@ -204,10 +204,19 @@ class ViajePasajeroController extends AsyncNotifier<Servicio?> {
     state = const AsyncData(null);
   }
 
-  Future<void> calificar(double calificacion, String comentarios) async {
+  Future<void> calificar(
+    double calificacion,
+    String comentarios, {
+    List<String> factores = const [],
+  }) async {
     final actual = state.value;
     if (actual == null) return;
-    await _repo.calificar(actual.id, calificacion, comentarios);
+    await _repo.calificar(
+      actual.id,
+      calificacion,
+      comentarios,
+      factores: factores,
+    );
     cerrar();
     ref.invalidate(historialPasajeroProvider);
   }

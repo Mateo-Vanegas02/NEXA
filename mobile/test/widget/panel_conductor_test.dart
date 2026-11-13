@@ -44,12 +44,12 @@ void main() {
         await _ratos(t, 800);
 
         expect(find.text('Fuera de línea'), findsOneWidget);
-        expect(find.text('Conéctate para recibir solicitudes'), findsOneWidget);
+        expect(find.text('Estás fuera de línea'), findsOneWidget);
 
         await t.tap(find.bySemanticsLabel('Conectarme'));
         await _ratos(t, 800);
         expect(find.text('En línea'), findsOneWidget);
-        expect(find.text('Buscando solicitudes…'), findsOneWidget);
+        expect(find.text('Buscando solicitudes cerca de ti'), findsOneWidget);
         expect(find.bySemanticsLabel('Desconectarme'), findsOneWidget);
 
         await t.tap(find.bySemanticsLabel('Desconectarme'));

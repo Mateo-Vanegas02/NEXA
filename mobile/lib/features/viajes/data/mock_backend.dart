@@ -493,8 +493,9 @@ class MockPasajeroRepository implements PasajeroRepository {
   Future<Servicio> calificar(
     String id,
     double calificacion,
-    String comentarios,
-  ) => _t(() => _b.calificar(id, calificacion, comentarios));
+    String comentarios, {
+    List<String> factores = const [],
+  }) => _t(() => _b.calificar(id, calificacion, comentarios));
   @override
   Future<DesglosePasajero> desglose(String id) =>
       _t(() => _b.desglosePasajero(id));

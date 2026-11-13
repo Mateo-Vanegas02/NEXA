@@ -117,7 +117,7 @@ class PerfilScreen extends ConsumerWidget {
                                   ),
                             onTap: () => esConductor
                                 ? context.go('/c/niveles')
-                                : context.push('/p/niveles'),
+                                : context.go('/p/niveles'),
                           ),
                         ],
                       ),

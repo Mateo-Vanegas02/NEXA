@@ -386,7 +386,11 @@ class BotonIcono extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(Rad.md),
         ),
-        textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+        textStyle: const TextStyle(
+          fontFamily: 'Montserrat',
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
+        ),
         padding: const EdgeInsets.symmetric(horizontal: Sp.md),
       ),
     );
