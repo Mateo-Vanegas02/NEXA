@@ -6,9 +6,13 @@ import '../domain/satisfaccion_repository.dart';
 /// Pasan por los mismos `fromJson` que la API real, así que también prueban
 /// los parsers.
 abstract final class FixturesSatisfaccion {
-  static Json resumen() => {
+  static Json resumen({DateTime? desde, DateTime? hasta}) => {
     'desde': '2026-10-09',
     'hasta': '2026-11-08',
+    'serie': serie(
+      desde ?? DateTime(2026, 10, 9),
+      hasta ?? DateTime(2026, 11, 8),
+    ),
     'modo': 'real',
     'pasajero': {
       'satisfechosPct': 86.0,
@@ -41,6 +45,57 @@ abstract final class FixturesSatisfaccion {
       'etiqueta': 'Espera hasta que un conductor acepta',
     },
   };
+
+  /// Serie del período como la arma la Lambda: por día hasta 14 días, por
+  /// semana hasta 26 y por mes después. El tercer tramo no tiene notas y el
+  /// segundo tiene pocas, para que se vean el hueco y el punto débil.
+  static Json serie(DateTime desde, DateTime hasta) {
+    final dias = hasta.difference(desde).inDays + 1;
+    final agrupacion = dias <= 14
+        ? 'dia'
+        : dias <= 182
+        ? 'semana'
+        : 'mes';
+    String dos(int n) => n.toString().padLeft(2, '0');
+    String dia(DateTime d) => '${d.year}-${dos(d.month)}-${dos(d.day)}';
+    final puntos = <Json>[];
+    var d = DateTime(desde.year, desde.month, desde.day);
+    var i = 0;
+    while (!d.isAfter(hasta)) {
+      final (clave, fin) = switch (agrupacion) {
+        'dia' => (dia(d), d),
+        'semana' => (
+          '${d.year}-W${dos(_semanaIso(d))}',
+          d.add(Duration(days: 7 - d.weekday)),
+        ),
+        _ => (
+          '${d.year}-${dos(d.month)}',
+          DateTime(d.year, d.month + 1, 0),
+        ),
+      };
+      final hastaTramo = fin.isAfter(hasta) ? hasta : fin;
+      final vacio = i == 2;
+      final notas = i == 1 ? 3 : 40 + 7 * i;
+      puntos.add({
+        'clave': clave,
+        'desde': dia(d),
+        'hasta': dia(hastaTramo),
+        'pasajeroPct': vacio ? null : 80.0 + (i * 7) % 9,
+        'pasajeroNotas': vacio ? 0 : notas,
+        'conductorPct': vacio ? null : 74.0 + (i * 5) % 8,
+        'conductorNotas': vacio ? 0 : (notas / 3).round(),
+      });
+      d = hastaTramo.add(const Duration(days: 1));
+      i++;
+    }
+    return {'agrupacion': agrupacion, 'minimoNotas': 10, 'puntos': puntos};
+  }
+
+  static int _semanaIso(DateTime d) {
+    final jueves = d.add(Duration(days: 4 - d.weekday));
+    final enero1 = DateTime(jueves.year);
+    return 1 + jueves.difference(enero1).inDays ~/ 7;
+  }
 
   static Json _curva(
     String variable,
@@ -355,7 +410,9 @@ class MockSatisfaccionRepository implements SatisfaccionRepository {
     required DateTime hasta,
   }) async {
     await _espera();
-    return Resumen.fromJson(FixturesSatisfaccion.resumen());
+    return Resumen.fromJson(
+      FixturesSatisfaccion.resumen(desde: desde, hasta: hasta),
+    );
   }
 
   @override

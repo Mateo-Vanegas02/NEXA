@@ -2167,7 +2167,7 @@ abstract class AppLocalizations {
   /// No description provided for @satTendencia.
   ///
   /// In es, this message translates to:
-  /// **'Tendencia semanal'**
+  /// **'Tendencia'**
   String get satTendencia;
 
   /// No description provided for @satSemanticaTendencia.
@@ -4425,6 +4425,72 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Llamar a emergencias {numero}'**
   String sosLlamarSemantica(String numero);
+
+  /// No description provided for @satPorDia.
+  ///
+  /// In es, this message translates to:
+  /// **'Por día'**
+  String get satPorDia;
+
+  /// No description provided for @satPorSemana.
+  ///
+  /// In es, this message translates to:
+  /// **'Por semana'**
+  String get satPorSemana;
+
+  /// No description provided for @satPorMes.
+  ///
+  /// In es, this message translates to:
+  /// **'Por mes'**
+  String get satPorMes;
+
+  /// No description provided for @satUnaNota.
+  ///
+  /// In es, this message translates to:
+  /// **'1 nota'**
+  String get satUnaNota;
+
+  /// No description provided for @satVariasNotas.
+  ///
+  /// In es, this message translates to:
+  /// **'{n} notas'**
+  String satVariasNotas(String n);
+
+  /// No description provided for @satTramosDias.
+  ///
+  /// In es, this message translates to:
+  /// **'días'**
+  String get satTramosDias;
+
+  /// No description provided for @satTramosSemanas.
+  ///
+  /// In es, this message translates to:
+  /// **'semanas'**
+  String get satTramosSemanas;
+
+  /// No description provided for @satTramosMeses.
+  ///
+  /// In es, this message translates to:
+  /// **'meses'**
+  String get satTramosMeses;
+
+  /// No description provided for @satPocosTramos.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no hay datos para ver una tendencia: hacen falta notas en al menos dos {tramos} del período.'**
+  String satPocosTramos(String tramos);
+
+  /// No description provided for @satPuntoDebil.
+  ///
+  /// In es, this message translates to:
+  /// **'Punto hueco: menos de {n} notas, tómalo con cuidado.'**
+  String satPuntoDebil(String n);
+
+  /// No description provided for @satSemanticaSerie.
+  ///
+  /// In es, this message translates to:
+  /// **'Satisfacción {agrupacion}. Último tramo con notas, {tramo}: pasajeros {pasajero}, conductores {conductor}.'**
+  String satSemanticaSerie(String agrupacion, String tramo, String pasajero, String conductor);
 }
 
 class _AppLocalizationsDelegate

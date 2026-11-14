@@ -443,47 +443,84 @@ class Leyenda extends StatelessWidget {
   );
 }
 
-/// Serie de una línea de la gráfica de tendencia. Los `null` cortan la línea.
+/// Serie de una línea de la gráfica de tendencia. Un `null` es un tramo sin
+/// datos: la línea lo cruza punteada en vez de cortarse.
 class SerieLinea {
-  const SerieLinea({required this.valores, required this.color});
+  const SerieLinea({required this.valores, required this.color, this.notas});
 
   final List<double?> valores;
   final Color color;
+
+  /// Notas detrás de cada valor (`null` = no se sabe).
+  final List<int?>? notas;
+
+  int? notasEn(int i) {
+    final n = notas;
+    return n == null || i >= n.length ? null : n[i];
+  }
 }
 
-/// Gráfica de líneas de la tendencia semanal (0–100 %). Escala vertical de
-/// [minimo] a 100 con tres guías. Al tocarla o arrastrar sobre ella se marca
-/// una semana y arriba aparece el valor de cada serie en esa semana.
+/// Gráfica de líneas de satisfacción (0–100 %). Escala vertical de [minimo] a
+/// 100 con tres guías. Cada valor lleva su punto; los que tienen menos de
+/// [minimoNotas] notas se dibujan huecos (dato débil). Al tocarla o arrastrar
+/// sobre ella se marca un tramo y arriba aparece el valor y las notas.
 class GraficaTendencia extends StatefulWidget {
   const GraficaTendencia({
     required this.series,
     required this.etiquetasX,
     required this.semantica,
+    this.etiquetasLectura,
     this.minimo = 60,
     this.alto = 120,
-    this.resaltar,
+    this.minimoNotas,
     this.formato,
+    this.textoNotas,
     super.key,
   });
 
   final List<SerieLinea> series;
+
+  /// Etiqueta corta de cada tramo bajo el eje (si son muchas, se ralean).
   final List<String> etiquetasX;
+
+  /// Etiqueta larga del tramo marcado; por defecto, la del eje.
+  final List<String>? etiquetasLectura;
   final String semantica;
   final double minimo;
   final double alto;
 
-  /// Cuántas semanas del final se sombrean (el período elegido); `null` = ninguna.
-  final int? resaltar;
+  /// Por debajo de estas notas el punto es hueco. `null` = todos llenos.
+  final int? minimoNotas;
 
   /// Cómo se escribe un valor en la lectura (por defecto, `86 %`).
   final String Function(double valor)? formato;
+
+  /// Cómo se escribe el número de notas en la lectura (`12 notas`).
+  final String Function(int notas)? textoNotas;
 
   @override
   State<GraficaTendencia> createState() => _GraficaTendenciaState();
 }
 
+/// Margen horizontal y vertical del trazado, compartido por el pintor y las
+/// etiquetas para que cada etiqueta quede bajo su punto.
+const double _margenGrafica = 8;
+
+double _xTramo(int i, int n, double ancho) => n <= 1
+    ? ancho / 2
+    : _margenGrafica + (ancho - 2 * _margenGrafica) * i / (n - 1);
+
+/// Índices del eje que llevan etiqueta: todos hasta 7; si son más, uno de
+/// cada pocos contando desde el último (el más reciente siempre se ve).
+Set<int> _etiquetasVisibles(int n) {
+  if (n <= 7) return {for (var i = 0; i < n; i++) i};
+  final paso = (n / 6).ceil();
+  return {
+    for (var i = n - 1; i >= 0; i -= paso) i,
+  };
+}
+
 class _GraficaTendenciaState extends State<GraficaTendencia> {
-  static const double _margen = 6;
   int? _sel;
 
   int get _n =>
@@ -492,10 +529,10 @@ class _GraficaTendenciaState extends State<GraficaTendencia> {
   void _elegir(double dx, double ancho) {
     final n = _n;
     if (n == 0) return;
-    final util = ancho - 2 * _margen;
+    final util = ancho - 2 * _margenGrafica;
     final i = n == 1 || util <= 0
         ? 0
-        : ((dx - _margen) / util * (n - 1)).round().clamp(0, n - 1);
+        : ((dx - _margenGrafica) / util * (n - 1)).round().clamp(0, n - 1);
     if (i != _sel) setState(() => _sel = i);
   }
 
@@ -512,9 +549,20 @@ class _GraficaTendenciaState extends State<GraficaTendencia> {
     final alto = widget.alto;
     final guias = [100.0, (100 + minimo) / 2, minimo];
     final sel = _sel;
-    String valor(double? v) => v == null
-        ? '–'
-        : (widget.formato?.call(v) ?? '${v.toStringAsFixed(0)} %');
+    final n = _n;
+    String valor(SerieLinea s, int i) {
+      final v = i < s.valores.length ? s.valores[i] : null;
+      if (v == null) return '–';
+      final texto = widget.formato?.call(v) ?? '${v.toStringAsFixed(0)} %';
+      final notas = s.notasEn(i);
+      final enNotas = widget.textoNotas;
+      return notas == null || enNotas == null
+          ? texto
+          : '$texto · ${enNotas(notas)}';
+    }
+
+    final lectura = widget.etiquetasLectura ?? widget.etiquetasX;
+    final visibles = _etiquetasVisibles(widget.etiquetasX.length);
     return Semantics(
       label: widget.semantica,
       excludeSemantics: true,
@@ -527,20 +575,15 @@ class _GraficaTendenciaState extends State<GraficaTendencia> {
               runSpacing: Sp.xs,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                if (sel < widget.etiquetasX.length)
+                if (sel < lectura.length)
                   Text(
-                    widget.etiquetasX[sel],
+                    lectura[sel],
                     style: context.textos.labelSmall?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                 for (final s in widget.series)
-                  Leyenda(
-                    texto: valor(
-                      sel < s.valores.length ? s.valores[sel] : null,
-                    ),
-                    color: s.color,
-                  ),
+                  Leyenda(texto: valor(s, sel), color: s.color),
               ],
             ),
             const SizedBox(height: Sp.sm),
@@ -578,9 +621,9 @@ class _GraficaTendenciaState extends State<GraficaTendencia> {
                           series: widget.series,
                           minimo: minimo,
                           guias: guias,
+                          minimoNotas: widget.minimoNotas,
                           colorGuia: context.acento.withValues(alpha: 0.12),
                           seleccion: sel,
-                          resaltar: widget.resaltar,
                           colorMarca: context.colors.onSurface,
                           fondo: fondoTarjeta(context),
                         ),
@@ -594,16 +637,29 @@ class _GraficaTendenciaState extends State<GraficaTendencia> {
           const SizedBox(height: 6),
           Padding(
             padding: const EdgeInsets.only(left: 28),
-            child: Row(
-              children: [
-                for (final e in widget.etiquetasX)
-                  Expanded(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(e, style: estilo),
-                    ),
+            child: LayoutBuilder(
+              builder: (context, c) {
+                const ancho = 52.0;
+                final tope = math.max(0.0, c.maxWidth - ancho);
+                return SizedBox(
+                  height: 16,
+                  child: Stack(
+                    children: [
+                      for (final (i, e) in widget.etiquetasX.indexed)
+                        if (visibles.contains(i))
+                          Positioned(
+                            left: (_xTramo(i, n, c.maxWidth) - ancho / 2)
+                                .clamp(0.0, tope),
+                            width: ancho,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(e, style: estilo),
+                            ),
+                          ),
+                    ],
                   ),
-              ],
+                );
+              },
             ),
           ),
         ],
@@ -620,8 +676,8 @@ class _LineasPainter extends CustomPainter {
     required this.colorGuia,
     required this.colorMarca,
     required this.fondo,
+    this.minimoNotas,
     this.seleccion,
-    this.resaltar,
   });
 
   final List<SerieLinea> series;
@@ -630,37 +686,35 @@ class _LineasPainter extends CustomPainter {
   final Color colorGuia;
   final Color colorMarca;
   final Color fondo;
+  final int? minimoNotas;
   final int? seleccion;
-  final int? resaltar;
+
+  bool _debil(SerieLinea s, int i) {
+    final tope = minimoNotas;
+    final notas = s.notasEn(i);
+    return tope != null && notas != null && notas < tope;
+  }
+
+  void _punteada(Canvas canvas, Offset a, Offset b, Paint p) {
+    const trazo = 4.0;
+    const hueco = 4.0;
+    final largo = (b - a).distance;
+    if (largo == 0) return;
+    final dir = (b - a) / largo;
+    for (var t = 0.0; t < largo; t += trazo + hueco) {
+      canvas.drawLine(a + dir * t, a + dir * math.min(t + trazo, largo), p);
+    }
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
-    const margen = 6.0;
+    const margen = _margenGrafica;
     final altoUtil = size.height - 12;
     final total = series.fold<int>(0, (m, s) => math.max(m, s.valores.length));
     double y(double v) =>
         margen +
         (altoUtil - margen) * (100 - v.clamp(minimo, 100)) / (100 - minimo);
-    double xDe(int i, int n) => n <= 1
-        ? size.width / 2
-        : margen + (size.width - 2 * margen) * i / (n - 1);
-
-    // Franja del período elegido: las últimas [resaltar] semanas.
-    final ultimas = resaltar;
-    if (ultimas != null && ultimas > 0 && total > 1) {
-      final desde = math.max(0, total - ultimas);
-      final izquierda = desde == 0 ? 0.0 : xDe(desde, total) - margen;
-      canvas.drawRRect(
-        RRect.fromLTRBR(
-          izquierda,
-          0,
-          size.width,
-          altoUtil + 6,
-          const Radius.circular(Rad.sm),
-        ),
-        Paint()..color = colorGuia.withValues(alpha: 0.09),
-      );
-    }
+    double xDe(int i, int n) => _xTramo(i, n, size.width);
 
     final guia = Paint()
       ..color = colorGuia
@@ -671,33 +725,41 @@ class _LineasPainter extends CustomPainter {
     for (final (indice, s) in series.indexed) {
       final n = s.valores.length;
       if (n == 0) continue;
-      double x(int i) => xDe(i, n);
+      Offset punto(int i) => Offset(xDe(i, n), y(s.valores[i]!));
       final linea = Paint()
         ..color = s.color
         ..strokeWidth = 3
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round
         ..style = PaintingStyle.stroke;
+      final puente = Paint()
+        ..color = s.color.withValues(alpha: 0.55)
+        ..strokeWidth = 2
+        ..strokeCap = StrokeCap.round;
+      final conDatos = [
+        for (var i = 0; i < n; i++)
+          if (s.valores[i] != null) i,
+      ];
+      // Tramos seguidos con datos: línea continua; separados por tramos sin
+      // notas: puente punteado, para que se lea la dirección sin inventar
+      // los valores que faltan.
       final path = Path();
-      var abierto = false;
-      for (var i = 0; i < n; i++) {
-        final v = s.valores[i];
-        if (v == null) {
-          abierto = false;
-          continue;
-        }
-        if (abierto) {
-          path.lineTo(x(i), y(v));
+      for (var k = 0; k < conDatos.length; k++) {
+        final i = conDatos[k];
+        if (k == 0 || conDatos[k - 1] != i - 1) {
+          path.moveTo(punto(i).dx, punto(i).dy);
         } else {
-          path.moveTo(x(i), y(v));
+          path.lineTo(punto(i).dx, punto(i).dy);
         }
-        abierto = true;
+        if (k > 0 && conDatos[k - 1] != i - 1) {
+          _punteada(canvas, punto(conDatos[k - 1]), punto(i), puente);
+        }
       }
       // Relleno suave bajo la primera serie, solo si no tiene huecos.
-      if (indice == 0 && n > 1 && !s.valores.contains(null)) {
+      if (indice == 0 && n > 1 && conDatos.length == n) {
         final area = Path.from(path)
-          ..lineTo(x(n - 1), altoUtil + 4)
-          ..lineTo(x(0), altoUtil + 4)
+          ..lineTo(xDe(n - 1, n), altoUtil + 4)
+          ..lineTo(xDe(0, n), altoUtil + 4)
           ..close();
         final zona = Rect.fromLTWH(0, 0, size.width, altoUtil + 4);
         canvas.drawPath(
@@ -714,17 +776,29 @@ class _LineasPainter extends CustomPainter {
         );
       }
       canvas.drawPath(path, linea);
-      final ultimo = s.valores.lastIndexWhere((v) => v != null);
-      if (ultimo >= 0 && seleccion == null) {
-        canvas.drawCircle(
-          Offset(x(ultimo), y(s.valores[ultimo]!)),
-          5,
-          Paint()..color = s.color,
-        );
+      // Un punto por valor: lleno si tiene notas suficientes, hueco si no.
+      final ultimo = conDatos.isEmpty ? -1 : conDatos.last;
+      for (final i in conDatos) {
+        final p = punto(i);
+        final radio = i == ultimo && seleccion == null ? 5.0 : 3.5;
+        if (_debil(s, i)) {
+          canvas
+            ..drawCircle(p, radio, Paint()..color = fondo)
+            ..drawCircle(
+              p,
+              radio,
+              Paint()
+                ..color = s.color
+                ..style = PaintingStyle.stroke
+                ..strokeWidth = 1.5,
+            );
+        } else {
+          canvas.drawCircle(p, radio, Paint()..color = s.color);
+        }
       }
     }
 
-    // Semana marcada: línea vertical y un punto por serie.
+    // Tramo marcado: línea vertical y un punto por serie.
     final sel = seleccion;
     if (sel != null && total > 0) {
       final xs = xDe(sel, total);
@@ -741,7 +815,16 @@ class _LineasPainter extends CustomPainter {
         final p = Offset(xDe(sel, s.valores.length), y(v));
         canvas
           ..drawCircle(p, 7, Paint()..color = fondo)
-          ..drawCircle(p, 5, Paint()..color = s.color);
+          ..drawCircle(
+            p,
+            5,
+            _debil(s, sel)
+                ? (Paint()
+                    ..color = s.color
+                    ..style = PaintingStyle.stroke
+                    ..strokeWidth = 2)
+                : (Paint()..color = s.color),
+          );
       }
     }
   }
@@ -750,9 +833,9 @@ class _LineasPainter extends CustomPainter {
   bool shouldRepaint(_LineasPainter old) =>
       old.series != series ||
       old.minimo != minimo ||
+      old.minimoNotas != minimoNotas ||
       old.colorGuia != colorGuia ||
       old.seleccion != seleccion ||
-      old.resaltar != resaltar ||
       old.colorMarca != colorMarca ||
       old.fondo != fondo;
 }

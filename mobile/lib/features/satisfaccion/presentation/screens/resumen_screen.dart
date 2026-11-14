@@ -87,7 +87,7 @@ class ResumenScreen extends ConsumerWidget {
                           onReintentar: () => ref.invalidate(resumenProvider),
                         ),
                         data: (r) =>
-                            _Contenido(r: r, semanas: _semanas(periodo)),
+                            _Contenido(r: r),
                       ),
                     ],
                   ),
@@ -99,15 +99,6 @@ class ResumenScreen extends ConsumerWidget {
       ),
     );
   }
-
-  /// Semanas del final de la tendencia que cubre el período elegido.
-  static int _semanas(Periodo p) => switch (p.tipo) {
-    TipoPeriodo.dias7 => 1,
-    TipoPeriodo.dias30 => 4,
-    TipoPeriodo.dias90 => 12,
-    TipoPeriodo.rango =>
-      ((p.hasta.difference(p.desde).inDays + 1) / 7).ceil().clamp(1, 12),
-  };
 
   Future<void> _elegirRango(BuildContext context, WidgetRef ref) async {
     final hoy = ref.read(relojSatisfaccionProvider)();
@@ -123,11 +114,8 @@ class ResumenScreen extends ConsumerWidget {
 }
 
 class _Contenido extends StatelessWidget {
-  const _Contenido({required this.r, required this.semanas});
+  const _Contenido({required this.r});
   final Resumen r;
-
-  /// Semanas de la tendencia que cubre el período elegido.
-  final int semanas;
 
   @override
   Widget build(BuildContext context) {
@@ -145,7 +133,7 @@ class _Contenido extends StatelessWidget {
         ],
         _Pulso(r: r),
         const SizedBox(height: Sp.md),
-        _Tendencia(puntos: r.tendencia, semanas: semanas),
+        _Tendencia(serie: r.serie),
         const SizedBox(height: Sp.md),
         IntrinsicHeight(
           child: Row(
@@ -326,17 +314,25 @@ class _Pulso extends StatelessWidget {
 }
 
 class _Tendencia extends StatelessWidget {
-  const _Tendencia({required this.puntos, required this.semanas});
-  final List<PuntoTendencia> puntos;
-  final int semanas;
+  const _Tendencia({required this.serie});
+  final SerieSatisfaccion serie;
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final ok = colorOk(context);
+    final puntos = serie.puntos;
     final minimo = FormatoSat.minimoEscala([
       for (final p in puntos) ...[p.pasajeroPct, p.conductorPct],
     ]);
+    final tope = serie.minimoNotas;
+    bool debil(int? n) => tope != null && n != null && n < tope;
+    final hayDebiles = puntos.any(
+      (p) =>
+          (p.pasajeroPct != null && debil(p.pasajeroNotas)) ||
+          (p.conductorPct != null && debil(p.conductorNotas)),
+    );
+    final aviso = context.textos.bodySmall?.copyWith(color: context.muted);
     return TarjetaSat(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -347,10 +343,22 @@ class _Tendencia extends StatelessWidget {
             runSpacing: Sp.xs,
             spacing: Sp.md,
             children: [
-              Text(
-                l.satTendencia,
-                style: context.textos.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
+              Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: l.satTendencia,
+                      style: context.textos.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    TextSpan(
+                      text: '  ${FormatoSat.porAgrupacion(l, serie.agrupacion)}',
+                      style: context.textos.labelSmall?.copyWith(
+                        color: context.muted,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               Wrap(
@@ -363,26 +371,47 @@ class _Tendencia extends StatelessWidget {
             ],
           ),
           const SizedBox(height: Sp.md),
-          if (puntos.isEmpty)
+          if (serie.tramosConDatos == 0)
             Text(l.satSinCalificaciones, style: context.textos.bodySmall)
-          else
+          else ...[
             GraficaTendencia(
               minimo: minimo,
-              resaltar: semanas,
+              minimoNotas: tope,
               formato: FormatoSat.pct,
-              semantica: FormatoSat.semanticaTendencia(l, puntos),
-              etiquetasX: [for (final p in puntos) FormatoSat.semana(p.semana)],
+              textoNotas: (n) => FormatoSat.notas(l, n),
+              semantica: FormatoSat.semanticaSerie(l, serie),
+              etiquetasX: [
+                for (final p in puntos)
+                  FormatoSat.etiquetaEje(p, serie.agrupacion),
+              ],
+              etiquetasLectura: [
+                for (final p in puntos)
+                  FormatoSat.etiquetaLectura(p, serie.agrupacion),
+              ],
               series: [
                 SerieLinea(
                   valores: [for (final p in puntos) p.pasajeroPct],
+                  notas: [for (final p in puntos) p.pasajeroNotas],
                   color: context.acento,
                 ),
                 SerieLinea(
                   valores: [for (final p in puntos) p.conductorPct],
+                  notas: [for (final p in puntos) p.conductorNotas],
                   color: ok,
                 ),
               ],
             ),
+            if (serie.tramosConDatos < 2) ...[
+              const SizedBox(height: Sp.sm),
+              Text(
+                l.satPocosTramos(FormatoSat.tramos(l, serie.agrupacion)),
+                style: aviso,
+              ),
+            ] else if (hayDebiles) ...[
+              const SizedBox(height: Sp.sm),
+              Text(l.satPuntoDebil('${tope ?? 0}'), style: aviso),
+            ],
+          ],
         ],
       ),
     );

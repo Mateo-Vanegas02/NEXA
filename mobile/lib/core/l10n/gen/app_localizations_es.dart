@@ -1120,7 +1120,7 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get satTendencia => 'Tendencia semanal';
+  String get satTendencia => 'Tendencia';
 
   @override
   String satSemanticaTendencia(String pasajero, String conductor) {
@@ -2422,5 +2422,46 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String sosLlamarSemantica(String numero) {
     return 'Llamar a emergencias $numero';
+  }
+
+  @override
+  String get satPorDia => 'Por día';
+
+  @override
+  String get satPorSemana => 'Por semana';
+
+  @override
+  String get satPorMes => 'Por mes';
+
+  @override
+  String get satUnaNota => '1 nota';
+
+  @override
+  String satVariasNotas(String n) {
+    return '$n notas';
+  }
+
+  @override
+  String get satTramosDias => 'días';
+
+  @override
+  String get satTramosSemanas => 'semanas';
+
+  @override
+  String get satTramosMeses => 'meses';
+
+  @override
+  String satPocosTramos(String tramos) {
+    return 'Aún no hay datos para ver una tendencia: hacen falta notas en al menos dos $tramos del período.';
+  }
+
+  @override
+  String satPuntoDebil(String n) {
+    return 'Punto hueco: menos de $n notas, tómalo con cuidado.';
+  }
+
+  @override
+  String satSemanticaSerie(String agrupacion, String tramo, String pasajero, String conductor) {
+    return 'Satisfacción $agrupacion. Último tramo con notas, $tramo: pasajeros $pasajero, conductores $conductor.';
   }
 }

@@ -83,6 +83,92 @@ class PuntoTendencia {
   final double? conductorPct;
 }
 
+/// Cómo se agrupa la gráfica del período (la elige el servidor por su largo).
+enum Agrupacion { dia, semana, mes }
+
+/// Un tramo de la gráfica: el porcentaje de satisfechos de cada lado y con
+/// cuántas notas se calculó (`null` = sin notas en ese tramo).
+@immutable
+class PuntoSerie {
+  const PuntoSerie({
+    required this.clave,
+    this.desde,
+    this.hasta,
+    this.pasajeroPct,
+    this.pasajeroNotas,
+    this.conductorPct,
+    this.conductorNotas,
+  });
+
+  factory PuntoSerie.fromJson(Json j) => PuntoSerie(
+    clave: _str(j['clave']),
+    desde: _fecha(j['desde']),
+    hasta: _fecha(j['hasta']),
+    pasajeroPct: _dblN(j['pasajeroPct']),
+    pasajeroNotas: _intN(j['pasajeroNotas']),
+    conductorPct: _dblN(j['conductorPct']),
+    conductorNotas: _intN(j['conductorNotas']),
+  );
+
+  /// `2026-11-09`, `2026-W46` o `2026-11`.
+  final String clave;
+
+  /// Primer y último día del tramo, ya recortados al período.
+  final DateTime? desde;
+  final DateTime? hasta;
+  final double? pasajeroPct;
+
+  /// `null` cuando el servidor no lo informa (versión anterior).
+  final int? pasajeroNotas;
+  final double? conductorPct;
+  final int? conductorNotas;
+
+  bool get tieneDatos => pasajeroPct != null || conductorPct != null;
+}
+
+/// Gráfica del período elegido.
+@immutable
+class SerieSatisfaccion {
+  const SerieSatisfaccion({
+    required this.agrupacion,
+    required this.puntos,
+    this.minimoNotas,
+  });
+
+  factory SerieSatisfaccion.fromJson(Json j) => SerieSatisfaccion(
+    agrupacion: switch (j['agrupacion']) {
+      'dia' => Agrupacion.dia,
+      'mes' => Agrupacion.mes,
+      _ => Agrupacion.semana,
+    },
+    minimoNotas: _intN(j['minimoNotas']),
+    puntos: [for (final p in _lista(j['puntos'])) PuntoSerie.fromJson(p)],
+  );
+
+  /// Servidor sin `serie`: la tendencia semanal de siempre, sin conteo de notas.
+  factory SerieSatisfaccion.deTendencia(List<PuntoTendencia> tendencia) =>
+      SerieSatisfaccion(
+        agrupacion: Agrupacion.semana,
+        puntos: [
+          for (final t in tendencia)
+            PuntoSerie(
+              clave: t.semana,
+              pasajeroPct: t.pasajeroPct,
+              conductorPct: t.conductorPct,
+            ),
+        ],
+      );
+
+  final Agrupacion agrupacion;
+
+  /// Por debajo de estas notas un punto es un dato débil. `null` = no se sabe.
+  final int? minimoNotas;
+  final List<PuntoSerie> puntos;
+
+  /// Tramos con alguna nota.
+  int get tramosConDatos => puntos.where((p) => p.tieneDatos).length;
+}
+
 @immutable
 class Resumen {
   const Resumen({
@@ -91,25 +177,35 @@ class Resumen {
     required this.conductor,
     required this.tendencia,
     required this.riesgoTotal,
+    required this.serie,
     this.factorPrincipal,
   });
 
-  factory Resumen.fromJson(Json j) => Resumen(
-    sinModelo: _sinModelo(j['modo']),
-    pasajero: ResumenLado.fromJson(_obj(j['pasajero'])),
-    conductor: ResumenLado.fromJson(_obj(j['conductor'])),
-    tendencia: [
+  factory Resumen.fromJson(Json j) {
+    final tendencia = [
       for (final p in _lista(j['tendencia'])) PuntoTendencia.fromJson(p),
-    ],
-    riesgoTotal: _int(j['riesgoTotal']),
-    factorPrincipal: _strN(_obj(j['factorPrincipal'])['etiqueta']),
-  );
+    ];
+    return Resumen(
+      sinModelo: _sinModelo(j['modo']),
+      pasajero: ResumenLado.fromJson(_obj(j['pasajero'])),
+      conductor: ResumenLado.fromJson(_obj(j['conductor'])),
+      tendencia: tendencia,
+      serie: j['serie'] is Map
+          ? SerieSatisfaccion.fromJson(_obj(j['serie']))
+          : SerieSatisfaccion.deTendencia(tendencia),
+      riesgoTotal: _int(j['riesgoTotal']),
+      factorPrincipal: _strN(_obj(j['factorPrincipal'])['etiqueta']),
+    );
+  }
 
   /// `true` mientras no hay un modelo entrenado con viajes reales: no hay factores ni riesgo.
   final bool sinModelo;
   final ResumenLado pasajero;
   final ResumenLado conductor;
   final List<PuntoTendencia> tendencia;
+
+  /// Gráfica del período elegido (por día, semana o mes).
+  final SerieSatisfaccion serie;
   final int riesgoTotal;
   final String? factorPrincipal;
 }

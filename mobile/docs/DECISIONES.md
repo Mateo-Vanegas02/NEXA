@@ -73,3 +73,10 @@
 - Con lector de pantalla un toque basta (mantener presionado no es un gesto accesible).
 - Sigue llamando solo al 123: el aviso a NEXA y a contactos queda en `PENDIENTES_BACKEND.md` (P3).
 - «Sin señal» no cambió: la banda dorada y «Pendiente de enviar» de la fase 5 ya cubren el diseño.
+
+## 14-nov-2026 · La gráfica de satisfacción sigue al período
+
+- Antes la gráfica del panel admin siempre eran semanas ISO (hasta 12) y sombreaba las del período. Con «7 días» el período era un solo punto, y una semana sin notas cortaba la línea: con datos reales se veía casi nada.
+- Ahora la Lambda (`nexa_ml/satisfaccion.serie`) agrupa el período pedido: por día hasta 14 días, por semana hasta 26 y por mes después, con todos los tramos aunque estén vacíos y las notas de cada punto.
+- La app une los tramos con datos y cruza los vacíos con un trazo punteado (no inventa valores). Los puntos con menos de `minimoNotas` (10, lo decide la Lambda) se ven huecos y la tarjeta lo explica. Si hay menos de dos tramos con notas, dice que aún no hay datos para una tendencia.
+- Al tocar un punto se lee el tramo, el porcentaje y las notas (`S46 · 9 nov – 14 nov`, `60,7 % · 812 notas`).

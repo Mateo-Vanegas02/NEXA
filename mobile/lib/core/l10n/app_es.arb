@@ -537,7 +537,7 @@
       }
     }
   },
-  "satTendencia": "Tendencia semanal",
+  "satTendencia": "Tendencia",
   "satSemanticaTendencia": "Tendencia semanal. Última semana: pasajeros {pasajero}, conductores {conductor}.",
   "@satSemanticaTendencia": {
     "placeholders": {
@@ -1430,6 +1430,54 @@
   "@sosLlamarSemantica": {
     "placeholders": {
       "numero": {
+        "type": "String"
+      }
+    }
+  },
+  "satPorDia": "Por día",
+  "satPorSemana": "Por semana",
+  "satPorMes": "Por mes",
+  "satUnaNota": "1 nota",
+  "satVariasNotas": "{n} notas",
+  "@satVariasNotas": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "satTramosDias": "días",
+  "satTramosSemanas": "semanas",
+  "satTramosMeses": "meses",
+  "satPocosTramos": "Aún no hay datos para ver una tendencia: hacen falta notas en al menos dos {tramos} del período.",
+  "@satPocosTramos": {
+    "placeholders": {
+      "tramos": {
+        "type": "String"
+      }
+    }
+  },
+  "satPuntoDebil": "Punto hueco: menos de {n} notas, tómalo con cuidado.",
+  "@satPuntoDebil": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "satSemanticaSerie": "Satisfacción {agrupacion}. Último tramo con notas, {tramo}: pasajeros {pasajero}, conductores {conductor}.",
+  "@satSemanticaSerie": {
+    "placeholders": {
+      "agrupacion": {
+        "type": "String"
+      },
+      "tramo": {
+        "type": "String"
+      },
+      "pasajero": {
+        "type": "String"
+      },
+      "conductor": {
         "type": "String"
       }
     }

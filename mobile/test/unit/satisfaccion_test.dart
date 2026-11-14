@@ -61,6 +61,34 @@ void main() {
       expect(r.factorPrincipal, 'Espera hasta que un conductor acepta');
     });
 
+    test('serie del período: agrupación, notas y huecos', () {
+      final r = Resumen.fromJson(
+        FixturesSatisfaccion.resumen(
+          desde: DateTime(2026, 11, 2),
+          hasta: DateTime(2026, 11, 8),
+        ),
+      );
+      final s = r.serie;
+      expect(s.agrupacion, Agrupacion.dia);
+      expect(s.minimoNotas, 10);
+      expect(s.puntos, hasLength(7));
+      expect(s.puntos.first.clave, '2026-11-02');
+      expect(s.puntos.first.desde, DateTime(2026, 11, 2));
+      expect(s.puntos[1].pasajeroNotas, 3);
+      expect(s.puntos[2].tieneDatos, isFalse);
+      expect(s.tramosConDatos, 6);
+    });
+
+    test('sin serie del servidor se usa la tendencia semanal', () {
+      final j = FixturesSatisfaccion.resumen()..remove('serie');
+      final s = Resumen.fromJson(j).serie;
+      expect(s.agrupacion, Agrupacion.semana);
+      expect(s.minimoNotas, isNull);
+      expect(s.puntos, hasLength(8));
+      expect(s.puntos.first.clave, '2026-W38');
+      expect(s.puntos.first.pasajeroNotas, isNull);
+    });
+
     test('factores por lado', () {
       final p = Factores.fromJson(FixturesSatisfaccion.factores(Lado.pasajero));
       expect(p.lado, Lado.pasajero);
@@ -147,6 +175,35 @@ void main() {
       expect(FormatoSat.minimoEscala([58, 90]), 50);
       expect(FormatoSat.minimoEscala([40]), 30);
       expect(FormatoSat.minimoEscala([]), 60);
+    });
+
+    test('etiquetas de la serie por agrupación', () {
+      final dia = PuntoSerie(
+        clave: '2026-11-09',
+        desde: DateTime(2026, 11, 9),
+        hasta: DateTime(2026, 11, 9),
+      );
+      expect(FormatoSat.etiquetaEje(dia, Agrupacion.dia), 'lun 9');
+      expect(FormatoSat.etiquetaLectura(dia, Agrupacion.dia), 'lun 9 nov');
+      final semana = PuntoSerie(
+        clave: '2026-W46',
+        desde: DateTime(2026, 11, 9),
+        hasta: DateTime(2026, 11, 14),
+      );
+      expect(FormatoSat.etiquetaEje(semana, Agrupacion.semana), 'S46');
+      expect(
+        FormatoSat.etiquetaLectura(semana, Agrupacion.semana),
+        'S46 · 9 nov – 14 nov',
+      );
+      final mes = PuntoSerie(
+        clave: '2026-11',
+        desde: DateTime(2026, 11),
+        hasta: DateTime(2026, 11, 14),
+      );
+      expect(FormatoSat.etiquetaEje(mes, Agrupacion.mes), 'nov');
+      expect(FormatoSat.etiquetaLectura(mes, Agrupacion.mes), 'noviembre 2026');
+      expect(FormatoSat.notas(l, 1), '1 nota');
+      expect(FormatoSat.notas(l, 1200), '1.200 notas');
     });
 
     test('resumen de la programación', () {

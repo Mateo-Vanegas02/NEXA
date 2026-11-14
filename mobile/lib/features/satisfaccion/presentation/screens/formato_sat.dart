@@ -53,15 +53,66 @@ abstract final class FormatoSat {
     return (((menor - 5) / 10).floor() * 10).clamp(0, 60).toDouble();
   }
 
-  static String semanticaTendencia(
-    AppLocalizations l,
-    List<PuntoTendencia> puntos,
-  ) {
-    final ultimo = puntos.isEmpty ? null : puntos.last;
-    String v(double? x) => x == null ? '–' : pct(x);
-    return l.satSemanticaTendencia(
-      v(ultimo?.pasajeroPct),
-      v(ultimo?.conductorPct),
+  static String _fecha(String patron, DateTime d) =>
+      DateFormat(patron, 'es_CO').format(d).replaceAll('.', '');
+
+  /// Etiqueta corta del eje: `lun 9`, `S46`, `nov`.
+  static String etiquetaEje(PuntoSerie p, Agrupacion a) {
+    final d = p.desde;
+    if (d == null) return semana(p.clave);
+    return switch (a) {
+      Agrupacion.dia => _fecha('E d', d),
+      Agrupacion.semana => semana(p.clave),
+      Agrupacion.mes => _fecha('MMM', d),
+    };
+  }
+
+  /// Etiqueta del tramo marcado: `lun 9 nov`, `S46 · 9 nov – 14 nov`,
+  /// `noviembre 2026`.
+  static String etiquetaLectura(PuntoSerie p, Agrupacion a) {
+    final d = p.desde;
+    final h = p.hasta;
+    if (d == null) return semana(p.clave);
+    return switch (a) {
+      Agrupacion.dia => _fecha('E d MMM', d),
+      Agrupacion.semana =>
+        h == null ? semana(p.clave) : '${semana(p.clave)} · ${rango(d, h)}',
+      Agrupacion.mes => _fecha('MMMM y', d),
+    };
+  }
+
+  /// `1 nota`, `12 notas`.
+  static String notas(AppLocalizations l, int n) =>
+      n == 1 ? l.satUnaNota : l.satVariasNotas(numero(n.toDouble()));
+
+  static String porAgrupacion(AppLocalizations l, Agrupacion a) =>
+      switch (a) {
+        Agrupacion.dia => l.satPorDia,
+        Agrupacion.semana => l.satPorSemana,
+        Agrupacion.mes => l.satPorMes,
+      };
+
+  static String tramos(AppLocalizations l, Agrupacion a) => switch (a) {
+    Agrupacion.dia => l.satTramosDias,
+    Agrupacion.semana => l.satTramosSemanas,
+    Agrupacion.mes => l.satTramosMeses,
+  };
+
+  static String semanticaSerie(AppLocalizations l, SerieSatisfaccion s) {
+    final ultimo = s.puntos.lastWhere(
+      (p) => p.tieneDatos,
+      orElse: () => const PuntoSerie(clave: ''),
+    );
+    String v(double? x, int? n) => x == null
+        ? '–'
+        : n == null
+        ? pct(x)
+        : '${pct(x)} (${notas(l, n)})';
+    return l.satSemanticaSerie(
+      porAgrupacion(l, s.agrupacion).toLowerCase(),
+      ultimo.clave.isEmpty ? '–' : etiquetaLectura(ultimo, s.agrupacion),
+      v(ultimo.pasajeroPct, ultimo.pasajeroNotas),
+      v(ultimo.conductorPct, ultimo.conductorNotas),
     );
   }
 

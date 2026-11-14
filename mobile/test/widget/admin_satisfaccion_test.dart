@@ -13,6 +13,7 @@ import 'package:nexa_mobile/features/satisfaccion/presentation/screens/modelo_sc
 import 'package:nexa_mobile/features/satisfaccion/presentation/screens/programar_sheet.dart';
 import 'package:nexa_mobile/features/satisfaccion/presentation/screens/resumen_screen.dart';
 import 'package:nexa_mobile/features/satisfaccion/presentation/screens/riesgo_screen.dart';
+import 'package:nexa_mobile/features/satisfaccion/presentation/widgets/satisfaccion_widgets.dart';
 
 import '../helpers.dart';
 
@@ -26,6 +27,36 @@ class _MockSinModelo extends MockSatisfaccionRepository {
   Future<ModeloInfo> modelo() async => ModeloInfo.fromJson(
     FixturesSatisfaccion.modelo(version: null, datosSuficientes: false),
   );
+}
+
+/// Mock cuya serie solo tiene notas en el último tramo (como un panel recién
+/// estrenado).
+class _MockUnSoloDia extends MockSatisfaccionRepository {
+  _MockUnSoloDia() : super(reloj: () => _hoy, retardo: Duration.zero);
+
+  @override
+  Future<Resumen> resumen({
+    required DateTime desde,
+    required DateTime hasta,
+  }) async {
+    final j = FixturesSatisfaccion.resumen(desde: desde, hasta: hasta);
+    final serie = Map<String, dynamic>.from(j['serie'] as Map);
+    final puntos = [
+      for (final p in serie['puntos'] as List<Object?>)
+        Map<String, dynamic>.from(p! as Map),
+    ];
+    for (final p in puntos.take(puntos.length - 1)) {
+      p
+        ..['pasajeroPct'] = null
+        ..['conductorPct'] = null
+        ..['pasajeroNotas'] = 0
+        ..['conductorNotas'] = 0;
+    }
+    return Resumen.fromJson({
+      ...j,
+      'serie': {...serie, 'puntos': puntos},
+    });
+  }
 }
 
 List<Override> _overrides({MockSatisfaccionRepository? repo}) => [
@@ -57,9 +88,54 @@ void main() {
     expect(find.text('79 %'), findsOneWidget);
     expect(find.textContaining('Sin modelo todavía.'), findsNothing);
     expect(find.text('Califica el 41 %'), findsOneWidget);
-    expect(find.text('Tendencia semanal'), findsOneWidget);
+    // 30 días: la serie va por semana.
+    expect(
+      find.text('Tendencia  Por semana', findRichText: true),
+      findsOneWidget,
+    );
     expect(find.text('Viajes en riesgo'), findsOneWidget);
     expect(find.text('Factores'), findsOneWidget);
+    expect(t.takeException(), isNull);
+  });
+
+  testWidgets('tendencia: tocar un punto muestra el valor y sus notas', (
+    t,
+  ) async {
+    usarTamano(t, const Size(390, 844));
+    await t.pumpWidget(
+      envolver(const ResumenScreen(), overrides: _overrides()),
+    );
+    await _asentar(t);
+    // El segundo tramo del mock tiene 3 notas: se avisa que es un dato débil.
+    expect(find.textContaining('Punto hueco: menos de 10 notas'), findsOneWidget);
+    final grafica = find.byType(GraficaTendencia);
+    final caja = t.getRect(
+      find.descendant(of: grafica, matching: find.byType(CustomPaint)).first,
+    );
+    // 5 semanas: el segundo punto está a un cuarto del ancho.
+    await t.tapAt(Offset(caja.left + 8 + (caja.width - 16) / 4, caja.center.dy));
+    await t.pump();
+    expect(find.textContaining('· 3 notas'), findsOneWidget);
+    expect(find.textContaining('· 1 nota'), findsOneWidget);
+    expect(t.takeException(), isNull);
+  });
+
+  testWidgets('tendencia de 7 días va por día y avisa si casi no hay datos', (
+    t,
+  ) async {
+    usarTamano(t, const Size(360, 640));
+    final repo = _MockUnSoloDia();
+    await t.pumpWidget(
+      envolver(const ResumenScreen(), overrides: _overrides(repo: repo)),
+    );
+    await _asentar(t);
+    await t.tap(find.text('7 días'));
+    await _asentar(t);
+    expect(
+      find.text('Tendencia  Por día', findRichText: true),
+      findsOneWidget,
+    );
+    expect(find.textContaining('al menos dos días'), findsOneWidget);
     expect(t.takeException(), isNull);
   });
 

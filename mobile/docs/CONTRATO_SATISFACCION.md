@@ -23,12 +23,18 @@ Cambios de la v0.2 (9 nov. 2026):
   "desde": "2026-10-09", "hasta": "2026-11-08", "modo": "real",
   "pasajero":  { "satisfechosPct": 86.0, "variacionPts": 3.0, "tasaRespuestaPct": 62.0, "calificaciones": 112 },
   "conductor": { "satisfechosPct": 79.0, "variacionPts": -2.0, "tasaRespuestaPct": 41.0, "calificaciones": 34 },
-  "tendencia": [ { "semana": "2026-W38", "pasajeroPct": 82.0, "conductorPct": 80.0 } ],
+  "tendencia": [ { "semana": "2026-W38", "pasajeroPct": 82.0, "pasajeroNotas": 40, "conductorPct": 80.0, "conductorNotas": 12 } ],
+  "serie": {
+    "agrupacion": "dia",
+    "minimoNotas": 10,
+    "puntos": [ { "clave": "2026-11-09", "desde": "2026-11-09", "hasta": "2026-11-09",
+                  "pasajeroPct": 50.0, "pasajeroNotas": 2, "conductorPct": null, "conductorNotas": 0 } ]
+  },
   "riesgoTotal": 7,
   "factorPrincipal": { "lado": "pasajero", "etiqueta": "Espera hasta que un conductor acepta" }
 }
 ```
-`variacionPts` compara con el período anterior de igual duración (`null` si no hay base). `satisfechosPct` es `null` si no hubo calificaciones. `tendencia` trae hasta 12 semanas; una semana sin calificaciones va con `null`.
+`variacionPts` compara con el período anterior de igual duración (`null` si no hay base). `satisfechosPct` es `null` si no hubo calificaciones. `tendencia` trae hasta 12 semanas; una semana sin calificaciones va con `null`. `serie` (desde el 14-nov-2026) es la gráfica del período pedido: `agrupacion` es `dia` hasta 14 días, `semana` hasta 182 y `mes` después; trae todos los tramos del período (recortados a `desde`/`hasta`), también los que no tienen notas, y cuántas notas hay detrás de cada porcentaje. Un punto con menos de `minimoNotas` notas es un dato débil. La app usa `serie` y, si no viene (Lambda anterior), arma la gráfica con `tendencia`.
 
 ## GET /factores?lado=pasajero|conductor
 ```json

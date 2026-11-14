@@ -18,6 +18,11 @@ NOTA_SATISFECHO = car.NOTA_SATISFECHO
 MINIMO_NOTAS = 300
 MINIMO_NO = 30
 MAX_SEMANAS = 12
+#: Agrupación de la gráfica del panel según el largo del período (días, inclusive).
+MAX_DIAS_POR_DIA = 14
+MAX_DIAS_POR_SEMANA = 182
+#: Con menos notas que esto un punto se muestra como dato débil (el panel lo dibuja tenue).
+MIN_NOTAS_PUNTO = 10
 
 #: lado del contrato → campo de Mongo con la nota que pone ese lado
 CAMPO_NOTA = {"pasajero": "calificacionConductor", "conductor": "calificacionPasajero"}
@@ -117,6 +122,7 @@ def resumen(actual: list[Mapping], anterior: list[Mapping], semanas: list[Mappin
         salida[lado] = {"satisfechosPct": hoy["satisfechosPct"], "variacionPts": variacion,
                         "tasaRespuestaPct": hoy["tasaRespuestaPct"], "calificaciones": hoy["calificaciones"]}
     salida["tendencia"] = tendencia(semanas, hasta)
+    salida["serie"] = serie(actual, desde, hasta)
     salida["riesgoTotal"] = int(riesgo_total)
     salida["factorPrincipal"] = factor_principal
     return salida
@@ -134,13 +140,59 @@ def tendencia(viajes: Iterable[Mapping], hasta: date) -> list[dict]:
     puntos = []
     for clave in claves:
         grupo = por_semana[clave]
-        puntos.append({"semana": clave,
-                       "pasajeroPct": lado_resumen(grupo, "pasajero")["satisfechosPct"],
-                       "conductorPct": lado_resumen(grupo, "conductor")["satisfechosPct"]})
+        puntos.append({"semana": clave, **_valores(grupo)})
     # No se muestran las semanas vacías del principio (antes de que hubiera viajes).
     while puntos and puntos[0]["pasajeroPct"] is None and puntos[0]["conductorPct"] is None:
         puntos.pop(0)
     return puntos
+
+
+def _valores(grupo: list[Mapping]) -> dict:
+    p, c = lado_resumen(grupo, "pasajero"), lado_resumen(grupo, "conductor")
+    return {"pasajeroPct": p["satisfechosPct"], "pasajeroNotas": p["calificaciones"],
+            "conductorPct": c["satisfechosPct"], "conductorNotas": c["calificaciones"]}
+
+
+def agrupacion(desde: date, hasta: date) -> str:
+    dias = (hasta - desde).days + 1
+    return "dia" if dias <= MAX_DIAS_POR_DIA else "semana" if dias <= MAX_DIAS_POR_SEMANA else "mes"
+
+
+def _tramo(d: date, agrup: str) -> tuple[str, date, date]:
+    """Clave, primer y último día del tramo que contiene `d`."""
+    if agrup == "dia":
+        return d.isoformat(), d, d
+    if agrup == "semana":
+        anio, semana, dia_semana = d.isocalendar()
+        lunes = d - timedelta(days=dia_semana - 1)
+        return f"{anio}-W{semana:02d}", lunes, lunes + timedelta(days=6)
+    primero = d.replace(day=1)
+    siguiente = (primero + timedelta(days=32)).replace(day=1)
+    return f"{d.year}-{d.month:02d}", primero, siguiente - timedelta(days=1)
+
+
+def serie(viajes: Iterable[Mapping], desde: date, hasta: date) -> dict:
+    """Gráfica del período: por día (hasta 14 días), por semana (hasta 26 semanas) o por mes.
+    Incluye todos los tramos del período, aunque no tengan notas, recortados a `desde`/`hasta`,
+    y cuántas notas hay detrás de cada porcentaje."""
+    agrup = agrupacion(desde, hasta)
+    tramos: dict[str, tuple[date, date]] = {}
+    d = desde
+    while d <= hasta:
+        clave, ini, fin = _tramo(d, agrup)
+        tramos[clave] = (max(ini, desde), min(fin, hasta))
+        d = fin + timedelta(days=1)
+    grupos: dict[str, list[Mapping]] = {k: [] for k in tramos}
+    for v in viajes:
+        f = car.a_fecha(v.get("fechaFinalizacion"))
+        if f is None:
+            continue
+        clave = _tramo(f.astimezone(ZONA).date(), agrup)[0]
+        if clave in grupos:
+            grupos[clave].append(v)
+    return {"agrupacion": agrup, "minimoNotas": MIN_NOTAS_PUNTO,
+            "puntos": [{"clave": k, "desde": ini.isoformat(), "hasta": fin.isoformat(), **_valores(grupos[k])}
+                       for k, (ini, fin) in tramos.items()]}
 
 
 # --------------------------------------------------------------------------- datos para entrenar
