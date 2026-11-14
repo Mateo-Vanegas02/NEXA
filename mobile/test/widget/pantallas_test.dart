@@ -132,7 +132,7 @@ void main() {
 
       testWidgets('bienvenida: mensaje y las dos salidas', (t) async {
         await montar(t, const OnboardingScreen());
-        expect(find.text('Muévete por la ciudad en minutos.'), findsOneWidget);
+        expect(find.text('El precio, antes de pedir.'), findsOneWidget);
         expect(find.text('Crear cuenta'), findsOneWidget);
         expect(find.text('Ya tengo cuenta'), findsOneWidget);
       });

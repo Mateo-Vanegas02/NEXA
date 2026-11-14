@@ -169,37 +169,37 @@ abstract class AppLocalizations {
   /// No description provided for @onb1Titulo.
   ///
   /// In es, this message translates to:
-  /// **'Muévete por la ciudad en minutos.'**
+  /// **'El precio, antes de pedir.'**
   String get onb1Titulo;
 
   /// No description provided for @onb1Texto.
   ///
   /// In es, this message translates to:
-  /// **'Pide una moto, sigue a tu conductor en vivo y gana descuentos cada vez que viajas.'**
+  /// **'Ves cuánto pagas y cuánto tarda. Sin regateo ni sorpresas al llegar.'**
   String get onb1Texto;
 
   /// No description provided for @onb2Titulo.
   ///
   /// In es, this message translates to:
-  /// **'Cada viaje te sube de nivel.'**
+  /// **'Conductores con papeles al día.'**
   String get onb2Titulo;
 
   /// No description provided for @onb2Texto.
   ///
   /// In es, this message translates to:
-  /// **'Cada viaje te da XP. Desbloquea descuentos, prioridad y más beneficios.'**
+  /// **'Una persona de NEXA revisa licencia, SOAT, tecnomecánica y tarjeta de propiedad antes del primer viaje.'**
   String get onb2Texto;
 
   /// No description provided for @onb3Titulo.
   ///
   /// In es, this message translates to:
-  /// **'Viaja con confianza.'**
+  /// **'Tu viaje, en vivo.'**
   String get onb3Titulo;
 
   /// No description provided for @onb3Texto.
   ///
   /// In es, this message translates to:
-  /// **'Conductores verificados, tarifa clara y calificaciones en cada viaje.'**
+  /// **'Sigues la moto en el mapa, con la placa y los minutos que faltan.'**
   String get onb3Texto;
 
   /// No description provided for @loginTitulo.
@@ -4239,6 +4239,90 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Avisos de tus viajes'**
   String get notificacionesSub;
+
+  /// No description provided for @splashFirma.
+  ///
+  /// In es, this message translates to:
+  /// **'una app de'**
+  String get splashFirma;
+
+  /// No description provided for @onb4Titulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Cada viaje te sube de nivel.'**
+  String get onb4Titulo;
+
+  /// No description provided for @onb4Texto.
+  ///
+  /// In es, this message translates to:
+  /// **'Ganas XP y pagas hasta 5 % menos. Desde el nivel 2 te recogen primero.'**
+  String get onb4Texto;
+
+  /// No description provided for @onbPaso.
+  ///
+  /// In es, this message translates to:
+  /// **'{n} DE {total}'**
+  String onbPaso(int n, int total);
+
+  /// No description provided for @onbPaginaSemantica.
+  ///
+  /// In es, this message translates to:
+  /// **'Página {n} de {total}'**
+  String onbPaginaSemantica(int n, int total);
+
+  /// No description provided for @onbArtePrecio.
+  ///
+  /// In es, this message translates to:
+  /// **'Precio claro'**
+  String get onbArtePrecio;
+
+  /// No description provided for @onbArtePrecioDetalle.
+  ///
+  /// In es, this message translates to:
+  /// **'antes de pedir'**
+  String get onbArtePrecioDetalle;
+
+  /// No description provided for @onbArteTu.
+  ///
+  /// In es, this message translates to:
+  /// **'Tú'**
+  String get onbArteTu;
+
+  /// No description provided for @onbArteEnVivo.
+  ///
+  /// In es, this message translates to:
+  /// **'En vivo'**
+  String get onbArteEnVivo;
+
+  /// No description provided for @onbArteDescuento.
+  ///
+  /// In es, this message translates to:
+  /// **'−{n} %'**
+  String onbArteDescuento(int n);
+
+  /// No description provided for @onbDocLicencia.
+  ///
+  /// In es, this message translates to:
+  /// **'Licencia'**
+  String get onbDocLicencia;
+
+  /// No description provided for @onbDocSoat.
+  ///
+  /// In es, this message translates to:
+  /// **'SOAT'**
+  String get onbDocSoat;
+
+  /// No description provided for @onbDocTecno.
+  ///
+  /// In es, this message translates to:
+  /// **'Tecnomecánica'**
+  String get onbDocTecno;
+
+  /// No description provided for @onbDocTarjeta.
+  ///
+  /// In es, this message translates to:
+  /// **'Tarjeta de propiedad'**
+  String get onbDocTarjeta;
 }
 
 class _AppLocalizationsDelegate

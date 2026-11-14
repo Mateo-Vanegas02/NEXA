@@ -30,9 +30,10 @@ import 'network/api_client.dart';
 import 'network/token_storage.dart';
 import 'push/bandeja_avisos.dart';
 
-/// Tiempo mínimo que se muestra el splash (la sesión se restaura casi al instante).
+/// Tiempo mínimo que se muestra el splash (la sesión se restaura casi al
+/// instante): lo que dura la animación de la carátula más un respiro.
 final splashMinimoProvider = Provider<Duration>(
-  (ref) => const Duration(milliseconds: 2200),
+  (ref) => const Duration(milliseconds: 2600),
 );
 
 /// `true` = repositorios simulados. Sobrescribible en tests.

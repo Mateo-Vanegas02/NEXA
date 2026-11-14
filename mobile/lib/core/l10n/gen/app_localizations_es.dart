@@ -47,25 +47,25 @@ class AppLocalizationsEs extends AppLocalizations {
       'Cuando completes un viaje aparecerá aquí.';
 
   @override
-  String get onb1Titulo => 'Muévete por la ciudad en minutos.';
+  String get onb1Titulo => 'El precio, antes de pedir.';
 
   @override
   String get onb1Texto =>
-      'Pide una moto, sigue a tu conductor en vivo y gana descuentos cada vez que viajas.';
+      'Ves cuánto pagas y cuánto tarda. Sin regateo ni sorpresas al llegar.';
 
   @override
-  String get onb2Titulo => 'Cada viaje te sube de nivel.';
+  String get onb2Titulo => 'Conductores con papeles al día.';
 
   @override
   String get onb2Texto =>
-      'Cada viaje te da XP. Desbloquea descuentos, prioridad y más beneficios.';
+      'Una persona de NEXA revisa licencia, SOAT, tecnomecánica y tarjeta de propiedad antes del primer viaje.';
 
   @override
-  String get onb3Titulo => 'Viaja con confianza.';
+  String get onb3Titulo => 'Tu viaje, en vivo.';
 
   @override
   String get onb3Texto =>
-      'Conductores verificados, tarifa clara y calificaciones en cada viaje.';
+      'Sigues la moto en el mapa, con la placa y los minutos que faltan.';
 
   @override
   String get loginTitulo => 'Hola de nuevo';
@@ -2306,4 +2306,53 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get notificacionesSub => 'Avisos de tus viajes';
+
+  @override
+  String get splashFirma => 'una app de';
+
+  @override
+  String get onb4Titulo => 'Cada viaje te sube de nivel.';
+
+  @override
+  String get onb4Texto =>
+      'Ganas XP y pagas hasta 5 % menos. Desde el nivel 2 te recogen primero.';
+
+  @override
+  String onbPaso(int n, int total) {
+    return '$n DE $total';
+  }
+
+  @override
+  String onbPaginaSemantica(int n, int total) {
+    return 'Página $n de $total';
+  }
+
+  @override
+  String get onbArtePrecio => 'Precio claro';
+
+  @override
+  String get onbArtePrecioDetalle => 'antes de pedir';
+
+  @override
+  String get onbArteTu => 'Tú';
+
+  @override
+  String get onbArteEnVivo => 'En vivo';
+
+  @override
+  String onbArteDescuento(int n) {
+    return '−$n %';
+  }
+
+  @override
+  String get onbDocLicencia => 'Licencia';
+
+  @override
+  String get onbDocSoat => 'SOAT';
+
+  @override
+  String get onbDocTecno => 'Tecnomecánica';
+
+  @override
+  String get onbDocTarjeta => 'Tarjeta de propiedad';
 }

@@ -17,6 +17,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nexa_mobile/core/router/app_router.dart';
 import 'package:nexa_mobile/features/auth/domain/auth.dart';
 import 'package:nexa_mobile/features/auth/presentation/controllers/session_controller.dart';
+import 'package:nexa_mobile/features/auth/presentation/screens/splash_screen.dart';
 import 'package:nexa_mobile/features/viajes/domain/oferta_activa.dart';
 import 'package:nexa_mobile/features/viajes/domain/servicio.dart';
 import 'package:nexa_mobile/features/viajes/presentation/controllers/viaje_pasajero_controller.dart';
@@ -257,6 +258,28 @@ void main() {
     ('N04', '/c/permisos/bateria', Rol.conductor, 'conductor@nexa.co', []),
     ('C07', '/c/calificar', Rol.conductor, 'conductor@nexa.co', []),
   ];
+
+  // Carátula: cuadro final de la animación (no se llega por ruta con sesión fija).
+  testWidgets('captura A01', (t) async {
+    usarTamano(t, _tam);
+    await t.pumpWidget(
+      RepaintBoundary(key: _clave, child: envolver(const SplashScreen())),
+    );
+    await _avanzar(t, 14);
+    t.takeException();
+    await _capturar(t, 'A01');
+  }, skip: !_activas);
+
+  // Bienvenida: las otras tres promesas (la línea cambia de forma al deslizar).
+  testWidgets('captura A02 páginas', (t) async {
+    await _pantalla(t, 'A02-1', '/onboarding');
+    for (var i = 2; i <= 4; i++) {
+      await t.drag(find.byType(PageView), const Offset(-380, 0));
+      await _avanzar(t, 10);
+      t.takeException();
+      await _capturar(t, 'A02-$i');
+    }
+  }, skip: !_activas);
 
   for (final (nombre, ruta, rol, email, extra) in casos) {
     testWidgets(

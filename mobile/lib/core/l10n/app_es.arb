@@ -12,12 +12,12 @@
   "errorGenerico": "Algo salió mal",
   "vacioHistorial": "Aún no tienes viajes",
   "vacioHistorialDetalle": "Cuando completes un viaje aparecerá aquí.",
-  "onb1Titulo": "Muévete por la ciudad en minutos.",
-  "onb1Texto": "Pide una moto, sigue a tu conductor en vivo y gana descuentos cada vez que viajas.",
-  "onb2Titulo": "Cada viaje te sube de nivel.",
-  "onb2Texto": "Cada viaje te da XP. Desbloquea descuentos, prioridad y más beneficios.",
-  "onb3Titulo": "Viaja con confianza.",
-  "onb3Texto": "Conductores verificados, tarifa clara y calificaciones en cada viaje.",
+  "onb1Titulo": "El precio, antes de pedir.",
+  "onb1Texto": "Ves cuánto pagas y cuánto tarda. Sin regateo ni sorpresas al llegar.",
+  "onb2Titulo": "Conductores con papeles al día.",
+  "onb2Texto": "Una persona de NEXA revisa licencia, SOAT, tecnomecánica y tarjeta de propiedad antes del primer viaje.",
+  "onb3Titulo": "Tu viaje, en vivo.",
+  "onb3Texto": "Sigues la moto en el mapa, con la placa y los minutos que faltan.",
   "loginTitulo": "Hola de nuevo",
   "loginSubtitulo": "Entra con el correo de tu cuenta NEXA.",
   "email": "Correo",
@@ -1333,5 +1333,46 @@
   "sinConexionGuardamos": "Sigue el viaje: guardamos todo en tu teléfono",
   "ayer": "Ayer",
   "sinNotificacionesDetalle": "Aquí verás los avisos de tus viajes: cuando te aceptan, cuando llega tu conductor y cuando termina.",
-  "notificacionesSub": "Avisos de tus viajes"
+  "notificacionesSub": "Avisos de tus viajes",
+  "splashFirma": "una app de",
+  "onb4Titulo": "Cada viaje te sube de nivel.",
+  "onb4Texto": "Ganas XP y pagas hasta 5 % menos. Desde el nivel 2 te recogen primero.",
+  "onbPaso": "{n} DE {total}",
+  "@onbPaso": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "onbPaginaSemantica": "Página {n} de {total}",
+  "@onbPaginaSemantica": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "onbArtePrecio": "Precio claro",
+  "onbArtePrecioDetalle": "antes de pedir",
+  "onbArteTu": "Tú",
+  "onbArteEnVivo": "En vivo",
+  "onbArteDescuento": "−{n} %",
+  "@onbArteDescuento": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "onbDocLicencia": "Licencia",
+  "onbDocSoat": "SOAT",
+  "onbDocTecno": "Tecnomecánica",
+  "onbDocTarjeta": "Tarjeta de propiedad"
 }
