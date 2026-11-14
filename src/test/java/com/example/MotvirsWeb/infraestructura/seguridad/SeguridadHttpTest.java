@@ -348,6 +348,31 @@ class SeguridadHttpTest {
         assertNotEquals(403, estado);
     }
 
+    @Test
+    void peticionDeLaAppConTokenNoCreaSesionNiCookie() throws Exception {
+        org.springframework.security.core.userdetails.UserDetails conductor =
+                org.springframework.security.core.userdetails.User.withUsername("c@x.com").password("x")
+                        .roles("CONDUCTOR").build();
+        org.mockito.Mockito.when(ctx.getBean(JwtService.class).extractUsername("tok-app")).thenReturn("c@x.com");
+        org.mockito.Mockito.when(ctx.getBean(CustomUserDetailsService.class).loadUserByUsername("c@x.com"))
+                .thenReturn(conductor);
+        org.mockito.Mockito.when(ctx.getBean(JwtService.class).isTokenValid("tok-app", conductor)).thenReturn(true);
+        com.example.MotvirsWeb.dominio.modelo.Conductor yo = new com.example.MotvirsWeb.dominio.modelo.Conductor();
+        yo.setId(new org.bson.types.ObjectId());
+        org.mockito.Mockito.when(ctx.getBean(UsuarioContextHelper.class).getConductorAutenticado()).thenReturn(yo);
+
+        var respuesta = mvc.perform(post("/api/conductor/ubicacion").header("Authorization", "Bearer tok-app")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"latitud\":10.37,\"longitud\":-75.48,\"disponible\":true}")).andReturn();
+
+        int estado = respuesta.getResponse().getStatus();
+        assertNotEquals(401, estado);
+        assertNotEquals(403, estado);
+        // Cada reporte de ubicacion (cada 5 s por conductor) creaba una sesion en memoria.
+        assertEquals(null, respuesta.getRequest().getSession(false));
+        assertEquals(null, respuesta.getResponse().getHeader("Set-Cookie"));
+    }
+
     // ── rate limiting y cabeceras ───────────────────────────────────────
 
     @Test
