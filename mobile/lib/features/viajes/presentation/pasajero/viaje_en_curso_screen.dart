@@ -23,6 +23,7 @@ import '../../domain/estimado_tarifa.dart';
 import '../../domain/servicio.dart';
 import '../controllers/viaje_pasajero_controller.dart';
 import '../widgets/conductor_card.dart';
+import '../widgets/hoja_sos.dart';
 import '../widgets/piezas_viaje.dart';
 import '../widgets/radar_olas.dart';
 
@@ -627,23 +628,9 @@ class _ExtraVoluntarioState extends ConsumerState<_ExtraVoluntario> {
 }
 
 Future<void> _pedirSos(BuildContext context, WidgetRef ref) async {
-  final l = AppLocalizations.of(context);
-  final llamar = await mostrarNexaPopup<bool>(
-    context,
-    titulo: l.sosTitulo,
-    mensaje: l.sosTexto,
-    tipo: NexaPopupTipo.alerta,
-    acciones: [
-      NexaPopupAccion(
-        etiqueta: '${l.llamar} $kLineaEmergencias',
-        valor: true,
-        peligro: true,
-      ),
-      NexaPopupAccion(etiqueta: l.cancelar, valor: false),
-    ],
-  );
-  if (llamar ?? false) {
-    await ref.read(accionesExternasProvider).llamar(kLineaEmergencias);
+  final acciones = ref.read(accionesExternasProvider);
+  if (await mostrarHojaSos(context)) {
+    await acciones.llamar(kLineaEmergencias);
   }
 }
 

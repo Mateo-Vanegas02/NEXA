@@ -264,7 +264,7 @@
   },
   "asistenciaRuta": "Asistencia en ruta (SOS)",
   "sosTitulo": "¿Necesitas ayuda?",
-  "sosTexto": "Llamaremos a la línea de emergencias 123.",
+  "sosTexto": "Mantén presionado el botón y llamaremos a la línea de emergencias 123.",
   "noDisponible": "No disponible para este conductor",
   "viajeFinalizadoTitulo": "Viaje finalizado",
   "llegasteDestino": "¡Llegaste a tu destino!",
@@ -1423,5 +1423,15 @@
       }
     }
   },
-  "llegueEnPunto": "Estás en el punto: ya puedes marcar que llegaste"
+  "llegueEnPunto": "Estás en el punto: ya puedes marcar que llegaste",
+  "sosManten": "Mantén presionado para llamar",
+  "sosSuelta": "Sigue presionando · suelta para cancelar",
+  "sosLlamarSemantica": "Llamar a emergencias {numero}",
+  "@sosLlamarSemantica": {
+    "placeholders": {
+      "numero": {
+        "type": "String"
+      }
+    }
+  }
 }

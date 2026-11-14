@@ -550,7 +550,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get sosTitulo => '¿Necesitas ayuda?';
 
   @override
-  String get sosTexto => 'Llamaremos a la línea de emergencias 123.';
+  String get sosTexto =>
+      'Mantén presionado el botón y llamaremos a la línea de emergencias 123.';
 
   @override
   String get noDisponible => 'No disponible para este conductor';
@@ -2411,4 +2412,15 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get llegueEnPunto =>
       'Estás en el punto: ya puedes marcar que llegaste';
+
+  @override
+  String get sosManten => 'Mantén presionado para llamar';
+
+  @override
+  String get sosSuelta => 'Sigue presionando · suelta para cancelar';
+
+  @override
+  String sosLlamarSemantica(String numero) {
+    return 'Llamar a emergencias $numero';
+  }
 }

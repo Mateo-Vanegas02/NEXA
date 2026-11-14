@@ -1105,7 +1105,7 @@ abstract class AppLocalizations {
   /// No description provided for @sosTexto.
   ///
   /// In es, this message translates to:
-  /// **'Llamaremos a la línea de emergencias 123.'**
+  /// **'Mantén presionado el botón y llamaremos a la línea de emergencias 123.'**
   String get sosTexto;
 
   /// No description provided for @noDisponible.
@@ -4407,6 +4407,24 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Estás en el punto: ya puedes marcar que llegaste'**
   String get llegueEnPunto;
+
+  /// No description provided for @sosManten.
+  ///
+  /// In es, this message translates to:
+  /// **'Mantén presionado para llamar'**
+  String get sosManten;
+
+  /// No description provided for @sosSuelta.
+  ///
+  /// In es, this message translates to:
+  /// **'Sigue presionando · suelta para cancelar'**
+  String get sosSuelta;
+
+  /// No description provided for @sosLlamarSemantica.
+  ///
+  /// In es, this message translates to:
+  /// **'Llamar a emergencias {numero}'**
+  String sosLlamarSemantica(String numero);
 }
 
 class _AppLocalizationsDelegate

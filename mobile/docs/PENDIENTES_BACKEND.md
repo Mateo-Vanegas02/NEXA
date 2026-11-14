@@ -18,3 +18,18 @@
 | 14 | Etiquetas de calificación como campo propio | No existe | Se concatenan al comentario |
 
 **Pendiente del lado del conductor (Fase 4):** la tarjeta de solicitud muestra la tarifa y el extra, no «Ganas $X»: para calcularlo hace falta la comisión del conductor (`/api/niveles/me?rol=conductor`, Fase 5). Tampoco hay aún notificaciones push: el conductor ve solicitudes nuevas solo con la app abierta (polling de 5 s).
+
+## Pendientes del rediseño NEXA Pulso (14-nov-2026)
+
+Lo que el diseño Pulso muestra y la app **no** implementó porque depende del servidor
+(la app no inventa datos de negocio):
+
+| # | Necesidad | Qué falta en el servidor | Estado en la app |
+|---|-----------|--------------------------|------------------|
+| P1 | Código de viaje (PIN que el pasajero le dicta al conductor para iniciar) | Generarlo al aceptar, entregarlo solo al pasajero y validarlo en `iniciar-servicio` | No se muestra |
+| P2 | Compartir viaje con enlace público en vivo | Enlace firmado y con vencimiento + vista pública de solo lectura | Se comparte un texto (destino y conductor) |
+| P3 | SOS con aviso a NEXA y a contactos de confianza | Endpoint de alerta con la posición y contactos del usuario | El SOS (mantener presionado) solo llama al 123 |
+| P4 | Pago en la app (ePayco) | Integración de pagos y conciliación | Solo efectivo |
+| P5 | Promedio por variable en el riesgo de un viaje | `/riesgo` solo trae el valor del viaje, no el promedio para comparar | Se muestran los factores sin comparación |
+| P6 | Pérdida por época del entrenamiento | El entrenamiento solo publica el resultado final | La red se anima, sin curva de pérdida |
+| P7 | Progreso del viaje en la notificación (Android 16, `Notification.ProgressStyle`) | Push de avance por fase con distancia restante | Notificación normal del viaje |
