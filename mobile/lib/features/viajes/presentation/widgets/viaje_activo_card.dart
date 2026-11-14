@@ -4,6 +4,7 @@ import '../../../../core/theme/nexa_texto.dart';
 import 'piezas_viaje.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../core/mapa/maniobra.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/utils/acciones_externas.dart';
 import '../../../../core/utils/formatters.dart';
@@ -245,6 +246,13 @@ class _ViajeActivoCardState extends ConsumerState<ViajeActivoCard> {
             padding: EdgeInsets.only(bottom: Sp.sm),
             child: LinearProgressIndicator(minHeight: 2),
           ),
+        // Guía de cercanía para «Llegué» (el servidor exige estar a 50 m).
+        // Solo orienta: el control nunca se bloquea, porque sin señal la
+        // distancia del servidor puede estar vieja.
+        if (fase == FaseConductor.aRecoger && pos != null) ...[
+          _GuiaLlegada(km: pos.distanciaRestanteKm),
+          const SizedBox(height: Sp.sm),
+        ],
         NexaDeslizar(texto: boton, onConfirmado: _cargando ? null : _avanzar),
         if (fase == FaseConductor.enViaje)
           Padding(
@@ -509,4 +517,56 @@ class _AvisoPendiente extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// Radio en km dentro del cual el servidor acepta «Llegué».
+const double kRadioLlegadaKm = 0.05;
+
+/// Dice si ya se puede marcar «Llegué»: punteada y apagada lejos del punto,
+/// verde al entrar en el radio.
+class _GuiaLlegada extends StatelessWidget {
+  const _GuiaLlegada({required this.km});
+  final double km;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final cerca = km <= kRadioLlegadaKm;
+    final color = cerca ? NexaColors.ok : NexaColors.muted;
+    return Semantics(
+      liveRegion: true,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: Sp.md, vertical: Sp.sm),
+        decoration: BoxDecoration(
+          color: cerca ? NexaColors.ok.withValues(alpha: 0.14) : null,
+          borderRadius: BorderRadius.circular(Rad.md),
+          border: Border.all(
+            color: cerca ? NexaColors.ok : NexaColors.line,
+            width: cerca ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              cerca ? Icons.check_circle_outline : Icons.near_me_outlined,
+              size: 18,
+              color: color,
+            ),
+            const SizedBox(width: Sp.sm),
+            Expanded(
+              child: Text(
+                cerca
+                    ? l.llegueEnPunto
+                    : l.llegueFaltan(ReglasManiobra.texto(km * 1000)),
+                style: NexaTexto.pequeno.copyWith(
+                  color: cerca ? NexaColors.ok : NexaColors.muted,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

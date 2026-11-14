@@ -240,7 +240,9 @@ class _FilaFactor extends ConsumerWidget {
       ),
     );
     return Material(
-      color: activa ? context.acento.withValues(alpha: 0.1) : Colors.transparent,
+      color: activa
+          ? context.acento.withValues(alpha: 0.1)
+          : Colors.transparent,
       borderRadius: radio,
       child: InkWell(
         borderRadius: radio,

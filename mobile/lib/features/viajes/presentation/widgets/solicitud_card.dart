@@ -3,6 +3,7 @@ import '../../../../core/theme/nexa_texto.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/widgets/nexa_diseno.dart';
 import '../../../../core/widgets/nexa_widgets.dart';
 import '../../domain/servicio.dart';
 import '../controllers/viaje_conductor_controller.dart';
@@ -21,8 +22,26 @@ class SolicitudCard extends ConsumerStatefulWidget {
   ConsumerState<SolicitudCard> createState() => _SolicitudCardState();
 }
 
-class _SolicitudCardState extends ConsumerState<SolicitudCard> {
+class _SolicitudCardState extends ConsumerState<SolicitudCard>
+    with SingleTickerProviderStateMixin {
+  /// Segundos que la solicitud pide atención (los mismos del aviso push).
+  static const int _ventana = 45;
+
   bool _aceptando = false;
+
+  /// Cuenta regresiva de la ventana de atención: corre una vez. Al acabar la
+  /// solicitud sigue disponible (el servidor no la vence por conductor), solo
+  /// deja de resaltarse.
+  late final AnimationController _reloj = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: _ventana),
+  )..forward();
+
+  @override
+  void dispose() {
+    _reloj.dispose();
+    super.dispose();
+  }
 
   /// Si otro conductor la tomó (409) o ya no le toca (403), el mensaje del
   /// servidor se muestra y la solicitud sale de la lista.
@@ -70,23 +89,78 @@ class _SolicitudCardState extends ConsumerState<SolicitudCard> {
           children: [
             Text(
               l.nuevaSolicitud.toUpperCase(),
+              textAlign: TextAlign.center,
               style: NexaTexto.etiqueta.copyWith(color: NexaColors.cyan),
             ),
-            const SizedBox(height: Sp.xs),
-            // «Ganas $X» lo calcula el servidor según el nivel del conductor;
-            // sin ese dato se muestra lo que cobra en efectivo.
-            Text(
-              servicio.gananciaEstimada != null
-                  ? l.ganasMonto(Fmt.cop(servicio.gananciaEstimada!))
-                  : '${l.cobraAlPasajero} ${Fmt.cop(total)}',
-              style: NexaTexto.titulo,
-            ),
-            Text(
-              [
-                if (porKm != null) l.porKm(porKm),
-                l.efectivo.toLowerCase(),
-              ].join(' · '),
-              style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
+            const SizedBox(height: Sp.md),
+            // Anillo de 45 s con lo que gana en el centro. «Ganas $X» lo
+            // calcula el servidor según el nivel del conductor; sin ese dato
+            // se muestra lo que cobra en efectivo.
+            Center(
+              child: AnimatedBuilder(
+                animation: _reloj,
+                builder: (context, centro) {
+                  final queda = 1 - _reloj.value;
+                  final segundos = (queda * _ventana).ceil();
+                  return NexaAnilloProgreso(
+                    progreso: queda,
+                    diametro: 164,
+                    trazo: 7,
+                    relleno: 10,
+                    color: queda <= 0
+                        ? NexaColors.tenue
+                        : queda < 0.27
+                        ? NexaColors.gold
+                        : NexaColors.cyan,
+                    etiquetaSemantica: queda <= 0
+                        ? l.solicitudSigue
+                        : l.solicitudSegundos(segundos),
+                    child: Center(
+                      child: SizedBox(
+                        width: 118,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              centro!,
+                              Text(
+                                queda <= 0
+                                    ? l.solicitudSigue
+                                    : l.solicitudSegundos(segundos),
+                                style: NexaTexto.pequeno.copyWith(
+                                  color: NexaColors.sky,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      servicio.gananciaEstimada != null
+                          ? l.ganasMonto(Fmt.cop(servicio.gananciaEstimada!))
+                          : '${l.cobraAlPasajero} ${Fmt.cop(total)}',
+                      style: NexaTexto.titulo,
+                    ),
+                    Text(
+                      [
+                        if (porKm != null) l.porKm(porKm),
+                        l.efectivo.toLowerCase(),
+                      ].join(' · '),
+                      style: NexaTexto.pequeno.copyWith(
+                        color: NexaColors.muted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: Sp.md),
             Wrap(
@@ -133,41 +207,16 @@ class _SolicitudCardState extends ConsumerState<SolicitudCard> {
               ),
             ),
             const SizedBox(height: Sp.lg),
-            // Con letra muy grande los botones se apilan.
-            if (MediaQuery.textScalerOf(context).scale(10) > 15) ...[
-              NexaButton(
-                label: l.aceptar,
-                cargando: _aceptando,
-                onPressed: _aceptar,
-              ),
-              const SizedBox(height: Sp.sm),
-              NexaButton(
-                label: l.ahoraNo,
-                variant: NexaButtonVariant.secundario,
-                onPressed: _aceptando ? null : () => ctrl.rechazar(servicio),
-              ),
-            ] else
-              Row(
-                children: [
-                  Expanded(
-                    child: NexaButton(
-                      label: l.ahoraNo,
-                      variant: NexaButtonVariant.secundario,
-                      onPressed: _aceptando
-                          ? null
-                          : () => ctrl.rechazar(servicio),
-                    ),
-                  ),
-                  const SizedBox(width: Sp.md),
-                  Expanded(
-                    child: NexaButton(
-                      label: l.aceptar,
-                      cargando: _aceptando,
-                      onPressed: _aceptar,
-                    ),
-                  ),
-                ],
-              ),
+            // Aceptar se desliza: en la moto un toque accidental es fácil.
+            NexaDeslizar(
+              texto: l.deslizaAceptar,
+              onConfirmado: _aceptando ? null : _aceptar,
+            ),
+            const SizedBox(height: Sp.xs),
+            TextButton(
+              onPressed: _aceptando ? null : () => ctrl.rechazar(servicio),
+              child: Text(l.ahoraNo),
+            ),
           ],
         ),
       ),

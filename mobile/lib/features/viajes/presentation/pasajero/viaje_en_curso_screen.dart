@@ -24,6 +24,7 @@ import '../../domain/servicio.dart';
 import '../controllers/viaje_pasajero_controller.dart';
 import '../widgets/conductor_card.dart';
 import '../widgets/piezas_viaje.dart';
+import '../widgets/radar_olas.dart';
 
 /// Seguimiento del viaje sobre el mapa. Con la solicitud abierta: búsqueda de
 /// conductor y extra voluntario. Con el viaje aceptado o en curso: minutos de
@@ -197,26 +198,49 @@ class _Seguimiento extends ConsumerWidget {
           minimo: 0.3,
           children: [
             if (s.estado == EstadoServicio.solicitado) ...[
-              Text(
-                despacho?.ultima ?? false
-                    ? l.nadieAcepto
-                    : l.buscandoTuConductor,
-                style: NexaTexto.titulo,
-              ),
-              const SizedBox(height: Sp.sm),
-              Semantics(
-                liveRegion: true,
-                child: Text(
-                  despacho == null
-                      ? l.buscandoTexto
-                      : despacho.ultima
-                      ? l.nadieAceptoTexto(
-                          despacho.conductoresAvisados,
-                          kmFmt.format(despacho.radioKm ?? 0),
-                        )
-                      : l.avisamosA(despacho.conductoresAvisados),
-                  style: NexaTexto.cuerpo.copyWith(color: NexaColors.muted),
-                ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          despacho?.ultima ?? false
+                              ? l.nadieAcepto
+                              : l.buscandoTuConductor,
+                          style: NexaTexto.titulo,
+                        ),
+                        const SizedBox(height: Sp.sm),
+                        Semantics(
+                          liveRegion: true,
+                          child: Text(
+                            despacho == null
+                                ? l.buscandoTexto
+                                : despacho.ultima
+                                ? l.nadieAceptoTexto(
+                                    despacho.conductoresAvisados,
+                                    kmFmt.format(despacho.radioKm ?? 0),
+                                  )
+                                : l.avisamosA(despacho.conductoresAvisados),
+                            style: NexaTexto.cuerpo.copyWith(
+                              color: NexaColors.muted,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Radar de olas: un aro por ola, hasta la que va.
+                  if (despacho != null) ...[
+                    const SizedBox(width: Sp.md),
+                    RadarOlas(
+                      ola: despacho.ola,
+                      total: despacho.totalOlas,
+                      buscando: !despacho.ultima,
+                    ),
+                  ],
+                ],
               ),
               const SizedBox(height: Sp.lg),
               if (despacho != null)

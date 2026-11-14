@@ -1401,5 +1401,27 @@
         "type": "int"
       }
     }
-  }
+  },
+  "nivelesRuta": "Tu ruta",
+  "nivelesRutaPasajero": "Cada parada está a su distancia real en XP. Debajo, el descuento de ese nivel.",
+  "nivelesRutaConductor": "Cada parada está a su distancia real en XP. Debajo, la comisión de NEXA en ese nivel.",
+  "deslizaAceptar": "Desliza para aceptar",
+  "solicitudSegundos": "{n} s",
+  "@solicitudSegundos": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "solicitudSigue": "Sigue disponible",
+  "llegueFaltan": "Faltan {distancia} para poder marcar que llegaste",
+  "@llegueFaltan": {
+    "placeholders": {
+      "distancia": {
+        "type": "String"
+      }
+    }
+  },
+  "llegueEnPunto": "Estás en el punto: ya puedes marcar que llegaste"
 }

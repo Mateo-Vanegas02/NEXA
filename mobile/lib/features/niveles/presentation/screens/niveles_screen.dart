@@ -11,6 +11,7 @@ import '../../domain/nivel.dart';
 import '../controllers/niveles_controller.dart';
 import '../widgets/conductor_info_card.dart';
 import '../widgets/nivel_tile.dart';
+import '../widgets/ruta_niveles.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -259,6 +260,43 @@ class _Ventaja extends StatelessWidget {
   );
 }
 
+/// Tarjeta con la ruta de niveles (paradas a su distancia real en XP).
+class _Ruta extends StatelessWidget {
+  const _Ruta({required this.n, required this.esConductor});
+  final NivelEstado n;
+  final bool esConductor;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final t = context.textos;
+    return Container(
+      padding: const EdgeInsets.all(Sp.lg - 2),
+      decoration: BoxDecoration(
+        color: NexaColors.card,
+        borderRadius: BorderRadius.circular(Rad.lg),
+        border: Border.all(color: NexaColors.cyan.withValues(alpha: 0.18)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            l.nivelesRuta,
+            style: t.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            esConductor ? l.nivelesRutaConductor : l.nivelesRutaPasajero,
+            style: t.bodySmall?.copyWith(color: context.muted),
+          ),
+          const SizedBox(height: Sp.sm),
+          RutaNiveles(estado: n, rotuloNivel: l.nivelActual),
+        ],
+      ),
+    );
+  }
+}
+
 class _Contenido extends ConsumerWidget {
   const _Contenido({required this.n});
   final NivelEstado n;
@@ -272,6 +310,10 @@ class _Contenido extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _Resumen(n: n),
+        if (RutaNiveles.sePuedeDibujar(n)) ...[
+          const SizedBox(height: Sp.lg),
+          _Ruta(n: n, esConductor: esConductor),
+        ],
         const SizedBox(height: Sp.xl),
         if (esConductor && n.conductor != null) ...[
           ConductorInfoCard(info: n.conductor!),

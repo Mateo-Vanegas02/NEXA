@@ -2380,4 +2380,35 @@ class AppLocalizationsEs extends AppLocalizations {
   String satRedSemantica(int n) {
     return 'Esquema de la red neuronal: $n variables de entrada, dos capas comunes y una rama para cada lado.';
   }
+
+  @override
+  String get nivelesRuta => 'Tu ruta';
+
+  @override
+  String get nivelesRutaPasajero =>
+      'Cada parada está a su distancia real en XP. Debajo, el descuento de ese nivel.';
+
+  @override
+  String get nivelesRutaConductor =>
+      'Cada parada está a su distancia real en XP. Debajo, la comisión de NEXA en ese nivel.';
+
+  @override
+  String get deslizaAceptar => 'Desliza para aceptar';
+
+  @override
+  String solicitudSegundos(int n) {
+    return '$n s';
+  }
+
+  @override
+  String get solicitudSigue => 'Sigue disponible';
+
+  @override
+  String llegueFaltan(String distancia) {
+    return 'Faltan $distancia para poder marcar que llegaste';
+  }
+
+  @override
+  String get llegueEnPunto =>
+      'Estás en el punto: ya puedes marcar que llegaste';
 }

@@ -4359,6 +4359,54 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Esquema de la red neuronal: {n} variables de entrada, dos capas comunes y una rama para cada lado.'**
   String satRedSemantica(int n);
+
+  /// No description provided for @nivelesRuta.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu ruta'**
+  String get nivelesRuta;
+
+  /// No description provided for @nivelesRutaPasajero.
+  ///
+  /// In es, this message translates to:
+  /// **'Cada parada está a su distancia real en XP. Debajo, el descuento de ese nivel.'**
+  String get nivelesRutaPasajero;
+
+  /// No description provided for @nivelesRutaConductor.
+  ///
+  /// In es, this message translates to:
+  /// **'Cada parada está a su distancia real en XP. Debajo, la comisión de NEXA en ese nivel.'**
+  String get nivelesRutaConductor;
+
+  /// No description provided for @deslizaAceptar.
+  ///
+  /// In es, this message translates to:
+  /// **'Desliza para aceptar'**
+  String get deslizaAceptar;
+
+  /// No description provided for @solicitudSegundos.
+  ///
+  /// In es, this message translates to:
+  /// **'{n} s'**
+  String solicitudSegundos(int n);
+
+  /// No description provided for @solicitudSigue.
+  ///
+  /// In es, this message translates to:
+  /// **'Sigue disponible'**
+  String get solicitudSigue;
+
+  /// No description provided for @llegueFaltan.
+  ///
+  /// In es, this message translates to:
+  /// **'Faltan {distancia} para poder marcar que llegaste'**
+  String llegueFaltan(String distancia);
+
+  /// No description provided for @llegueEnPunto.
+  ///
+  /// In es, this message translates to:
+  /// **'Estás en el punto: ya puedes marcar que llegaste'**
+  String get llegueEnPunto;
 }
 
 class _AppLocalizationsDelegate

@@ -367,14 +367,11 @@ class _RedPainter extends CustomPainter {
       for (var capa = 0; capa < _dibujadas.length; capa++)
         [
           for (var k = 0; k < _dibujadas[capa]; k++)
-            Offset(
-              size.width * _x[capa],
-              switch (capa) {
-                3 => alto * _ramas[k],
-                4 => alto * _ySalidas[k],
-                _ => 10 + (alto - 20) * k / (_dibujadas[capa] - 1),
-              },
-            ),
+            Offset(size.width * _x[capa], switch (capa) {
+              3 => alto * _ramas[k],
+              4 => alto * _ySalidas[k],
+              _ => 10 + (alto - 20) * k / (_dibujadas[capa] - 1),
+            }),
         ],
     ];
 
@@ -416,7 +413,11 @@ class _RedPainter extends CustomPainter {
       final a = nodos[tramo][s.ruta[tramo]];
       final b = nodos[tramo + 1][s.ruta[tramo + 1]];
       final p = Offset.lerp(a, b, u)!;
-      final cola = Offset.lerp(a, b, (u + (atras ? 0.14 : -0.14)).clamp(0.0, 1.0))!;
+      final cola = Offset.lerp(
+        a,
+        b,
+        (u + (atras ? 0.14 : -0.14)).clamp(0.0, 1.0),
+      )!;
       canvas
         ..drawLine(
           p,

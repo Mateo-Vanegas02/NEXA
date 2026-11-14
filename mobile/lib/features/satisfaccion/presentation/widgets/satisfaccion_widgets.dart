@@ -536,7 +536,9 @@ class _GraficaTendenciaState extends State<GraficaTendencia> {
                   ),
                 for (final s in widget.series)
                   Leyenda(
-                    texto: valor(sel < s.valores.length ? s.valores[sel] : null),
+                    texto: valor(
+                      sel < s.valores.length ? s.valores[sel] : null,
+                    ),
                     color: s.color,
                   ),
               ],
@@ -565,8 +567,7 @@ class _GraficaTendenciaState extends State<GraficaTendencia> {
                   child: LayoutBuilder(
                     builder: (context, c) => GestureDetector(
                       behavior: HitTestBehavior.opaque,
-                      onTapDown: (d) =>
-                          _elegir(d.localPosition.dx, c.maxWidth),
+                      onTapDown: (d) => _elegir(d.localPosition.dx, c.maxWidth),
                       onHorizontalDragStart: (d) =>
                           _elegir(d.localPosition.dx, c.maxWidth),
                       onHorizontalDragUpdate: (d) =>
