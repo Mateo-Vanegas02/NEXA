@@ -40,9 +40,13 @@ void main() {
     expect(find.text('Mantén presionado para llamar'), findsOneWidget);
 
     final gesto = await t.startGesture(t.getCenter(find.text('123')));
-    await t.pump(const Duration(milliseconds: 800));
+    // El toque se reconoce a los 100 ms y el anillo arranca en el cuadro
+    // siguiente.
+    await t.pump(const Duration(milliseconds: 150));
+    await t.pump(const Duration(milliseconds: 16));
+    await t.pump(const Duration(milliseconds: 700));
     expect(resultados, isEmpty);
-    await t.pump(const Duration(milliseconds: 800));
+    await t.pump(const Duration(milliseconds: 900));
     await gesto.up();
     await t.pumpAndSettle();
 
@@ -53,7 +57,9 @@ void main() {
     final resultados = await abrir(t);
 
     final gesto = await t.startGesture(t.getCenter(find.text('123')));
-    await t.pump(const Duration(milliseconds: 600));
+    await t.pump(const Duration(milliseconds: 150));
+    await t.pump(const Duration(milliseconds: 16));
+    await t.pump(const Duration(milliseconds: 500));
     await gesto.up();
     await t.pumpAndSettle();
     expect(resultados, isEmpty);
