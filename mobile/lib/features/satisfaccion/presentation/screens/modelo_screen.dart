@@ -13,6 +13,7 @@ import '../../../../core/widgets/nexa_diseno.dart';
 import '../../../../core/widgets/nexa_widgets.dart';
 import '../../domain/satisfaccion.dart';
 import '../controllers/satisfaccion_controller.dart';
+import '../widgets/pulso_widgets.dart';
 import '../widgets/satisfaccion_widgets.dart';
 import 'formato_sat.dart';
 import 'programar_sheet.dart';
@@ -96,6 +97,11 @@ class _Contenido extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        _Red(
+          variables: m.variables,
+          entrenando: activo != null && !activo.estado.esFinal,
+        ),
+        const SizedBox(height: Sp.md),
         _Metricas(m: m),
         const SizedBox(height: Sp.md),
         if (activo != null && !activo.estado.esFinal)
@@ -152,6 +158,44 @@ class _Contenido extends ConsumerWidget {
           _Historial(registros: m.historial),
         ],
       ],
+    );
+  }
+}
+
+/// La red dibujada: cómo entra un viaje y cómo salen las dos probabilidades.
+class _Red extends StatelessWidget {
+  const _Red({required this.variables, required this.entrenando});
+  final int variables;
+  final bool entrenando;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final t = context.textos;
+    return TarjetaSat(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            l.satRedTitulo,
+            style: t.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            entrenando ? l.satRedEntrenando : l.satRedNota(variables),
+            style: t.bodySmall?.copyWith(color: context.muted),
+          ),
+          const SizedBox(height: Sp.md),
+          RedNeuronal(
+            variables: variables,
+            etiquetaVariables: l.satRedVariables(variables),
+            etiquetaPasajero: l.satPasajero,
+            etiquetaConductor: l.satConductor,
+            semantica: l.satRedSemantica(variables),
+            entrenando: entrenando,
+          ),
+        ],
+      ),
     );
   }
 }

@@ -4323,6 +4323,42 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Tarjeta de propiedad'**
   String get onbDocTarjeta;
+
+  /// No description provided for @satNotas.
+  ///
+  /// In es, this message translates to:
+  /// **'notas'**
+  String get satNotas;
+
+  /// No description provided for @satRedTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Así decide la red'**
+  String get satRedTitulo;
+
+  /// No description provided for @satRedNota.
+  ///
+  /// In es, this message translates to:
+  /// **'Cada viaje entra con sus {n} variables y sale como dos probabilidades de no quedar satisfecho: la del pasajero y la del conductor.'**
+  String satRedNota(int n);
+
+  /// No description provided for @satRedEntrenando.
+  ///
+  /// In es, this message translates to:
+  /// **'Entrenando: las señales doradas son los ajustes que viajan hacia atrás.'**
+  String get satRedEntrenando;
+
+  /// No description provided for @satRedVariables.
+  ///
+  /// In es, this message translates to:
+  /// **'{n} variables'**
+  String satRedVariables(int n);
+
+  /// No description provided for @satRedSemantica.
+  ///
+  /// In es, this message translates to:
+  /// **'Esquema de la red neuronal: {n} variables de entrada, dos capas comunes y una rama para cada lado.'**
+  String satRedSemantica(int n);
 }
 
 class _AppLocalizationsDelegate

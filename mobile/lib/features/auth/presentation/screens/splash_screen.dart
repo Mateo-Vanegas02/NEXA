@@ -74,7 +74,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     return Scaffold(
-      body: DecoratedBox(
+      // Tamaño fijo a toda la pantalla: sin esto la columna se encoge al
+      // ancho de su hijo más ancho y el fondo no cubre.
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: RadialGradient(
             center: Alignment(0, -0.35),
@@ -327,10 +331,7 @@ class _Firma extends StatelessWidget {
   Widget build(BuildContext context) => Column(
     mainAxisSize: MainAxisSize.min,
     children: [
-      Text(
-        deQuien,
-        style: NexaTexto.pequeno.copyWith(color: NexaColors.tenue),
-      ),
+      Text(deQuien, style: NexaTexto.pequeno.copyWith(color: NexaColors.tenue)),
       const SizedBox(height: Sp.xs + 2),
       Row(
         mainAxisSize: MainAxisSize.min,

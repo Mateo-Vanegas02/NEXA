@@ -13,6 +13,7 @@ import '../../../../core/widgets/nexa_diseno.dart';
 import '../../../../core/widgets/nexa_widgets.dart';
 import '../../domain/satisfaccion.dart';
 import '../controllers/satisfaccion_controller.dart';
+import '../widgets/pulso_widgets.dart';
 import '../widgets/satisfaccion_widgets.dart';
 import 'formato_sat.dart';
 
@@ -85,7 +86,8 @@ class ResumenScreen extends ConsumerWidget {
                           mensaje: AppException.from(e).mensaje,
                           onReintentar: () => ref.invalidate(resumenProvider),
                         ),
-                        data: (r) => _Contenido(r: r),
+                        data: (r) =>
+                            _Contenido(r: r, semanas: _semanas(periodo)),
                       ),
                     ],
                   ),
@@ -97,6 +99,15 @@ class ResumenScreen extends ConsumerWidget {
       ),
     );
   }
+
+  /// Semanas del final de la tendencia que cubre el período elegido.
+  static int _semanas(Periodo p) => switch (p.tipo) {
+    TipoPeriodo.dias7 => 1,
+    TipoPeriodo.dias30 => 4,
+    TipoPeriodo.dias90 => 12,
+    TipoPeriodo.rango =>
+      ((p.hasta.difference(p.desde).inDays + 1) / 7).ceil().clamp(1, 12),
+  };
 
   Future<void> _elegirRango(BuildContext context, WidgetRef ref) async {
     final hoy = ref.read(relojSatisfaccionProvider)();
@@ -112,8 +123,11 @@ class ResumenScreen extends ConsumerWidget {
 }
 
 class _Contenido extends StatelessWidget {
-  const _Contenido({required this.r});
+  const _Contenido({required this.r, required this.semanas});
   final Resumen r;
+
+  /// Semanas de la tendencia que cubre el período elegido.
+  final int semanas;
 
   @override
   Widget build(BuildContext context) {
@@ -129,30 +143,9 @@ class _Contenido extends StatelessWidget {
           ),
           const SizedBox(height: Sp.md),
         ],
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: _Indicador(
-                  titulo: l.satPasajerosSatisfechos,
-                  datos: r.pasajero,
-                  color: context.acento,
-                ),
-              ),
-              const SizedBox(width: Sp.sm),
-              Expanded(
-                child: _Indicador(
-                  titulo: l.satConductoresSatisfechos,
-                  datos: r.conductor,
-                  color: colorOk(context),
-                ),
-              ),
-            ],
-          ),
-        ),
+        _Pulso(r: r),
         const SizedBox(height: Sp.md),
-        _Tendencia(puntos: r.tendencia),
+        _Tendencia(puntos: r.tendencia, semanas: semanas),
         const SizedBox(height: Sp.md),
         IntrinsicHeight(
           child: Row(
@@ -210,44 +203,121 @@ class _Indicador extends StatelessWidget {
     final t = context.textos;
     final pct = datos.satisfechosPct;
     final variacion = datos.variacionPts;
-    return TarjetaSat(
-      padding: const EdgeInsets.all(Sp.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 3, right: Sp.sm),
+              child: Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+              ),
+            ),
+            Expanded(
+              child: Text(
+                titulo,
+                style: t.labelSmall?.copyWith(
+                  color: context.muted,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 2),
+        Text(
+          pct == null ? '–' : FormatoSat.pct(pct),
+          style: t.headlineSmall?.copyWith(
+            color: color,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        if (pct == null)
           Text(
-            titulo,
+            l.satSinCalificaciones,
+            style: t.labelSmall?.copyWith(color: context.muted),
+          )
+        else if (variacion != null)
+          Text(
+            '${variacion >= 0 ? '▲' : '▼'} '
+            '${l.satVariacion(FormatoSat.numero(variacion.abs()))}',
             style: t.labelSmall?.copyWith(
-              color: context.muted,
+              color: variacion >= 0 ? colorOk(context) : colorMalo(context),
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: Sp.xs),
-          Text(
-            pct == null ? '–' : FormatoSat.pct(pct),
-            style: t.headlineMedium?.copyWith(
-              color: color,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          if (pct == null)
-            Text(
-              l.satSinCalificaciones,
-              style: t.labelSmall?.copyWith(color: context.muted),
-            )
-          else if (variacion != null)
-            Text(
-              '${variacion >= 0 ? '▲' : '▼'} '
-              '${l.satVariacion(FormatoSat.numero(variacion.abs()))}',
-              style: t.labelSmall?.copyWith(
-                color: variacion >= 0 ? colorOk(context) : colorMalo(context),
-                fontWeight: FontWeight.w600,
+        Text(
+          l.satCalifica(FormatoSat.pct(datos.tasaRespuestaPct)),
+          style: t.labelSmall?.copyWith(color: context.muted),
+        ),
+      ],
+    );
+  }
+}
+
+/// El pulso del período: dial de dos anillos (pasajeros por fuera, conductores
+/// por dentro) con el total de calificaciones en el centro, y al lado cada
+/// porcentaje con su variación y cuántos califican.
+class _Pulso extends StatelessWidget {
+  const _Pulso({required this.r});
+  final Resumen r;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final t = context.textos;
+    final ok = colorOk(context);
+    final notas = r.pasajero.calificaciones + r.conductor.calificaciones;
+    return TarjetaSat(
+      padding: const EdgeInsets.all(Sp.md),
+      child: Row(
+        children: [
+          ExcludeSemantics(
+            child: DialDoble(
+              exterior: r.pasajero.satisfechosPct,
+              interior: r.conductor.satisfechosPct,
+              colorExterior: context.acento,
+              colorInterior: ok,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '$notas',
+                    style: t.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                  Text(
+                    l.satNotas,
+                    style: t.labelSmall?.copyWith(color: context.muted),
+                  ),
+                ],
               ),
             ),
-          const SizedBox(height: Sp.xs),
-          Text(
-            l.satCalifica(FormatoSat.pct(datos.tasaRespuestaPct)),
-            style: t.labelSmall?.copyWith(color: context.muted),
+          ),
+          const SizedBox(width: Sp.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _Indicador(
+                  titulo: l.satPasajerosSatisfechos,
+                  datos: r.pasajero,
+                  color: context.acento,
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: Sp.sm),
+                  child: Divider(height: 1, color: bordeSuave(context)),
+                ),
+                _Indicador(
+                  titulo: l.satConductoresSatisfechos,
+                  datos: r.conductor,
+                  color: ok,
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -256,8 +326,9 @@ class _Indicador extends StatelessWidget {
 }
 
 class _Tendencia extends StatelessWidget {
-  const _Tendencia({required this.puntos});
+  const _Tendencia({required this.puntos, required this.semanas});
   final List<PuntoTendencia> puntos;
+  final int semanas;
 
   @override
   Widget build(BuildContext context) {
@@ -297,6 +368,8 @@ class _Tendencia extends StatelessWidget {
           else
             GraficaTendencia(
               minimo: minimo,
+              resaltar: semanas,
+              formato: FormatoSat.pct,
               semantica: FormatoSat.semanticaTendencia(l, puntos),
               etiquetasX: [for (final p in puntos) FormatoSat.semana(p.semana)],
               series: [

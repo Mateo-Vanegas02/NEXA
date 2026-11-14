@@ -1374,5 +1374,32 @@
   "onbDocLicencia": "Licencia",
   "onbDocSoat": "SOAT",
   "onbDocTecno": "Tecnomecánica",
-  "onbDocTarjeta": "Tarjeta de propiedad"
+  "onbDocTarjeta": "Tarjeta de propiedad",
+  "satNotas": "notas",
+  "satRedTitulo": "Así decide la red",
+  "satRedNota": "Cada viaje entra con sus {n} variables y sale como dos probabilidades de no quedar satisfecho: la del pasajero y la del conductor.",
+  "@satRedNota": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "satRedEntrenando": "Entrenando: las señales doradas son los ajustes que viajan hacia atrás.",
+  "satRedVariables": "{n} variables",
+  "@satRedVariables": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "satRedSemantica": "Esquema de la red neuronal: {n} variables de entrada, dos capas comunes y una rama para cada lado.",
+  "@satRedSemantica": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  }
 }

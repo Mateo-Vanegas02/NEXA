@@ -11,6 +11,7 @@ import '../../../../core/widgets/nexa_diseno.dart';
 import '../../../../core/widgets/nexa_widgets.dart';
 import '../../domain/satisfaccion.dart';
 import '../controllers/satisfaccion_controller.dart';
+import '../widgets/pulso_widgets.dart';
 import '../widgets/satisfaccion_widgets.dart';
 import 'formato_sat.dart';
 
@@ -171,15 +172,13 @@ class _TarjetaViaje extends ConsumerWidget {
               ),
               const SizedBox(width: Sp.sm),
               Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    FormatoSat.probabilidad(v.probabilidadNo),
-                    style: t.titleLarge?.copyWith(
-                      color: colorProb,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  AnilloProbabilidad(
+                    valor: v.probabilidadNo,
+                    texto: FormatoSat.probabilidad(v.probabilidadNo),
+                    color: colorProb,
                   ),
+                  const SizedBox(height: Sp.xs),
                   Text(
                     l.satProbNo,
                     style: t.labelSmall?.copyWith(color: context.muted),

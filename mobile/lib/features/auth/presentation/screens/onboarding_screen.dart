@@ -242,8 +242,12 @@ final List<List<Offset>> _formas = [
   _repartir([
     for (var i = 0; i <= 160; i++)
       Offset(
-        0.5 + math.cos(i / 160 * 6 * math.pi - math.pi / 2) * (0.03 + i / 160 * 0.37),
-        0.5 + math.sin(i / 160 * 6 * math.pi - math.pi / 2) * (0.03 + i / 160 * 0.37),
+        0.5 +
+            math.cos(i / 160 * 6 * math.pi - math.pi / 2) *
+                (0.03 + i / 160 * 0.37),
+        0.5 +
+            math.sin(i / 160 * 6 * math.pi - math.pi / 2) *
+                (0.03 + i / 160 * 0.37),
       ),
   ]),
   _repartir(const [
@@ -262,8 +266,7 @@ final List<List<Offset>> _formas = [
 
 /// Qué tan cerca está la posición [pagina] de la página [i]: 1 encima, 0 a
 /// una página o más de distancia.
-double _cerca(double pagina, int i) =>
-    (1 - (pagina - i).abs()).clamp(0.0, 1.0);
+double _cerca(double pagina, int i) => (1 - (pagina - i).abs()).clamp(0.0, 1.0);
 
 /// La línea y lo que se apoya en ella (precio, documentos, moto, descuentos).
 class _Arte extends StatelessWidget {
@@ -347,7 +350,7 @@ class _Arte extends StatelessWidget {
                     en(
                       3,
                       0.21,
-                      0.78,
+                      0.91,
                       _Rotulo(l.nivelActual('1'), color: NexaColors.muted),
                     ),
                     for (var n = 2; n <= 5; n++)
@@ -395,10 +398,7 @@ class _LineaPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final lado = math.min(size.width, size.height);
-    final origen = Offset(
-      (size.width - lado) / 2,
-      (size.height - lado) / 2,
-    );
+    final origen = Offset((size.width - lado) / 2, (size.height - lado) / 2);
     final desde = pagina.floor().clamp(0, _formas.length - 1);
     final hasta = math.min(desde + 1, _formas.length - 1);
     final fr = (pagina - desde).clamp(0.0, 1.0);
@@ -610,7 +610,11 @@ class _Documentos extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const Icon(Icons.check_rounded, size: 14, color: NexaColors.ok),
+                  const Icon(
+                    Icons.check_rounded,
+                    size: 14,
+                    color: NexaColors.ok,
+                  ),
                 ],
               ),
             ),

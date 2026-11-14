@@ -2355,4 +2355,29 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get onbDocTarjeta => 'Tarjeta de propiedad';
+
+  @override
+  String get satNotas => 'notas';
+
+  @override
+  String get satRedTitulo => 'Así decide la red';
+
+  @override
+  String satRedNota(int n) {
+    return 'Cada viaje entra con sus $n variables y sale como dos probabilidades de no quedar satisfecho: la del pasajero y la del conductor.';
+  }
+
+  @override
+  String get satRedEntrenando =>
+      'Entrenando: las señales doradas son los ajustes que viajan hacia atrás.';
+
+  @override
+  String satRedVariables(int n) {
+    return '$n variables';
+  }
+
+  @override
+  String satRedSemantica(int n) {
+    return 'Esquema de la red neuronal: $n variables de entrada, dos capas comunes y una rama para cada lado.';
+  }
 }

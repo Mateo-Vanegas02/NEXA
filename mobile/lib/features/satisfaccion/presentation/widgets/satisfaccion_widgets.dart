@@ -452,14 +452,17 @@ class SerieLinea {
 }
 
 /// Gráfica de líneas de la tendencia semanal (0–100 %). Escala vertical de
-/// [minimo] a 100 con tres guías.
-class GraficaTendencia extends StatelessWidget {
+/// [minimo] a 100 con tres guías. Al tocarla o arrastrar sobre ella se marca
+/// una semana y arriba aparece el valor de cada serie en esa semana.
+class GraficaTendencia extends StatefulWidget {
   const GraficaTendencia({
     required this.series,
     required this.etiquetasX,
     required this.semantica,
     this.minimo = 60,
     this.alto = 120,
+    this.resaltar,
+    this.formato,
     super.key,
   });
 
@@ -469,15 +472,77 @@ class GraficaTendencia extends StatelessWidget {
   final double minimo;
   final double alto;
 
+  /// Cuántas semanas del final se sombrean (el período elegido); `null` = ninguna.
+  final int? resaltar;
+
+  /// Cómo se escribe un valor en la lectura (por defecto, `86 %`).
+  final String Function(double valor)? formato;
+
+  @override
+  State<GraficaTendencia> createState() => _GraficaTendenciaState();
+}
+
+class _GraficaTendenciaState extends State<GraficaTendencia> {
+  static const double _margen = 6;
+  int? _sel;
+
+  int get _n =>
+      widget.series.fold<int>(0, (m, s) => math.max(m, s.valores.length));
+
+  void _elegir(double dx, double ancho) {
+    final n = _n;
+    if (n == 0) return;
+    final util = ancho - 2 * _margen;
+    final i = n == 1 || util <= 0
+        ? 0
+        : ((dx - _margen) / util * (n - 1)).round().clamp(0, n - 1);
+    if (i != _sel) setState(() => _sel = i);
+  }
+
+  @override
+  void didUpdateWidget(GraficaTendencia old) {
+    super.didUpdateWidget(old);
+    if (_sel != null && _sel! >= _n) _sel = null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final estilo = context.textos.labelSmall?.copyWith(color: context.muted);
+    final minimo = widget.minimo;
+    final alto = widget.alto;
     final guias = [100.0, (100 + minimo) / 2, minimo];
+    final sel = _sel;
+    String valor(double? v) => v == null
+        ? '–'
+        : (widget.formato?.call(v) ?? '${v.toStringAsFixed(0)} %');
     return Semantics(
-      label: semantica,
+      label: widget.semantica,
       excludeSemantics: true,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (sel != null) ...[
+            Wrap(
+              spacing: Sp.md,
+              runSpacing: Sp.xs,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                if (sel < widget.etiquetasX.length)
+                  Text(
+                    widget.etiquetasX[sel],
+                    style: context.textos.labelSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                for (final s in widget.series)
+                  Leyenda(
+                    texto: valor(sel < s.valores.length ? s.valores[sel] : null),
+                    color: s.color,
+                  ),
+              ],
+            ),
+            const SizedBox(height: Sp.sm),
+          ],
           SizedBox(
             height: alto,
             child: Row(
@@ -497,12 +562,28 @@ class GraficaTendencia extends StatelessWidget {
                   ),
                 ),
                 Expanded(
-                  child: CustomPaint(
-                    painter: _LineasPainter(
-                      series: series,
-                      minimo: minimo,
-                      guias: guias,
-                      colorGuia: context.acento.withValues(alpha: 0.12),
+                  child: LayoutBuilder(
+                    builder: (context, c) => GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTapDown: (d) =>
+                          _elegir(d.localPosition.dx, c.maxWidth),
+                      onHorizontalDragStart: (d) =>
+                          _elegir(d.localPosition.dx, c.maxWidth),
+                      onHorizontalDragUpdate: (d) =>
+                          _elegir(d.localPosition.dx, c.maxWidth),
+                      child: CustomPaint(
+                        size: Size.infinite,
+                        painter: _LineasPainter(
+                          series: widget.series,
+                          minimo: minimo,
+                          guias: guias,
+                          colorGuia: context.acento.withValues(alpha: 0.12),
+                          seleccion: sel,
+                          resaltar: widget.resaltar,
+                          colorMarca: context.colors.onSurface,
+                          fondo: fondoTarjeta(context),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -514,7 +595,7 @@ class GraficaTendencia extends StatelessWidget {
             padding: const EdgeInsets.only(left: 28),
             child: Row(
               children: [
-                for (final e in etiquetasX)
+                for (final e in widget.etiquetasX)
                   Expanded(
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
@@ -536,32 +617,60 @@ class _LineasPainter extends CustomPainter {
     required this.minimo,
     required this.guias,
     required this.colorGuia,
+    required this.colorMarca,
+    required this.fondo,
+    this.seleccion,
+    this.resaltar,
   });
 
   final List<SerieLinea> series;
   final double minimo;
   final List<double> guias;
   final Color colorGuia;
+  final Color colorMarca;
+  final Color fondo;
+  final int? seleccion;
+  final int? resaltar;
 
   @override
   void paint(Canvas canvas, Size size) {
     const margen = 6.0;
     final altoUtil = size.height - 12;
+    final total = series.fold<int>(0, (m, s) => math.max(m, s.valores.length));
     double y(double v) =>
         margen +
         (altoUtil - margen) * (100 - v.clamp(minimo, 100)) / (100 - minimo);
+    double xDe(int i, int n) => n <= 1
+        ? size.width / 2
+        : margen + (size.width - 2 * margen) * i / (n - 1);
+
+    // Franja del período elegido: las últimas [resaltar] semanas.
+    final ultimas = resaltar;
+    if (ultimas != null && ultimas > 0 && total > 1) {
+      final desde = math.max(0, total - ultimas);
+      final izquierda = desde == 0 ? 0.0 : xDe(desde, total) - margen;
+      canvas.drawRRect(
+        RRect.fromLTRBR(
+          izquierda,
+          0,
+          size.width,
+          altoUtil + 6,
+          const Radius.circular(Rad.sm),
+        ),
+        Paint()..color = colorGuia.withValues(alpha: 0.09),
+      );
+    }
+
     final guia = Paint()
       ..color = colorGuia
       ..strokeWidth = 1;
     for (final g in guias) {
       canvas.drawLine(Offset(0, y(g)), Offset(size.width, y(g)), guia);
     }
-    for (final s in series) {
+    for (final (indice, s) in series.indexed) {
       final n = s.valores.length;
       if (n == 0) continue;
-      double x(int i) => n == 1
-          ? size.width / 2
-          : margen + (size.width - 2 * margen) * i / (n - 1);
+      double x(int i) => xDe(i, n);
       final linea = Paint()
         ..color = s.color
         ..strokeWidth = 3
@@ -583,14 +692,55 @@ class _LineasPainter extends CustomPainter {
         }
         abierto = true;
       }
+      // Relleno suave bajo la primera serie, solo si no tiene huecos.
+      if (indice == 0 && n > 1 && !s.valores.contains(null)) {
+        final area = Path.from(path)
+          ..lineTo(x(n - 1), altoUtil + 4)
+          ..lineTo(x(0), altoUtil + 4)
+          ..close();
+        final zona = Rect.fromLTWH(0, 0, size.width, altoUtil + 4);
+        canvas.drawPath(
+          area,
+          Paint()
+            ..shader = LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                s.color.withValues(alpha: 0.22),
+                s.color.withValues(alpha: 0),
+              ],
+            ).createShader(zona),
+        );
+      }
       canvas.drawPath(path, linea);
       final ultimo = s.valores.lastIndexWhere((v) => v != null);
-      if (ultimo >= 0) {
+      if (ultimo >= 0 && seleccion == null) {
         canvas.drawCircle(
           Offset(x(ultimo), y(s.valores[ultimo]!)),
           5,
           Paint()..color = s.color,
         );
+      }
+    }
+
+    // Semana marcada: línea vertical y un punto por serie.
+    final sel = seleccion;
+    if (sel != null && total > 0) {
+      final xs = xDe(sel, total);
+      canvas.drawLine(
+        Offset(xs, 0),
+        Offset(xs, altoUtil + 4),
+        Paint()
+          ..color = colorMarca.withValues(alpha: 0.4)
+          ..strokeWidth = 1,
+      );
+      for (final s in series) {
+        final v = sel < s.valores.length ? s.valores[sel] : null;
+        if (v == null) continue;
+        final p = Offset(xDe(sel, s.valores.length), y(v));
+        canvas
+          ..drawCircle(p, 7, Paint()..color = fondo)
+          ..drawCircle(p, 5, Paint()..color = s.color);
       }
     }
   }
@@ -599,7 +749,11 @@ class _LineasPainter extends CustomPainter {
   bool shouldRepaint(_LineasPainter old) =>
       old.series != series ||
       old.minimo != minimo ||
-      old.colorGuia != colorGuia;
+      old.colorGuia != colorGuia ||
+      old.seleccion != seleccion ||
+      old.resaltar != resaltar ||
+      old.colorMarca != colorMarca ||
+      old.fondo != fondo;
 }
 
 /// Barras verticales por tramo (0–100 %), con el valor arriba y el tramo abajo.

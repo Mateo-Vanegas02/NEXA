@@ -113,13 +113,16 @@ class _Contenido extends ConsumerWidget {
               Text(l.satQuePesaMasDetalle, style: sub),
               const SizedBox(height: Sp.md),
               for (final (n, fac) in top.indexed) ...[
-                if (n > 0) const SizedBox(height: 11),
-                FilaBarra(
-                  etiqueta: fac.etiqueta,
-                  valor: FormatoSat.pct(fac.pesoPct),
+                if (n > 0) const SizedBox(height: Sp.xs),
+                _FilaFactor(
+                  puesto: n + 1,
+                  factor: fac,
                   // La barra más larga es la del factor de mayor peso.
                   fraccion: fac.pesoPct / (mayor * 1.14),
                   color: n < 3 ? context.acento : NexaColors.sky,
+                  // Los factores con curva se pueden tocar para verla abajo.
+                  curva: f.curvas.indexWhere((c) => c.variable == fac.variable),
+                  elegida: i,
                 ),
               ],
               if (f.otrosCantidad > 0) ...[
@@ -179,6 +182,73 @@ class _Contenido extends ConsumerWidget {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// Un factor de «Qué pesa más»: puesto, barra y, si tiene curva por tramos,
+/// se puede tocar para verla (queda resaltado mientras es la elegida).
+class _FilaFactor extends ConsumerWidget {
+  const _FilaFactor({
+    required this.puesto,
+    required this.factor,
+    required this.fraccion,
+    required this.color,
+    required this.curva,
+    required this.elegida,
+  });
+
+  final int puesto;
+  final FactorImportancia factor;
+  final double fraccion;
+  final Color color;
+
+  /// Posición de su curva en la lista de curvas, o -1 si no tiene.
+  final int curva;
+
+  /// Curva que se está mostrando abajo.
+  final int elegida;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final activa = curva >= 0 && curva == elegida;
+    final radio = BorderRadius.circular(Rad.md);
+    final fila = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: Sp.sm, vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 18,
+            child: Text(
+              '$puesto',
+              style: context.textos.labelSmall?.copyWith(
+                color: activa ? context.acento : context.muted,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          Expanded(
+            child: FilaBarra(
+              etiqueta: factor.etiqueta,
+              valor: FormatoSat.pct(factor.pesoPct),
+              fraccion: fraccion,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+    return Material(
+      color: activa ? context.acento.withValues(alpha: 0.1) : Colors.transparent,
+      borderRadius: radio,
+      child: InkWell(
+        borderRadius: radio,
+        onTap: curva < 0
+            ? null
+            : () => ref.read(curvaSeleccionadaProvider.notifier).elegir(curva),
+        child: fila,
+      ),
     );
   }
 }

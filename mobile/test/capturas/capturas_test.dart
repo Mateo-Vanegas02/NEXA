@@ -265,6 +265,13 @@ void main() {
     await t.pumpWidget(
       RepaintBoundary(key: _clave, child: envolver(const SplashScreen())),
     );
+    // El logo es una imagen: hay que decodificarla fuera del reloj falso.
+    await t.runAsync(
+      () => precacheImage(
+        const AssetImage('assets/images/nexa_logo.png'),
+        t.element(find.byType(SplashScreen)),
+      ),
+    );
     await _avanzar(t, 14);
     t.takeException();
     await _capturar(t, 'A01');
