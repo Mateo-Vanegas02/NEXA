@@ -14,7 +14,7 @@ Future<bool> mostrarHojaSos(BuildContext context) async {
     context: context,
     backgroundColor: NexaColors.card,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(Rad.xl)),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(Rad.sheet)),
     ),
     builder: (_) => const _HojaSos(),
   );
