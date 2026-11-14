@@ -110,10 +110,8 @@ class _RutaPainter extends CustomPainter {
       textDirection: TextDirection.ltr,
       maxLines: 1,
     )..layout();
-    final dx = (arribaCentro.dx - tp.width / 2).clamp(
-      0.0,
-      math.max(0.0, size.width - tp.width),
-    );
+    final tope = math.max(0.0, size.width - tp.width);
+    final dx = math.min(tope, math.max(0.0, arribaCentro.dx - tp.width / 2));
     // Halo del color del fondo para que se lea encima de la carretera.
     final halo = TextPainter(
       text: TextSpan(

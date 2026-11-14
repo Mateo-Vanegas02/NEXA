@@ -4,7 +4,6 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/nexa_diseno.dart';
-import '../../../../core/widgets/nexa_widgets.dart';
 import '../../domain/servicio.dart';
 import '../controllers/viaje_conductor_controller.dart';
 
