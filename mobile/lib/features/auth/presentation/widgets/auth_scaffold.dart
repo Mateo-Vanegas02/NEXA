@@ -46,69 +46,64 @@ class AuthScaffold extends StatelessWidget {
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: EdgeInsets.all(context.gutter),
             child: ContenidoCentrado(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (onAtras != null || porPasos)
+                    Row(
                       children: [
-                        if (onAtras != null || porPasos)
-                          Row(
-                            children: [
-                              if (onAtras != null)
-                                NexaBotonAtras(
-                                  onPressed: onAtras!,
-                                  tooltip: l.volver,
-                                ),
-                              if (porPasos)
-                                Expanded(
-                                  child: Text(
-                                    l.pasoDe(paso!, pasos!),
-                                    textAlign: TextAlign.end,
-                                    style: NexaTexto.pequeno.copyWith(
-                                      color: context.muted,
-                                    ),
-                                  ),
-                                )
-                              else
-                                const Spacer(),
-                            ],
+                        if (onAtras != null)
+                          NexaBotonAtras(
+                            onPressed: onAtras!,
+                            tooltip: l.volver,
                           ),
-                        const SizedBox(height: Sp.xl),
-                        if (porPasos) ...[
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(Rad.pill),
-                            child: LinearProgressIndicator(
-                              value: paso! / pasos!,
-                              minHeight: 4,
-                              color: NexaColors.cyan,
-                              backgroundColor: NexaColors.line,
+                        if (porPasos)
+                          Expanded(
+                            child: Text(
+                              l.pasoDe(paso!, pasos!),
+                              textAlign: TextAlign.end,
+                              style: NexaTexto.pequeno.copyWith(
+                                color: context.muted,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: Sp.xl),
-                        ] else ...[
-                          const Align(
-                            alignment: Alignment.centerLeft,
-                            child: NexaIconoApp(tamano: 52),
-                          ),
-                          const SizedBox(height: Sp.xl),
-                        ],
-                        Text(titulo, style: NexaTexto.titulo),
-                        if (subtitulo != null) ...[
-                          const SizedBox(height: Sp.sm),
-                          Text(
-                            subtitulo!,
-                            style: NexaTexto.cuerpo.copyWith(
-                              color: context.muted,
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: Sp.xl),
-                        ...children,
-                        if (pie != null) ...[
-                          const SizedBox(height: Sp.xxl),
-                          pie!,
-                        ],
+                          )
+                        else
+                          const Spacer(),
                       ],
                     ),
-                  ),
+                  const SizedBox(height: Sp.xl),
+                  if (porPasos) ...[
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(Rad.pill),
+                      child: LinearProgressIndicator(
+                        value: paso! / pasos!,
+                        minHeight: 4,
+                        color: NexaColors.cyan,
+                        backgroundColor: NexaColors.line,
+                      ),
+                    ),
+                    const SizedBox(height: Sp.xl),
+                  ] else ...[
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: NexaIconoApp(tamano: 52),
+                    ),
+                    const SizedBox(height: Sp.xl),
+                  ],
+                  Text(titulo, style: NexaTexto.titulo),
+                  if (subtitulo != null) ...[
+                    const SizedBox(height: Sp.sm),
+                    Text(
+                      subtitulo!,
+                      style: NexaTexto.cuerpo.copyWith(color: context.muted),
+                    ),
+                  ],
+                  const SizedBox(height: Sp.xl),
+                  ...children,
+                  if (pie != null) ...[const SizedBox(height: Sp.xxl), pie!],
+                ],
+              ),
+            ),
           ),
         ),
       ),

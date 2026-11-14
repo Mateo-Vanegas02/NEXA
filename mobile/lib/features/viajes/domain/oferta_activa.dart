@@ -2,11 +2,7 @@
 /// (`GET /pasajero/solicitud-activa`): el extra y en qué ola del despacho va.
 /// La app solo lo muestra; la ola y los avisados los calcula el servidor.
 class OfertaActiva {
-  const OfertaActiva({
-    required this.servicioId,
-    this.topeExtra,
-    this.despacho,
-  });
+  const OfertaActiva({required this.servicioId, this.topeExtra, this.despacho});
 
   factory OfertaActiva.fromJson(Map<String, dynamic> j) => OfertaActiva(
     servicioId: j['servicioId'] as String? ?? '',

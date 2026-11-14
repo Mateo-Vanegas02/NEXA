@@ -67,9 +67,8 @@ class _NotificacionesScreenState extends ConsumerState<NotificacionesScreen> {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: NexaBotonAtras(
-                        onPressed: () => context.canPop()
-                            ? context.pop()
-                            : context.go('/'),
+                        onPressed: () =>
+                            context.canPop() ? context.pop() : context.go('/'),
                       ),
                     ),
                     const SizedBox(height: Sp.lg),
@@ -123,7 +122,11 @@ class _NotificacionesScreenState extends ConsumerState<NotificacionesScreen> {
         actual = t;
         out.add(
           Padding(
-            padding: const EdgeInsets.only(left: Sp.xs, top: Sp.sm, bottom: Sp.sm),
+            padding: const EdgeInsets.only(
+              left: Sp.xs,
+              top: Sp.sm,
+              bottom: Sp.sm,
+            ),
             child: Text(
               t.toUpperCase(),
               style: NexaTexto.etiqueta.copyWith(color: NexaColors.tenue),
@@ -185,7 +188,9 @@ class _Aviso extends StatelessWidget {
                 if (aviso.titulo != null)
                   Text(
                     aviso.titulo!,
-                    style: NexaTexto.cuerpo.copyWith(fontWeight: FontWeight.w700),
+                    style: NexaTexto.cuerpo.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 if (aviso.cuerpo != null)
                   Text(

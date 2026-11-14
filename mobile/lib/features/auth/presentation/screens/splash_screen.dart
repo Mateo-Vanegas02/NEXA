@@ -49,7 +49,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                     curve: Curves.easeOutBack,
                     builder: (_, v, child) => Opacity(
                       opacity: v.clamp(0, 1),
-                      child: Transform.scale(scale: 0.7 + 0.3 * v, child: child),
+                      child: Transform.scale(
+                        scale: 0.7 + 0.3 * v,
+                        child: child,
+                      ),
                     ),
                     child: const NexaIconoApp(tamano: 96),
                   ),

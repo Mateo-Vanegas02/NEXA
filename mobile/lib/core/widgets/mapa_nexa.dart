@@ -884,7 +884,11 @@ class _OchoPainter extends CustomPainter {
           ..color = NexaColors.cyan,
       );
     final telefono = RRect.fromRectAndRadius(
-      Rect.fromCenter(center: c.translate(a * 0.82, -a * 0.22), width: 30, height: 48),
+      Rect.fromCenter(
+        center: c.translate(a * 0.82, -a * 0.22),
+        width: 30,
+        height: 48,
+      ),
       const Radius.circular(7),
     );
     canvas

@@ -164,28 +164,28 @@ class _Panel extends ConsumerWidget {
             ),
           )
         else
-        SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(Sp.md),
-            child: Align(
-              alignment: Alignment.topLeft,
-              child: _EstadoFlotante(
-                enLinea: estado.enLinea,
-                // Sin viaje se conecta o desconecta desde aquí (diseño C01).
-                onTap: enViaje
-                    ? null
-                    : () async {
-                        // Antes de conectarse: ubicación y, la primera vez, N03.
-                        if (!estado.enLinea &&
-                            !await prepararConexion(context, ref)) {
-                          return;
-                        }
-                        await ctrl.alternarLinea();
-                      },
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(Sp.md),
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: _EstadoFlotante(
+                  enLinea: estado.enLinea,
+                  // Sin viaje se conecta o desconecta desde aquí (diseño C01).
+                  onTap: enViaje
+                      ? null
+                      : () async {
+                          // Antes de conectarse: ubicación y, la primera vez, N03.
+                          if (!estado.enLinea &&
+                              !await prepararConexion(context, ref)) {
+                            return;
+                          }
+                          await ctrl.alternarLinea();
+                        },
+                ),
               ),
             ),
           ),
-        ),
         NexaHojaArrastrable(
           inicial: enViaje ? 0.6 : 0.5,
           minimo: 0.3,
@@ -198,7 +198,9 @@ class _Panel extends ConsumerWidget {
                     height: 10,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: estado.enLinea ? NexaColors.cyan : NexaColors.tenue,
+                      color: estado.enLinea
+                          ? NexaColors.cyan
+                          : NexaColors.tenue,
                     ),
                   ),
                   const SizedBox(width: Sp.md),

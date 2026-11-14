@@ -79,7 +79,10 @@ class _HistorialPasajeroScreenState
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text(l.navActividad, style: NexaTexto.titulo.copyWith(fontSize: 28)),
+                        Text(
+                          l.navActividad,
+                          style: NexaTexto.titulo.copyWith(fontSize: 28),
+                        ),
                         const SizedBox(height: Sp.lg),
                         NexaCard(
                           child: Row(

@@ -172,8 +172,7 @@ class PerfilScreen extends ConsumerWidget {
                       ),
                       clipBehavior: Clip.antiAlias,
                       child: InkWell(
-                        onTap: () =>
-                            ref.read(sesionProvider.notifier).logout(),
+                        onTap: () => ref.read(sesionProvider.notifier).logout(),
                         child: Padding(
                           padding: const EdgeInsets.all(Sp.md + 2),
                           child: Row(

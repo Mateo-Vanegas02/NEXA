@@ -291,7 +291,10 @@ class _EsperandoState extends State<_Esperando> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final seg = DateTime.now().difference(widget.desde).inSeconds.clamp(0, 5999);
+    final seg = DateTime.now()
+        .difference(widget.desde)
+        .inSeconds
+        .clamp(0, 5999);
     return NexaCard(
       child: Row(
         children: [

@@ -3,7 +3,15 @@ import 'package:latlong2/latlong.dart';
 import 'reglas_marcadores.dart';
 
 /// Qué hacer en el siguiente cruce (tarjeta de navegación del conductor, G01).
-enum Giro { recto, derecha, izquierda, ligeraDerecha, ligeraIzquierda, vuelta, llegada }
+enum Giro {
+  recto,
+  derecha,
+  izquierda,
+  ligeraDerecha,
+  ligeraIzquierda,
+  vuelta,
+  llegada,
+}
 
 class Maniobra {
   const Maniobra({required this.giro, required this.metros});

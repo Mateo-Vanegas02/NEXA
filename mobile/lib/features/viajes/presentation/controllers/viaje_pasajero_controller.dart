@@ -137,7 +137,9 @@ class ViajePasajeroController extends AsyncNotifier<Servicio?> {
     if (s.estado == EstadoServicio.solicitado) {
       ref.read(posicionConductorProvider.notifier).poner(null);
       try {
-        ref.read(ofertaActivaProvider.notifier).poner(await _repo.ofertaActiva());
+        ref
+            .read(ofertaActivaProvider.notifier)
+            .poner(await _repo.ofertaActiva());
       } on Object {
         // Sin la ola por ahora: la pantalla muestra el texto general.
       }

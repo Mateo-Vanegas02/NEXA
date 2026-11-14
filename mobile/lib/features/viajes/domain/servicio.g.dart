@@ -89,6 +89,7 @@ _Servicio _$ServicioFromJson(Map<String, dynamic> json) => _Servicio(
   nivelPasajero: (json['nivelPasajero'] as num?)?.toInt() ?? 0,
   xpGanadoPasajero: (json['xpGanadoPasajero'] as num?)?.toInt() ?? 0,
   xpGanadoConductor: (json['xpGanadoConductor'] as num?)?.toInt() ?? 0,
+  gananciaEstimada: (json['gananciaEstimada'] as num?)?.toDouble(),
 );
 
 Map<String, dynamic> _$ServicioToJson(_Servicio instance) => <String, dynamic>{
@@ -118,6 +119,7 @@ Map<String, dynamic> _$ServicioToJson(_Servicio instance) => <String, dynamic>{
   'nivelPasajero': instance.nivelPasajero,
   'xpGanadoPasajero': instance.xpGanadoPasajero,
   'xpGanadoConductor': instance.xpGanadoConductor,
+  'gananciaEstimada': instance.gananciaEstimada,
 };
 
 const _$EstadoServicioEnumMap = {

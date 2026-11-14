@@ -100,7 +100,8 @@ class _OfertaFija extends OfertaActivaNotifier {
   );
 }
 
-Override _ola(int ola) => ofertaActivaProvider.overrideWith(() => _OfertaFija(ola));
+Override _ola(int ola) =>
+    ofertaActivaProvider.overrideWith(() => _OfertaFija(ola));
 
 Override _viaje(Servicio s) =>
     viajePasajeroProvider.overrideWith(() => _ViajeFijo(s));
@@ -246,7 +247,13 @@ void main() {
     ('N01', '/permisos/notificaciones', Rol.pasajero, '', []),
     ('N02', '/permisos/ubicacion', Rol.pasajero, '', []),
     ('E01', '/permisos/sin-ubicacion', Rol.pasajero, '', []),
-    ('N03', '/c/permisos/segundo-plano', Rol.conductor, 'conductor@nexa.co', []),
+    (
+      'N03',
+      '/c/permisos/segundo-plano',
+      Rol.conductor,
+      'conductor@nexa.co',
+      [],
+    ),
     ('N04', '/c/permisos/bateria', Rol.conductor, 'conductor@nexa.co', []),
     ('C07', '/c/calificar', Rol.conductor, 'conductor@nexa.co', []),
   ];

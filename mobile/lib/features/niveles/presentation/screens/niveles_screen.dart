@@ -96,59 +96,59 @@ class _Resumen extends StatelessWidget {
         ),
       ),
       child: Column(
-      children: [
-        NexaAnilloProgreso(
-          progreso: progreso,
-          color: NexaColors.gold,
-          diametro: 136,
-          trazo: 9,
-          relleno: 4,
-          etiquetaSemantica: l.barraNivelSemantica(
-            n.nombre,
-            (progreso * 100).round(),
-          ),
-          child: ExcludeSemantics(
-            child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '${n.nivel}',
-                    textScaler: TextScaler.noScaling,
-                    style: t.displayMedium?.copyWith(
-                      color: NexaColors.texto,
-                      fontWeight: FontWeight.w700,
-                      height: 1,
+        children: [
+          NexaAnilloProgreso(
+            progreso: progreso,
+            color: NexaColors.gold,
+            diametro: 136,
+            trazo: 9,
+            relleno: 4,
+            etiquetaSemantica: l.barraNivelSemantica(
+              n.nombre,
+              (progreso * 100).round(),
+            ),
+            child: ExcludeSemantics(
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '${n.nivel}',
+                      textScaler: TextScaler.noScaling,
+                      style: t.displayMedium?.copyWith(
+                        color: NexaColors.texto,
+                        fontWeight: FontWeight.w700,
+                        height: 1,
+                      ),
                     ),
-                  ),
-                  Text(
-                    l.statNivel.toUpperCase(),
-                    textScaler: TextScaler.noScaling,
-                    style: t.labelSmall?.copyWith(
-                      color: NexaColors.gold,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1,
+                    Text(
+                      l.statNivel.toUpperCase(),
+                      textScaler: TextScaler.noScaling,
+                      style: t.labelSmall?.copyWith(
+                        color: NexaColors.gold,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-        const SizedBox(height: Sp.md),
-        Text(
-          meta == null ? '${n.xpActual} XP' : l.xpProgreso(n.xpActual, meta),
-          style: t.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: Sp.xs),
-        Text(
-          n.esNivelMaximo
-              ? l.nivelMaximo
-              : l.faltanXp(n.xpFaltante, n.nombreSiguiente ?? ''),
-          textAlign: TextAlign.center,
-          style: t.bodySmall?.copyWith(color: context.muted),
-        ),
-      ],
+          const SizedBox(height: Sp.md),
+          Text(
+            meta == null ? '${n.xpActual} XP' : l.xpProgreso(n.xpActual, meta),
+            style: t.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: Sp.xs),
+          Text(
+            n.esNivelMaximo
+                ? l.nivelMaximo
+                : l.faltanXp(n.xpFaltante, n.nombreSiguiente ?? ''),
+            textAlign: TextAlign.center,
+            style: t.bodySmall?.copyWith(color: context.muted),
+          ),
+        ],
       ),
     );
   }

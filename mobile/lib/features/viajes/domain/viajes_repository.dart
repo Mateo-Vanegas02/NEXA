@@ -29,6 +29,7 @@ abstract interface class PasajeroRepository {
   /// null si ya no hay una.
   Future<OfertaActiva?> ofertaActiva();
   Future<Servicio> detalle(String id);
+
   /// [factores]: códigos de `FactoresCalificacion` (se guardan aparte del
   /// comentario).
   Future<Servicio> calificar(

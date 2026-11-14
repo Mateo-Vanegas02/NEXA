@@ -124,7 +124,10 @@ class _SolicitudCardState extends ConsumerState<SolicitudCard> {
                       detalle: servicio.pasajero?.nombre,
                     ),
                     const SizedBox(height: Sp.md),
-                    _Punto(icono: Icons.place_outlined, texto: servicio.destino),
+                    _Punto(
+                      icono: Icons.place_outlined,
+                      texto: servicio.destino,
+                    ),
                   ],
                 ),
               ),

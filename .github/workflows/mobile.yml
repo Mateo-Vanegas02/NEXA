@@ -61,6 +61,12 @@ jobs:
             git diff --stat
             echo "PARCHE-INICIO $(git diff | gzip -9 | base64 -w0) PARCHE-FIN"
           fi
+          # Los generados se versionan: si faltan, la app no compila en un
+          # equipo sin build_runner (como el de desarrollo). Eso sí falla.
+          if ! git diff --quiet -- '*.g.dart' '*.freezed.dart' lib/core/l10n/gen; then
+            echo "::error title=Generados desactualizados::Aplica el parche del log (código generado sin versionar)"
+            exit 1
+          fi
 
       - name: Análisis
         run: flutter analyze --no-fatal-infos

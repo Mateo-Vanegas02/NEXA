@@ -19,8 +19,14 @@ void main() {
 
   test('registrar no repite, guarda lo nuevo primero y marca leídas', () async {
     final b = BandejaAvisos(MemorySecureStore());
-    await b.registrar(_aviso('VIAJE_ACEPTADO', '1'), en: DateTime(2026, 11, 13, 8));
-    await b.registrar(_aviso('CONDUCTOR_LLEGO', '2'), en: DateTime(2026, 11, 13, 9));
+    await b.registrar(
+      _aviso('VIAJE_ACEPTADO', '1'),
+      en: DateTime(2026, 11, 13, 8),
+    );
+    await b.registrar(
+      _aviso('CONDUCTOR_LLEGO', '2'),
+      en: DateTime(2026, 11, 13, 9),
+    );
     await b.registrar(_aviso('CONDUCTOR_LLEGO', '2'));
     final lista = await b.leer();
     expect(lista.map((a) => a.eventoId), ['2', '1']);
@@ -34,7 +40,11 @@ void main() {
     for (var i = 0; i < ReglasBandeja.maximo + 5; i++) {
       lista = ReglasBandeja.agregar(
         lista,
-        AvisoGuardado(eventoId: '$i', tipo: TipoAviso.viajeFinalizado, en: DateTime(2026)),
+        AvisoGuardado(
+          eventoId: '$i',
+          tipo: TipoAviso.viajeFinalizado,
+          en: DateTime(2026),
+        ),
       );
     }
     expect(lista, hasLength(ReglasBandeja.maximo));

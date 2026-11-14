@@ -251,7 +251,10 @@ void main() {
           overrides: [_sesion(Rol.pasajero), _viaje(EstadoServicio.aceptado)],
         );
         expect(find.textContaining('Llega en'), findsOneWidget);
-        expect(find.text('Carlos va hacia tu punto de recogida'), findsOneWidget);
+        expect(
+          find.text('Carlos va hacia tu punto de recogida'),
+          findsOneWidget,
+        );
         expect(find.text('Cancelar viaje'), findsOneWidget);
         expect(find.byTooltip('Asistencia en ruta (SOS)'), findsOneWidget);
         expect(find.byType(ActionChip), findsNothing);

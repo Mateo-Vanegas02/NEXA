@@ -251,7 +251,11 @@ class _Llegaste extends ConsumerWidget {
                 ),
               ],
             ),
-            child: const Icon(Icons.check_rounded, color: NexaColors.bg, size: 48),
+            child: const Icon(
+              Icons.check_rounded,
+              color: NexaColors.bg,
+              size: 48,
+            ),
           ),
         ),
         const SizedBox(height: Sp.lg),
@@ -400,7 +404,10 @@ class _XpGanado extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l.xpGanado(xp), style: NexaTexto.subtitulo.copyWith(fontSize: 16)),
+                Text(
+                  l.xpGanado(xp),
+                  style: NexaTexto.subtitulo.copyWith(fontSize: 16),
+                ),
                 if (nivel != null) ...[
                   const SizedBox(height: Sp.sm),
                   ClipRRect(
@@ -414,7 +421,11 @@ class _XpGanado extends ConsumerWidget {
                   ),
                   const SizedBox(height: Sp.xs),
                   Text(
-                    l.nivelFaltan(nivel.nivel, nivel.xpFaltante, nivel.nivel + 1),
+                    l.nivelFaltan(
+                      nivel.nivel,
+                      nivel.xpFaltante,
+                      nivel.nivel + 1,
+                    ),
                     style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
                   ),
                 ],

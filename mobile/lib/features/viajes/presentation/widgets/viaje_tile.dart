@@ -69,9 +69,10 @@ class ViajeTile extends StatelessWidget {
                   ),
                   if (cancelado)
                     Text(
-                      [detalle, l.estado_CANCELADO.toLowerCase()]
-                          .where((e) => e.isNotEmpty)
-                          .join(' · '),
+                      [
+                        detalle,
+                        l.estado_CANCELADO.toLowerCase(),
+                      ].where((e) => e.isNotEmpty).join(' · '),
                       style: NexaTexto.pequeno.copyWith(
                         color: NexaColors.error,
                       ),

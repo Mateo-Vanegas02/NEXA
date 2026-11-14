@@ -297,10 +297,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get fueraDeLinea => 'Fuera de línea';
 
   @override
-  String get estasEnLinea => 'Recibes solicitudes de viaje';
+  String get estasEnLinea =>
+      'Mantén la app abierta: las solicitudes aparecen aquí con lo que cobras.';
 
   @override
-  String get estasFueraDeLinea => 'Conéctate para recibir solicitudes';
+  String get estasFueraDeLinea => 'Estás fuera de línea';
 
   @override
   String get solicitudesEntrantes => 'Solicitudes entrantes';
@@ -318,10 +319,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get yendoAPasajero => 'En camino al pasajero';
 
   @override
-  String get iniciarViaje => 'Pasajero recogido';
+  String get iniciarViaje => 'Iniciar viaje';
 
   @override
-  String get finalizarViaje => 'Completar viaje';
+  String get finalizarViaje => 'Finalizar viaje';
 
   @override
   String get viajeActivo => 'Viaje activo';
@@ -463,7 +464,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get aDondeVamos => '¿A dónde vamos?';
 
   @override
-  String get origen => 'Origen';
+  String get origen => 'Recogida';
 
   @override
   String get miUbicacion => 'Mi ubicación';
@@ -586,7 +587,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get calif4 => 'Bueno';
 
   @override
-  String get calif5 => 'Muy bueno';
+  String get calif5 => 'Excelente';
 
   @override
   String califDe5(String texto, int n) {
@@ -836,7 +837,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get fijarEnMapa => 'Fijar en el mapa';
 
   @override
-  String get resultadosCerca => 'Resultados cerca de ti';
+  String get resultadosCerca => 'Resultados';
 
   @override
   String get buscarLugarHint => 'Busca una dirección o un lugar';
@@ -866,7 +867,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get desconectarme => 'Desconectarme';
 
   @override
-  String get buscandoSolicitudes => 'Buscando solicitudes…';
+  String get buscandoSolicitudes => 'Buscando solicitudes cerca de ti';
 
   @override
   String get gananciaPorViaje => 'Ganancia por viaje';
@@ -897,7 +898,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String ahorroNivel(String monto) {
-    return 'Tu nivel ahorra $monto';
+    return 'Tu nivel te ahorra $monto en este viaje';
   }
 
   @override
@@ -975,7 +976,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get errorCotizar => 'No se pudo calcular el precio. Intenta de nuevo.';
 
   @override
-  String get llegueAlPunto => 'Llegué al punto de recogida';
+  String get llegueAlPunto => 'Llegué';
 
   @override
   String get esperandoPasajero => 'Esperando al pasajero';
@@ -1976,4 +1977,333 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get nivelPalabra => 'Nivel';
+
+  @override
+  String porKm(String valor) {
+    return '$valor por km';
+  }
+
+  @override
+  String get extra => 'extra';
+
+  @override
+  String get ahoraNo => 'Ahora no';
+
+  @override
+  String pasajeraNivel(int n) {
+    return 'pasajero nivel $n';
+  }
+
+  @override
+  String get cobra => 'Cobra';
+
+  @override
+  String esperandoA(String nombre) {
+    return 'Esperando a $nombre';
+  }
+
+  @override
+  String get esperaConductorTexto =>
+      'Tras unos minutos de espera, el servidor suma un recargo por minuto a tu favor.';
+
+  @override
+  String get finalizarLejosAviso =>
+      'Si finalizas lejos del destino, se cobra según lo recorrido.';
+
+  @override
+  String cobraAEnEfectivo(String nombre) {
+    return 'Cobra a $nombre en efectivo';
+  }
+
+  @override
+  String get tuGanancia => 'Tu ganancia';
+
+  @override
+  String get incluyeExtra => 'Incluye extra voluntario';
+
+  @override
+  String get conectateTexto =>
+      'Activa «En línea» arriba para recibir solicitudes.';
+
+  @override
+  String get factor_ACEPTACION_LENTA => 'Tardaron en aceptar';
+
+  @override
+  String get factor_LLEGADA_TARDE => 'Tardó en llegar a recogerme';
+
+  @override
+  String get factor_DEJO_ANTES_DEL_DESTINO => 'Me dejó antes del destino';
+
+  @override
+  String get factor_PRECIO => 'El precio o el cobro';
+
+  @override
+  String get factor_RUTA_LARGA => 'La ruta fue más larga';
+
+  @override
+  String get factor_CONDUCCION => 'La forma de conducir';
+
+  @override
+  String get factor_ACEPTACION_RAPIDA => 'Aceptaron rápido';
+
+  @override
+  String get factor_LLEGO_A_TIEMPO => 'Llegó a tiempo';
+
+  @override
+  String get factor_BUEN_PRECIO => 'Buen precio';
+
+  @override
+  String get factor_BUENA_RUTA => 'Buena ruta';
+
+  @override
+  String get factor_CONDUCCION_SEGURA => 'Conducción segura';
+
+  @override
+  String get factor_AMABLE => 'Amable';
+
+  @override
+  String get queEstuvoBien => '¿Qué estuvo bien?';
+
+  @override
+  String get queFallo => '¿Qué falló?';
+
+  @override
+  String get puedesMarcarVarios => 'Puedes marcar varios';
+
+  @override
+  String comoTeFueCon(String nombre) {
+    return '¿Cómo te fue con $nombre?';
+  }
+
+  @override
+  String get calificarOpcional =>
+      'Calificar es opcional · solo tú ves lo que marcas';
+
+  @override
+  String get llegaste => '¡Llegaste!';
+
+  @override
+  String calificarA(String nombre) {
+    return 'Calificar a $nombre';
+  }
+
+  @override
+  String get totalPagado => 'Total pagado';
+
+  @override
+  String get enEfectivo => 'En efectivo';
+
+  @override
+  String descuentoNivelN(int n) {
+    return 'Descuento nivel $n';
+  }
+
+  @override
+  String extraPara(String nombre) {
+    return 'Extra para $nombre';
+  }
+
+  @override
+  String get comentarioOpcional => 'Cuéntanos algo más (opcional)';
+
+  @override
+  String get excelente => 'Excelente';
+
+  @override
+  String nivelFaltan(int nivel, int xp, int siguiente) {
+    return 'Nivel $nivel · te faltan $xp XP para el $siguiente';
+  }
+
+  @override
+  String get navActividad => 'Actividad';
+
+  @override
+  String estrellasDe5(int n) {
+    return '$n de 5 estrellas';
+  }
+
+  @override
+  String get tramoHoy => 'Hoy';
+
+  @override
+  String get tramoSemana => 'Esta semana';
+
+  @override
+  String get tramoAntes => 'Antes';
+
+  @override
+  String get filtroTodos => 'Todos';
+
+  @override
+  String get filtroCompletados => 'Completados';
+
+  @override
+  String get filtroCancelados => 'Cancelados';
+
+  @override
+  String get viajesN => 'viajes';
+
+  @override
+  String get gastadoEsteMes => 'este mes';
+
+  @override
+  String get buscaUnDestino => 'Busca un destino';
+
+  @override
+  String get tuNivel => 'Tu nivel';
+
+  @override
+  String get tuNivelSub => 'Se calcula con tu XP de los últimos 90 días';
+
+  @override
+  String get nivelesSub => 'Viaja, suma XP y desbloquea beneficios';
+
+  @override
+  String get seccionCuenta => 'Cuenta';
+
+  @override
+  String get ultimosViajes => 'Últimos viajes';
+
+  @override
+  String get planeaTuViaje => 'Planea tu viaje';
+
+  @override
+  String get pagasAlLlegar => 'Pagas al conductor al llegar';
+
+  @override
+  String llegasALas(String hora) {
+    return 'llegas $hora';
+  }
+
+  @override
+  String get lema => 'Tu ciudad, a tu ritmo.';
+
+  @override
+  String get ciudadPais => 'Cartagena · Colombia';
+
+  @override
+  String get factor_ESPERA_EN_EL_PUNTO => 'Me hizo esperar en el punto';
+
+  @override
+  String get factor_PUNTO_DIFICIL => 'El punto de recogida era difícil';
+
+  @override
+  String get factor_PAGO => 'Problemas con el pago o el recargo';
+
+  @override
+  String get factor_TRATO => 'El trato';
+
+  @override
+  String get factor_LISTO_A_TIEMPO => 'Estaba listo a tiempo';
+
+  @override
+  String get factor_PUNTO_CLARO => 'Punto de recogida claro';
+
+  @override
+  String get factor_PAGO_SIN_PROBLEMAS => 'Pagó sin problemas';
+
+  @override
+  String calificarOpcionalConductor(String nombre) {
+    return 'Calificar es opcional · $nombre no verá lo que marques';
+  }
+
+  @override
+  String get calificar => 'Calificar';
+
+  @override
+  String ganasMonto(String monto) {
+    return 'Ganas $monto';
+  }
+
+  @override
+  String olaDe(int ola, int total) {
+    return 'Ola $ola de $total';
+  }
+
+  @override
+  String olaDeRadio(int ola, int total, String km) {
+    return 'Ola $ola de $total · radio $km km';
+  }
+
+  @override
+  String get nadieAcepto => 'Nadie aceptó todavía';
+
+  @override
+  String nadieAceptoTexto(int n, String km) {
+    return 'Avisamos a $n conductores en $km km. A esta hora hay poca oferta cerca de ti.';
+  }
+
+  @override
+  String get cancelarSinCargo => 'Cancelar sin cargo';
+
+  @override
+  String get calibraBrujula => 'Calibra la brújula';
+
+  @override
+  String get calibraBrujulaTexto =>
+      'El metal y los imanes cercanos desvían el rumbo. Mueve el teléfono dibujando un 8 en el aire, 3 veces.';
+
+  @override
+  String get precisionRumbo => 'Precisión del rumbo';
+
+  @override
+  String get precisionBaja => 'Baja';
+
+  @override
+  String get precisionMedia => 'Media';
+
+  @override
+  String get precisionAlta => 'Alta';
+
+  @override
+  String get calibraBrujulaNota =>
+      'Si no mejora, NEXA usa la dirección en la que te mueves.';
+
+  @override
+  String get navGiraDerecha => 'Gira a la derecha';
+
+  @override
+  String get navGiraIzquierda => 'Gira a la izquierda';
+
+  @override
+  String get navLigeraDerecha => 'Ligeramente a la derecha';
+
+  @override
+  String get navLigeraIzquierda => 'Ligeramente a la izquierda';
+
+  @override
+  String get navDaLaVuelta => 'Da la vuelta';
+
+  @override
+  String get navSigueRecto => 'Sigue derecho';
+
+  @override
+  String navLlegasA(String lugar) {
+    return 'Llegas a $lugar';
+  }
+
+  @override
+  String navHaciaPunto(String nombre) {
+    return 'Hacia el punto de $nombre';
+  }
+
+  @override
+  String get navVuelveARuta => 'Vuelve a la ruta';
+
+  @override
+  String get navLuego => 'Luego';
+
+  @override
+  String get sinConexionGuardamos =>
+      'Sigue el viaje: guardamos todo en tu teléfono';
+
+  @override
+  String get ayer => 'Ayer';
+
+  @override
+  String get sinNotificacionesDetalle =>
+      'Aquí verás los avisos de tus viajes: cuando te aceptan, cuando llega tu conductor y cuando termina.';
+
+  @override
+  String get notificacionesSub => 'Avisos de tus viajes';
 }

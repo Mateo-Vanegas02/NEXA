@@ -30,70 +30,70 @@ class BandaSinConexion extends ConsumerWidget {
               : ColoredBox(
                   color: NexaColors.bg,
                   child: SafeArea(
-                  bottom: false,
-                  child: Semantics(
-                    liveRegion: true,
-                    child: Container(
-                      margin: const EdgeInsets.fromLTRB(
-                        Sp.md,
-                        Sp.sm,
-                        Sp.md,
-                        Sp.xs,
-                      ),
-                      padding: const EdgeInsets.all(Sp.md),
-                      decoration: BoxDecoration(
-                        color: NexaColors.gold,
-                        borderRadius: BorderRadius.circular(Rad.lg),
-                        boxShadow: const [
-                          BoxShadow(color: Color(0x66000000), blurRadius: 16),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: NexaColors.bg.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(Rad.md),
+                    bottom: false,
+                    child: Semantics(
+                      liveRegion: true,
+                      child: Container(
+                        margin: const EdgeInsets.fromLTRB(
+                          Sp.md,
+                          Sp.sm,
+                          Sp.md,
+                          Sp.xs,
+                        ),
+                        padding: const EdgeInsets.all(Sp.md),
+                        decoration: BoxDecoration(
+                          color: NexaColors.gold,
+                          borderRadius: BorderRadius.circular(Rad.lg),
+                          boxShadow: const [
+                            BoxShadow(color: Color(0x66000000), blurRadius: 16),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: NexaColors.bg.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(Rad.md),
+                              ),
+                              child: const Icon(
+                                Icons.wifi_off,
+                                size: 20,
+                                color: NexaColors.bg,
+                              ),
                             ),
-                            child: const Icon(
-                              Icons.wifi_off,
-                              size: 20,
-                              color: NexaColors.bg,
-                            ),
-                          ),
-                          const SizedBox(width: Sp.md),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  l.sinConexionBanda,
-                                  style: const TextStyle(
-                                    color: NexaColors.bg,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 15,
+                            const SizedBox(width: Sp.md),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    l.sinConexionBanda,
+                                    style: const TextStyle(
+                                      color: NexaColors.bg,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 15,
+                                    ),
                                   ),
-                                ),
-                                Text(
-                                  minutos == null
-                                      ? l.sinConexionGuardamos
-                                      : '${l.sinConexionGuardamos} · '
-                                            '${l.sinConexionUltimoDato(minutos)}',
-                                  style: const TextStyle(
-                                    color: NexaColors.bg,
-                                    fontSize: 13,
+                                  Text(
+                                    minutos == null
+                                        ? l.sinConexionGuardamos
+                                        : '${l.sinConexionGuardamos} · '
+                                              '${l.sinConexionUltimoDato(minutos)}',
+                                    style: const TextStyle(
+                                      color: NexaColors.bg,
+                                      fontSize: 13,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
                 ),
         ),
         Expanded(

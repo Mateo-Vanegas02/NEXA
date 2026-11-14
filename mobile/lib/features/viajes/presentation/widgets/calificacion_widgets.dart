@@ -140,15 +140,15 @@ class ChipFactor extends StatelessWidget {
   }
 }
 
-
 /// Texto del factor para ambos catálogos.
-String textoFactorConductor(AppLocalizations l, String codigo) => switch (codigo) {
-  'ESPERA_EN_EL_PUNTO' => l.factor_ESPERA_EN_EL_PUNTO,
-  'PUNTO_DIFICIL' => l.factor_PUNTO_DIFICIL,
-  'PAGO' => l.factor_PAGO,
-  'TRATO' => l.factor_TRATO,
-  'LISTO_A_TIEMPO' => l.factor_LISTO_A_TIEMPO,
-  'PUNTO_CLARO' => l.factor_PUNTO_CLARO,
-  'PAGO_SIN_PROBLEMAS' => l.factor_PAGO_SIN_PROBLEMAS,
-  _ => textoFactor(l, codigo),
-};
+String textoFactorConductor(AppLocalizations l, String codigo) =>
+    switch (codigo) {
+      'ESPERA_EN_EL_PUNTO' => l.factor_ESPERA_EN_EL_PUNTO,
+      'PUNTO_DIFICIL' => l.factor_PUNTO_DIFICIL,
+      'PAGO' => l.factor_PAGO,
+      'TRATO' => l.factor_TRATO,
+      'LISTO_A_TIEMPO' => l.factor_LISTO_A_TIEMPO,
+      'PUNTO_CLARO' => l.factor_PUNTO_CLARO,
+      'PAGO_SIN_PROBLEMAS' => l.factor_PAGO_SIN_PROBLEMAS,
+      _ => textoFactor(l, codigo),
+    };

@@ -39,8 +39,7 @@ class _CalificarPasajeroScreenState
     super.dispose();
   }
 
-  void _salir() =>
-      context.canPop() ? context.pop() : context.go('/c/inicio');
+  void _salir() => context.canPop() ? context.pop() : context.go('/c/inicio');
 
   Future<void> _enviar() async {
     final l = AppLocalizations.of(context);
@@ -184,9 +183,7 @@ class _CalificarPasajeroScreenState
                     maxLength: 250,
                     maxLines: 4,
                     minLines: 2,
-                    decoration: InputDecoration(
-                      hintText: l.comentarioOpcional,
-                    ),
+                    decoration: InputDecoration(hintText: l.comentarioOpcional),
                   ),
                   const SizedBox(height: Sp.md),
                   NexaButton(

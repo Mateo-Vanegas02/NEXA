@@ -9,7 +9,11 @@ void main() {
   const c = LatLng(10.402, -75.497);
 
   test('giro a la derecha con la distancia hasta el cruce', () {
-    final m = ReglasManiobra.siguiente([a, b, c], const LatLng(10.401, -75.500))!;
+    final m = ReglasManiobra.siguiente([
+      a,
+      b,
+      c,
+    ], const LatLng(10.401, -75.500))!;
     expect(m.giro, Giro.derecha);
     expect(m.metros, closeTo(111, 3));
   });
@@ -24,13 +28,20 @@ void main() {
   });
 
   test('pasado el último cruce queda la llegada', () {
-    final m = ReglasManiobra.siguiente([a, b, c], const LatLng(10.402, -75.499))!;
+    final m = ReglasManiobra.siguiente([
+      a,
+      b,
+      c,
+    ], const LatLng(10.402, -75.499))!;
     expect(m.giro, Giro.llegada);
     expect(m.metros, closeTo(219, 5));
   });
 
   test('fuera de la ruta no hay maniobra', () {
-    expect(ReglasManiobra.siguiente([a, b, c], const LatLng(10.41, -75.52)), isNull);
+    expect(
+      ReglasManiobra.siguiente([a, b, c], const LatLng(10.41, -75.52)),
+      isNull,
+    );
     expect(ReglasManiobra.siguiente([a], a), isNull);
   });
 
