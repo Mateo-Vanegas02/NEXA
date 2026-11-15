@@ -2461,7 +2461,12 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String satSemanticaSerie(String agrupacion, String tramo, String pasajero, String conductor) {
+  String satSemanticaSerie(
+    String agrupacion,
+    String tramo,
+    String pasajero,
+    String conductor,
+  ) {
     return 'Satisfacción $agrupacion. Último tramo con notas, $tramo: pasajeros $pasajero, conductores $conductor.';
   }
 }

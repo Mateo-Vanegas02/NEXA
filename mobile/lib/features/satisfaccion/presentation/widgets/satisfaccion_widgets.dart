@@ -515,9 +515,7 @@ double _xTramo(int i, int n, double ancho) => n <= 1
 Set<int> _etiquetasVisibles(int n) {
   if (n <= 7) return {for (var i = 0; i < n; i++) i};
   final paso = (n / 6).ceil();
-  return {
-    for (var i = n - 1; i >= 0; i -= paso) i,
-  };
+  return {for (var i = n - 1; i >= 0; i -= paso) i};
 }
 
 class _GraficaTendenciaState extends State<GraficaTendencia> {
@@ -648,8 +646,10 @@ class _GraficaTendenciaState extends State<GraficaTendencia> {
                       for (final (i, e) in widget.etiquetasX.indexed)
                         if (visibles.contains(i))
                           Positioned(
-                            left: (_xTramo(i, n, c.maxWidth) - ancho / 2)
-                                .clamp(0.0, tope),
+                            left: (_xTramo(i, n, c.maxWidth) - ancho / 2).clamp(
+                              0.0,
+                              tope,
+                            ),
                             width: ancho,
                             child: FittedBox(
                               fit: BoxFit.scaleDown,

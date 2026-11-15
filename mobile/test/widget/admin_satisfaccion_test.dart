@@ -107,13 +107,18 @@ void main() {
     );
     await _asentar(t);
     // El segundo tramo del mock tiene 3 notas: se avisa que es un dato débil.
-    expect(find.textContaining('Punto hueco: menos de 10 notas'), findsOneWidget);
+    expect(
+      find.textContaining('Punto hueco: menos de 10 notas'),
+      findsOneWidget,
+    );
     final grafica = find.byType(GraficaTendencia);
     final caja = t.getRect(
       find.descendant(of: grafica, matching: find.byType(CustomPaint)).first,
     );
     // 5 semanas: el segundo punto está a un cuarto del ancho.
-    await t.tapAt(Offset(caja.left + 8 + (caja.width - 16) / 4, caja.center.dy));
+    await t.tapAt(
+      Offset(caja.left + 8 + (caja.width - 16) / 4, caja.center.dy),
+    );
     await t.pump();
     expect(find.textContaining('· 3 notas'), findsOneWidget);
     expect(find.textContaining('· 1 nota'), findsOneWidget);
@@ -131,10 +136,7 @@ void main() {
     await _asentar(t);
     await t.tap(find.text('7 días'));
     await _asentar(t);
-    expect(
-      find.text('Tendencia  Por día', findRichText: true),
-      findsOneWidget,
-    );
+    expect(find.text('Tendencia  Por día', findRichText: true), findsOneWidget);
     expect(find.textContaining('al menos dos días'), findsOneWidget);
     expect(t.takeException(), isNull);
   });

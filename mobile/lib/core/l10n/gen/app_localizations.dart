@@ -4490,7 +4490,12 @@ abstract class AppLocalizations {
   ///
   /// In es, this message translates to:
   /// **'Satisfacción {agrupacion}. Último tramo con notas, {tramo}: pasajeros {pasajero}, conductores {conductor}.'**
-  String satSemanticaSerie(String agrupacion, String tramo, String pasajero, String conductor);
+  String satSemanticaSerie(
+    String agrupacion,
+    String tramo,
+    String pasajero,
+    String conductor,
+  );
 }
 
 class _AppLocalizationsDelegate

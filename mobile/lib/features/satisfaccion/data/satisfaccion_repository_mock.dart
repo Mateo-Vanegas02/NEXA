@@ -68,10 +68,7 @@ abstract final class FixturesSatisfaccion {
           '${d.year}-W${dos(_semanaIso(d))}',
           d.add(Duration(days: 7 - d.weekday)),
         ),
-        _ => (
-          '${d.year}-${dos(d.month)}',
-          DateTime(d.year, d.month + 1, 0),
-        ),
+        _ => ('${d.year}-${dos(d.month)}', DateTime(d.year, d.month + 1, 0)),
       };
       final hastaTramo = fin.isAfter(hasta) ? hasta : fin;
       final vacio = i == 2;

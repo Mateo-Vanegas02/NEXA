@@ -86,8 +86,7 @@ class ResumenScreen extends ConsumerWidget {
                           mensaje: AppException.from(e).mensaje,
                           onReintentar: () => ref.invalidate(resumenProvider),
                         ),
-                        data: (r) =>
-                            _Contenido(r: r),
+                        data: (r) => _Contenido(r: r),
                       ),
                     ],
                   ),
@@ -353,7 +352,8 @@ class _Tendencia extends StatelessWidget {
                       ),
                     ),
                     TextSpan(
-                      text: '  ${FormatoSat.porAgrupacion(l, serie.agrupacion)}',
+                      text:
+                          '  ${FormatoSat.porAgrupacion(l, serie.agrupacion)}',
                       style: context.textos.labelSmall?.copyWith(
                         color: context.muted,
                       ),

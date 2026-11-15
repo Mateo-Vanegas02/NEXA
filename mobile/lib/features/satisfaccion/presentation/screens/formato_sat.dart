@@ -85,12 +85,11 @@ abstract final class FormatoSat {
   static String notas(AppLocalizations l, int n) =>
       n == 1 ? l.satUnaNota : l.satVariasNotas(numero(n.toDouble()));
 
-  static String porAgrupacion(AppLocalizations l, Agrupacion a) =>
-      switch (a) {
-        Agrupacion.dia => l.satPorDia,
-        Agrupacion.semana => l.satPorSemana,
-        Agrupacion.mes => l.satPorMes,
-      };
+  static String porAgrupacion(AppLocalizations l, Agrupacion a) => switch (a) {
+    Agrupacion.dia => l.satPorDia,
+    Agrupacion.semana => l.satPorSemana,
+    Agrupacion.mes => l.satPorMes,
+  };
 
   static String tramos(AppLocalizations l, Agrupacion a) => switch (a) {
     Agrupacion.dia => l.satTramosDias,
