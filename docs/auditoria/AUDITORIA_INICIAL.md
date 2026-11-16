@@ -1,7 +1,9 @@
 # Auditoría inicial de NEXA
 
-Fecha: 2026-11-16  
-Commit base: `893d1c8`  
+Fecha: 2026-11-16
+
+Commit base: `893d1c8`
+
 Rama local: `codex/auditoria-seguridad`
 
 ## Alcance y línea base
