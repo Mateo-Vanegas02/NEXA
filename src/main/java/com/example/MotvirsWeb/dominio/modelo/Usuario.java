@@ -47,10 +47,14 @@ public abstract class Usuario {
     @Field(name = "foto_perfil_tipo")
     private String fotoPerfilTipo;
 
+    /**
+     * Solo se persiste el hash del token enviado por correo. El token en claro
+     * nunca debe quedar almacenado en MongoDB ni serializarse a una respuesta.
+     */
     @JsonIgnore
-    @Field(name = "usuario_reset_password_token")
+    @Field(name = "usuario_reset_password_token_hash")
     @Indexed
-    private String resetPasswordToken;
+    private String resetPasswordTokenHash;
 
     @JsonIgnore
     @Field(name = "usuario_reset_password_token_expiry")

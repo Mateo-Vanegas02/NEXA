@@ -83,14 +83,12 @@ public class AuthService {
         }
 
         // La licencia debe ser única entre conductores
-        if (usuarioRepository.findByRol(Rol.CONDUCTOR).stream()
-                .anyMatch(u -> ((Conductor) u).getLicencia() == licencia)) {
+        if (usuarioRepository.existsByRolAndLicencia(Rol.CONDUCTOR, licencia)) {
             throw new IllegalStateException("El número de licencia ya está registrado en el sistema");
         }
 
         // Validar que el SOAT sea único
-        if (usuarioRepository.findByRol(Rol.CONDUCTOR).stream()
-                .anyMatch(u -> u instanceof Conductor c && c.getSoat() != null && c.getSoat().equals(soat))) {
+        if (soat != null && usuarioRepository.existsByRolAndSoat(Rol.CONDUCTOR, soat)) {
             throw new IllegalStateException("El número SOAT ya está registrado en el sistema");
         }
 

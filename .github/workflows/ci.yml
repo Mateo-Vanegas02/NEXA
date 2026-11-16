@@ -91,6 +91,11 @@ jobs:
       - name: Prueba de arranque
         run: |
           docker run -d --name mongo --network host mongo:7
+          for i in $(seq 1 30); do
+            if docker exec mongo mongosh --quiet --eval 'db.adminCommand({ ping: 1 }).ok' 2>/dev/null | grep -qx 1; then break; fi
+            sleep 2
+          done
+          docker exec mongo mongosh --quiet --eval 'db.adminCommand({ ping: 1 }).ok' | grep -qx 1
           docker run -d --name nexa --network host \
             -e MONGODB_URI=mongodb://localhost:27017/nexa_ci \
             -e JWT_SECRET=dGVzdC1qd3Qtc2VjcmV0LW5vLXJlYWwtMDEyMzQ1Njc4OWFiY2RlZg== \
@@ -103,14 +108,17 @@ jobs:
           for i in $(seq 1 50); do
             code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/ || true)
             if [ "$code" = 200 ] || [ "$code" = 302 ]; then break; fi
+            if [ "$(docker inspect -f '{{.State.Running}}' nexa)" != true ]; then break; fi
             sleep 3
           done
-          usuario=$(docker exec nexa id -un)
-          echo "::notice title=Docker::HTTP=$code usuario=$usuario"
           if [ "$code" != 200 ] && [ "$code" != 302 ]; then
-            echo "::error title=Docker logs::$(docker logs nexa 2>&1 | tail -20 | tr '\n' '|' | tr -d '%')"
+            echo "::error title=Docker::la aplicación no respondió (HTTP=$code)"
+            docker inspect -f 'Estado={{.State.Status}} Codigo={{.State.ExitCode}} OOM={{.State.OOMKilled}}' nexa
+            docker logs nexa 2>&1 | tail -100
             exit 1
           fi
+          usuario=$(docker exec nexa id -un)
+          echo "::notice title=Docker::HTTP=$code usuario=$usuario"
           if [ "$usuario" = root ]; then
             echo "::error title=Docker::el contenedor corre como root"
             exit 1

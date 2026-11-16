@@ -2,6 +2,7 @@ package com.example.MotvirsWeb.dominio.repositorio;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 
 import java.util.Arrays;
 import java.util.List;
@@ -37,6 +38,12 @@ public interface UsuarioRepository extends MongoRepository <Usuario, String>  {
 
     Optional<Usuario> findByEmailAndRol(String email, Rol rol);
 
+    @Query(value = "{ 'rol': ?0, 'licencia': ?1 }", exists = true)
+    boolean existsByRolAndLicencia(Rol rol, long licencia);
+
+    @Query(value = "{ 'rol': ?0, 'soat': ?1 }", exists = true)
+    boolean existsByRolAndSoat(Rol rol, Long soat);
+
     List<Usuario> findByRolAndEstadoValidacion(Rol rol, EstadoValidacion estado);
 
     //metodos para los graficos panel del admin
@@ -56,7 +63,7 @@ public interface UsuarioRepository extends MongoRepository <Usuario, String>  {
 
     org.springframework.data.domain.Page<Usuario> findByRol(Rol rol, org.springframework.data.domain.Pageable pageable);
 
-    Optional<Usuario> findByResetPasswordToken (String token);
+    Optional<Usuario> findByResetPasswordTokenHash(String tokenHash);
 
 
 }

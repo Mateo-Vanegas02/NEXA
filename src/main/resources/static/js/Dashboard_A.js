@@ -725,7 +725,12 @@ async function entrenarModeloML() {
 
     try {
         // --- USA LA RUTA SEGURA ---
-        const response = await fetch('/api/admin/ml/entrenar');
+        const csrfToken = document.querySelector('input[name="_csrf"]')?.value || '';
+        const response = await fetch('/api/admin/ml/entrenar', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'X-CSRF-TOKEN': csrfToken }
+        });
 
         if (response.ok) {
             // --- ¡ÉXITO! ---

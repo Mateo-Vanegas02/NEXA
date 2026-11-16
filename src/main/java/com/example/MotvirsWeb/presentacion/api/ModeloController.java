@@ -6,6 +6,7 @@ import com.example.MotvirsWeb.aplicacion.servicio.SatisfaccionClienteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,7 +23,7 @@ public class ModeloController {
     private ModeloInfoRepository modeloInfoRepository;
 
 
-    @GetMapping("/entrenar")
+    @PostMapping("/entrenar")
     public ResponseEntity<String> entrenarModelo() {
         try {
             String arbol = satisfaccionService.entrenarModelo();
@@ -46,7 +47,7 @@ public class ModeloController {
             return ResponseEntity.ok(info.get());
         } else {
             return ResponseEntity.status(404).body("No hay ningún modelo entrenado todavía. " +
-                    "Por favor, llama a /api/ml/entrenar primero.");
+                    "Por favor, inicia el entrenamiento desde el panel de administración.");
         }
     }
 }
