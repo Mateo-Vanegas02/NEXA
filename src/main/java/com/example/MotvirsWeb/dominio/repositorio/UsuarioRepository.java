@@ -37,6 +37,10 @@ public interface UsuarioRepository extends MongoRepository <Usuario, String>  {
 
     Optional<Usuario> findByEmailAndRol(String email, Rol rol);
 
+    boolean existsByRolAndLicencia(Rol rol, long licencia);
+
+    boolean existsByRolAndSoat(Rol rol, Long soat);
+
     List<Usuario> findByRolAndEstadoValidacion(Rol rol, EstadoValidacion estado);
 
     //metodos para los graficos panel del admin
@@ -56,7 +60,7 @@ public interface UsuarioRepository extends MongoRepository <Usuario, String>  {
 
     org.springframework.data.domain.Page<Usuario> findByRol(Rol rol, org.springframework.data.domain.Pageable pageable);
 
-    Optional<Usuario> findByResetPasswordToken (String token);
+    Optional<Usuario> findByResetPasswordTokenHash(String tokenHash);
 
 
 }

@@ -5,6 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -49,7 +53,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * sin Mongo ni contexto completo: controladores reales con servicios simulados.
  */
 @SpringJUnitWebConfig(SeguridadHttpTest.Config.class)
-@org.springframework.test.context.TestPropertySource(properties = { "jwt.secret=dGVzdA==", "jwt.expiration=1000" })
+@org.springframework.test.context.TestPropertySource(properties = { "jwt.secret=dGVzdA==", "jwt.expiration=1000",
+        "motvirs.model.path=modelo_satisfaccion_j48_v2.0.model" })
 class SeguridadHttpTest {
 
     @Configuration
@@ -133,6 +138,31 @@ class SeguridadHttpTest {
         }
 
         @Bean
+        com.example.MotvirsWeb.aplicacion.servicio.SatisfaccionClienteService satisfaccionClienteService() {
+            return mock(com.example.MotvirsWeb.aplicacion.servicio.SatisfaccionClienteService.class);
+        }
+
+        @Bean
+        com.example.MotvirsWeb.dominio.repositorio.ServicioRepository servicioRepository() {
+            return mock(com.example.MotvirsWeb.dominio.repositorio.ServicioRepository.class);
+        }
+
+        @Bean
+        org.springframework.data.mongodb.core.MongoTemplate mongoTemplate() {
+            return mock(org.springframework.data.mongodb.core.MongoTemplate.class);
+        }
+
+        @Bean
+        com.example.MotvirsWeb.dominio.repositorio.ModeloInfoRepository modeloInfoRepository() {
+            return mock(com.example.MotvirsWeb.dominio.repositorio.ModeloInfoRepository.class);
+        }
+
+        @Bean
+        com.example.MotvirsWeb.presentacion.api.ModeloController modeloController() {
+            return new com.example.MotvirsWeb.presentacion.api.ModeloController();
+        }
+
+        @Bean
         com.example.MotvirsWeb.aplicacion.verificacion.VerificacionConductorService verificacionConductorService() {
             return mock(com.example.MotvirsWeb.aplicacion.verificacion.VerificacionConductorService.class);
         }
@@ -194,12 +224,32 @@ class SeguridadHttpTest {
     @Autowired
     private WebApplicationContext ctx;
 
+    @Autowired
+    private com.example.MotvirsWeb.aplicacion.servicio.SatisfaccionClienteService satisfaccionClienteService;
+
     private MockMvc mvc;
 
     @BeforeEach
     void setUp() {
         // El limitador es un bean singleton: reconstruimos MockMvc con la cadena real
         mvc = MockMvcBuilders.webAppContextSetup(ctx).apply(springSecurity()).build();
+    }
+
+    @Test
+    void entrenamientoMlSoloPostAdminConCsrf() throws Exception {
+        reset(satisfaccionClienteService);
+        mvc.perform(get("/api/admin/ml/entrenar").with(user("admin").roles("ADMIN")))
+                .andExpect(status().isMethodNotAllowed());
+        mvc.perform(post("/api/admin/ml/entrenar").with(user("admin").roles("ADMIN")))
+                .andExpect(status().isForbidden());
+        mvc.perform(post("/api/admin/ml/entrenar").with(user("pasajero").roles("PASAJERO")).with(csrf()))
+                .andExpect(status().isForbidden());
+        verify(satisfaccionClienteService, never()).entrenarModelo();
+
+        when(satisfaccionClienteService.entrenarModelo()).thenReturn("árbol");
+        mvc.perform(post("/api/admin/ml/entrenar").with(user("admin").roles("ADMIN")).with(csrf()))
+                .andExpect(status().isOk());
+        verify(satisfaccionClienteService).entrenarModelo();
     }
 
     // ── 401: sin autenticación ──────────────────────────────────────────
@@ -403,7 +453,7 @@ class SeguridadHttpTest {
     @Test
     void laEntidadNoSerializaPasswordNiTokensDeReset() throws Exception {
         Pasajero p = Pasajero.builder().email("p@x.com").password("$2a$10$hashhashhash").build();
-        p.setResetPasswordToken("token-secreto");
+        p.setResetPasswordTokenHash("hash-del-token");
         String json = new ObjectMapper().findAndRegisterModules().writeValueAsString(p);
         assertFalse(json.contains("password"), json);
         assertFalse(json.contains("hashhash"), json);

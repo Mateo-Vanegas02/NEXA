@@ -84,6 +84,31 @@ public class AuthServiceTest {
     }
 
     @Test
+    void registrarConductorUsaConsultasSelectivas() {
+        when(usuarioRepository.findByEmailAndRol("conductor@test.com", Rol.CONDUCTOR)).thenReturn(Optional.empty());
+        when(passwordEncoder.encode("password")).thenReturn("encoded_pass");
+        when(usuarioRepository.save(any(Conductor.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Conductor result = authService.registrarConductor("Test", "conductor@test.com", "password",
+                "3001234567", 12345L, 67890L, 111L);
+
+        assertEquals(12345L, result.getLicencia());
+        verify(usuarioRepository).existsByRolAndLicencia(Rol.CONDUCTOR, 12345L);
+        verify(usuarioRepository).existsByRolAndSoat(Rol.CONDUCTOR, 67890L);
+        verify(usuarioRepository, never()).findByRol(Rol.CONDUCTOR);
+    }
+
+    @Test
+    void registrarConductorRechazaLicenciaRepetidaAntesDeGuardar() {
+        when(usuarioRepository.findByEmailAndRol("conductor@test.com", Rol.CONDUCTOR)).thenReturn(Optional.empty());
+        when(usuarioRepository.existsByRolAndLicencia(Rol.CONDUCTOR, 12345L)).thenReturn(true);
+
+        assertThrows(IllegalStateException.class, () -> authService.registrarConductor("Test",
+                "conductor@test.com", "password", "3001234567", 12345L, 67890L, 111L));
+        verify(usuarioRepository, never()).save(any());
+    }
+
+    @Test
     void autenticarUsuario_Success() {
         UserDetails mockDetails = mock(UserDetails.class);
         when(mockDetails.getPassword()).thenReturn("encoded_pass");

@@ -1,36 +1,32 @@
 package com.example.MotvirsWeb.aplicacion.servicio;
 
-import com.example.MotvirsWeb.dominio.modelo.Conductor;
 import com.example.MotvirsWeb.dominio.modelo.Usuario;
 import com.example.MotvirsWeb.dominio.repositorio.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.UUID;
 import com.example.MotvirsWeb.aplicacion.puerto.NotificadorCorreo;
 
 
 @Service
+@RequiredArgsConstructor
 public class PasswordResetService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    // CAMBIO 1: Quitamos JavaMailSender y @Value
-    // Inyectamos NotificadorCorreo que es el experto en envíos y URLs
-    @Autowired
-    private NotificadorCorreo notificadorCorreo;
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final NotificadorCorreo notificadorCorreo;
 
     private static final long EXPIRE_TOKEN_AFTER_MINUTES = 30;
 
@@ -61,7 +57,7 @@ public class PasswordResetService {
     // Método auxiliar para no repetir código (DRY)
     private void procesarReset(Usuario usuario, String tipo) {
         String token = generateToken();
-        usuario.setResetPasswordToken(token);
+        usuario.setResetPasswordTokenHash(hashToken(token));
         usuario.setResetPasswordTokenExpiry(LocalDateTime.now().plusMinutes(EXPIRE_TOKEN_AFTER_MINUTES));
         usuarioRepository.save(usuario);
 
@@ -72,7 +68,11 @@ public class PasswordResetService {
 
     public void resetPassword(String token, String newPassword) {
         // Buscar usuario por token
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByResetPasswordToken(token);
+        if (token == null || token.isBlank()) {
+            throw new IllegalArgumentException("Token inválido");
+        }
+
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByResetPasswordTokenHash(hashToken(token));
 
         if (usuarioOpt.isPresent()) {
             actualizarPassword(usuarioOpt.get(), newPassword);
@@ -88,13 +88,25 @@ public class PasswordResetService {
         }
 
         usuario.setPassword(passwordEncoder.encode(newPassword));
-        usuario.setResetPasswordToken(null);
+        usuario.setResetPasswordTokenHash(null);
         usuario.setResetPasswordTokenExpiry(null);
         usuarioRepository.save(usuario);
     }
 
     private String generateToken() {
-        return UUID.randomUUID().toString();
+        byte[] bytes = new byte[32];
+        SECURE_RANDOM.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    }
+
+    static String hashToken(String token) {
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-256")
+                    .digest(token.getBytes(StandardCharsets.UTF_8));
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 no está disponible", e);
+        }
     }
 
     private boolean isTokenExpired(LocalDateTime tokenExpiry) {
