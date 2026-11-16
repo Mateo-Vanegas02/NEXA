@@ -139,7 +139,7 @@ Decidido por el negocio: NEXA es solo efectivo, así que la deuda por cancelaci�
 - `solicitar-viaje` lleva `ubicacionPasajero`; `PuntoRecogida.exigirCerca` responde 400 si el punto de recogida está a más de 300 m. Un cliente que no la envíe (app antigua) no se valida.
 
 ## Modelo de satisfacción (Weka J48) con las tarifas v2.2 (24 oct. 2026)
-- El reentrenamiento (`GET /api/admin/ml/entrenar`, botón del panel ML) usa solo viajes finalizados desde la fecha del marcador `niveles-v2.2` en `migraciones`, con la tarifa que pagó el pasajero (`desglose.totalPasajero`). Lee solo los campos necesarios (máx. 50.000 viajes) en vez de cargar la colección completa.
+- El reentrenamiento (`POST /api/admin/ml/entrenar`, botón del panel ML, con CSRF para la sesión web) usa solo viajes finalizados desde la fecha del marcador `niveles-v2.2` en `migraciones`, con la tarifa que pagó el pasajero (`desglose.totalPasajero`). Lee solo los campos necesarios (máx. 50.000 viajes) en vez de cargar la colección completa.
 - Con menos de 30 viajes calificados no se reentrena y se conserva el modelo anterior. **El reentrenamiento hay que hacerlo en producción** cuando haya datos suficientes: desde aquí no hay acceso a la base real.
 
 ## Seguimiento del pasajero hasta la recogida

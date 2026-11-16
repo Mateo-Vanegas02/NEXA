@@ -1,0 +1,10 @@
+# Riesgos pendientes
+
+- Tokens antiguos en el campo MongoDB histórico podrían seguir siendo sensibles hasta su expiración o invalidación operativa; no se ejecutó una migración destructiva.
+- La revocación de JWT requiere contrato con clientes móviles, almacenamiento de estado y estrategia de transición.
+- Cualquier cliente externo que llamara `GET /api/admin/ml/entrenar` debe pasar a POST y enviar CSRF cuando use sesión web; no se identificaron otros clientes en este repositorio.
+- El despliegue `infra/servidor/docker-compose.aws.yml` define un solo contenedor `nexa` detrás de Caddy. `RateLimitFilter` y el broker STOMP simple funcionan por proceso: agregar otra réplica dividiría los contadores, conexiones y mensajes. Antes de escalar, se requiere un diseño compartido, pruebas de reconexión y despliegue coordinado; no se justifica introducir Redis o un broker externo en el despliegue actual.
+- La validación de licencia/SOAT ya usa consultas selectivas, pero debe verificarse la unicidad efectiva en MongoDB con datos existentes y una prueba de registros simultáneos antes de tocar índices. No se modificaron los campos `long`/`Long` ni el esquema.
+- No se puede aplicar una CSP restrictiva aún: `conductor/panel_conductor.html` contiene numerosos `onclick`, `onchange` y estilos inline, y carga Leaflet, Font Awesome y Google Fonts desde dominios externos. Hay que inventariar todas las plantillas, trasladar manejadores y estilos a archivos locales, definir orígenes precisos y probar paneles antes de activar la cabecera.
+- JWT se emite con HS256 y 24 h de expiración (`JwtService`, `application.properties`). `JwtAuthFilter` vuelve a cargar el usuario en cada petición, por lo que una cuenta marcada como no aprobada deja de autenticarse; sin embargo, un cambio de contraseña o logout no invalida un JWT ya emitido. Diseñar revocación por usuario y rotación de refresh tokens exige confirmar almacenamiento de tokens y comportamiento de la app móvil. No se modificó el contrato de login.
+- La suite completa pasó en este entorno con Mockito como agente JVM y loopback local permitido; conviene conservar esa configuración en los ejecutores Windows de CI.

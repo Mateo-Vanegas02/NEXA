@@ -66,8 +66,8 @@ Checklist de despliegue seguro:
 |---|---|
 | Rotar credenciales y limpiar historial | Regla: no reescribir historial; rotar es acción del dueño |
 | JWT sin revocación, 24 h | Cambio de diseño (lista de revocación / refresh tokens) |
-| Tokens de reset en claro en BD | Guardar el hash exige migración; expiran a los 30 min |
-| `GET /api/admin/ml/entrenar` cambia estado por GET (CSRF si la sesión admin está abierta) | El front actual lo llama con GET; pasar a POST toca el front de otra sesión |
+| Tokens de reset antiguos en claro en BD | La emisión nueva solo guarda hash; invalidar o retirar campos antiguos requiere operación controlada sobre los datos existentes |
+| `POST /api/admin/ml/entrenar` | Corregido: el panel envía POST con CSRF; GET ya no entrena |
 | `findByEmail` con el mismo correo en dos roles (índice único es `(email, rol)`) | Login/reset pueden resolver al usuario equivocado; requiere decidir unicidad de email global |
 | Contenido del broadcast `/topic/servicios-disponibles` (incluye email del pasajero) | Reducir a un DTO exige coordinar con el front |
 | `solicitarViaje`/`calificar` aceptan `Map<String,Object>` | Migrar a DTO con `@Valid` toca el contrato del front |
