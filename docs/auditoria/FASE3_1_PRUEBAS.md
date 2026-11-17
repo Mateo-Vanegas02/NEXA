@@ -11,4 +11,4 @@ En este equipo, `-Dtest=*,!ModeloNexaWiringTest` con agente Mockito y exclusión
 
 La primera ejecución de CI de fase 3.1 falló porque el contenedor Mongo no era un conjunto de réplica y una prueba asumía que inicio y cancelación no podían ocurrir en secuencia. Se corrigieron ambos puntos antes de CI #46.
 
-Después de CI #46 se añadió una prueba unitaria para comprobar que un fallo SMTP del aviso de deuda se propaga a la bandeja. Falta repetir CI con ese cambio. No se encontró una suite JavaScript en este repositorio (`package.json` y archivos de prueba ausentes).
+GitHub Actions CI #48, commit `c591682`: `mongo-integration` volvió a aprobar con 11 pruebas, 0 fallos y 0 errores; `test` y `docker` aprobaron. `Secret scan` #14 aprobó. Esta ejecución incluye el reintento del aviso de deuda tras fallo SMTP y la prueba unitaria del adaptador SMTP. No se encontró una suite JavaScript en este repositorio (`package.json` y archivos de prueba ausentes).
