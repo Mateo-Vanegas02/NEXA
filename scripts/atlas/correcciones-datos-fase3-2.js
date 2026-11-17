@@ -38,7 +38,7 @@
   if (modo === 'aplicar' && horas.length > 0) {
     const r = base.servicios.updateMany(atascados, { $set: {
       estado: 'CANCELADO', canceladoPor: 'SISTEMA', fechaCancelacion: ahora,
-      cargoCancelacion: NumberLong(0), cargoAcreditadoConductor: false,
+      cargoCancelacion: NumberLong('0'), cargoAcreditadoConductor: false,
       cancelacionAdministrativa: { fecha: ahora, motivo: 'Viaje EN_CURSO atascado más de 24 h; cancelado sin cargo (fase 3.2)' },
     } });
     informe.viajesAtascados.cancelados = r.modifiedCount;
