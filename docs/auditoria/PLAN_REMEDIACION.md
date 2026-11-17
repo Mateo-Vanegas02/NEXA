@@ -1,5 +1,13 @@
 # Plan de remediación
 
+## Continuación de fase 3.1
+
+1. Ejecutar las pruebas nuevas de `Phase3MongoIntegrationTest` en CI con Docker y corregir cualquier discrepancia de mapeo de `@Update` antes de integrar.
+2. Ejecutar y corregir la prueba nueva de reversión transaccional de cargo/deuda y reintento de avisos; añadir prueba de llegada concurrente y verificar deduplicación por `eventoId` en móvil. Revisar la posibilidad de correo repetido si el proceso cae entre envío y acuse.
+3. La conexión de Atlas fue confirmada como producción. Obtener agregados redactados de duplicados y tipos. Respaldar y restaurar en un entorno aislado antes de ensayar índices o migraciones.
+4. Auditar secretos de NEXA y NEXA_Origin por separado. Preparar rotación coordinada y simulación de saneamiento solo para exposiciones confirmadas.
+5. Revisar JWT y contrato móvil, actualizar la matriz de compatibilidad y ejecutar Java, JavaScript, integración, Docker y escaneo de secretos. No desplegar mientras los puntos anteriores no estén verificados.
+
 ## Secuencia tras fase 3
 
 1. Revisar PR #3 sobre PR #2 y conservar la prueba de integración Mongo y el escaneo de secretos como gates de CI. Fusionar en orden únicamente tras revisión.

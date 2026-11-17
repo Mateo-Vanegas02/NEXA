@@ -52,6 +52,38 @@ public class AvisosService {
 
     /** Conductores a los que se les avisó cada solicitud abierta: a ellos va el retiro silencioso. */
     private final Map<String, Set<ObjectId>> avisados = new ConcurrentHashMap<>();
+    private final ThreadLocal<Boolean> confirmado = ThreadLocal.withInitial(() -> false);
+
+    public void ejecutarConfirmado(Runnable envio) {
+        confirmado.set(true);
+        try {
+            envio.run();
+        } finally {
+            confirmado.remove();
+        }
+    }
+
+    private void enviarPush(Collection<String> tokens, Aviso aviso) {
+        if (confirmado.get()) push.enviarConConfirmacion(tokens, aviso);
+        else push.enviar(tokens, aviso);
+    }
+
+    /** Destinatarios de una solicitud abierta; la bandeja los conserva antes de retirar la tarjeta. */
+    public List<ObjectId> destinatariosRetirada(String servicioId) {
+        return List.copyOf(avisados.getOrDefault(servicioId, Set.of()));
+    }
+
+    public void solicitudRetiradaA(Servicio s, String motivo, Collection<ObjectId> destinatarios) {
+        seguro("solicitud retirada", () -> {
+            if (!deApp(s) || destinatarios == null || destinatarios.isEmpty()) return;
+            Set<ObjectId> otros = new LinkedHashSet<>(destinatarios);
+            if (s.getConductor() != null) otros.remove(s.getConductor().getId());
+            Aviso aviso = new Aviso("SOLICITUD_RETIRADA:" + s.getId(), "SOLICITUD_RETIRADA", Canal.SILENCIOSO,
+                    null, null, Map.of("servicioId", s.getId(), "motivo", motivo), vigenciaSolicitud());
+            enviarPush(tokens(otros), aviso);
+            avisados.remove(s.getId());
+        });
+    }
 
     // ─────────────────────────── CONDUCTORES ───────────────────────────
 
@@ -100,19 +132,7 @@ public class AvisosService {
 
     /** La solicitud ya no está (la tomó otro o se canceló): la app quita la tarjeta sin mostrar nada. */
     public void solicitudRetirada(Servicio s, String motivo) {
-        seguro("solicitud retirada", () -> {
-            Set<ObjectId> quienes = avisados.remove(s.getId());
-            if (!deApp(s) || quienes == null || quienes.isEmpty()) {
-                return;
-            }
-            Set<ObjectId> otros = new LinkedHashSet<>(quienes);
-            if (s.getConductor() != null) {
-                otros.remove(s.getConductor().getId()); // el que la tomó ya lo sabe
-            }
-            Aviso aviso = new Aviso("SOLICITUD_RETIRADA:" + s.getId(), "SOLICITUD_RETIRADA", Canal.SILENCIOSO,
-                    null, null, Map.of("servicioId", s.getId(), "motivo", motivo), vigenciaSolicitud());
-            push.enviar(tokens(otros), aviso);
-        });
+        solicitudRetiradaA(s, motivo, destinatariosRetirada(s.getId()));
     }
 
     // ─────────────────────────── EL VIAJE ───────────────────────────
@@ -161,7 +181,7 @@ public class AvisosService {
                 Aviso aviso = new Aviso("VIAJE_CANCELADO:" + s.getId(), "VIAJE_CANCELADO", Canal.VIAJE,
                         quien + " canceló el viaje", "Ya puedes recibir otras solicitudes",
                         Map.of("servicioId", s.getId()), vigenciaViaje());
-                push.enviar(dispositivos.tokensDe(s.getConductor().getId()), aviso);
+                enviarPush(dispositivos.tokensDe(s.getConductor().getId()), aviso);
             }
         });
     }
@@ -215,7 +235,7 @@ public class AvisosService {
             Map<String, String> datos = new HashMap<>();
             datos.put("servicioId", s.getId());
             datos.put("ganancia", Long.toString(niveles.gananciaEstimada(s, conductor)));
-            push.enviar(tokens.get(conductor.getId()), new Aviso(tipo + ":" + s.getId() + ":" + variante, tipo,
+            enviarPush(tokens.get(conductor.getId()), new Aviso(tipo + ":" + s.getId() + ":" + variante, tipo,
                     Canal.SOLICITUDES, titulo, cuerpo, datos, vigenciaSolicitud()));
         }
     }
@@ -239,7 +259,7 @@ public class AvisosService {
         if (s.getPasajero() == null || s.getPasajero().getId() == null) {
             return;
         }
-        push.enviar(dispositivos.tokensDe(s.getPasajero().getId()), new Aviso(tipo + ":" + s.getId(), tipo,
+        enviarPush(dispositivos.tokensDe(s.getPasajero().getId()), new Aviso(tipo + ":" + s.getId(), tipo,
                 Canal.VIAJE, titulo, cuerpo, Map.of("servicioId", s.getId()), vigenciaViaje()));
     }
 
@@ -258,6 +278,7 @@ public class AvisosService {
         try {
             accion.run();
         } catch (RuntimeException e) {
+            if (confirmado.get()) throw e;
             log.warn("No se pudo preparar el aviso de {}: {}", evento, e.getMessage());
         }
     }

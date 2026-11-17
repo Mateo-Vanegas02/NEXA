@@ -2,7 +2,16 @@
 
 ## Actualización de fase 3
 
-- Las seis pruebas de integración de MongoDB 7 con datos sintéticos pasaron en CI, inclusive el registro concurrente y el consumo único de token. Los índices reales, tipos BSON y duplicados productivos siguen desconocidos: no hubo acceso autorizado a la conexión Compass ni respaldo verificado.
+## Actualización de fase 3.1 (17 de noviembre de 2026)
+
+- Compass confirmó `motvirsweb.Usuarios` (54 documentos) y `motvirsweb.servicios` (610). El propietario confirmó producción. Ambas colecciones tienen solo `_id_`; faltan índices efectivos de unicidad y análisis agregado de duplicados.
+- Se implementaron escrituras condicionales para varias transiciones en la rama de trabajo, con 17 pruebas unitarias focales aprobadas. Las nuevas pruebas MongoDB reales no se ejecutaron por ausencia de Docker local; el código no está desplegado.
+- Se implementaron transacciones para cargo/deuda y una bandeja persistente de avisos; faltan pruebas con MongoDB real y verificación de los límites de entrega al menos una vez. No se ha demostrado todavía integridad completa del ciclo de vida.
+- La investigación de secretos, rotación y limpieza Git sigue pendiente. Véase `FASE3_1_RESULTADOS.md`.
+
+### Registro histórico de fase 3 (anterior a los cambios locales de 3.1)
+
+- El último workflow de fase 3 registró siete pruebas de integración de MongoDB 7 con datos sintéticos. Los índices reales, tipos BSON y duplicados de la conexión actual siguen sin inventario completo; no hay respaldo verificado.
 - La aceptación y el vencimiento usan actualizaciones condicionales probadas. Inicio, finalización, cancelaciones y calificación de viajes aún emplean lectura y `save`; faltan pruebas y transiciones atómicas para evitar sobrescritura o efectos duplicados.
 - El inventario Git de NEXA encontró configuración cliente Firebase en `app`, no una contraseña de servidor confirmada. Falta revisar restricciones de la clave en el proveedor y visibilidad del informe Power BI. La exposición descrita para `NEXA_Origin` exige auditoría de ese repositorio por separado.
 - Ninguna credencial fue rotada, no se reescribió Git, ni se aplicaron índices o migraciones en producción. La política de identidad por correo sigue pendiente de decisión y revisión de datos reales.

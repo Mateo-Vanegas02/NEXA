@@ -16,6 +16,11 @@ public interface NotificadorPush {
     /** Encola el aviso para esos tokens; vuelve de inmediato. */
     void enviar(Collection<String> tokens, Aviso aviso);
 
+    /** Confirma la entrega al proveedor o lanza para que una bandeja persistente pueda reintentar. */
+    default void enviarConConfirmacion(Collection<String> tokens, Aviso aviso) {
+        enviar(tokens, aviso);
+    }
+
     /** false si el servidor no tiene credenciales de Firebase (los avisos se descartan). */
     boolean activo();
 

@@ -55,8 +55,11 @@ public class Servicio {
     private String metodoPago;
     private EstadoServicio estado;
     private Double calificacionConductor;
+    /** Marca durable incluso cuando la calificación enviada es null. */
+    private boolean calificacionConductorRegistrada;
     private String comentariosConductor;
     private Double calificacionPasajero;
+    private boolean calificacionPasajeroRegistrada;
     private String comentariosPasajero;
     /** Factores que marcó el pasajero sobre el conductor y el viaje (códigos de {@code FactoresCalificacion}). */
     private java.util.List<String> factoresConductor;

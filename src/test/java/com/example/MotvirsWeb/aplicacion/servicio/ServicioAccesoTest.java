@@ -9,6 +9,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.ArgumentMatchers.*;
 
 import java.util.Optional;
 
@@ -45,6 +47,8 @@ class ServicioAccesoTest {
     private com.example.MotvirsWeb.aplicacion.puerto.CanalPeticion canalPeticion;
     @Mock
     private AvisosService avisos;
+    @Mock
+    private AvisosPendientesService avisosPendientes;
     @InjectMocks
     private ServicioServiceImpl servicioService;
 
@@ -61,6 +65,12 @@ class ServicioAccesoTest {
                 .nombre_y_Apellido("Cond").build()));
         servicio.setEstado(EstadoServicio.FINALIZADO);
         when(servicioRepository.findById("s1")).thenReturn(Optional.of(servicio));
+        lenient().when(servicioRepository.iniciarSiAceptado(eq("s1"), eq(conductorId), any(), anyDouble()))
+                .thenReturn(1L);
+        lenient().when(servicioRepository.finalizarSiEnCurso(eq("s1"), eq(conductorId), any(), anyBoolean(), anyDouble()))
+                .thenReturn(1L);
+        lenient().when(servicioRepository.calificarConductorUnaVez(eq("s1"), eq(pasajeroId), any(), any(), any()))
+                .thenReturn(1L);
     }
 
     private static Conductor conductor(ObjectId id) {
@@ -122,7 +132,7 @@ class ServicioAccesoTest {
     void alFinalizarSeGuardaElRecorridoReal() {
         servicio.setEstado(EstadoServicio.EN_CURSO);
         var puntos = java.util.List.of(new Servicio.Coordenada(10.4, -75.5), new Servicio.Coordenada(10.41, -75.5));
-        when(viajeEnVivo.terminar(conductorId, "s1")).thenReturn(new ViajeEnVivoService.Recorrido(1.1, puntos));
+        when(viajeEnVivo.recorridoActual(conductorId, "s1")).thenReturn(new ViajeEnVivoService.Recorrido(1.1, puntos));
         servicioService.finalizarServicio("s1", conductor(conductorId));
         assertEquals(1.1, servicio.getDistanciaRecorridaKm());
         assertEquals(puntos, servicio.getRecorrido());

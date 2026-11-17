@@ -252,6 +252,17 @@ public class ViajeEnVivoService {
         }
     }
 
+    /** Instantánea del recorrido para calcular el cobro antes de cerrar el viaje en MongoDB. */
+    public Recorrido recorridoActual(ObjectId conductorId, String servicioId) {
+        Viaje v = conductorId == null ? null : porConductor.get(conductorId);
+        if (v == null || !v.servicioId.equals(servicioId)) return null;
+        synchronized (v) {
+            if (v.recorrido.size() < 2) return new Recorrido(0, List.of());
+            return new Recorrido(ReglaViaje.distanciaRecorridaKm(v.recorrido), v.recorrido.stream()
+                    .map(p -> new Servicio.Coordenada(p.latitud(), p.longitud())).toList());
+        }
+    }
+
     /**
      * ¿Llegó el conductor al destino según la última posición que reportó al servidor (no la que diga el navegador)?
      * Con {@code nexa.viaje.exigir-destino=false} (solo desarrollo con recorrido simulado) siempre es true.

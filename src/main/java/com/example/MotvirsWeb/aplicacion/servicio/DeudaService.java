@@ -112,11 +112,16 @@ public class DeudaService {
                     pasajeroId, monto, servicioId);
             return false;
         }
-        usuarioRepository.findById(pasajeroId.toString())
-                .filter(Pasajero.class::isInstance).map(Pasajero.class::cast)
-                .ifPresent(p -> avisar(() -> correo.enviarDeudaSeCobraEnProximoViaje(
-                        p.getEmail(), p.getNombreCompleto(), monto)));
         return true;
+    }
+
+    /** Lo llama la bandeja persistente después de confirmar la cancelación. */
+    public void enviarAvisoDeuda(Servicio servicio) {
+        if (servicio.getPasajero() == null || servicio.getPasajero().getId() == null) return;
+        usuarioRepository.findById(servicio.getPasajero().getId().toString())
+                .filter(Pasajero.class::isInstance).map(Pasajero.class::cast)
+                .ifPresent(p -> correo.enviarDeudaSeCobraEnProximoViaje(
+                        p.getEmail(), p.getNombreCompleto(), servicio.getCargoCancelacion()));
     }
 
     /**

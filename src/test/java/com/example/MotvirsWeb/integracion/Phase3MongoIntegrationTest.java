@@ -3,6 +3,9 @@ package com.example.MotvirsWeb.integracion;
 import com.example.MotvirsWeb.aplicacion.puerto.NotificadorCorreo;
 import com.example.MotvirsWeb.aplicacion.puerto.NotificadorTiempoReal;
 import com.example.MotvirsWeb.aplicacion.servicio.AuthService;
+import com.example.MotvirsWeb.aplicacion.servicio.AvisosPendientesService;
+import com.example.MotvirsWeb.aplicacion.servicio.AvisosService;
+import com.example.MotvirsWeb.aplicacion.servicio.DeudaService;
 import com.example.MotvirsWeb.aplicacion.servicio.PasswordResetService;
 import com.example.MotvirsWeb.dominio.modelo.*;
 import com.example.MotvirsWeb.dominio.repositorio.ServicioRepository;
@@ -24,6 +27,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.MongoTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.mongodb.repository.support.MongoRepositoryFactory;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -42,6 +50,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static com.mongodb.client.model.Filters.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 
 /** Solo usa el URI de su propio contenedor y una base sintética nueva por prueba. */
 @Tag("requiere-mongo")
@@ -233,6 +244,134 @@ class Phase3MongoIntegrationTest {
         reset.resetPassword(token, "NuevaClave123!");
         assertTrue(new BCryptPasswordEncoder().matches("NuevaClave123!",
                 mongo.getCollection("Usuarios").find(eq("_id", p.getId())).first().getString("password")));
+    }
+
+    @Test
+    void iniciarYCancelarCompitenSinSobrescribirElEstado() throws Exception {
+        Conductor conductor = conductor("carrera@example.test", 110, 210L);
+        Servicio viaje = new Servicio();
+        viaje.setEstado(EstadoServicio.ACEPTADO);
+        viaje.setConductor(new Servicio.ConductorEmbedded(conductor));
+        viaje.setFechaLlegada(LocalDateTime.now().minusMinutes(1));
+        String id = servicios.save(viaje).getId();
+        var pool = Executors.newFixedThreadPool(2);
+        CountDownLatch inicio = new CountDownLatch(1);
+        try {
+            var iniciar = pool.submit(() -> {
+                inicio.await();
+                return servicios.iniciarSiAceptado(id, conductor.getId(), LocalDateTime.now(), 1);
+            });
+            var cancelar = pool.submit(() -> {
+                inicio.await();
+                return servicios.cancelarSiAsignado(id, conductor.getId(), LocalDateTime.now());
+            });
+            inicio.countDown();
+            assertEquals(1, iniciar.get(10, TimeUnit.SECONDS) + cancelar.get(10, TimeUnit.SECONDS));
+            assertTrue(java.util.Set.of(EstadoServicio.EN_CURSO, EstadoServicio.CANCELADO)
+                    .contains(servicios.findById(id).orElseThrow().getEstado()));
+        } finally {
+            pool.shutdownNow();
+        }
+    }
+
+    @Test
+    void finalizarYCalificarSoloUnaVezEnMongoReal() throws Exception {
+        Conductor conductor = conductor("finalizar@example.test", 111, 211L);
+        Pasajero pasajero = pasajero("calificar@example.test");
+        Servicio viaje = new Servicio();
+        viaje.setEstado(EstadoServicio.EN_CURSO);
+        viaje.setConductor(new Servicio.ConductorEmbedded(conductor));
+        viaje.setPasajero(new Servicio.PasajeroEmbedded(pasajero.getId(), "sintetico", "calificar@example.test"));
+        String id = servicios.save(viaje).getId();
+        var pool = Executors.newFixedThreadPool(2);
+        CountDownLatch inicio = new CountDownLatch(1);
+        try {
+            var uno = pool.submit(() -> {
+                inicio.await();
+                return servicios.finalizarSiEnCurso(id, conductor.getId(), LocalDateTime.now(), false, 1);
+            });
+            var dos = pool.submit(() -> {
+                inicio.await();
+                return servicios.finalizarSiEnCurso(id, conductor.getId(), LocalDateTime.now(), false, 1);
+            });
+            inicio.countDown();
+            assertEquals(1, uno.get(10, TimeUnit.SECONDS) + dos.get(10, TimeUnit.SECONDS));
+        } finally {
+            pool.shutdownNow();
+        }
+        assertEquals(1, servicios.calificarConductorUnaVez(id, pasajero.getId(), 5.0, "bien", java.util.List.of()));
+        assertEquals(0, servicios.calificarConductorUnaVez(id, pasajero.getId(), 2.0, "otro", java.util.List.of()));
+        assertEquals(5.0, servicios.findById(id).orElseThrow().getCalificacionConductor());
+    }
+
+    @Test
+    void llegadaYTransicionesRechazanOtroConductorYEstadosCerrados() {
+        Conductor asignado = conductor("asignado@example.test", 113, 213L);
+        Conductor ajeno = conductor("ajeno@example.test", 114, 214L);
+        Servicio viaje = new Servicio();
+        viaje.setEstado(EstadoServicio.ACEPTADO);
+        viaje.setConductor(new Servicio.ConductorEmbedded(asignado));
+        String id = servicios.save(viaje).getId();
+        var ubicacion = new Servicio.Coordenada(4.6, -74.1);
+
+        assertEquals(0, servicios.registrarLlegadaSiAceptado(id, ajeno.getId(), LocalDateTime.now(), ubicacion));
+        assertEquals(0, servicios.iniciarSiAceptado(id, ajeno.getId(), LocalDateTime.now(), 0));
+        assertEquals(0, servicios.cancelarSiAsignado(id, ajeno.getId(), LocalDateTime.now()));
+        assertEquals(1, servicios.registrarLlegadaSiAceptado(id, asignado.getId(), LocalDateTime.now(), ubicacion));
+        assertEquals(0, servicios.registrarLlegadaSiAceptado(id, asignado.getId(), LocalDateTime.now(), ubicacion));
+        assertEquals(1, servicios.iniciarSiAceptado(id, asignado.getId(), LocalDateTime.now(), 0));
+        assertEquals(1, servicios.finalizarSiEnCurso(id, asignado.getId(), LocalDateTime.now(), false, 1));
+        assertEquals(0, servicios.finalizarSiEnCurso(id, asignado.getId(), LocalDateTime.now(), false, 1));
+        assertEquals(0, servicios.cancelarSiAsignado(id, asignado.getId(), LocalDateTime.now()));
+        assertEquals(EstadoServicio.FINALIZADO, servicios.findById(id).orElseThrow().getEstado());
+    }
+
+    @Test
+    void cancelacionDeudaYAvisoCompartenCommitYElAvisoSeReintenta() {
+        Pasajero pasajero = usuarios.save(pasajero("deuda-atomica@example.test"));
+        Servicio viaje = new Servicio();
+        viaje.setEstado(EstadoServicio.ACEPTADO);
+        viaje.setPasajero(new Servicio.PasajeroEmbedded(pasajero.getId(), "sintetico", pasajero.getEmail()));
+        String id = servicios.save(viaje).getId();
+        DeudaService deudas = new DeudaService(usuarios, servicios, mongo, mock(NotificadorCorreo.class));
+        NotificadorTiempoReal socket = mock(NotificadorTiempoReal.class);
+        AvisosPendientesService bandeja = new AvisosPendientesService(mongo, servicios, socket,
+                mock(AvisosService.class), deudas);
+        TransactionTemplate tx = new TransactionTemplate(new MongoTransactionManager(mongo.getMongoDatabaseFactory()));
+
+        assertThrows(IllegalStateException.class, () -> tx.executeWithoutResult(estado -> {
+            assertEquals(1, servicios.cancelarSiVigente(id, pasajero.getId(), EstadoServicio.ACEPTADO,
+                    LocalDateTime.now(), 4000, false, null));
+            assertTrue(deudas.registrar(pasajero.getId(), id, 4000, LocalDateTime.now()));
+            bandeja.registrar(id, AvisosPendientesService.Tipo.CANCELADO);
+            throw new IllegalStateException("fallo sintético antes del commit");
+        }));
+        assertEquals(EstadoServicio.ACEPTADO, servicios.findById(id).orElseThrow().getEstado());
+        assertTrue(deudas.deudaDe(pasajero.getId()).isEmpty());
+        assertEquals(0, mongo.count(new Query(), AvisosPendientesService.Pendiente.class,
+                "avisos_viaje_pendientes"));
+
+        tx.executeWithoutResult(estado -> {
+            assertEquals(1, servicios.cancelarSiVigente(id, pasajero.getId(), EstadoServicio.ACEPTADO,
+                    LocalDateTime.now(), 4000, false, null));
+            assertTrue(deudas.registrar(pasajero.getId(), id, 4000, LocalDateTime.now()));
+            bandeja.registrar(id, AvisosPendientesService.Tipo.CANCELADO);
+        });
+        assertEquals(EstadoServicio.CANCELADO, servicios.findById(id).orElseThrow().getEstado());
+        assertEquals(4000, deudas.deudaDe(pasajero.getId()).orElseThrow().getMonto());
+        String avisoId = id + ":CANCELADO";
+        doThrow(new IllegalStateException("socket caído")).doNothing()
+                .when(socket).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any());
+        bandeja.despachar(avisoId);
+        assertEquals("PENDIENTE", mongo.findById(avisoId, AvisosPendientesService.Pendiente.class,
+                "avisos_viaje_pendientes").estado());
+        mongo.updateFirst(Query.query(Criteria.where("_id").is(avisoId)),
+                new Update().set("proximoIntento", LocalDateTime.now().minusSeconds(1)),
+                "avisos_viaje_pendientes");
+        bandeja.despachar(avisoId);
+        assertEquals("ENVIADO", mongo.findById(avisoId, AvisosPendientesService.Pendiente.class,
+                "avisos_viaje_pendientes").estado());
+        verify(socket, times(2)).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any());
     }
 
     @Test
