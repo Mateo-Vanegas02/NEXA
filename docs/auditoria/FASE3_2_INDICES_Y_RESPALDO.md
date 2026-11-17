@@ -1,9 +1,8 @@
 # Fase 3.2 — Índices de producción y respaldo (preparación, sin aplicar)
 
 Estado: **nada se aplicó en Atlas.** Este documento y los scripts de `scripts/atlas/` preparan la inspección, la
-propuesta de índices y el respaldo. Las cifras reales de producción salen de ejecutar la inspección (paso 1) y aún no
-se conocen; lo confirmado hasta hoy es lo que reportó Compass: base `motvirsweb`, 18 colecciones, `Usuarios` (54
-documentos) y `servicios` (610) solo con el índice `_id_`.
+propuesta de índices y el respaldo. La inspección de solo lectura ya se ejecutó en producción; sus resultados están
+en la sección 1.1.
 
 ## 1. Inspección en solo lectura
 
@@ -28,6 +27,46 @@ Verificación: CI lo ejecuta sobre datos sintéticos en el Mongo de `docker-comp
 antes y después (no escribe) y comprueba las cifras y que la salida no contenga ningún dato sembrado
 (`scripts/atlas/prueba/`).
 
+## 1.1 Resultados de la inspección de producción (17 de noviembre de 2026)
+
+Ejecutada por el propietario con un usuario de solo lectura (`nexa-lectura`). La salida no contenía correos, nombres
+ni ids. Cifras relevantes:
+
+- **Servidor:** MongoDB 8.0.37, replica set de 3 nodos: **admite las transacciones** que usa esta versión.
+- **Índices existentes:** `Usuarios` y `servicios` solo tienen `_id_`. Ya existen, creados por `NivelesIndices` en
+  algún arranque anterior, `xp_eventos.viaje_rol_motivo_unique_idx` (único), `dispositivos.token` (único) y el TTL de
+  48 h de `acciones_idempotentes`; sin duplicados en `xp_eventos` ni en `dispositivos`.
+- **Usuarios (54: 30 pasajeros, 23 conductores, 1 admin):** sin correos duplicados, ni exactos ni normalizados ni
+  entre roles; 5 correos con mayúsculas o espacios. Licencia: sin duplicados, tipos `int` (18) y `long` (5), sin
+  ceros. SOAT: sin duplicados, un cero. **Tarjeta de propiedad: un grupo de 2 conductores con el mismo número.**
+- **Tokens de recuperación:** ninguno con el formato actual (hash); **2 cuentas conservan el campo antiguo del token
+  en texto claro**, ambos vencidos.
+- **servicios (610):** 573 finalizados, 34 cancelados, **3 EN_CURSO con más de un día** (2 de ellos del mismo
+  conductor); ningún SOLICITADO abierto. `pasajero._id` es ObjectId en todos; `conductor._id` falta en 16 (cancelados
+  antes de aceptarse); `canal` falta en 603 (la app los trata como WEB); `solicitadoEn` falta en 75 (viajes anteriores
+  a niveles). Una deuda vigente, coherente con su cargo abierto.
+- **Planes:** las 10 consultas medidas hacen `COLLSCAN`; con estos volúmenes tardan 0–1 ms. Los índices son
+  preparación para el crecimiento, no una urgencia de rendimiento.
+
+Consecuencias para la propuesta:
+
+| Índice | Decisión con los datos reales |
+|---|---|
+| I1–I4, I8, I9 | Viables: no dependen de los datos. Aplicar tras el respaldo verificado. |
+| I5 licencia, I6 SOAT | Viables: sin duplicados. El índice compara números aunque haya `int` y `long` mezclados; el SOAT en 0 queda fuera del filtro parcial. |
+| I7 tarjeta de propiedad | **Bloqueado**: hay 2 conductores con la misma tarjeta. Puede ser legítimo (dos conductores de la misma moto), así que primero hay que decidir si la tarjeta debe ser única por conductor. Hoy los vehículos viven además en la colección `Vehiculos`. |
+| Correo único | **Técnicamente posible hoy** (sin duplicados). Antes de crearlo, decidir la política (global o por rol) y normalizar los 5 correos con mayúsculas o espacios; si no, el índice no impide registrar el mismo correo con otras mayúsculas. |
+
+Hallazgos de datos que piden una decisión del propietario (correcciones de datos, no índices; no se ejecutaron):
+
+1. **3 viajes EN_CURSO atascados desde hace más de un día.** Bloquean el cierre de sesión de sus conductores y
+   pasajeros (`BloqueoCierreSesionFilter`) y uno de los conductores tiene dos viajes activos a la vez. Hay que
+   decidir si se finalizan o se cancelan, con la misma lógica de cobro que en la app.
+2. **2 tokens de recuperación antiguos en texto claro** (vencidos). La versión actual no los lee, pero conviene
+   borrar ese campo (`$unset`) tras el respaldo.
+3. Colecciones de funciones retiradas o con nombres antiguos (`Servicio`, `Vehiculo`, `creditos_nexa`,
+   `beneficios_uso`, `ModeloInfo`): candidatas a archivarse cuando se confirme que ninguna versión desplegada las usa.
+
 ## 2. Hallazgos del código que condicionan los índices
 
 - **`auto-index-creation` está apagado (bien) y no debe activarse.** `Conductor` declara `@Indexed(unique = true)` en
@@ -35,7 +74,7 @@ antes y después (no escribe) y comprueba las cifras y que la salida no contenga
   `Usuarios`, esos índices tratarían como duplicado a todo documento sin ese campo: la creación fallaría o, peor,
   bloquearía registros. Los índices de documentos deben ser **parciales** (`rol: CONDUCTOR` y valor > 0), como los
   que ya prueba `Phase3MongoIntegrationTest`.
-- **`NivelesIndices` crea índices al arrancar** (`xp_eventos` único `(viajeId, rol, motivo)`, `dispositivos.token`
+- **`NivelesIndices` crea índices al arrancar** (en producción ya existen y sin duplicados, ver 1.1) (`xp_eventos` único `(viajeId, rol, motivo)`, `dispositivos.token`
   único, TTL de 48 h en `acciones_idempotentes`). El primer arranque de esta versión contra `motvirsweb` los creará
   sin pasar por este procedimiento. Si `xp_eventos` tiene duplicados, el índice único falla (queda en el log) y el XP
   deja de ser idempotente sin que nadie lo note. **Antes del primer despliegue** hay que ejecutar la inspección y
@@ -171,9 +210,11 @@ duplicados saliera mal, se restaura el respaldo del paso 5.2 sobre una base nuev
 
 ## 6. Pendiente (requiere acceso o autorización del propietario)
 
-1. Crear el usuario de solo lectura y ejecutar la inspección (paso 1); compartir `inspeccion.json` tras revisarlo.
+1. ~~Crear el usuario de solo lectura y ejecutar la inspección~~: hecho el 17 de noviembre (resultados en 1.1).
+   Borrar el usuario `nexa-lectura` cuando termine la fase si no se creó como temporal.
 2. Con esas cifras, decidir la política de correo (único global o por rol) y cómo resolver duplicados.
 3. Respaldo y restauración verificados (pasos 5.2–5.3).
 4. Ensayo en la copia y aprobación de los índices (5.4–5.5).
-5. Antes del primer despliegue de esta versión: confirmar que `xp_eventos` y `dispositivos` no tienen duplicados
-   (los índices de `NivelesIndices` se crean al arrancar).
+5. ~~Confirmar que `xp_eventos` y `dispositivos` no tienen duplicados~~: confirmado el 17 de noviembre (0 grupos;
+   los índices ya existen).
+6. Decidir sobre los 3 viajes EN_CURSO atascados, la tarjeta de propiedad repetida y los 2 tokens antiguos (1.1).
