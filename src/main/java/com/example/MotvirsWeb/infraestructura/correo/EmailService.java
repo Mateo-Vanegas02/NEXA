@@ -139,7 +139,7 @@ public class EmailService implements NotificadorCorreo {
 
     @Override
     public void enviarDeudaSeCobraEnProximoViaje(String emailDestino, String nombre, long monto) {
-        enviar(emailDestino, "NEXA - Cargo por cancelación",
+        enviarConfirmado(emailDestino, "NEXA - Cargo por cancelación",
                 "Hola " + (nombre == null ? "" : nombre) + ",\n\n"
                 + "Se registró un cargo de " + pesos(monto) + " por la cancelación de tu viaje.\n"
                 + "Se sumará al pago en efectivo del próximo viaje que pidas: antes de confirmarlo verás "
@@ -164,5 +164,15 @@ public class EmailService implements NotificadorCorreo {
         } catch (Exception e) {
             log.error("Error enviando correo de revisión: {}", e.getClass().getSimpleName());
         }
+    }
+
+    /** La bandeja persistente necesita observar el fallo SMTP para conservar el aviso pendiente. */
+    private void enviarConfirmado(String destino, String asunto, String texto) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(myEmail);
+        message.setTo(destino);
+        message.setSubject(asunto);
+        message.setText(texto);
+        mailSender.send(message);
     }
 }

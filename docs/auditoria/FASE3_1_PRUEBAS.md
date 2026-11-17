@@ -1,16 +1,14 @@
-# Fase 3.1 — pruebas
+# Fase 3.1 — evidencia de pruebas
 
-La suite Java completa llegó a 566 pruebas con agente Mockito explícito: hubo 1 fallo de `ModeloNexaWiringTest` al crear `RutaOsrm` y 6 errores iniciales de mocks en `ServicioAccesoTest`. Se corrigieron esos mocks y las clases focales `ServicioAccesoTest` (16 pruebas) y `ServicioServiceImplTest` (17 pruebas) pasaron después. El fallo de `RutaOsrm` permanece sin resolver.
+GitHub Actions CI #46, commit `927b8f5`:
 
-Después se ejecutaron todas las clases de pruebas Java salvo `ModeloNexaWiringTest` y el grupo `requiere-mongo`: **565 pruebas, 0 fallos, 0 errores**, en 70 suites. `ModeloNexaWiringTest` sigue pendiente de resolver; `Phase3MongoIntegrationTest` sigue pendiente de Docker.
+- `mongo-integration`: 11 pruebas, 0 fallos, 0 errores, con MongoDB 7 en réplica y datos sintéticos. Incluye la reversión conjunta de estado/deuda/aviso y el reintento de aviso tras un fallo de socket.
+- `test`: `mvn clean install` aprobado.
+- `docker`: imagen construida y arranque HTTP aprobado.
+- `Secret scan` #12: aprobado.
 
-- `mvnw.cmd -q -DskipTests test-compile`: pasó después de la transacción, bandeja y prueba de reversión/reintento.
-- `ServicioServiceImplTest` con agente Mockito explícito: 17 pruebas, 0 fallos, 0 errores.
-- `Phase3MongoIntegrationTest` con `-Dexcluded.groups=none`: no arrancó; Testcontainers informó `Could not find a valid Docker environment`. No hay resultado de las nuevas carreras en MongoDB real.
-- La suite Java completa iniciada sin agente Mockito explícito quedó sin resultado y se interrumpió; no se cuenta como aprobada.
-- JavaScript: no se encontraron `package.json` ni archivos de prueba JavaScript en este repositorio; no hay una suite identificada para ejecutar.
-- Escaneo histórico de secretos y Docker/CI para esta rama modificada: no ejecutados en esta tanda. `gitleaks`, `docker`, `mongosh` y `mongodump` no están disponibles en PATH local.
+En este equipo, `-Dtest=*,!ModeloNexaWiringTest` con agente Mockito y exclusión del grupo Mongo ejecutó 565 pruebas, 0 fallos y 0 errores. El entorno local no tiene Docker, por lo que la integración se ejecutó en CI. `ModeloNexaWiringTest` había fallado localmente al crear `RutaOsrm`; el job `test` de CI pasó.
 
-Las siete pruebas MongoDB registradas en el workflow de la fase 3 corresponden al código anterior; no validan los métodos añadidos en la fase 3.1.
+La primera ejecución de CI de fase 3.1 falló porque el contenedor Mongo no era un conjunto de réplica y una prueba asumía que inicio y cancelación no podían ocurrir en secuencia. Se corrigieron ambos puntos antes de CI #46.
 
-Nueva ejecución local tras los cambios de avisos/deuda: `-Dtest=*,!ModeloNexaWiringTest` con agente Mockito, **565 pruebas, 0 fallos, 0 errores**; el grupo `requiere-mongo` siguió excluido. El job `mongo-integration` de `.github/workflows/ci.yml` debe ejecutar la prueba nueva al publicar la rama.
+Después de CI #46 se añadió una prueba unitaria para comprobar que un fallo SMTP del aviso de deuda se propaga a la bandeja. Falta repetir CI con ese cambio. No se encontró una suite JavaScript en este repositorio (`package.json` y archivos de prueba ausentes).

@@ -5,8 +5,8 @@
 ## Actualización de fase 3.1 (17 de noviembre de 2026)
 
 - Compass confirmó `motvirsweb.Usuarios` (54 documentos) y `motvirsweb.servicios` (610). El propietario confirmó producción. Ambas colecciones tienen solo `_id_`; faltan índices efectivos de unicidad y análisis agregado de duplicados.
-- Se implementaron escrituras condicionales para varias transiciones en la rama de trabajo, con 17 pruebas unitarias focales aprobadas. Las nuevas pruebas MongoDB reales no se ejecutaron por ausencia de Docker local; el código no está desplegado.
-- Se implementaron transacciones para cargo/deuda y una bandeja persistente de avisos; faltan pruebas con MongoDB real y verificación de los límites de entrega al menos una vez. No se ha demostrado todavía integridad completa del ciclo de vida.
+- Se implementaron escrituras condicionales para varias transiciones en la rama de trabajo. Once pruebas MongoDB 7 en réplica pasaron en CI #46; el código no está desplegado.
+- Se implementaron transacciones para cargo/deuda y una bandeja persistente de avisos; la reversión y el reintento pasaron con MongoDB real. Falta verificar deduplicación móvil y el límite de entrega al menos una vez; no se ha demostrado todavía integridad completa de todos los efectos.
 - La investigación de secretos, rotación y limpieza Git sigue pendiente. Véase `FASE3_1_RESULTADOS.md`.
 
 ### Registro histórico de fase 3 (anterior a los cambios locales de 3.1)

@@ -336,7 +336,8 @@ class Phase3MongoIntegrationTest {
         viaje.setPasajero(new Servicio.PasajeroEmbedded(pasajero.getId(), "sintetico", pasajero.getEmail()));
         String id = servicios.save(viaje).getId();
         mongo.createCollection("avisos_viaje_pendientes");
-        DeudaService deudas = new DeudaService(usuarios, servicios, mongo, mock(NotificadorCorreo.class));
+        NotificadorCorreo correo = mock(NotificadorCorreo.class);
+        DeudaService deudas = new DeudaService(usuarios, servicios, mongo, correo);
         NotificadorTiempoReal socket = mock(NotificadorTiempoReal.class);
         AvisosPendientesService bandeja = new AvisosPendientesService(mongo, servicios, socket,
                 mock(AvisosService.class), deudas);
@@ -347,6 +348,7 @@ class Phase3MongoIntegrationTest {
                     LocalDateTime.now(), 4000, false, null));
             assertTrue(deudas.registrar(pasajero.getId(), id, 4000, LocalDateTime.now()));
             bandeja.registrar(id, AvisosPendientesService.Tipo.CANCELADO);
+            bandeja.registrar(id, AvisosPendientesService.Tipo.DEUDA);
             throw new IllegalStateException("fallo sintético antes del commit");
         }));
         assertEquals(EstadoServicio.ACEPTADO, servicios.findById(id).orElseThrow().getEstado());
@@ -359,6 +361,7 @@ class Phase3MongoIntegrationTest {
                     LocalDateTime.now(), 4000, false, null));
             assertTrue(deudas.registrar(pasajero.getId(), id, 4000, LocalDateTime.now()));
             bandeja.registrar(id, AvisosPendientesService.Tipo.CANCELADO);
+            bandeja.registrar(id, AvisosPendientesService.Tipo.DEUDA);
         });
         assertEquals(EstadoServicio.CANCELADO, servicios.findById(id).orElseThrow().getEstado());
         assertEquals(4000, deudas.deudaDe(pasajero.getId()).orElseThrow().getMonto());
@@ -375,6 +378,23 @@ class Phase3MongoIntegrationTest {
         assertEquals("ENVIADO", mongo.findById(avisoId, AvisosPendientesService.Pendiente.class,
                 "avisos_viaje_pendientes").estado());
         verify(socket, times(2)).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any());
+
+        String avisoDeudaId = id + ":DEUDA";
+        doThrow(new IllegalStateException("SMTP caído")).doNothing().when(correo)
+                .enviarDeudaSeCobraEnProximoViaje(org.mockito.ArgumentMatchers.anyString(),
+                        org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyLong());
+        bandeja.despachar(avisoDeudaId);
+        assertEquals("PENDIENTE", mongo.findById(avisoDeudaId, AvisosPendientesService.Pendiente.class,
+                "avisos_viaje_pendientes").estado());
+        mongo.updateFirst(Query.query(Criteria.where("_id").is(avisoDeudaId)),
+                new Update().set("proximoIntento", LocalDateTime.now().minusSeconds(1)),
+                "avisos_viaje_pendientes");
+        bandeja.despachar(avisoDeudaId);
+        assertEquals("ENVIADO", mongo.findById(avisoDeudaId, AvisosPendientesService.Pendiente.class,
+                "avisos_viaje_pendientes").estado());
+        verify(correo, times(2)).enviarDeudaSeCobraEnProximoViaje(
+                org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.any(),
+                org.mockito.ArgumentMatchers.eq(4000L));
     }
 
     @Test
