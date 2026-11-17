@@ -46,6 +46,18 @@ jobs:
             s.getDatabase("ci_transaccion").prueba.insertOne({ ok: 1 });
             s.commitTransaction();
             print("transaccion ok, setName=" + db.hello().setName);'
+      - name: Script de inspección de Atlas sobre datos sintéticos (solo lectura)
+        run: |
+          docker compose cp scripts/atlas/inspeccion-solo-lectura.js mongo:/tmp/inspeccion.js
+          docker compose cp scripts/atlas/prueba/sembrar-datos-sinteticos.js mongo:/tmp/sembrar.js
+          docker compose exec -T mongo mongosh --quiet --eval 'var BASE="nexa_inspeccion_ci"' --file /tmp/sembrar.js
+          hash() { docker compose exec -T mongo mongosh --quiet --eval 'print(db.getSiblingDB("nexa_inspeccion_ci").runCommand({dbHash: 1}).md5)'; }
+          antes=$(hash)
+          docker compose exec -T mongo mongosh --quiet --eval 'var BASE="nexa_inspeccion_ci"' --file /tmp/inspeccion.js > inspeccion.json
+          despues=$(hash)
+          test "$antes" = "$despues" || { echo "La inspección modificó la base"; exit 1; }
+          node scripts/atlas/prueba/verificar-salida.mjs inspeccion.json
+
       - name: Apagar
         if: always()
         run: docker compose --profile local-db down -v
