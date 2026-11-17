@@ -69,6 +69,12 @@ jobs:
           run 'var BASE="nexa_inspeccion_ci"; var MODO="revertir"' > revertir.json
           node scripts/atlas/prueba/verificar-indices.mjs plan.json crear.json revertir.json
 
+      - name: Diagnóstico de tarjeta repetida (solo lectura, sin valores en la salida)
+        run: |
+          docker compose cp scripts/atlas/diagnostico-tarjeta-repetida.js mongo:/tmp/diagnostico.js
+          docker compose exec -T mongo mongosh --quiet --eval 'var BASE="nexa_inspeccion_ci"' --file /tmp/diagnostico.js > diagnostico.json
+          node scripts/atlas/prueba/verificar-diagnostico.mjs diagnostico.json
+
       - name: Script de correcciones de datos (plan, guardia, aplicar y revertir el archivo en la base de prueba)
         run: |
           docker compose cp scripts/atlas/correcciones-datos-fase3-2.js mongo:/tmp/correcciones.js

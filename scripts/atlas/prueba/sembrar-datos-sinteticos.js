@@ -19,7 +19,7 @@
     { _id: conductores[0], email: 'repetido.sintetico@example.invalid', rol: 'CONDUCTOR', _class: 'CONDUCTOR',
       estadoValidacion: 'APROBADO', licencia: NumberLong(900001), soat: NumberLong(800001), tarjeta_de_propiedad: NumberLong(700001) },
     { _id: conductores[1], email: 'c2.sintetico@example.invalid', rol: 'CONDUCTOR', _class: 'CONDUCTOR',
-      estadoValidacion: 'PENDIENTE', licencia: NumberLong(900001), soat: NumberLong(0), tarjeta_de_propiedad: NumberLong(700002) },
+      estadoValidacion: 'PENDIENTE', licencia: NumberLong(900001), soat: NumberLong(0), tarjeta_de_propiedad: NumberLong(700001) },
     { _id: conductores[2], email: 'c3.sintetico@example.invalid', rol: 'CONDUCTOR', _class: 'CONDUCTOR',
       estadoValidacion: 'APROBADO', licencia: '900003', soat: NumberLong(800003), tarjeta_de_propiedad: NumberLong(700003) },
   ]);
@@ -42,6 +42,16 @@
     { viajeId: 'v1', rol: 'PASAJERO', motivo: 'VIAJE', xp: 10, aplicado: false },
   ]);
   base.dispositivos.insertOne({ token: 'token-sintetico', usuarioId: pasajeros[0] });
+  // Tarjeta repetida: el segundo conductor declaró otro número al subir la foto (error de digitación)
+  base.documentos_conductor.insertMany([
+    { conductorId: conductores[0].toHexString(), tipo: 'TARJETA_PROPIEDAD', numeroDeclarado: '700001', subidoEn: new Date() },
+    { conductorId: conductores[1].toHexString(), tipo: 'TARJETA_PROPIEDAD', numeroDeclarado: '700002', subidoEn: new Date() },
+  ]);
+  base.Vehiculos.insertMany([
+    { placa: 'AAA11A', conductor: { _id: conductores[0] } },
+    { placa: 'BBB22B', conductor: { _id: conductores[1] } },
+    { placa: 'aaa11a ', conductor: { _id: conductores[2] } },
+  ]);
   // Casos de las correcciones de fase 3.2
   S.insertMany([
     { estado: 'EN_CURSO', pasajero: { _id: pasajeros[2] }, conductor: { _id: conductores[2] },
