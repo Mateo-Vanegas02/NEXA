@@ -1,10 +1,13 @@
 package com.example.MotvirsWeb.integracion;
 
 import com.example.MotvirsWeb.aplicacion.puerto.NotificadorCorreo;
+import com.example.MotvirsWeb.aplicacion.puerto.NotificadorTiempoReal;
+import com.example.MotvirsWeb.aplicacion.servicio.AuthService;
 import com.example.MotvirsWeb.aplicacion.servicio.PasswordResetService;
 import com.example.MotvirsWeb.dominio.modelo.*;
 import com.example.MotvirsWeb.dominio.repositorio.ServicioRepository;
 import com.example.MotvirsWeb.dominio.repositorio.UsuarioRepository;
+import com.example.MotvirsWeb.dominio.repositorio.VehiculoRepository;
 import com.example.MotvirsWeb.infraestructura.seguridad.CustomUserDetailsService;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
@@ -23,11 +26,13 @@ import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.repository.support.MongoRepositoryFactory;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.testcontainers.mongodb.MongoDBContainer;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Proxy;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -111,15 +116,32 @@ class Phase3MongoIntegrationTest {
     }
 
     @Test
-    void indiceUnicoResisteDosInsercionesSimultaneas() throws Exception {
+    void registroConcurrenteConPrechecksSuperadosTerminaEnConflictoSeguro() throws Exception {
         mongo.getCollection("Usuarios").createIndex(Indexes.ascending("licencia"),
                 new IndexOptions().unique(true)
                         .partialFilterExpression(and(eq("rol", "CONDUCTOR"), gt("licencia", 0))));
+        CountDownLatch consultas = new CountDownLatch(2);
+        UsuarioRepository repoConBarrera = (UsuarioRepository) Proxy.newProxyInstance(
+                UsuarioRepository.class.getClassLoader(), new Class<?>[]{UsuarioRepository.class},
+                (proxy, metodo, args) -> {
+                    try {
+                        Object resultado = metodo.invoke(usuarios, args);
+                        if (metodo.getName().equals("existsByRolAndLicencia")) {
+                            consultas.countDown();
+                            assertTrue(consultas.await(10, TimeUnit.SECONDS));
+                        }
+                        return resultado;
+                    } catch (InvocationTargetException e) {
+                        throw e.getCause();
+                    }
+                });
+        AuthService registro = new AuthService(repoConBarrera, mock(VehiculoRepository.class),
+                new BCryptPasswordEncoder(), mock(UserDetailsService.class), mock(NotificadorTiempoReal.class));
         var pool = Executors.newFixedThreadPool(2);
         CountDownLatch inicio = new CountDownLatch(1);
         try {
-            var a = pool.submit(() -> guardarConductorAlArrancar(inicio, "a@example.test"));
-            var b = pool.submit(() -> guardarConductorAlArrancar(inicio, "b@example.test"));
+            var a = pool.submit(() -> registrarAlArrancar(registro, inicio, "a@example.test"));
+            var b = pool.submit(() -> registrarAlArrancar(registro, inicio, "b@example.test"));
             inicio.countDown();
             assertEquals(1, a.get(10, TimeUnit.SECONDS) + b.get(10, TimeUnit.SECONDS));
             assertEquals(1, usuarios.countByRol(Rol.CONDUCTOR));
@@ -170,16 +192,22 @@ class Phase3MongoIntegrationTest {
     }
 
     @Test
-    void tokenExpiradoYClaveDebilNoCambianLaCuenta() {
+    void tokenExpiradoYClaveDebilNoCambianLaCuenta() throws Exception {
+        String token = "token-expirado-sintetico";
+        String hash = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(
+                java.security.MessageDigest.getInstance("SHA-256")
+                        .digest(token.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
         Pasajero p = pasajero("expirado@example.test");
         p.setPassword("hash-anterior");
-        p.setResetPasswordTokenHash("hash-sintetico");
+        p.setResetPasswordTokenHash(hash);
         p.setResetPasswordTokenExpiry(LocalDateTime.now().minusMinutes(1));
         usuarios.save(p);
         PasswordResetService reset = new PasswordResetService(usuarios, new BCryptPasswordEncoder(),
                 mock(NotificadorCorreo.class), mongo);
-        assertThrows(IllegalArgumentException.class, () -> reset.resetPassword("token-desconocido", "NuevaClave123!"));
-        assertThrows(IllegalArgumentException.class, () -> reset.resetPassword("token-desconocido", "debil"));
+        assertThrows(IllegalArgumentException.class, () -> reset.resetPassword(token, "NuevaClave123!"));
+        assertThrows(IllegalArgumentException.class, () -> reset.resetPassword(token, "debil"));
+        assertThrows(IllegalArgumentException.class,
+                () -> reset.resetPassword("token-desconocido", "NuevaClave123!"));
         assertEquals("hash-anterior", usuarios.findById(p.getId().toHexString()).orElseThrow().getPassword());
     }
 
@@ -210,12 +238,13 @@ class Phase3MongoIntegrationTest {
         assertEquals(EstadoServicio.CANCELADO, servicios.findById(otro.getId()).orElseThrow().getEstado());
     }
 
-    private int guardarConductorAlArrancar(CountDownLatch inicio, String email) {
+    private static int registrarAlArrancar(AuthService registro, CountDownLatch inicio, String email) {
         try {
             inicio.await();
-            usuarios.save(conductor(email, 77777, 88888L));
+            registro.registrarConductor("Prueba", email, "Clave123!", "3001234567", 77777, 88888L, 99999L);
             return 1;
-        } catch (DuplicateKeyException e) {
+        } catch (IllegalStateException e) {
+            assertEquals("Ya existe un conductor con esos datos", e.getMessage());
             return 0;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
