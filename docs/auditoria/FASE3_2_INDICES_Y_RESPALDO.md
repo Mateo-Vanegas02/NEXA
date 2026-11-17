@@ -1,8 +1,8 @@
 # Fase 3.2 — Índices de producción y respaldo (preparación, sin aplicar)
 
-Estado: **nada se aplicó en Atlas.** Este documento y los scripts de `scripts/atlas/` preparan la inspección, la
-propuesta de índices y el respaldo. La inspección de solo lectura ya se ejecutó en producción; sus resultados están
-en la sección 1.1.
+Estado al 17 de noviembre de 2026: inspección, respaldo, restauración de ensayo, correcciones de datos (5.7) e
+índices I1–I9 (5.5) **aplicados y verificados en producción** por el propietario con los scripts de
+`scripts/atlas/`.
 
 ## 1. Inspección en solo lectura
 
@@ -221,6 +221,16 @@ El script se niega a escribir en `motvirsweb` sin `PRODUCCION_APROBADA`. Desde M
 índices no bloquea la colección durante casi todo el proceso; con estos volúmenes tarda segundos. Un índice único
 que encuentre duplicados no se crea y no modifica datos.
 
+**Aplicado en producción el 17 de noviembre de 2026** con aprobación del propietario, tras el ensayo de 5.4: los 9
+índices (I1–I9) quedaron creados en `motvirsweb`. I7 se pudo crear después de resolver la tarjeta repetida: el
+propietario indicó que los dos conductores eran cuentas de prueba y se pasaron a `RECHAZADO` con
+`scripts/atlas/rechazar-conductores-prueba.js` (se les quitó la tarjeta y se guardaron estado y tarjeta anteriores en
+`rechazoAdministrativo` para poder revertir; su historial no se tocó; `gruposConTarjetaRepetida` pasó de 1 a 0).
+
+Limpieza: la base de ensayo `motvirsweb_copia` se borra colección por colección (el usuario de mantenimiento tiene
+`readWriteAnyDatabase`, que no incluye `dropDatabase`; una base sin colecciones desaparece sola) o desde Atlas →
+Browse Collections. Después se elimina el usuario temporal de escritura.
+
 ### 5.6 Reversión
 
 ```bash
@@ -273,8 +283,8 @@ mismos documentos (4, 3, 0, 0, 1); el resto de colecciones sin cambios y la deud
 5. ~~Confirmar que `xp_eventos` y `dispositivos` no tienen duplicados~~: confirmado el 17 de noviembre (0 grupos;
    los índices ya existen).
 6. ~~Viajes atascados, tokens antiguos y colecciones sin uso~~: aplicado y verificado el 17 de noviembre (5.7).
-   Tarjeta de propiedad: el propietario decidió que una moto solo puede tener un conductor (el código ya lo
-   valida en el registro y al agregar vehículos). El par repetido son dos conductores aprobados con viajes,
+   ~~Tarjeta de propiedad~~: resuelto el 17 de noviembre (cuentas de prueba rechazadas, I7 creado; ver 5.5).
+   Regla: una moto solo puede tener un conductor (el código ya lo valida en el registro y al agregar vehículos). El par repetido son dos conductores aprobados con viajes,
    registrados con 7 meses de diferencia y sin fotos de documentos; puede ser un error de digitación o una moto
    que cambió de conductor (el SOAT se renueva cada año, así que un SOAT distinto no lo descarta). Un administrador
    debe confirmarlo con ambos; después se crea I7.
