@@ -339,8 +339,9 @@ class Phase3MongoIntegrationTest {
         NotificadorCorreo correo = mock(NotificadorCorreo.class);
         DeudaService deudas = new DeudaService(usuarios, servicios, mongo, correo);
         NotificadorTiempoReal socket = mock(NotificadorTiempoReal.class);
+        // Executor que no ejecuta: esta prueba controla a mano cada despacho y sus reintentos.
         AvisosPendientesService bandeja = new AvisosPendientesService(mongo, servicios, socket,
-                mock(AvisosService.class), deudas);
+                mock(AvisosService.class), deudas, tarea -> { });
         TransactionTemplate tx = new TransactionTemplate(new MongoTransactionManager(mongo.getMongoDatabaseFactory()));
 
         assertThrows(IllegalStateException.class, () -> tx.executeWithoutResult(estado -> {
@@ -395,6 +396,30 @@ class Phase3MongoIntegrationTest {
         verify(correo, times(2)).enviarDeudaSeCobraEnProximoViaje(
                 org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.any(),
                 org.mockito.ArgumentMatchers.eq(4000L));
+    }
+
+    @Test
+    void elAvisoSeEnviaAlConfirmarLaTransaccionSinEsperarAlBarrido() {
+        Servicio viaje = new Servicio();
+        viaje.setEstado(EstadoServicio.ACEPTADO);
+        viaje.setFechaLlegada(LocalDateTime.now());
+        String id = servicios.save(viaje).getId();
+        mongo.createCollection("avisos_viaje_pendientes");
+        NotificadorTiempoReal socket = mock(NotificadorTiempoReal.class);
+        AvisosPendientesService bandeja = new AvisosPendientesService(mongo, servicios, socket,
+                mock(AvisosService.class), mock(DeudaService.class), Runnable::run);
+        TransactionTemplate tx = new TransactionTemplate(new MongoTransactionManager(mongo.getMongoDatabaseFactory()));
+
+        assertThrows(IllegalStateException.class, () -> tx.executeWithoutResult(estado -> {
+            bandeja.registrar(id, AvisosPendientesService.Tipo.LLEGADA);
+            throw new IllegalStateException("fallo sintético antes del commit");
+        }));
+        verify(socket, times(0)).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any());
+
+        tx.executeWithoutResult(estado -> bandeja.registrar(id, AvisosPendientesService.Tipo.LLEGADA));
+        verify(socket, times(1)).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any());
+        assertEquals("ENVIADO", mongo.findById(id + ":LLEGADA", AvisosPendientesService.Pendiente.class,
+                "avisos_viaje_pendientes").estado());
     }
 
     @Test

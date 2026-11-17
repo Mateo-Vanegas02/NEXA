@@ -27,6 +27,29 @@ jobs:
       - name: Pruebas con MongoDB desechable
         run: mvn -B -Dtest=Phase3MongoIntegrationTest -Dexcluded.groups=none test
 
+  mongo-local-replica:
+    # El Mongo de docker-compose debe admitir transacciones (replica set rs0).
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Levantar el Mongo local de docker-compose
+        run: |
+          touch .env
+          docker compose --profile local-db up -d --wait --wait-timeout 120 mongo
+      - name: Confirmar replica set y una transacción
+        run: |
+          docker compose exec -T mongo mongosh --quiet --eval '
+            if (!db.hello().isWritablePrimary) { quit(1) }
+            const s = db.getMongo().startSession();
+            s.startTransaction();
+            s.getDatabase("ci_transaccion").prueba.insertOne({ ok: 1 });
+            s.commitTransaction();
+            print("transaccion ok, setName=" + db.hello().setName);'
+      - name: Apagar
+        if: always()
+        run: docker compose --profile local-db down -v
+
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 20
