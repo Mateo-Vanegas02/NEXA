@@ -107,8 +107,9 @@ public class AvisosPendientesService {
     public void procesar() {
         Query candidatos = reclamables(LocalDateTime.now()).limit(50).with(Sort.by("proximoIntento"));
         candidatos.fields().include("_id");
-        for (Pendiente pendiente : mongo.find(candidatos, Pendiente.class, COLECCION)) {
-            if (!encolar(pendiente.id())) {
+        // Solo los ids (documento crudo: el record Pendiente no admite campos ausentes como intentos)
+        for (org.bson.Document pendiente : mongo.find(candidatos, org.bson.Document.class, COLECCION)) {
+            if (!encolar(pendiente.getString("_id"))) {
                 break; // cola llena: el resto espera al próximo barrido
             }
         }

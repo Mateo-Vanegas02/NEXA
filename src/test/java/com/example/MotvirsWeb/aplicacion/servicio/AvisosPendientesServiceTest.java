@@ -97,8 +97,8 @@ class AvisosPendientesServiceTest {
     void elBarridoNoEnviaEnSuPropioHiloAunqueElEnvioSeaLento() throws Exception {
         CountDownLatch envioEmpezo = new CountDownLatch(1);
         CountDownLatch liberarEnvio = new CountDownLatch(1);
-        when(mongo.find(any(Query.class), eq(AvisosPendientesService.Pendiente.class), eq("avisos_viaje_pendientes")))
-                .thenReturn(List.of(pendiente("s1:LLEGADA", "PENDIENTE", 0)));
+        when(mongo.find(any(Query.class), eq(org.bson.Document.class), eq("avisos_viaje_pendientes")))
+                .thenReturn(List.of(new org.bson.Document("_id", "s1:LLEGADA")));
         when(mongo.findAndModify(any(Query.class), any(Update.class), any(FindAndModifyOptions.class),
                 eq(AvisosPendientesService.Pendiente.class), eq("avisos_viaje_pendientes")))
                 .thenAnswer(inv -> {
@@ -122,10 +122,8 @@ class AvisosPendientesServiceTest {
 
     @Test
     void conLaColaLlenaElAvisoQuedaParaElProximoBarrido() {
-        when(mongo.find(any(Query.class), eq(AvisosPendientesService.Pendiente.class), eq("avisos_viaje_pendientes")))
-                .thenReturn(List.of(
-                        pendiente("a", "PENDIENTE", 0),
-                        pendiente("b", "PENDIENTE", 0)));
+        when(mongo.find(any(Query.class), eq(org.bson.Document.class), eq("avisos_viaje_pendientes")))
+                .thenReturn(List.of(new org.bson.Document("_id", "a"), new org.bson.Document("_id", "b")));
         List<Runnable> aceptados = new ArrayList<>();
         java.util.concurrent.Executor llena = r -> {
             throw new RejectedExecutionException("llena");
