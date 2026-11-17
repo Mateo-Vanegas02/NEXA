@@ -50,12 +50,14 @@ public interface UsuarioRepository extends MongoRepository <Usuario, String>  {
     long countByRol (Rol rol);
     long countByRolAndEstadoValidacion (Rol rol, EstadoValidacion estado);
 
+    long countByRolAndEstadoValidacionIn(Rol rol, List<EstadoValidacion> estados);
+
     // Método para conteo de conductores por múltiples estados
     default long countConductoresByEstados(EstadoValidacion... estados) {
-        return this.findByRol(Rol.CONDUCTOR)
-                .stream()
-                .filter(u -> Arrays.asList(estados).contains(u.getEstadoValidacion()))
-                .count();
+        if (estados == null || estados.length == 0) {
+            return 0;
+        }
+        return countByRolAndEstadoValidacionIn(Rol.CONDUCTOR, Arrays.asList(estados));
     }
 
     // Método adicional para obtener conductores por rol
