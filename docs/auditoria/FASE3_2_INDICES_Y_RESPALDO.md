@@ -224,13 +224,30 @@ lo hace en un solo paso, con los mismos modos y la misma guardia que el script d
 Repetirlo no cambia nada más (idempotente). CI lo prueba en la base sintética: plan, guardia de producción, aplicar,
 segunda pasada sin cambios y reversión del archivo.
 
+**Aplicado en producción el 17 de noviembre de 2026** por el propietario, con un usuario temporal de escritura y
+después de:
+
+- Respaldo `mongodump` de las 18 colecciones en una carpeta fuera del repositorio, con huellas SHA-256 guardadas.
+  `bsondump` leyó todos los archivos completos y los conteos coinciden con la inspección: `Usuarios` 54,
+  `servicios` 610, `xp_eventos` 1483 y el resto. No se ensayó una restauración completa (sin Docker en ese equipo);
+  queda pendiente antes de crear índices.
+- Plan previo: 3 viajes atascados (unas 4377 h, unos 6 meses, desde la aceptación), 2 cuentas con token antiguo y
+  5 colecciones (8 documentos).
+
+Resultado: 3 viajes cancelados, 2 cuentas y 2 vencimientos limpiados, 5 colecciones archivadas. La inspección
+posterior confirma: `servicios` 573 FINALIZADO y 37 CANCELADO, sin viajes abiertos ni conductores con varios
+viajes activos; `conTokenAntiguoEnClaro` y `conTokenVencido` en 0; las colecciones `archivo_20261117_*` con los
+mismos documentos (4, 3, 0, 0, 1); el resto de colecciones sin cambios y la deuda vigente sigue coherente.
+
 ## 6. Pendiente (requiere acceso o autorización del propietario)
 
 1. ~~Crear el usuario de solo lectura y ejecutar la inspección~~: hecho el 17 de noviembre (resultados en 1.1).
    Borrar el usuario `nexa-lectura` cuando termine la fase si no se creó como temporal.
 2. Con esas cifras, decidir la política de correo (único global o por rol) y cómo resolver duplicados.
-3. Respaldo y restauración verificados (pasos 5.2–5.3).
+3. ~~Respaldo~~ hecho y verificado por conteos el 17 de noviembre; falta el ensayo de restauración completa
+   (5.3) antes de los índices.
 4. Ensayo en la copia y aprobación de los índices (5.4–5.5).
 5. ~~Confirmar que `xp_eventos` y `dispositivos` no tienen duplicados~~: confirmado el 17 de noviembre (0 grupos;
    los índices ya existen).
-6. Decidir sobre los 3 viajes EN_CURSO atascados, la tarjeta de propiedad repetida y los 2 tokens antiguos (1.1).
+6. ~~Viajes atascados, tokens antiguos y colecciones sin uso~~: aplicado y verificado el 17 de noviembre (5.7).
+   Sigue pendiente decidir sobre la tarjeta de propiedad repetida (I7).
