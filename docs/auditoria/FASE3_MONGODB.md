@@ -4,6 +4,10 @@ La prueba `Phase3MongoIntegrationTest` inicia `mongo:7` con Testcontainers en Gi
 
 Se verificaron nombres persistidos de la colección `Usuarios`, del token hash y de su expiración; índices parciales únicos de licencia y SOAT; consultas de conteo; y actualizaciones condicionales. En producción no se conoce versión de servidor, nombres/índices reales, tipos BSON, cardinalidad, duplicados, valores ausentes ni permisos. La conexión guardada en Compass no se inspeccionó por rechazo del control de escritorio.
 
+## Observación de Compass reportada por el propietario
+
+En una conexión de Atlas, el propietario examinó `motvirsweb.creditos_nexa` en modo solo lectura: informó cero documentos, índices `_id_` y `usuarioId + venceEn` ascendentes, sin validador configurado y sin escrituras. Es una observación de esa colección, no un inventario de toda la base ni una verificación directa por este agente. `creditos_nexa` figura en la documentación de beneficios; los modelos de identidad y viajes de esta auditoría mapean a `Usuarios` y `servicios`. Faltan nombres y recuentos de esas colecciones, índices de `Usuarios` y clasificación del entorno antes de cualquier conclusión sobre datos reales.
+
 ## Procedimiento antes de una migración real
 
 1. Identificar cluster, entorno y base mediante acceso autorizado de solo lectura. Registrar únicamente metadatos y agregados sin datos personales.
