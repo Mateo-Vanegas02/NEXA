@@ -8,10 +8,10 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import com.example.MotvirsWeb.dominio.modelo.Conductor;
 import com.example.MotvirsWeb.dominio.modelo.EstadoValidacion;
@@ -70,7 +70,12 @@ public class AuthService {
                 .telefono(telefono)
                 .build();
 
-        Pasajero pasajeroGuardado = usuarioRepository.save(pasajero);
+        Pasajero pasajeroGuardado;
+        try {
+            pasajeroGuardado = usuarioRepository.save(pasajero);
+        } catch (DuplicateKeyException e) {
+            throw new IllegalStateException("Ya existe una cuenta con esos datos", e);
+        }
         enviarNotificacionAdminSegura(pasajeroGuardado);
         return pasajeroGuardado;
     }
@@ -106,7 +111,12 @@ public class AuthService {
                 .build();
 
         // Guardado en BD
-        Conductor conductorGuardado = usuarioRepository.save(conductor);
+        Conductor conductorGuardado;
+        try {
+            conductorGuardado = usuarioRepository.save(conductor);
+        } catch (DuplicateKeyException e) {
+            throw new IllegalStateException("Ya existe un conductor con esos datos", e);
+        }
 
         // Notificación al Admin (Socket)
         enviarNotificacionAdminSegura(conductorGuardado);
@@ -133,15 +143,6 @@ public class AuthService {
 
             if (!passwordEncoder.matches(password, userDetails.getPassword())) {
                 throw new BadCredentialsException("Credenciales inválidas");
-            }
-
-            // Verificación adicional de estado para conductores
-            Usuario usuario = usuarioRepository.findByEmail(email)
-                    .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
-
-            if (usuario.getRol() == Rol.CONDUCTOR &&
-                    usuario.getEstadoValidacion() != EstadoValidacion.APROBADO) {
-                throw new DisabledException("Cuenta de conductor no aprobada");
             }
 
             return userDetails;

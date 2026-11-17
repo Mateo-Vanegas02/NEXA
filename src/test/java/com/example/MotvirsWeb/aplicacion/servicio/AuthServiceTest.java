@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
+import org.springframework.dao.DuplicateKeyException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -109,17 +110,26 @@ public class AuthServiceTest {
     }
 
     @Test
+    void registrarConductorTraduceColisionDeIndice() {
+        when(usuarioRepository.save(any(Conductor.class))).thenThrow(new DuplicateKeyException("indice interno"));
+        IllegalStateException e = assertThrows(IllegalStateException.class,
+                () -> authService.registrarConductor("Test", "conductor@test.com", "password",
+                        "3001234567", 12345L, 67890L, 111L));
+        assertEquals("Ya existe un conductor con esos datos", e.getMessage());
+    }
+
+    @Test
     void autenticarUsuario_Success() {
         UserDetails mockDetails = mock(UserDetails.class);
         when(mockDetails.getPassword()).thenReturn("encoded_pass");
         when(customUserDetailsService.loadUserByUsername("pasajero@test.com")).thenReturn(mockDetails);
         when(passwordEncoder.matches("password", "encoded_pass")).thenReturn(true);
-        when(usuarioRepository.findByEmail("pasajero@test.com")).thenReturn(Optional.of(testPasajero));
 
         UserDetails result = authService.autenticarUsuario("pasajero@test.com", "password");
 
         assertNotNull(result);
         verify(passwordEncoder).matches("password", "encoded_pass");
+        verify(usuarioRepository, never()).findByEmail(anyString());
     }
 
     @Test
@@ -135,11 +145,8 @@ public class AuthServiceTest {
 
     @Test
     void autenticarUsuario_ConductorNotApproved_ThrowsException() {
-        UserDetails mockDetails = mock(UserDetails.class);
-        when(mockDetails.getPassword()).thenReturn("encoded_pass");
-        when(customUserDetailsService.loadUserByUsername("conductor@test.com")).thenReturn(mockDetails);
-        when(passwordEncoder.matches("password", "encoded_pass")).thenReturn(true);
-        when(usuarioRepository.findByEmail("conductor@test.com")).thenReturn(Optional.of(testConductor));
+        when(customUserDetailsService.loadUserByUsername("conductor@test.com"))
+                .thenThrow(new DisabledException("Cuenta de conductor no aprobada"));
 
         assertThrows(DisabledException.class, () -> authService.autenticarUsuario("conductor@test.com", "password"));
     }
