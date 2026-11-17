@@ -1,5 +1,34 @@
 # Riesgos pendientes
 
+## Actualización de fase 3.2 (17 de noviembre de 2026)
+
+Detalle y evidencia en `FASE3_2.md`. Las secciones anteriores quedan como registro; esta es la lista vigente.
+
+**Cerrados en esta fase (con prueba en CI o verificación en producción):**
+
+- Transiciones de viaje, deuda y calificación sin `save()` de documento completo: todas condicionales y, donde
+  tocan varias colecciones, en una transacción con reintento ante conflictos (409, no 500).
+- Bandeja de avisos: reclamación con `lease`, tope de intentos, envío inmediato tras el commit y aislamiento del
+  hilo de tareas programadas.
+- Inventario de producción hecho en solo lectura (tipos, duplicados, índices); respaldo `mongodump` verificado y
+  restauración completa ensayada en una copia.
+- Índices de producción: I1–I9 creados (licencia, SOAT y tarjeta únicos y parciales; correo no único; viajes por
+  estado, pasajero y conductor; bandeja de avisos). La unicidad de licencia/SOAT ya no depende solo del código.
+- Tokens de recuperación antiguos en texto claro: borrados en producción.
+- Secretos: auditoría completa del historial sin credenciales de servidor; secret scanning y push protection
+  activados en GitHub por el propietario.
+
+**Siguen abiertos:**
+
+- Nada de la rama está desplegado; la versión que sirve producción no tiene estas correcciones.
+- Correo: sin duplicados hoy, pero no se normaliza ni es único; falta decidir la política (global o por rol).
+- Entrega de avisos al menos una vez: falta confirmar que la app móvil descarta `eventoId` repetidos.
+- Clave de Firebase Android (restricciones) e informe público de Power BI (qué datos muestra).
+- Credenciales temporales de la fase (usuarios de Atlas, contraseña expuesta en el chat de trabajo) y base de
+  ensayo `motvirsweb_copia`: confirmar su eliminación o rotación.
+- Heredados de fases 2 y 3: revocación de JWT, CSP, paginación de listados del admin, STOMP y límite de
+  peticiones por instancia (ver abajo).
+
 ## Actualización de fase 3
 
 ## Actualización de fase 3.1 (17 de noviembre de 2026)

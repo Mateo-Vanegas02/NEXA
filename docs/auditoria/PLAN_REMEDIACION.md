@@ -1,5 +1,18 @@
 # Plan de remediación
 
+## Estado tras fase 3.2 (17 de noviembre de 2026)
+
+De la "Continuación de fase 3.1" quedan hechos los puntos 1 (gate de integración con Mongo, ahora 24 pruebas),
+3 (agregados de producción, respaldo y restauración en copia, índices aplicados) y la auditoría de secretos de
+este repositorio del punto 4. Siguiente secuencia, en orden:
+
+1. Revisar y fusionar el PR de la rama; desplegar con un usuario de MongoDB propio y la base ya indexada.
+2. Decidir la política de correo, normalizar los 5 correos con mayúsculas o espacios y crear el índice único.
+3. Confirmar en la app móvil la deduplicación por `eventoId`.
+4. Restringir la clave de Firebase y revisar el informe público de Power BI.
+5. Abordar los heredados: JWT (`DISENO_JWT.md`), CSP (`ESTRATEGIA_CSP.md`), paginación del admin.
+6. Consolidar `docs/auditoria/` según la propuesta de `FASE3_2.md`.
+
 ## Continuación de fase 3.1
 
 1. Las 11 pruebas de `Phase3MongoIntegrationTest` pasaron en CI con MongoDB 7 en réplica. Mantener ese job como requisito antes de integrar nuevas transiciones.
