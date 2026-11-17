@@ -729,6 +729,46 @@ class Phase3MongoIntegrationTest {
     }
 
     @Test
+    void conElEjecutorRealElPerdedorDeUnaCarreraRecibe409NuncaUnErrorDeMongo() throws Exception {
+        for (int ronda = 0; ronda < 5; ronda++) {
+            String sid = new ObjectId().toHexString();
+            Pasajero p = conDeuda("deuda-ejecutor-" + ronda + "@example.test", sid, 3000);
+            DeudaService deudas = new DeudaService(usuarios, servicios, mongo, mock(NotificadorCorreo.class));
+            deudas.setTransacciones(new com.example.MotvirsWeb.aplicacion.servicio.EjecutorTransacciones(
+                    new MongoTransactionManager(mongo.getMongoDatabaseFactory())));
+            String pid = p.getId().toHexString();
+            var pool = Executors.newFixedThreadPool(2);
+            CountDownLatch inicio = new CountDownLatch(1);
+            AtomicInteger exitos = new AtomicInteger();
+            AtomicInteger conflictos = new AtomicInteger();
+            Runnable pagar = () -> {
+                try {
+                    inicio.await();
+                    deudas.confirmarPago(pid, sid, LocalDateTime.now(), "EFECTIVO", null);
+                    exitos.incrementAndGet();
+                } catch (org.springframework.web.server.ResponseStatusException e) {
+                    assertEquals(409, e.getStatusCode().value());
+                    conflictos.incrementAndGet();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            };
+            try {
+                var a = pool.submit(pagar);
+                var b = pool.submit(pagar);
+                inicio.countDown();
+                a.get(20, TimeUnit.SECONDS); // un error de Mongo sin traducir haría fallar este get
+                b.get(20, TimeUnit.SECONDS);
+            } finally {
+                pool.shutdownNow();
+            }
+            assertEquals(1, exitos.get());
+            assertEquals(1, conflictos.get());
+            assertNotNull(cargo(sid).getCargoPagadoEn());
+        }
+    }
+
+    @Test
     void aceptarYVencerSonTransicionesCondicionales() throws Exception {
         Servicio viaje = new Servicio();
         viaje.setEstado(EstadoServicio.SOLICITADO);

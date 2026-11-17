@@ -65,14 +65,25 @@ public class ServicioServiceImpl implements ServicioService {
     private final AvisosService avisos;
     private final AvisosPendientesService avisosPendientes;
     private final ModeloNexaProperties modeloNexa;
+    /** Transacción Mongo con reintento ante conflictos transitorios; sin Spring (pruebas), sin transacción. */
+    private EjecutorTransacciones transacciones = EjecutorTransacciones.sinTransaccion();
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    public void setTransacciones(EjecutorTransacciones transacciones) {
+        this.transacciones = transacciones;
+    }
 
     static final String VIAJE_NO_DISPONIBLE = "Otro conductor ya tomó este viaje. Ya no está disponible.";
 
     // ─────────────────────────── CONDUCTOR ───────────────────────────
 
     @Override
-    @org.springframework.transaction.annotation.Transactional
     public Map<String, Object> aceptarServicio(String servicioId, Conductor conductor) {
+        return transacciones.ejecutar(() -> aceptarEnTransaccion(servicioId, conductor));
+    }
+
+    /** Lecturas, escrituras condicionales y avisos para después del commit: se puede reintentar entero. */
+    private Map<String, Object> aceptarEnTransaccion(String servicioId, Conductor conductor) {
         Servicio servicio = buscarServicio(servicioId);
 
         if (servicio.getEstado() != EstadoServicio.SOLICITADO) {
@@ -138,8 +149,13 @@ public class ServicioServiceImpl implements ServicioService {
     }
 
     @Override
-    @org.springframework.transaction.annotation.Transactional
     public Map<String, Object> confirmarLlegada(String servicioId, Conductor conductor, double latitud,
+            double longitud, LocalDateTime ocurridoEn) {
+        return transacciones.ejecutar(() -> confirmarLlegadaEnTransaccion(servicioId, conductor, latitud, longitud, ocurridoEn));
+    }
+
+    /** Lecturas, escrituras condicionales y avisos para después del commit: se puede reintentar entero. */
+    private Map<String, Object> confirmarLlegadaEnTransaccion(String servicioId, Conductor conductor, double latitud,
             double longitud, LocalDateTime ocurridoEn) {
         Servicio servicio = buscarServicio(servicioId);
         exigirConductorAsignado(servicio, conductor);
@@ -172,8 +188,12 @@ public class ServicioServiceImpl implements ServicioService {
     }
 
     @Override
-    @org.springframework.transaction.annotation.Transactional
     public Map<String, Object> iniciarServicio(String servicioId, Conductor conductor, LocalDateTime ocurridoEn) {
+        return transacciones.ejecutar(() -> iniciarEnTransaccion(servicioId, conductor, ocurridoEn));
+    }
+
+    /** Lecturas, escrituras condicionales y avisos para después del commit: se puede reintentar entero. */
+    private Map<String, Object> iniciarEnTransaccion(String servicioId, Conductor conductor, LocalDateTime ocurridoEn) {
         Servicio servicio = buscarServicio(servicioId);
 
         if (servicio.getEstado() != EstadoServicio.ACEPTADO) {
@@ -221,9 +241,46 @@ public class ServicioServiceImpl implements ServicioService {
         return f > 0 && f <= 1.0 ? f : 1.0;
     }
 
+    /**
+     * Finaliza en dos partes. Crítico, en una transacción (todo o nada): el paso a FINALIZADO con la fracción
+     * cobrada, el recorrido, el cobro de la deuda aceptada y la inscripción del aviso. Recuperable, después del
+     * commit: niveles/XP y desglose definitivo; si fallan, el viaje queda finalizado y {@code NivelesScheduler}
+     * los reprocesa (es idempotente).
+     */
     @Override
-    @org.springframework.transaction.annotation.Transactional
     public Map<String, Object> finalizarServicio(String servicioId, Conductor conductor, LocalDateTime ocurridoEn) {
+        Servicio servicio = transacciones.ejecutar(() -> finalizarEnTransaccion(servicioId, conductor, ocurridoEn));
+
+        // Niveles: nunca debe impedir que el viaje se complete (se reprocesa si falla).
+        NivelesService.ResultadoViaje niveles = null;
+        try {
+            niveles = nivelesService.procesarFinalizacion(servicio);
+            servicioRepository.guardarResultadoNiveles(servicioId, servicio.getDesglose(),
+                    servicio.getXpGanadoPasajero(), servicio.getXpGanadoConductor(), servicio.getTarifa());
+        } catch (Exception e) {
+            log.error("No se pudo procesar niveles/XP del servicio {}; queda para el reproceso", servicioId, e);
+            niveles = null;
+        }
+
+        Map<String, Object> respuesta = new HashMap<>();
+        respuesta.put("mensaje", "Servicio finalizado con éxito. Redirigiendo a calificación...");
+        respuesta.put("servicioId", servicioId);
+        respuesta.put("redirectUrl", "/rating?servicioId=" + servicioId + "&rol=conductor");
+        if (niveles != null) {
+            respuesta.put("xpGanado", niveles.xpConductor());
+            respuesta.put("nivel", niveles.nivelConductorDespues());
+            respuesta.put("subioNivel", niveles.subioNivelConductor());
+            if (niveles.xpFaltanteConductor() != null) {
+                respuesta.put("xpFaltante", niveles.xpFaltanteConductor());
+            }
+            respuesta.put("desglose", com.example.MotvirsWeb.presentacion.dto.DesgloseConductorDto.de(
+                    niveles.desglose(), servicio.getDeudaCobrada()));
+        }
+        return respuesta;
+    }
+
+    /** Parte crítica de {@link #finalizarServicio}: devuelve el viaje ya finalizado (en memoria) para niveles. */
+    private Servicio finalizarEnTransaccion(String servicioId, Conductor conductor, LocalDateTime ocurridoEn) {
         Servicio servicio = buscarServicio(servicioId);
 
         if (servicio.getEstado() != EstadoServicio.EN_CURSO ||
@@ -259,47 +316,24 @@ public class ServicioServiceImpl implements ServicioService {
         despuesDeConfirmar(() -> viajeEnVivo.terminar(conductor.getId(), servicioId));
 
         // La deuda que el pasajero aceptó al pedir el viaje se cobra ahora, en efectivo, junto con la tarifa.
-        try {
-            long cobrado = deudaService.cobrarEnViaje(servicio, servicio.getFechaFinalizacion());
-            if (cobrado != servicio.getDeudaCobrada()) {
-                servicio.setDeudaCobrada(cobrado);
-                servicioRepository.guardarDeudaCobrada(servicioId, cobrado);
-            }
-        } catch (RuntimeException e) {
-            log.error("No se pudo cobrar la deuda con el servicio {}", servicioId, e);
-        }
-
-        // Niveles: nunca debe impedir que el viaje se complete.
-        NivelesService.ResultadoViaje niveles = null;
-        try {
-            niveles = nivelesService.procesarFinalizacion(servicio);
-            servicioRepository.guardarResultadoNiveles(servicioId, servicio.getDesglose(),
-                    servicio.getXpGanadoPasajero(), servicio.getXpGanadoConductor());
-        } catch (Exception e) {
-            log.error("No se pudo procesar niveles/XP del servicio {}", servicioId, e);
+        // Es parte del cobro: si falla, se revierte la finalización entera (el conductor reintenta) en vez de
+        // dejar un viaje cerrado con la deuda a medias. Si otro ya la resolvió, cobrarEnViaje devuelve 0.
+        long cobrado = deudaService.cobrarEnViaje(servicio, servicio.getFechaFinalizacion());
+        if (cobrado != servicio.getDeudaCobrada()) {
+            servicio.setDeudaCobrada(cobrado);
+            servicioRepository.guardarDeudaCobrada(servicioId, cobrado);
         }
         avisosPendientes.registrar(servicioId, AvisosPendientesService.Tipo.FINALIZADO);
-
-        Map<String, Object> respuesta = new HashMap<>();
-        respuesta.put("mensaje", "Servicio finalizado con éxito. Redirigiendo a calificación...");
-        respuesta.put("servicioId", servicioId);
-        respuesta.put("redirectUrl", "/rating?servicioId=" + servicioId + "&rol=conductor");
-        if (niveles != null) {
-            respuesta.put("xpGanado", niveles.xpConductor());
-            respuesta.put("nivel", niveles.nivelConductorDespues());
-            respuesta.put("subioNivel", niveles.subioNivelConductor());
-            if (niveles.xpFaltanteConductor() != null) {
-                respuesta.put("xpFaltante", niveles.xpFaltanteConductor());
-            }
-            respuesta.put("desglose", com.example.MotvirsWeb.presentacion.dto.DesgloseConductorDto.de(
-                    niveles.desglose(), servicio.getDeudaCobrada()));
-        }
-        return respuesta;
+        return servicio;
     }
 
     @Override
-    @org.springframework.transaction.annotation.Transactional
     public Map<String, Object> cancelarServicioConductor(String servicioId, Conductor conductor) {
+        return transacciones.ejecutar(() -> cancelarConductorEnTransaccion(servicioId, conductor));
+    }
+
+    /** Lecturas, escrituras condicionales y avisos para después del commit: se puede reintentar entero. */
+    private Map<String, Object> cancelarConductorEnTransaccion(String servicioId, Conductor conductor) {
         Servicio servicio = buscarServicio(servicioId);
 
         if (!servicio.getConductor().getId().equals(conductor.getId())) {
@@ -557,8 +591,12 @@ public class ServicioServiceImpl implements ServicioService {
     }
 
     @Override
-    @org.springframework.transaction.annotation.Transactional
     public Map<String, Object> cancelarViajePasajero(String servicioId, Pasajero pasajero) {
+        return transacciones.ejecutar(() -> cancelarPasajeroEnTransaccion(servicioId, pasajero));
+    }
+
+    /** Lecturas, escrituras condicionales y avisos para después del commit: se puede reintentar entero. */
+    private Map<String, Object> cancelarPasajeroEnTransaccion(String servicioId, Pasajero pasajero) {
         Servicio servicio = buscarServicio(servicioId);
 
         if (servicio.getPasajero() == null || servicio.getPasajero().getId() == null ||

@@ -46,6 +46,13 @@ public class DeudaService {
     private final ServicioRepository servicioRepository;
     private final MongoTemplate mongoTemplate;
     private final com.example.MotvirsWeb.aplicacion.puerto.NotificadorCorreo correo;
+    /** Confirmar pago y condonar abren su transacción con reintento; cobrar y registrar se unen a la del viaje. */
+    private EjecutorTransacciones transacciones = EjecutorTransacciones.sinTransaccion();
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    public void setTransacciones(EjecutorTransacciones transacciones) {
+        this.transacciones = transacciones;
+    }
 
     public static final String METODO_EFECTIVO = "EFECTIVO";
     /** Se cobró en efectivo junto con el siguiente viaje del pasajero. */
@@ -143,13 +150,11 @@ public class DeudaService {
      * Un administrador confirma el pago: se libera al pasajero y, si la plataforma aún no se lo
      * había reconocido al conductor (no hubo llegada verificada), se le acredita ahora.
      */
-    @Transactional
     public DeudaCancelacion confirmarPago(String pasajeroId, LocalDateTime ahora) {
         return confirmarPago(pasajeroId, null, ahora, METODO_EFECTIVO, null);
     }
 
     /** Igual que {@link #confirmarPago(String, LocalDateTime)} dejando el método de pago y una nota opcional. */
-    @Transactional
     public DeudaCancelacion confirmarPago(String pasajeroId, LocalDateTime ahora, String metodo, String nota) {
         return confirmarPago(pasajeroId, null, ahora, metodo, nota);
     }
@@ -158,9 +163,13 @@ public class DeudaService {
      * Confirma el pago de la deuda que el administrador tiene en pantalla. Con {@code servicioIdEsperado} (el viaje
      * de la deuda que vio), si el pasajero ya tiene otra deuda o ninguna, responde 409 en vez de resolver otra.
      */
-    @Transactional
     public DeudaCancelacion confirmarPago(String pasajeroId, String servicioIdEsperado, LocalDateTime ahora,
                                           String metodo, String nota) {
+        return transacciones.ejecutar(() -> confirmarPagoEnTransaccion(pasajeroId, servicioIdEsperado, ahora, metodo, nota));
+    }
+
+    private DeudaCancelacion confirmarPagoEnTransaccion(String pasajeroId, String servicioIdEsperado, LocalDateTime ahora,
+                                                        String metodo, String nota) {
         if (!METODO_EFECTIVO.equals(metodo)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Por ahora solo se recibe pago en efectivo");
         }
@@ -180,15 +189,18 @@ public class DeudaService {
      * pasajero queda libre y el motivo queda registrado en el servicio junto con quién lo autorizó. Lo que ya se le
      * reconoció al conductor no se toca: lo absorbe la plataforma.
      */
-    @Transactional
     public DeudaCancelacion condonar(String pasajeroId, String adminEmail, String motivo, LocalDateTime ahora) {
         return condonar(pasajeroId, null, adminEmail, motivo, ahora);
     }
 
     /** Como {@link #condonar(String, String, String, LocalDateTime)}, solo sobre la deuda que el admin vio. */
-    @Transactional
     public DeudaCancelacion condonar(String pasajeroId, String servicioIdEsperado, String adminEmail, String motivo,
                                      LocalDateTime ahora) {
+        return transacciones.ejecutar(() -> condonarEnTransaccion(pasajeroId, servicioIdEsperado, adminEmail, motivo, ahora));
+    }
+
+    private DeudaCancelacion condonarEnTransaccion(String pasajeroId, String servicioIdEsperado, String adminEmail,
+                                                   String motivo, LocalDateTime ahora) {
         String motivoLimpio = motivo == null ? "" : motivo.strip();
         if (motivoLimpio.length() < MOTIVO_MIN || motivoLimpio.length() > MOTIVO_MAX) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,

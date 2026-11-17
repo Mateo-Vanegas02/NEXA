@@ -98,8 +98,9 @@ public interface ServicioRepository extends MongoRepository<Servicio, String> {
     long guardarDeudaCobrada(String servicioId, long deuda);
 
     @org.springframework.data.mongodb.repository.Query("{ '_id': ?0, 'estado': 'FINALIZADO' }")
-    @org.springframework.data.mongodb.repository.Update("{ '$set': { 'desglose': ?1, 'xpGanadoPasajero': ?2, 'xpGanadoConductor': ?3 } }")
-    long guardarResultadoNiveles(String servicioId, Servicio.DesgloseTarifa desglose, double pasajero, double conductor);
+    @org.springframework.data.mongodb.repository.Update("{ '$set': { 'desglose': ?1, 'xpGanadoPasajero': ?2, 'xpGanadoConductor': ?3, 'tarifa': ?4 } }")
+    long guardarResultadoNiveles(String servicioId, Servicio.DesgloseTarifa desglose, double pasajero, double conductor,
+                                 double tarifa);
 
     @org.springframework.data.mongodb.repository.Query("{ '_id': ?0, 'estado': 'FINALIZADO' }")
     @org.springframework.data.mongodb.repository.Update("{ '$set': { 'xpGanadoConductor': ?1 } }")

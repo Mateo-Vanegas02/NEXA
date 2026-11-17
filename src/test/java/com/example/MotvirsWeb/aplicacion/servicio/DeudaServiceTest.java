@@ -305,9 +305,10 @@ class DeudaServiceTest {
     }
 
     @Test
-    void lasOperacionesQueTocanUsuarioYViajeSonTransaccionales() throws Exception {
+    void cobrarYRegistrarSeUnenALaTransaccionDelViaje() throws Exception {
+        // confirmarPago y condonar abren la suya con EjecutorTransacciones (con reintento ante conflictos)
         for (var m : DeudaService.class.getDeclaredMethods()) {
-            if (java.util.Set.of("confirmarPago", "condonar", "cobrarEnViaje", "registrar").contains(m.getName())
+            if (java.util.Set.of("cobrarEnViaje", "registrar").contains(m.getName())
                     && java.lang.reflect.Modifier.isPublic(m.getModifiers())) {
                 assertNotNull(m.getAnnotation(org.springframework.transaction.annotation.Transactional.class),
                         m + " debe ser @Transactional");

@@ -49,6 +49,8 @@ class ServicioAccesoTest {
     private AvisosService avisos;
     @Mock
     private AvisosPendientesService avisosPendientes;
+    @Mock
+    private DeudaService deudaService;
     @InjectMocks
     private ServicioServiceImpl servicioService;
 
@@ -284,5 +286,47 @@ class ServicioAccesoTest {
                 assertTrue(p.length >= 5, m.toString());
             }
         }
+    }
+
+    @Test
+    void siNivelesFallaElViajeQuedaFinalizadoYPendienteDeReproceso() {
+        servicio.setEstado(EstadoServicio.EN_CURSO);
+        when(viajeEnVivo.estaEnElDestino(servicio, conductorId)).thenReturn(true);
+        when(nivelesService.procesarFinalizacion(any())).thenThrow(new IllegalStateException("niveles caído"));
+
+        var respuesta = servicioService.finalizarServicio("s1", conductor(conductorId));
+
+        assertEquals("s1", respuesta.get("servicioId"));
+        assertFalse(respuesta.containsKey("desglose"));
+        verify(servicioRepository).finalizarSiEnCurso(eq("s1"), eq(conductorId), any(), eq(false), eq(1.0));
+        verify(avisosPendientes).registrar("s1", AvisosPendientesService.Tipo.FINALIZADO);
+        verify(servicioRepository, never()).guardarResultadoNiveles(any(), any(), anyDouble(), anyDouble(), anyDouble());
+    }
+
+    @Test
+    void siFallaElCobroDeLaDeudaLaFinalizacionNoSeDaPorHecha() {
+        servicio.setEstado(EstadoServicio.EN_CURSO);
+        when(viajeEnVivo.estaEnElDestino(servicio, conductorId)).thenReturn(true);
+        when(deudaService.cobrarEnViaje(any(), any())).thenThrow(new IllegalStateException("Mongo caído"));
+
+        assertThrows(IllegalStateException.class, () -> servicioService.finalizarServicio("s1", conductor(conductorId)));
+
+        verify(avisosPendientes, never()).registrar(any(), any());
+        verify(nivelesService, never()).procesarFinalizacion(any());
+    }
+
+    @Test
+    void nivelesGuardaLaTarifaDefinitivaJuntoConElDesglose() {
+        servicio.setEstado(EstadoServicio.EN_CURSO);
+        when(viajeEnVivo.estaEnElDestino(servicio, conductorId)).thenReturn(true);
+        when(nivelesService.procesarFinalizacion(any())).thenAnswer(inv -> {
+            Servicio s = inv.getArgument(0);
+            s.setTarifa(8700);
+            return null;
+        });
+
+        servicioService.finalizarServicio("s1", conductor(conductorId));
+
+        verify(servicioRepository).guardarResultadoNiveles(eq("s1"), any(), anyDouble(), anyDouble(), eq(8700.0));
     }
 }
