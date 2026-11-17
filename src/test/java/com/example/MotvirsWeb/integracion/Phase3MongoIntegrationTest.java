@@ -564,6 +564,170 @@ class Phase3MongoIntegrationTest {
                 org.mockito.ArgumentMatchers.any(Runnable.class));
     }
 
+    // ─────────────── Deuda: resoluciones concurrentes (fase 3.2, bloque A) ───────────────
+
+    /** Pasajero con deuda del viaje cancelado {@code servicioId}; el cargo del viaje sigue abierto. */
+    private Pasajero conDeuda(String email, String servicioId, long monto) {
+        Pasajero p = usuarios.save(pasajero(email));
+        Servicio cancelado = new Servicio();
+        cancelado.setId(servicioId);
+        cancelado.setEstado(EstadoServicio.CANCELADO);
+        cancelado.setCargoCancelacion(monto);
+        cancelado.setPasajero(new Servicio.PasajeroEmbedded(p.getId(), "sintetico", email));
+        servicios.save(cancelado);
+        mongo.updateFirst(Query.query(Criteria.where("_id").is(p.getId())),
+                new Update().set("deuda", new DeudaCancelacion(servicioId, monto, LocalDateTime.now())), Usuario.class);
+        return p;
+    }
+
+    private TransactionTemplate transaccion() {
+        return new TransactionTemplate(new MongoTransactionManager(mongo.getMongoDatabaseFactory()));
+    }
+
+    /** Ejecuta en transacción (como el proxy de Spring); 1 si aplicó, 0 si perdió la carrera (409 o conflicto). */
+    private int enTransaccion(Runnable operacion) {
+        try {
+            transaccion().executeWithoutResult(estado -> operacion.run());
+            return 1;
+        } catch (org.springframework.web.server.ResponseStatusException e) {
+            assertEquals(409, e.getStatusCode().value(), e.getReason());
+            return 0;
+        } catch (org.springframework.dao.DataAccessException e) {
+            return 0; // conflicto de escritura entre transacciones: la otra ganó
+        }
+    }
+
+    private int carrera(Runnable a, Runnable b) throws Exception {
+        var pool = Executors.newFixedThreadPool(2);
+        CountDownLatch inicio = new CountDownLatch(1);
+        try {
+            var x = pool.submit(() -> { inicio.await(); return enTransaccion(a); });
+            var y = pool.submit(() -> { inicio.await(); return enTransaccion(b); });
+            inicio.countDown();
+            return x.get(20, TimeUnit.SECONDS) + y.get(20, TimeUnit.SECONDS);
+        } finally {
+            pool.shutdownNow();
+        }
+    }
+
+    private Servicio cargo(String servicioId) {
+        return servicios.findById(servicioId).orElseThrow();
+    }
+
+    @Test
+    void dosAdministradoresConfirmanElMismoPagoYSoloUnoAplica() throws Exception {
+        String sid = new ObjectId().toHexString();
+        Pasajero p = conDeuda("deuda-doble@example.test", sid, 3000);
+        DeudaService deudas = new DeudaService(usuarios, servicios, mongo, mock(NotificadorCorreo.class));
+        String pid = p.getId().toHexString();
+
+        assertEquals(1, carrera(
+                () -> deudas.confirmarPago(pid, sid, LocalDateTime.now(), "EFECTIVO", "admin A"),
+                () -> deudas.confirmarPago(pid, sid, LocalDateTime.now(), "EFECTIVO", "admin B")));
+        assertTrue(deudas.deudaDe(p.getId()).isEmpty());
+        assertNotNull(cargo(sid).getCargoPagadoEn());
+        assertEquals(0, enTransaccion(() -> deudas.confirmarPago(pid, sid, LocalDateTime.now(), "EFECTIVO", null)),
+                "una petición de pago repetida no registra un segundo pago");
+    }
+
+    @Test
+    void confirmarYCondonarALaVezDejanUnSoloResultado() throws Exception {
+        String sid = new ObjectId().toHexString();
+        Pasajero p = conDeuda("deuda-pago-perdon@example.test", sid, 3000);
+        DeudaService deudas = new DeudaService(usuarios, servicios, mongo, mock(NotificadorCorreo.class));
+        String pid = p.getId().toHexString();
+
+        assertEquals(1, carrera(
+                () -> deudas.confirmarPago(pid, sid, LocalDateTime.now(), "EFECTIVO", null),
+                () -> deudas.condonar(pid, sid, "admin@example.test", "motivo de prueba", LocalDateTime.now())));
+        Servicio fin = cargo(sid);
+        assertTrue((fin.getCargoPagadoEn() == null) != (fin.getCargoCondonadoEn() == null),
+                "pagado o condonado, nunca ambos ni ninguno");
+        assertTrue(deudas.deudaDe(p.getId()).isEmpty());
+    }
+
+    @Test
+    void cobrarConElViajeMientrasElAdminConfirmaNoCobraDosVeces() throws Exception {
+        String sid = new ObjectId().toHexString();
+        Pasajero p = conDeuda("deuda-viaje-admin@example.test", sid, 3000);
+        DeudaService deudas = new DeudaService(usuarios, servicios, mongo, mock(NotificadorCorreo.class));
+        Servicio viaje = new Servicio();
+        viaje.setId(new ObjectId().toHexString());
+        viaje.setPasajero(new Servicio.PasajeroEmbedded(p.getId(), "sintetico", p.getEmail()));
+        viaje.setDeudaPorCobrar(3000);
+        viaje.setDeudaServicioId(sid);
+        AtomicInteger cobrado = new AtomicInteger();
+
+        int aplicados = carrera(
+                () -> cobrado.addAndGet((int) deudas.cobrarEnViaje(viaje, LocalDateTime.now())),
+                () -> deudas.confirmarPago(p.getId().toHexString(), sid, LocalDateTime.now(), "EFECTIVO", null));
+
+        Servicio fin = cargo(sid);
+        assertTrue(deudas.deudaDe(p.getId()).isEmpty());
+        assertNotNull(fin.getCargoPagadoEn());
+        boolean cobradoEnViaje = DeudaService.METODO_EN_VIAJE.equals(fin.getCargoMetodoPago());
+        assertEquals(cobradoEnViaje ? 3000 : 0, cobrado.get(), "el importe se cobra una sola vez");
+        assertTrue(aplicados >= 1);
+    }
+
+    @Test
+    void siLaDeudaCambiaTrasLeerlaNoSeBorraLaNueva() {
+        String vieja = new ObjectId().toHexString();
+        String nueva = new ObjectId().toHexString();
+        Pasajero p = conDeuda("deuda-cambia@example.test", vieja, 3000);
+        Servicio otra = new Servicio();
+        otra.setId(nueva);
+        otra.setEstado(EstadoServicio.CANCELADO);
+        servicios.save(otra);
+        // El repositorio entrega la lectura y, justo después, otra operación resuelve la vieja y crea una nueva
+        UsuarioRepository lecturaVieja = (UsuarioRepository) Proxy.newProxyInstance(
+                UsuarioRepository.class.getClassLoader(), new Class<?>[]{UsuarioRepository.class},
+                (proxy, metodo, args) -> {
+                    try {
+                        Object leido = metodo.invoke(usuarios, args);
+                        if (metodo.getName().equals("findById")) {
+                            // Otra petición, en otro hilo y fuera de esta transacción
+                            var otro = Executors.newSingleThreadExecutor();
+                            try {
+                                otro.submit(() -> mongo.updateFirst(Query.query(Criteria.where("_id").is(p.getId())),
+                                        new Update().set("deuda", new DeudaCancelacion(nueva, 5000, LocalDateTime.now())),
+                                        Usuario.class)).get(10, TimeUnit.SECONDS);
+                            } finally {
+                                otro.shutdownNow();
+                            }
+                        }
+                        return leido;
+                    } catch (InvocationTargetException e) {
+                        throw e.getCause();
+                    }
+                });
+        DeudaService deudas = new DeudaService(lecturaVieja, servicios, mongo, mock(NotificadorCorreo.class));
+
+        assertEquals(0, enTransaccion(() -> deudas.confirmarPago(p.getId().toHexString(), LocalDateTime.now())));
+        DeudaCancelacion vigente = new DeudaService(usuarios, servicios, mongo, mock(NotificadorCorreo.class))
+                .deudaDe(p.getId()).orElseThrow();
+        assertEquals(nueva, vigente.getServicioId(), "no se modifica una deuda distinta de la solicitada");
+        assertEquals(5000, vigente.getMonto());
+        assertNull(cargo(vieja).getCargoPagadoEn());
+    }
+
+    @Test
+    void siFallaElViajeTrasQuitarLaDeudaLaTransaccionRevierteAlPasajero() {
+        String sid = new ObjectId().toHexString();
+        Pasajero p = conDeuda("deuda-rollback@example.test", sid, 3000);
+        // El cargo del viaje ya figura condonado: la segunda escritura no aplica
+        mongo.updateFirst(Query.query(Criteria.where("_id").is(sid)),
+                new Update().set("cargoCondonadoEn", LocalDateTime.now()), Servicio.class);
+        DeudaService deudas = new DeudaService(usuarios, servicios, mongo, mock(NotificadorCorreo.class));
+
+        assertEquals(0, enTransaccion(() -> deudas.confirmarPago(p.getId().toHexString(), sid,
+                LocalDateTime.now(), "EFECTIVO", null)));
+
+        assertEquals(sid, deudas.deudaDe(p.getId()).orElseThrow().getServicioId(),
+                "la deuda quitada en Usuarios vuelve: Usuarios y servicios quedan consistentes");
+        assertNull(cargo(sid).getCargoPagadoEn());
+    }
+
     @Test
     void aceptarYVencerSonTransicionesCondicionales() throws Exception {
         Servicio viaje = new Servicio();

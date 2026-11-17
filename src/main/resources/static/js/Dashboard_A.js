@@ -1397,7 +1397,7 @@ document.addEventListener('DOMContentLoaded', () => {
             method: 'POST', credentials: 'same-origin',
             headers: Object.assign({ 'Accept': 'application/json', 'Content-Type': 'application/json' },
                 csrf && csrf.value ? { 'X-CSRF-TOKEN': csrf.value } : {}),
-            body: JSON.stringify({ motivo })
+            body: JSON.stringify({ motivo, servicioId: deudaEnCondonacion.servicioId })
         });
         if (!res.ok) {
             let msg = 'No se pudo condonar la deuda';
@@ -1424,7 +1424,8 @@ document.addEventListener('DOMContentLoaded', () => {
             method: 'POST', credentials: 'same-origin',
             headers: { 'Accept': 'application/json', 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('input[name="_csrf"]')?.value || '' },
-            body: JSON.stringify({ metodo: document.getElementById('pago-metodo').value, nota: document.getElementById('pago-nota').value })
+            body: JSON.stringify({ metodo: document.getElementById('pago-metodo').value, nota: document.getElementById('pago-nota').value,
+                servicioId: deudaEnPago.servicioId })
         });
         if (!res.ok) {
             let msg = 'No se pudo confirmar el pago';
