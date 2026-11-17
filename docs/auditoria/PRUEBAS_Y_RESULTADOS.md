@@ -1,5 +1,14 @@
 # Pruebas y resultados
 
+## Fase 2 (base `cdc989f`)
+
+- Antes de modificar: 551 pruebas Java, 0 fallos, 0 errores, con Mockito como agente JVM. Los tests `requiere-mongo` se excluyen por defecto.
+- Después de modificar: 565 pruebas Java, 0 fallos, 0 errores, con el mismo comando (`./mvnw.cmd -q -DargLine=-javaagent:<mockito-core.jar> test`). El reporte XML de Surefire confirma el total.
+- `node --test src/test/js/*.test.mjs`: 123 pruebas, 0 fallos.
+- `./mvnw.cmd -q -DskipTests package`: compilación y empaquetado correctos.
+- Se cubrieron hash/consumo de token, expiración, inexistencia, contraseña débil, error de Mongo simulado y dos intentos simultáneos simulados; correo único/compartido, conflicto de índice, conteos y suscripción STOMP ajena.
+- No hay Docker ni MongoDB de pruebas instalado en esta máquina; no se ejecutaron pruebas de integración con una base real. La simulación de `MongoTemplate` verifica la lógica de respuesta, pero no sustituye la comprobación de atomicidad en MongoDB. Tampoco se verificaron índices o datos de producción.
+
 ## Ejecutadas
 
 - `./mvnw.cmd -Dtest=PasswordResetServiceTest -DforkCount=0 test` — SUCCESS, 3 tests, 0 fallos, 0 errores.

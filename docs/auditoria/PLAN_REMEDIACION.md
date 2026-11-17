@@ -1,5 +1,13 @@
 # Plan de remediación
 
+## Próximos pasos de fase 2
+
+1. Definir política de correo compartido con el dueño; inventariar duplicados en copia restaurable; ejecutar `MIGRACION_IDENTIDAD.md` antes de crear un índice global.
+2. Revisar índices reales, tipos y duplicados de licencia/SOAT en copia; crear índices parciales seguros y ejecutar prueba de registros simultáneos según `INDICES_CONDUCTOR.md`.
+3. Correr pruebas de integración de consumo de token y registro concurrente con Mongo aislado. Las unitarias simulan el resultado de la actualización, pero no prueban el servidor de base de datos.
+4. Paginar listados administrativos e historiales grandes con contrato de cliente acordado; medir planes de consulta e índices antes de añadirlos.
+5. Coordinar revocación JWT con la app móvil (`DISENO_JWT.md`), revalidación de conexiones STOMP y CSP Report-Only (`ESTRATEGIA_CSP.md`) antes de activar controles nuevos.
+
 ## Etapa 1 — seguridad inmediata
 
 1. Mantener el almacenamiento hash de tokens de recuperación y documentar la invalidación controlada de tokens antiguos.

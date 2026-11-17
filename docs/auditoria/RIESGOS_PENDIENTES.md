@@ -1,5 +1,14 @@
 # Riesgos pendientes
 
+## Fase 2
+
+- Correos compartidos entre roles: el índice `(email, rol)` los permite y el login por correo no puede seleccionar una cuenta de manera inequívoca. Las operaciones sensibles fallan cerradas; se requiere decisión y migración no destructiva (`MIGRACION_IDENTIDAD.md`).
+- La traducción de `DuplicateKeyException` solo da una respuesta segura si Mongo tiene índices efectivos. No se inspeccionó producción ni se ejecutó migración; los registros simultáneos podrían duplicarse sin esos índices (`INDICES_CONDUCTOR.md`).
+- El consumo del token es condicional y atómico en código, pero no se ejecutó prueba de integración contra Mongo real en esta fase. JWT emitidos antes de un reset siguen válidos hasta expiración (`DISENO_JWT.md`).
+- Listados administrativos y gráficas mensuales todavía pueden cargar documentos completos; paginación/agrupación requiere cambios de contrato y medición.
+- STOMP conserva autenticación del handshake durante la conexión; un cambio de estado o rol no desconecta de inmediato. El broker simple y el rate limiter siguen limitados a una instancia.
+- CSP permanece sin enforcement hasta retirar inline y comprobar recursos externos en Report-Only (`ESTRATEGIA_CSP.md`).
+
 - Tokens antiguos en el campo MongoDB histórico podrían seguir siendo sensibles hasta su expiración o invalidación operativa; no se ejecutó una migración destructiva.
 - La revocación de JWT requiere contrato con clientes móviles, almacenamiento de estado y estrategia de transición.
 - Cualquier cliente externo que llamara `GET /api/admin/ml/entrenar` debe pasar a POST y enviar CSRF cuando use sesión web; no se identificaron otros clientes en este repositorio.

@@ -1,5 +1,15 @@
 # Cambios realizados
 
+## Fase 2
+
+- Recuperación: una sola búsqueda por correo; contraseña validada en el servicio; consumo del token mediante actualización condicional que cambia la clave y retira hash y expiración juntos. No se guarda el token en claro.
+- Login: los correos con múltiples cuentas producen error de autenticación genérico. `AuthService.autenticarUsuario` ya no repite una consulta de correo después de cargar `UserDetails`.
+- Registro: las colisiones detectadas por un índice Mongo se traducen a conflicto sin mostrar el nombre del índice ni una excepción interna. La comprobación previa se conserva.
+- Rendimiento: el conteo de conductores por estados se ejecuta en Mongo con `$in`, sin descargar la colección.
+- Se añadieron pruebas de consumo concurrente simulado, política de contraseña, identidad ambigua, colisión de índice, conteos y autorización STOMP.
+- Se corrigió el enlace del README al repositorio NEXA y se actualizó nombre y descripción del POM. Se mantuvieron `groupId`, `artifactId`, paquetes Java y nombre del JAR para conservar scripts y despliegue.
+- Diseños no desplegados: `DISENO_JWT.md`, `MIGRACION_IDENTIDAD.md`, `INDICES_CONDUCTOR.md` y `ESTRATEGIA_CSP.md`.
+
 ## Seguridad de recuperación de contraseña
 
 - `Usuario` ahora persiste `resetPasswordTokenHash`, no el token en claro.

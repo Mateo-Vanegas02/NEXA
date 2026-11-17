@@ -2,6 +2,8 @@
 
 Aplicación web desarrollada con Spring Boot para el servicio de mototaxis NEXA. Permite a los usuarios registrarse como pasajeros o conductores, reservar viajes, rastrear conductores en tiempo real y ofrece un ChatBot IA para resolver dudas y dar soporte.
 
+Para empezar: [arquitectura](docs/ARQUITECTURA.md), [flujo de viajes](docs/FLUJO_VIAJES.md), [API](docs/API.md), [configuración](docs/CONFIGURACION.md), [contribución](CONTRIBUTING.md) y [auditoría vigente](docs/auditoria/AUDITORIA_INICIAL.md).
+
 ## 🚀 Requisitos Previos
 
 Antes de ejecutar la aplicación, asegúrese de tener instalado:
@@ -15,8 +17,8 @@ Antes de ejecutar la aplicación, asegúrese de tener instalado:
 
 1. **Clonar el repositorio:**
    ```bash
-   git clone https://github.com/Mateo-Vanegas02/NEXA_Origin.git
-   cd NEXA_Origin
+   git clone https://github.com/Mateo-Vanegas02/NEXA.git
+   cd NEXA
    ```
 
 2. **Definir las variables de entorno** (los secretos NO viven en `application.properties`; si falta alguna obligatoria la app no arranca y lo indica):
@@ -37,7 +39,7 @@ Antes de ejecutar la aplicación, asegúrese de tener instalado:
    - **Terminal (bash):** `export MONGODB_URI="..." JWT_SECRET="..."` y luego `./mvnw spring-boot:run`
    - **IntelliJ / Eclipse / VS Code:** *Run configuration → Environment variables* (no hace falta si usas el archivo `.env`).
    - **Docker:** copia `.env.example` a `.env`, complétalo y ejecuta `./deploy.sh` (o `docker compose up -d --build`). Detalles en la sección *Docker* más abajo.
-   - **Hosting (Azure App Service):** *Configuration → Application settings*, una entrada por variable. Lista completa y checklist de despliegue en [`docs/SEGURIDAD.md`](docs/SEGURIDAD.md).
+   - **Producción AWS:** Parameter Store (`/nexa/prod/*`) alimenta las variables en EC2 mediante el workflow manual `Deploy AWS`. Configuración y controles en [`docs/CONFIGURACION.md`](docs/CONFIGURACION.md) y [`docs/SEGURIDAD.md`](docs/SEGURIDAD.md).
 
 3. **Compilar el proyecto:**
    ```bash

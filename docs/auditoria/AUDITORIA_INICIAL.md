@@ -1,5 +1,19 @@
 # Auditoría inicial de NEXA
 
+## Fase 2 — evaluación desde `cdc989f` (2026-11-16)
+
+| ID | Severidad | Estado | Ubicación y evidencia | Solución y pruebas | Compatibilidad |
+|---|---|---|---|---|---|
+| P1-01 | P1 | Parcial | `Usuario` permite `(email,rol)` y `findByEmail` asume un solo usuario; `PasswordResetService` repetía la consulta | Se retiró la segunda consulta; login convierte múltiples resultados en fallo genérico. `CustomUserDetailsServiceTest` y `PasswordResetServiceTest`. Migración en `MIGRACION_IDENTIDAD.md` | Cuentas con correo compartido siguen sin poder autenticarse o recuperar de forma inequívoca; no se cambiaron índices |
+| P1-02 | P1 | Parcial | `AuthService.registrarConductor`: `exists` seguido de `save`; índices declarados no verificados en Mongo | Se traduce `DuplicateKeyException` a conflicto; prueba de servicio. Plan en `INDICES_CONDUCTOR.md` | La unicidad concurrente depende de índices reales; no se tocaron datos |
+| P1-03 | P1 | Corregido en código | `PasswordResetService.resetPassword`: lectura y guardado separados | `MongoTemplate.updateFirst` exige ID, hash y expiración; actualiza clave y elimina token en una operación. Pruebas de éxito, expiración, política y dos intentos | La respuesta web conserva el mismo contrato; falta integración real con Mongo aislado |
+| P2-01 | P2 | Parcial | `UsuarioRepository.countConductoresByEstados` cargaba conductores completos | Usa `countByRolAndEstadoValidacionIn`; pruebas de varios, uno y ningún estado | Resultado numérico igual; otros listados grandes requieren paginación |
+| P2-02 | P2 | Diseño | `JwtService` emite JWT de 24 h sin revocación | `DISENO_JWT.md` documenta versión por usuario y transición móvil | No se cambió el token ni el login móvil |
+| P2-03 | P2 | Parcial | `WebSocketAuthInterceptor` autoriza por destino e ID; broker simple local | Prueba del interceptor para topic ajeno y `SEND`; límite de escala en `ARQUITECTURA.md` | Sin cambios de protocolo; desconexión tras cambio de rol pendiente |
+| P2-04 | P2 | Diseño | Plantillas con inline y recursos externos | Inventario y plan Report-Only en `ESTRATEGIA_CSP.md` | No se activó una CSP que pudiera romper paneles |
+
+La auditoría original que sigue abajo es histórica. El estado vigente se complementa con `CAMBIOS_REALIZADOS.md`, `RIESGOS_PENDIENTES.md` y `PRUEBAS_Y_RESULTADOS.md`.
+
 Fecha: 2026-11-16
 
 Commit base: `893d1c8`
