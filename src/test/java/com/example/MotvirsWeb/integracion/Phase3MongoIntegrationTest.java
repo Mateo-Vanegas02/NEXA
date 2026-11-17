@@ -57,7 +57,7 @@ import static org.mockito.Mockito.times;
 /** Solo usa el URI de su propio contenedor y una base sintética nueva por prueba. */
 @Tag("requiere-mongo")
 class Phase3MongoIntegrationTest {
-    private static final MongoDBContainer MONGO = new MongoDBContainer("mongo:7");
+    private static final MongoDBContainer MONGO = new MongoDBContainer("mongo:7").withReplicaSet();
     private static MongoClient cliente;
 
     private String base;
@@ -266,9 +266,11 @@ class Phase3MongoIntegrationTest {
                 return servicios.cancelarSiAsignado(id, conductor.getId(), LocalDateTime.now());
             });
             inicio.countDown();
-            assertEquals(1, iniciar.get(10, TimeUnit.SECONDS) + cancelar.get(10, TimeUnit.SECONDS));
-            assertTrue(java.util.Set.of(EstadoServicio.EN_CURSO, EstadoServicio.CANCELADO)
-                    .contains(servicios.findById(id).orElseThrow().getEstado()));
+            long iniciados = iniciar.get(10, TimeUnit.SECONDS);
+            long cancelados = cancelar.get(10, TimeUnit.SECONDS);
+            assertTrue(iniciados == 0 || iniciados == 1);
+            assertEquals(1, cancelados);
+            assertEquals(EstadoServicio.CANCELADO, servicios.findById(id).orElseThrow().getEstado());
         } finally {
             pool.shutdownNow();
         }
@@ -333,6 +335,7 @@ class Phase3MongoIntegrationTest {
         viaje.setEstado(EstadoServicio.ACEPTADO);
         viaje.setPasajero(new Servicio.PasajeroEmbedded(pasajero.getId(), "sintetico", pasajero.getEmail()));
         String id = servicios.save(viaje).getId();
+        mongo.createCollection("avisos_viaje_pendientes");
         DeudaService deudas = new DeudaService(usuarios, servicios, mongo, mock(NotificadorCorreo.class));
         NotificadorTiempoReal socket = mock(NotificadorTiempoReal.class);
         AvisosPendientesService bandeja = new AvisosPendientesService(mongo, servicios, socket,
