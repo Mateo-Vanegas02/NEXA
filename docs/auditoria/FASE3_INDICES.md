@@ -1,0 +1,5 @@
+# Fase 3: índices de conductores
+
+En MongoDB 7 aislado, dos índices únicos parciales en `Usuarios` con filtro `rol: CONDUCTOR` y valor `> 0` rechazaron licencia y SOAT duplicados (`DuplicateKeyException`). Dos pasajeros sin esos campos y dos conductores con valores diferentes persistieron. Las anotaciones Java no prueban que existan índices equivalentes en producción.
+
+Antes de crear índices reales hay que inspeccionar tipos BSON y valores heredados, inclusive ausente, `null`, cero y cadenas, además de colisiones. El filtro `> 0` del ensayo se ajusta únicamente a los datos sintéticos; no es una instrucción de despliegue. Revisar también tarjeta de propiedad y los índices existentes. Aplicar el índice ensayado en copia restaurada; verificar recuentos, errores HTTP por colisión y planes; luego programar alta controlada en producción con respaldo. Reversión: retirar solamente el índice nuevo identificado por nombre tras comprobar que no se abre una ventana de duplicados, o restaurar la copia si se alteraron datos. No se alteraron índices productivos. Véase `INDICES_CONDUCTOR.md`.

@@ -1,0 +1,7 @@
+# Fase 3: concurrencia e integridad
+
+La prueba de registro fuerza que dos llamadas a `AuthService.registrarConductor` superen simultáneamente la consulta previa sobre la misma licencia. Con el índice parcial único en MongoDB aislado, solo una debe persistir y la otra obtiene el conflicto controlado. La prueba de recuperación lanza dos consumos simultáneos del mismo token; solo uno puede cambiar la contraseña y el hash y expiración desaparecen. Se comprobaron los nombres BSON realmente guardados y el rechazo de token expirado/desconocido.
+
+Dos conductores intentan `tomarSiDisponible` sobre el mismo viaje: gana uno. `vencerSiSigueSolicitado` no cancela un viaje ya aceptado y sí cancela uno aún solicitado. Esto valida esas dos operaciones condicionales del repositorio.
+
+La revisión de `ServicioServiceImpl` identifica otros caminos de lectura, cambio y `save`: iniciar, finalizar, cancelación por pasajero/conductor y calificación. En concurrencia pueden sobrescribir un estado posterior o duplicar efectos externos. No hay prueba real de dos finalizaciones, iniciar tras cancelar, cancelación frente a aceptación ni dos calificaciones. Requieren transición condicional por estado y propietario, respuesta idempotente definida, y emisión de eventos/cobros solo tras ganar la actualización; verificar cada caso con Mongo real antes de despliegue. No se aplicó una refactorización parcial de esos flujos.

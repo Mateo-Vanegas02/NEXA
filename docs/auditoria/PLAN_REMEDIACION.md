@@ -1,5 +1,13 @@
 # Plan de remediación
 
+## Secuencia tras fase 3
+
+1. Revisar PR #3 sobre PR #2 y conservar la prueba de integración Mongo y el escaneo de secretos como gates de CI. Fusionar en orden únicamente tras revisión.
+2. Identificar con acceso autorizado la base y su entorno; inventariar datos agregados e índices sin exponer información personal. Crear respaldo recuperable y ensayar restauración en copia antes de cualquier migración.
+3. Decidir política de identidad, resolver colisiones con propietarios y ensayar índice global y parciales de licencia/SOAT en copia. Programar despliegue de datos con reversión y observación.
+4. Hacer condicionales las transiciones restantes de viaje y probar finalización/cancelación/calificación concurrentes con Mongo real, verificando cobros y eventos posteriores a la escritura ganadora.
+5. Revisar restricciones de Firebase y publicación Power BI. Auditar `NEXA_Origin` por separado. Rotar solo credenciales confirmadas y, si se justifica, simular filtrado Git en clon aislado y presentar impacto concreto antes de alterar referencias remotas.
+
 ## Próximos pasos de fase 2
 
 1. Definir política de correo compartido con el dueño; inventariar duplicados en copia restaurable; ejecutar `MIGRACION_IDENTIDAD.md` antes de crear un índice global.

@@ -212,6 +212,30 @@ class Phase3MongoIntegrationTest {
     }
 
     @Test
+    void claveDebilNoConsumeUnTokenVigente() throws Exception {
+        String token = "token-vigente-para-clave-debil";
+        String hash = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(
+                java.security.MessageDigest.getInstance("SHA-256")
+                        .digest(token.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+        Pasajero p = pasajero("clave-debil@example.test");
+        p.setPassword("hash-anterior");
+        p.setResetPasswordTokenHash(hash);
+        p.setResetPasswordTokenExpiry(LocalDateTime.now().plusMinutes(5));
+        usuarios.save(p);
+        PasswordResetService reset = new PasswordResetService(usuarios, new BCryptPasswordEncoder(),
+                mock(NotificadorCorreo.class), mongo);
+
+        assertThrows(IllegalArgumentException.class, () -> reset.resetPassword(token, "debil"));
+        Document despues = mongo.getCollection("Usuarios").find(eq("_id", p.getId())).first();
+        assertNotNull(despues);
+        assertEquals(hash, despues.getString("usuario_reset_password_token_hash"));
+        assertEquals("hash-anterior", despues.getString("password"));
+        reset.resetPassword(token, "NuevaClave123!");
+        assertTrue(new BCryptPasswordEncoder().matches("NuevaClave123!",
+                mongo.getCollection("Usuarios").find(eq("_id", p.getId())).first().getString("password")));
+    }
+
+    @Test
     void aceptarYVencerSonTransicionesCondicionales() throws Exception {
         Servicio viaje = new Servicio();
         viaje.setEstado(EstadoServicio.SOLICITADO);

@@ -1,5 +1,12 @@
 # Riesgos pendientes
 
+## Actualización de fase 3
+
+- Las seis pruebas de integración de MongoDB 7 con datos sintéticos pasaron en CI, inclusive el registro concurrente y el consumo único de token. Los índices reales, tipos BSON y duplicados productivos siguen desconocidos: no hubo acceso autorizado a la conexión Compass ni respaldo verificado.
+- La aceptación y el vencimiento usan actualizaciones condicionales probadas. Inicio, finalización, cancelaciones y calificación de viajes aún emplean lectura y `save`; faltan pruebas y transiciones atómicas para evitar sobrescritura o efectos duplicados.
+- El inventario Git de NEXA encontró configuración cliente Firebase en `app`, no una contraseña de servidor confirmada. Falta revisar restricciones de la clave en el proveedor y visibilidad del informe Power BI. La exposición descrita para `NEXA_Origin` exige auditoría de ese repositorio por separado.
+- Ninguna credencial fue rotada, no se reescribió Git, ni se aplicaron índices o migraciones en producción. La política de identidad por correo sigue pendiente de decisión y revisión de datos reales.
+
 ## Fase 2
 
 - Correos compartidos entre roles: el índice `(email, rol)` los permite y el login por correo no puede seleccionar una cuenta de manera inequívoca. Las operaciones sensibles fallan cerradas; se requiere decisión y migración no destructiva (`MIGRACION_IDENTIDAD.md`).
