@@ -58,6 +58,17 @@ jobs:
           test "$antes" = "$despues" || { echo "La inspección modificó la base"; exit 1; }
           node scripts/atlas/prueba/verificar-salida.mjs inspeccion.json
 
+      - name: Script de índices propuestos (plan, guardia de producción, crear y revertir en la base de prueba)
+        run: |
+          docker compose cp scripts/atlas/indices-propuestos.js mongo:/tmp/indices.js
+          run() { docker compose exec -T mongo mongosh --quiet --eval "$1" --file /tmp/indices.js; }
+          if run 'var BASE="motvirsweb"; var MODO="crear"' > guardia.txt 2>&1; then echo "La guardia de producción no frenó"; exit 1; fi
+          grep -q "PRODUCCION_APROBADA" guardia.txt
+          run 'var BASE="nexa_inspeccion_ci"; var MODO="plan"' > plan.json
+          run 'var BASE="nexa_inspeccion_ci"; var MODO="crear"' > crear.json
+          run 'var BASE="nexa_inspeccion_ci"; var MODO="revertir"' > revertir.json
+          node scripts/atlas/prueba/verificar-indices.mjs plan.json crear.json revertir.json
+
       - name: Apagar
         if: always()
         run: docker compose --profile local-db down -v

@@ -193,11 +193,12 @@
         { $match: { deuda: { $exists: true } } },
         { $project: { sid: { $convert: { input: '$deuda.servicioId', to: 'objectId', onError: null, onNull: null } } } },
         { $lookup: { from: 'servicios', localField: 'sid', foreignField: '_id', as: 's' } },
+        // $ifNull: un campo ausente no es igual a null en una comparación de agregación
         { $project: { estado: {
           $switch: { branches: [
             { case: { $eq: [{ $size: '$s' }, 0] }, then: 'viajeNoEncontrado' },
-            { case: { $ne: [{ $arrayElemAt: ['$s.cargoPagadoEn', 0] }, null] }, then: 'cargoYaPagado' },
-            { case: { $ne: [{ $arrayElemAt: ['$s.cargoCondonadoEn', 0] }, null] }, then: 'cargoYaCondonado' },
+            { case: { $ne: [{ $ifNull: [{ $arrayElemAt: ['$s.cargoPagadoEn', 0] }, null] }, null] }, then: 'cargoYaPagado' },
+            { case: { $ne: [{ $ifNull: [{ $arrayElemAt: ['$s.cargoCondonadoEn', 0] }, null] }, null] }, then: 'cargoYaCondonado' },
           ], default: 'coherente' } } } },
         { $group: { _id: '$estado', n: { $sum: 1 } } },
       ]);
@@ -205,7 +206,7 @@
       r.forEach((g) => { salida.coherenciaDeuda[g._id] = g.n; });
     }
 
-    // Planes de las consultas más frecuentes del código (ver docs/auditoria/FASE3_2_INDICES.md)
+    // Planes de las consultas más frecuentes del código (ver docs/auditoria/FASE3_2_INDICES_Y_RESPALDO.md)
     const unPasajero = agregar(S, [{ $match: { 'pasajero._id': { $type: 'objectId' } } }, { $sample: { size: 1 } }, { $project: { _id: 0, p: '$pasajero._id' } }]);
     const unConductor = agregar(S, [{ $match: { 'conductor._id': { $type: 'objectId' } } }, { $sample: { size: 1 } }, { $project: { _id: 0, c: '$conductor._id' } }]);
     const p = unPasajero.length ? unPasajero[0].p : null;
