@@ -80,6 +80,9 @@ public class AuthService {
         return pasajeroGuardado;
     }
 
+    public static final String TARJETA_REGISTRADA =
+            "La tarjeta de propiedad ya está registrada por otro conductor: una moto solo puede tener un conductor";
+
     public Conductor registrarConductor(String nombre, String email, String password,
             String telefono, long licencia, Long soat, Long tarjetaPropiedad) {
         // Validaciones de unicidad
@@ -95,6 +98,12 @@ public class AuthService {
         // Validar que el SOAT sea único
         if (soat != null && usuarioRepository.existsByRolAndSoat(Rol.CONDUCTOR, soat)) {
             throw new IllegalStateException("El número SOAT ya está registrado en el sistema");
+        }
+
+        // Una moto no puede estar registrada por más de un conductor
+        if (tarjetaPropiedad != null && tarjetaPropiedad > 0
+                && usuarioRepository.existeOtroConductorConTarjeta(tarjetaPropiedad, null)) {
+            throw new IllegalStateException(TARJETA_REGISTRADA);
         }
 
         // Construcción del objeto

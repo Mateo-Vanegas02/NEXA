@@ -39,6 +39,10 @@ public class RegistroConductorService {
         if (vehiculoRepository.findByPlaca(placa).isPresent()) {
             throw new IllegalStateException("La placa " + placa + " ya está registrada en el sistema");
         }
+        // Una moto no puede estar registrada por más de un conductor (también si la declaró al agregar un vehículo)
+        if (documentos.tarjetaDeclaradaPorOtro(s.tarjetaPropiedad(), null)) {
+            throw new IllegalStateException(AuthService.TARJETA_REGISTRADA);
+        }
         // Antes de crear nada: las 4 fotos tienen que estar y ser válidas.
         documentos.validarConjunto(s.fotos());
 

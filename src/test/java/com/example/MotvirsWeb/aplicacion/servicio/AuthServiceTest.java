@@ -150,4 +150,16 @@ public class AuthServiceTest {
 
         assertThrows(DisabledException.class, () -> authService.autenticarUsuario("conductor@test.com", "password"));
     }
+
+    @Test
+    void registrarConductorRechazaUnaTarjetaDePropiedadYaRegistradaPorOtro() {
+        when(usuarioRepository.findByEmailAndRol(anyString(), eq(Rol.CONDUCTOR))).thenReturn(Optional.empty());
+        when(usuarioRepository.existeOtroConductorConTarjeta(555L, null)).thenReturn(true);
+
+        IllegalStateException e = assertThrows(IllegalStateException.class, () -> authService.registrarConductor(
+                "Nuevo", "nuevo@test.com", "Clave123!", "3001234567", 123L, 456L, 555L));
+
+        assertEquals(AuthService.TARJETA_REGISTRADA, e.getMessage());
+        verify(usuarioRepository, never()).save(any());
+    }
 }

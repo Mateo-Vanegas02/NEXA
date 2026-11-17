@@ -769,6 +769,30 @@ class Phase3MongoIntegrationTest {
     }
 
     @Test
+    void unaTarjetaDePropiedadNoSePuedeRepetirEntreConductores() {
+        Conductor duenio = conductor("duenio-moto@example.test", 501, 601L);
+        duenio.setTarjeta_de_propiedad(777001L);
+        usuarios.save(duenio);
+        var docs = new MongoRepositoryFactory(mongo)
+                .getRepository(com.example.MotvirsWeb.dominio.repositorio.DocumentoConductorRepository.class);
+        docs.save(DocumentoConductor.builder().conductorId(duenio.getId().toHexString())
+                .tipo(TipoDocumento.TARJETA_PROPIEDAD).numeroDeclarado("777002").build());
+
+        assertTrue(usuarios.existeOtroConductorConTarjeta(777001L, null), "otro conductor ya la tiene");
+        assertFalse(usuarios.existeOtroConductorConTarjeta(777001L, duenio.getId()), "la suya no cuenta");
+        assertFalse(usuarios.existeOtroConductorConTarjeta(777999L, null));
+        assertTrue(docs.existeTarjetaDeclaradaPorOtro("777002", null), "declarada en las fotos de otro");
+        assertFalse(docs.existeTarjetaDeclaradaPorOtro("777002", duenio.getId().toHexString()));
+
+        AuthService registro = new AuthService(usuarios, mock(VehiculoRepository.class),
+                new BCryptPasswordEncoder(), mock(UserDetailsService.class), mock(NotificadorTiempoReal.class));
+        IllegalStateException e = assertThrows(IllegalStateException.class, () -> registro.registrarConductor(
+                "Otro", "otro-moto@example.test", "Clave123!", "3001234567", 502, 602L, 777001L));
+        assertEquals(AuthService.TARJETA_REGISTRADA, e.getMessage());
+        assertEquals(1, usuarios.countByRol(Rol.CONDUCTOR));
+    }
+
+    @Test
     void aceptarYVencerSonTransicionesCondicionales() throws Exception {
         Servicio viaje = new Servicio();
         viaje.setEstado(EstadoServicio.SOLICITADO);
