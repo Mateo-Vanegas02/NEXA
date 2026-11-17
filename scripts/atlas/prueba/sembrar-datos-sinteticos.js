@@ -42,5 +42,16 @@
     { viajeId: 'v1', rol: 'PASAJERO', motivo: 'VIAJE', xp: 10, aplicado: false },
   ]);
   base.dispositivos.insertOne({ token: 'token-sintetico', usuarioId: pasajeros[0] });
+  // Casos de las correcciones de fase 3.2
+  S.insertMany([
+    { estado: 'EN_CURSO', pasajero: { _id: pasajeros[2] }, conductor: { _id: conductores[2] },
+      fechaAceptacion: new Date(Date.now() - 50 * 3600e3) },
+    { estado: 'EN_CURSO', pasajero: { _id: pasajeros[1] }, conductor: { _id: conductores[1] },
+      fechaAceptacion: new Date(Date.now() - 10 * 60e3) },
+  ]);
+  U.updateOne({ _id: pasajeros[1] }, { $set: { resetPasswordToken: 'texto-claro-sintetico',
+    usuario_reset_password_token_expiry: new Date(Date.now() - 864e5) } });
+  ['Servicio', 'Vehiculo', 'creditos_nexa', 'beneficios_uso', 'ModeloInfo']
+    .forEach((c) => base.getCollection(c).insertOne({ heredado: true }));
   print('sembrado ' + base.getName());
 })();

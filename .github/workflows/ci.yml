@@ -69,6 +69,18 @@ jobs:
           run 'var BASE="nexa_inspeccion_ci"; var MODO="revertir"' > revertir.json
           node scripts/atlas/prueba/verificar-indices.mjs plan.json crear.json revertir.json
 
+      - name: Script de correcciones de datos (plan, guardia, aplicar y revertir el archivo en la base de prueba)
+        run: |
+          docker compose cp scripts/atlas/correcciones-datos-fase3-2.js mongo:/tmp/correcciones.js
+          run() { docker compose exec -T mongo mongosh --quiet --eval "$1" --file /tmp/correcciones.js; }
+          if run 'var BASE="motvirsweb"; var MODO="aplicar"' > guardia2.txt 2>&1; then echo "La guardia de producción no frenó"; exit 1; fi
+          grep -q "PRODUCCION_APROBADA" guardia2.txt
+          run 'var BASE="nexa_inspeccion_ci"' > c-plan.json
+          run 'var BASE="nexa_inspeccion_ci"; var MODO="aplicar"' > c-aplicar.json
+          run 'var BASE="nexa_inspeccion_ci"' > c-despues.json
+          run 'var BASE="nexa_inspeccion_ci"; var MODO="revertir-archivo"' > c-revertir.json
+          node scripts/atlas/prueba/verificar-correcciones.mjs c-plan.json c-aplicar.json c-despues.json c-revertir.json
+
       - name: Apagar
         if: always()
         run: docker compose --profile local-db down -v

@@ -208,6 +208,22 @@ mongosh "<uri>" --eval 'var BASE="motvirsweb"; var MODO="revertir"; var PRODUCCI
 Borra solo los índices de la lista (por nombre); los datos no cambian. Si un cambio de datos hecho para resolver
 duplicados saliera mal, se restaura el respaldo del paso 5.2 sobre una base nueva y se compara antes de reemplazar.
 
+### 5.7 Correcciones de datos aprobadas (17 de noviembre de 2026)
+
+El propietario decidió: cancelar los viajes EN_CURSO atascados, borrar los campos antiguos del token de
+recuperación después del respaldo y archivar las colecciones sin uso. `scripts/atlas/correcciones-datos-fase3-2.js`
+lo hace en un solo paso, con los mismos modos y la misma guardia que el script de índices:
+
+- Viajes EN_CURSO con más de 24 h desde la aceptación → `CANCELADO`, `canceladoPor: SISTEMA`, sin cargo, con
+  `cancelacionAdministrativa` (fecha y motivo) para trazabilidad.
+- `$unset` de `resetPasswordToken`, `resetPasswordTokenExpiry` y `usuario_reset_password_token`, y del vencimiento
+  actual solo en cuentas sin token vigente con el formato nuevo.
+- `Servicio`, `Vehiculo`, `creditos_nexa`, `beneficios_uso` y `ModeloInfo` → `archivo_20261117_<nombre>` (ninguna se
+  usa en el código de este repositorio; reversible con `MODO="revertir-archivo"`).
+
+Repetirlo no cambia nada más (idempotente). CI lo prueba en la base sintética: plan, guardia de producción, aplicar,
+segunda pasada sin cambios y reversión del archivo.
+
 ## 6. Pendiente (requiere acceso o autorización del propietario)
 
 1. ~~Crear el usuario de solo lectura y ejecutar la inspección~~: hecho el 17 de noviembre (resultados en 1.1).
