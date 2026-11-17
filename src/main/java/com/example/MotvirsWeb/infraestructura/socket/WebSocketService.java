@@ -18,14 +18,23 @@ public class WebSocketService implements NotificadorTiempoReal {
 
     @Override
     public void notificarCambioEstadoServicio(Servicio servicio) {
+        notificarCambioEstadoServicio(servicio, servicio.getId() + ":" + servicio.getEstado());
+    }
+
+    @Override
+    public void notificarCambioEstadoServicio(Servicio servicio, String avisoId) {
         // Notificar al pasajero
+        Servicio pasajero = VisibilidadServicio.paraPasajero(servicio);
+        pasajero.setAvisoId(avisoId);
         messagingTemplate.convertAndSend("/topic/pasajero/" + servicio.getPasajero().getId(),
-                VisibilidadServicio.paraPasajero(servicio));
+                pasajero);
 
         // Notificar al conductor (si existe)
         if (servicio.getConductor() != null) {
+            Servicio conductor = VisibilidadServicio.paraConductor(servicio);
+            conductor.setAvisoId(avisoId);
             messagingTemplate.convertAndSend("/topic/conductor/" + servicio.getConductor().getId(),
-                    VisibilidadServicio.paraConductor(servicio));
+                    conductor);
         }
     }
 
@@ -36,25 +45,28 @@ public class WebSocketService implements NotificadorTiempoReal {
             return;
         }
         messagingTemplate.convertAndSend("/topic/servicios-disponibles",
-                Map.of("id", servicio.getId(), "estado", "SOLICITADO"));
+                Map.of("id", servicio.getId(), "estado", "SOLICITADO", "avisoId", servicio.getId() + ":SOLICITADO"));
     }
 
     @Override
     public void notificarOlaAmpliada(String servicioId, int ola) {
         messagingTemplate.convertAndSend("/topic/servicios-disponibles",
-                Map.of("id", servicioId, "estado", "SOLICITADO", "ola", ola));
+                Map.of("id", servicioId, "estado", "SOLICITADO", "ola", ola,
+                        "avisoId", servicioId + ":OLA:" + ola));
     }
 
     @Override
     public void notificarSolicitudRetirada(String servicioId, String motivo) {
         messagingTemplate.convertAndSend("/topic/servicios-disponibles",
-                Map.of("id", servicioId, "estado", "RETIRADO", "motivo", motivo));
+                Map.of("id", servicioId, "estado", "RETIRADO", "motivo", motivo,
+                        "avisoId", servicioId + ":RETIRADO:" + motivo));
     }
 
     @Override
     public void notificarOfertaSubida(String servicioId, long extraVoluntario) {
         messagingTemplate.convertAndSend("/topic/servicios-disponibles",
-                Map.of("id", servicioId, "estado", "OFERTA_SUBIDA", "extraVoluntario", extraVoluntario));
+                Map.of("id", servicioId, "estado", "OFERTA_SUBIDA", "extraVoluntario", extraVoluntario,
+                        "avisoId", servicioId + ":OFERTA_SUBIDA:" + extraVoluntario));
     }
 
     @Override

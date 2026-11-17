@@ -90,7 +90,7 @@ class AvisosPendientesServiceTest {
         bandeja(encolados::add).registrar("s1", AvisosPendientesService.Tipo.LLEGADA);
         encolados.forEach(Runnable::run);
 
-        verify(tiempoReal).notificarCambioEstadoServicio(viaje);
+        verify(tiempoReal).notificarCambioEstadoServicio(viaje, "s1:LLEGADA");
     }
 
     @Test
@@ -166,7 +166,8 @@ class AvisosPendientesServiceTest {
         viaje.setId("s1");
         viaje.setEstado(EstadoServicio.ACEPTADO);
         when(servicios.findById("s1")).thenReturn(Optional.of(viaje));
-        doThrow(new IllegalStateException("socket caído")).when(tiempoReal).notificarCambioEstadoServicio(any());
+        doThrow(new IllegalStateException("socket caído")).when(tiempoReal)
+                .notificarCambioEstadoServicio(any(), eq("s1:LLEGADA"));
         when(mongo.findAndModify(any(Query.class), any(Update.class), any(FindAndModifyOptions.class),
                 eq(AvisosPendientesService.Pendiente.class), eq("avisos_viaje_pendientes")))
                 .thenReturn(pendiente("s1:LLEGADA", "EN_ENVIO", 3));
