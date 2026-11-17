@@ -184,6 +184,29 @@ perfil `dev`) y recorrer los flujos de registro, login web y app, pedir/aceptar/
 calificar, confirmar pago y condonar desde el admin; además `./mvnw clean install` y la integración con
 `-Dexcluded.groups=none`. Comparar los planes de `copia-con-indices.json` con los de `copia.json` (sección 4).
 
+**Ensayo hecho el 17 de noviembre de 2026** (opción B: base `motvirsweb_copia` en el mismo clúster, sin tocar
+`motvirsweb`):
+
+- `mongorestore` con `--nsFrom motvirsweb.* --nsTo motvirsweb_copia.*`: **2267 documentos restaurados, 0 fallidos**
+  (la suma exacta de las 18 colecciones del respaldo) y los mismos índices que tenía producción.
+- La inspección de la copia es **idéntica** a la de producción tomada antes de las correcciones (mismos conteos,
+  tipos, duplicados e índices). El respaldo se puede restaurar completo.
+- `indices-propuestos.js` en la copia: I1–I6, I8 e I9 creados; I7 bloqueado por la tarjeta repetida.
+- Planes antes → después de los índices (documentos examinados):
+
+| Consulta | Antes | Después |
+|---|---|---|
+| S1 `findByEstado(SOLICITADO)` | COLLSCAN, 610 | IXSCAN `estado_fechaFinalizacion`, 0 |
+| S2 `existsByPasajeroIdAndEstadoIn` | COLLSCAN, 610 | IXSCAN `pasajero_estado`, 0 (1 clave) |
+| S3 `findByConductorIdAndEstado` | COLLSCAN, 253 para 50 | IXSCAN `conductor_estado`, 50 para 50 |
+| S4 `findResumenDeCalidad` | COLLSCAN, 253 para 50 | IXSCAN `conductor_estado`, 50 para 50 |
+| S5 historial de cargos | COLLSCAN, 610 | IXSCAN `pasajero_estado`, 166 |
+| S6 `findPendientesDeNiveles` | COLLSCAN, 610 | IXSCAN `estado_fechaFinalizacion`, 458 |
+| U1 `findByEmail` | COLLSCAN, 54 | IXSCAN `email`, 0 |
+| S7, S8, U2 | COLLSCAN | COLLSCAN (sin índice propuesto, como se esperaba) |
+
+Cada índice propuesto cambia el plan de la consulta para la que se diseñó; ninguno sobra.
+
 ### 5.5 Aplicar en producción (solo con aprobación explícita)
 
 Con el respaldo del día verificado y el ensayo aprobado:
@@ -244,10 +267,14 @@ mismos documentos (4, 3, 0, 0, 1); el resto de colecciones sin cambios y la deud
 1. ~~Crear el usuario de solo lectura y ejecutar la inspección~~: hecho el 17 de noviembre (resultados en 1.1).
    Borrar el usuario `nexa-lectura` cuando termine la fase si no se creó como temporal.
 2. Con esas cifras, decidir la política de correo (único global o por rol) y cómo resolver duplicados.
-3. ~~Respaldo~~ hecho y verificado por conteos el 17 de noviembre; falta el ensayo de restauración completa
-   (5.3) antes de los índices.
+3. ~~Respaldo y restauración~~: hechos y verificados el 17 de noviembre (restauración completa en
+   `motvirsweb_copia`, 5.4).
 4. Ensayo en la copia y aprobación de los índices (5.4–5.5).
 5. ~~Confirmar que `xp_eventos` y `dispositivos` no tienen duplicados~~: confirmado el 17 de noviembre (0 grupos;
    los índices ya existen).
 6. ~~Viajes atascados, tokens antiguos y colecciones sin uso~~: aplicado y verificado el 17 de noviembre (5.7).
-   Sigue pendiente decidir sobre la tarjeta de propiedad repetida (I7).
+   Tarjeta de propiedad: el propietario decidió que una moto solo puede tener un conductor (el código ya lo
+   valida en el registro y al agregar vehículos). El par repetido son dos conductores aprobados con viajes,
+   registrados con 7 meses de diferencia y sin fotos de documentos; puede ser un error de digitación o una moto
+   que cambió de conductor (el SOAT se renueva cada año, así que un SOAT distinto no lo descarta). Un administrador
+   debe confirmarlo con ambos; después se crea I7.
