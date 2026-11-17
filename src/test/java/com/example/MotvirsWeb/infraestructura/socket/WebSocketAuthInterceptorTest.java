@@ -2,6 +2,7 @@ package com.example.MotvirsWeb.infraestructura.socket;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 
@@ -9,6 +10,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.messaging.MessagingException;
+import org.springframework.messaging.simp.stomp.StompCommand;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.messaging.MessageChannel;
+import static org.mockito.Mockito.mock;
 
 import com.example.MotvirsWeb.infraestructura.seguridad.CustomUserDetails;
 
@@ -63,5 +70,24 @@ class WebSocketAuthInterceptorTest {
         assertFalse(WebSocketAuthInterceptor.suscripcionPermitida("/topic/pasajero/p1", null));
         assertFalse(WebSocketAuthInterceptor.suscripcionPermitida(null, usuario("p1", "ROLE_PASAJERO")));
         assertFalse(WebSocketAuthInterceptor.suscripcionPermitida("/topic/otro", usuario("a1", "ROLE_ADMIN")));
+    }
+
+    @Test
+    void interceptorRechazaSuscripcionAjenaYEnvio() {
+        WebSocketAuthInterceptor interceptor = new WebSocketAuthInterceptor();
+        MessageChannel canal = mock(MessageChannel.class);
+        StompHeaderAccessor suscripcion = StompHeaderAccessor.create(StompCommand.SUBSCRIBE);
+        suscripcion.setDestination("/topic/pasajero/p2");
+        suscripcion.setUser(usuario("p1", "ROLE_PASAJERO"));
+        suscripcion.setLeaveMutable(true);
+        assertThrows(MessagingException.class,
+                () -> interceptor.preSend(MessageBuilder.createMessage(new byte[0], suscripcion.getMessageHeaders()), canal));
+
+        StompHeaderAccessor envio = StompHeaderAccessor.create(StompCommand.SEND);
+        envio.setDestination("/app/otro");
+        envio.setUser(usuario("p1", "ROLE_PASAJERO"));
+        envio.setLeaveMutable(true);
+        assertThrows(MessagingException.class,
+                () -> interceptor.preSend(MessageBuilder.createMessage(new byte[0], envio.getMessageHeaders()), canal));
     }
 }
