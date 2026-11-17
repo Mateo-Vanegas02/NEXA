@@ -107,6 +107,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rolConductor => 'Conductor';
 
   @override
+  String get rolAdmin => 'Administrador';
+
+  @override
+  String get loginCuenta => 'Tipo de cuenta';
+
+  @override
+  String get loginCuentaUnica => 'Cuenta única';
+
+  @override
   String get nombreCompleto => 'Nombre completo';
 
   @override

@@ -29,6 +29,7 @@ import 'utils/selector_imagen.dart';
 import 'network/api_client.dart';
 import 'network/token_storage.dart';
 import 'push/bandeja_avisos.dart';
+import 'push/eventos_vistos.dart';
 
 /// Tiempo mínimo que se muestra el splash (la sesión se restaura casi al
 /// instante): lo que dura la animación de la carátula más un respiro.
@@ -204,4 +205,8 @@ final satisfaccionRepositoryProvider = Provider<SatisfaccionRepository>((ref) {
 /// Bandeja de avisos del teléfono (N08).
 final bandejaAvisosProvider = Provider<BandejaAvisos>(
   (ref) => BandejaAvisos(ref.watch(secureStoreProvider)),
+);
+
+final eventosVistosProvider = Provider<EventosVistos>(
+  (ref) => EventosVistos(ref.watch(secureStoreProvider)),
 );

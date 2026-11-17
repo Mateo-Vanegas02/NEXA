@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexa_mobile/core/providers.dart';
 import 'package:nexa_mobile/core/push/aviso_push.dart';
+import 'package:nexa_mobile/core/push/eventos_vistos.dart';
+import 'package:nexa_mobile/core/network/token_storage.dart';
 import 'package:nexa_mobile/core/push/dispositivos_repository.dart';
 import 'package:nexa_mobile/core/push/servicio_push.dart';
 import 'package:nexa_mobile/features/auth/domain/auth.dart';
@@ -80,13 +82,33 @@ void main() {
       expect(de('VIAJE_CANCELADO').rutaAlTocar(Rol.conductor), '/c/inicio');
     });
 
-    test('el deduplicador ignora repetidos y olvida los viejos', () {
-      final d = Deduplicador(2);
-      expect(d.nuevo('a'), isTrue);
-      expect(d.nuevo('a'), isFalse);
-      expect(d.nuevo('b'), isTrue);
-      expect(d.nuevo('c'), isTrue);
-      expect(d.nuevo('a'), isTrue);
+    test('aviso fuera de orden o de viaje ya cerrado no reabre pantallas', () {
+      final aceptado = AvisoPush.desdeDatos({
+        'tipo': 'VIAJE_ACEPTADO',
+        'eventoId': 's1:aceptado',
+        'servicioId': 's1',
+      });
+      final finalizado = AvisoPush.desdeDatos({
+        'tipo': 'VIAJE_FINALIZADO',
+        'eventoId': 's1:finalizado',
+        'servicioId': 's1',
+      });
+      expect(aceptado.rutaConViajeVigente(Rol.pasajero, 's2'), '/p/inicio');
+      expect(finalizado.rutaConViajeVigente(Rol.pasajero, null), '/p/inicio');
+      expect(aceptado.rutaConViajeVigente(Rol.pasajero, 's1'), '/p/viaje');
+    });
+
+    test('ignora repetidos tras reiniciar y vence a las 48 horas', () async {
+      final store = MemorySecureStore();
+      var ahora = DateTime(2026, 11, 17);
+      EventosVistos crear() => EventosVistos(store, reloj: () => ahora);
+      expect(await crear().reservar('recibido:a'), isTrue);
+      expect(await crear().reservar('recibido:a'), isFalse);
+      // Recibir y tocar son acciones distintas.
+      expect(await crear().reservar('tocado:a'), isTrue);
+      expect(await crear().reservar('tocado:a'), isFalse);
+      ahora = ahora.add(const Duration(hours: 49));
+      expect(await crear().reservar('recibido:a'), isTrue);
     });
   });
 
