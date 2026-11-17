@@ -103,3 +103,12 @@
     if (ticks[0]) elegir(ticks[0]);
   }
 })();
+(function () {
+  const form = document.getElementById('loginForm');
+  if (!form) return;
+  form.addEventListener('submit', function () {
+    const correo = form.querySelector('[name="username"]');
+    const rol = form.querySelector('[name="rol"]');
+    correo.value = correo.value.trim().toLowerCase() + (rol.value ? '|' + rol.value : '');
+  });
+})();

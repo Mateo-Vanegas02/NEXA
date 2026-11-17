@@ -4,6 +4,8 @@ import com.example.MotvirsWeb.dominio.modelo.Conductor;
 import com.example.MotvirsWeb.dominio.modelo.Pasajero;
 import com.example.MotvirsWeb.dominio.modelo.Usuario;
 import com.example.MotvirsWeb.dominio.repositorio.UsuarioRepository;
+import com.example.MotvirsWeb.dominio.regla.Correo;
+import com.example.MotvirsWeb.infraestructura.seguridad.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -38,9 +40,13 @@ public class UsuarioContextHelper {
      * @throws RuntimeException si el email no corresponde a ningún usuario.
      */
     public Usuario getUsuarioAutenticado() {
-        String email = getEmailAutenticado();
-        return usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + email));
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof CustomUserDetails detalles && detalles.getId() != null) {
+            return usuarioRepository.findById(detalles.getId())
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        }
+        return usuarioRepository.findByEmail(Correo.normalizar(getEmailAutenticado()))
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 
     /**

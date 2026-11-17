@@ -10,12 +10,13 @@
   base.dropDatabase();
   const U = base.Usuarios;
   const id = () => new ObjectId();
-  const pasajeros = [id(), id(), id()];
+  const pasajeros = [id(), id(), id(), id()];
   const conductores = [id(), id(), id()];
   U.insertMany([
     { _id: pasajeros[0], email: 'repetido.sintetico@example.invalid', rol: 'PASAJERO', _class: 'PASAJERO' },
     { _id: pasajeros[1], email: ' Repetido.Sintetico@example.invalid', rol: 'PASAJERO', _class: 'PASAJERO' },
     { _id: pasajeros[2], email: 'deudor.sintetico@example.invalid', rol: 'PASAJERO', _class: 'PASAJERO' },
+    { _id: pasajeros[3], email: ' Limpio.Sintetico@Example.Invalid ', rol: 'PASAJERO', _class: 'PASAJERO' },
     { _id: conductores[0], email: 'repetido.sintetico@example.invalid', rol: 'CONDUCTOR', _class: 'CONDUCTOR',
       estadoValidacion: 'APROBADO', licencia: NumberLong(900001), soat: NumberLong(800001), tarjeta_de_propiedad: NumberLong(700001) },
     { _id: conductores[1], email: 'c2.sintetico@example.invalid', rol: 'CONDUCTOR', _class: 'CONDUCTOR',
@@ -26,6 +27,7 @@
   const S = base.servicios;
   const cancelado = id();
   S.insertMany([
+    { estado: 'FINALIZADO', pasajero: { _id: pasajeros[3], email: ' Limpio.Sintetico@Example.Invalid ' } },
     { _id: cancelado, estado: 'CANCELADO', pasajero: { _id: pasajeros[2] }, cargoCancelacion: NumberLong(3000),
       fechaCancelacion: new Date(), canal: 'WEB' },
     { estado: 'SOLICITADO', pasajero: { _id: pasajeros[0] }, solicitadoEn: new Date(Date.now() - 3 * 864e5), canal: 'APP' },
@@ -42,6 +44,8 @@
     { viajeId: 'v1', rol: 'PASAJERO', motivo: 'VIAJE', xp: 10, aplicado: false },
   ]);
   base.dispositivos.insertOne({ token: 'token-sintetico', usuarioId: pasajeros[0] });
+  base.dispositivos.insertOne({ token: 'token-sintetico-2', usuarioId: pasajeros[3],
+    email: ' Limpio.Sintetico@Example.Invalid ' });
   // Tarjeta repetida: el segundo conductor declaró otro número al subir la foto (error de digitación)
   base.documentos_conductor.insertMany([
     { conductorId: conductores[0].toHexString(), tipo: 'TARJETA_PROPIEDAD', numeroDeclarado: '700001', subidoEn: new Date() },

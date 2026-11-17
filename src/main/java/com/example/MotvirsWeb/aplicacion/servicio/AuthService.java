@@ -18,6 +18,7 @@ import com.example.MotvirsWeb.dominio.modelo.EstadoValidacion;
 import com.example.MotvirsWeb.dominio.modelo.Pasajero;
 import com.example.MotvirsWeb.dominio.modelo.Rol;
 import com.example.MotvirsWeb.dominio.modelo.Usuario;
+import com.example.MotvirsWeb.dominio.regla.Correo;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +37,7 @@ public class AuthService {
      * Registra un nuevo usuario en el sistema - Versión mejorada y optimizada
      */
     public Usuario registrarUsuario(String email, String password, Rol rol, String nombre) {
+        email = Correo.normalizar(email);
         // 1. Creación de la instancia (Factory)
         Usuario usuario = Usuario.crearUsuario(rol, email, usuarioRepository);
 
@@ -57,6 +59,7 @@ public class AuthService {
 
     public Pasajero registrarPasajero(String nombreCompleto, String email,
             String telefono, String password) {
+        email = Correo.normalizar(email);
         if (usuarioRepository.findByEmailAndRol(email, Rol.PASAJERO).isPresent()) {
             throw new IllegalStateException("Ya existe un pasajero registrado con este email: " + email);
         }
@@ -85,6 +88,7 @@ public class AuthService {
 
     public Conductor registrarConductor(String nombre, String email, String password,
             String telefono, long licencia, Long soat, Long tarjetaPropiedad) {
+        email = Correo.normalizar(email);
         // Validaciones de unicidad
         if (usuarioRepository.findByEmailAndRol(email, Rol.CONDUCTOR).isPresent()) {
             throw new IllegalStateException("Ya existe un conductor registrado con este email: " + email);

@@ -71,7 +71,9 @@ public class BloqueoCierreSesionFilter extends OncePerRequestFilter {
         if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
             return null;
         }
-        Usuario u = usuarioRepository.findByEmail(auth.getName()).orElse(null);
+        Usuario u = auth.getPrincipal() instanceof CustomUserDetails detalles
+                ? usuarioRepository.findById(detalles.getId()).orElse(null)
+                : usuarioRepository.findByEmail(auth.getName()).orElse(null);
         if (u instanceof Pasajero) {
             if (servicioRepository.existsByPasajeroIdAndEstado(u.getId(), EstadoServicio.SOLICITADO)) {
                 return new Bloqueo("/pasajero/panel", "true", MENSAJE_SOLICITUD);

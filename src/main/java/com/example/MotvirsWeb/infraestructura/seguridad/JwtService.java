@@ -66,7 +66,15 @@ public class JwtService implements EmisorTokens {
     // Valida el token
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+        final String id = extractUserId(token);
+        return username.equals(userDetails.getUsername())
+                && (id == null || userDetails instanceof CustomUserDetails
+                    && id.equals(((CustomUserDetails) userDetails).getId()))
+                && !isTokenExpired(token);
+    }
+
+    public String extractUserId(String token) {
+        return extractClaim(token, c -> c.get("userId", String.class));
     }
 
     public boolean isTokenExpired(String token) {

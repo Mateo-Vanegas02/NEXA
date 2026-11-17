@@ -60,6 +60,15 @@
                         <label for="username">Email o teléfono</label>
                         <input type="text" id="username" name="username" required autocomplete="username">
                     </div>
+                    <div class="nx-field">
+                        <label for="rol-login">Cuenta (si usas el mismo correo en dos roles)</label>
+                        <select id="rol-login" name="rol">
+                            <option value="">Mi única cuenta</option>
+                            <option value="PASAJERO">Pasajero</option>
+                            <option value="CONDUCTOR">Conductor</option>
+                            <option value="ADMIN">Administrador</option>
+                        </select>
+                    </div>
                     <div class="nx-field nx-field--pw">
                         <label for="password">Contraseña</label>
                         <input type="password" id="password" name="password" required autocomplete="current-password">
