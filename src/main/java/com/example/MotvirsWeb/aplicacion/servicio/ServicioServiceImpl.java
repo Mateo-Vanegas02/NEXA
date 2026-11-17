@@ -659,6 +659,12 @@ public class ServicioServiceImpl implements ServicioService {
     @Override
     public Map<String, Object> calificarServicio(String servicioId, String rol,
             Double calificacion, String comentarios, List<String> factores, String usuarioId) {
+        if (usuarioId == null || usuarioId.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Inicia sesión para calificar");
+        }
+        if (!"pasajero".equals(rol) && !"conductor".equals(rol)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes calificar este servicio");
+        }
         Servicio servicio = buscarServicio(servicioId);
         org.bson.types.ObjectId participante = "pasajero".equals(rol)
                 ? (servicio.getPasajero() != null ? servicio.getPasajero().getId() : null)
@@ -686,13 +692,16 @@ public class ServicioServiceImpl implements ServicioService {
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
-        return calificarServicio(servicioId, rol, calificacion, comentarios, elegidos);
+        return registrarCalificacion(servicio, rol, calificacion, comentarios, elegidos);
     }
 
-    @Override
-    public Map<String, Object> calificarServicio(String servicioId, String rol,
+    /**
+     * Escribe la calificación ya autorizada. Privado a propósito: el único punto de entrada público es
+     * {@link #calificarServicio(String, String, Double, String, List, String)}, que exige al participante.
+     */
+    private Map<String, Object> registrarCalificacion(Servicio servicio, String rol,
             Double calificacion, String comentarios, List<String> factores) {
-        Servicio servicio = buscarServicio(servicioId);
+        String servicioId = servicio.getId();
         List<String> guardar = factores == null || factores.isEmpty() ? null : List.copyOf(factores);
 
         if ("pasajero".equals(rol)) {

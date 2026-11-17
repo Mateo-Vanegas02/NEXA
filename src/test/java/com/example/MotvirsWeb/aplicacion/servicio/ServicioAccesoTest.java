@@ -64,7 +64,7 @@ class ServicioAccesoTest {
         servicio.setConductor(new Servicio.ConductorEmbedded(Conductor.builder().id(conductorId)
                 .nombre_y_Apellido("Cond").build()));
         servicio.setEstado(EstadoServicio.FINALIZADO);
-        when(servicioRepository.findById("s1")).thenReturn(Optional.of(servicio));
+        lenient().when(servicioRepository.findById("s1")).thenReturn(Optional.of(servicio));
         lenient().when(servicioRepository.iniciarSiAceptado(eq("s1"), eq(conductorId), any(), anyDouble()))
                 .thenReturn(1L);
         lenient().when(servicioRepository.finalizarSiEnCurso(eq("s1"), eq(conductorId), any(), anyBoolean(), anyDouble()))
@@ -216,5 +216,73 @@ class ServicioAccesoTest {
     void elPasajeroDelViajeSiPuedeCalificar() {
         assertNotNull(servicioService.calificarServicio("s1", "pasajero", 4.5, "bien", pasajeroId.toString()));
         assertEquals(4.5, servicio.getCalificacionConductor());
+    }
+
+    @Test
+    void elConductorDelViajeCalificaAlPasajero() {
+        when(servicioRepository.calificarPasajeroUnaVez(eq("s1"), eq(conductorId), any(), any(), any())).thenReturn(1L);
+        assertNotNull(servicioService.calificarServicio("s1", "conductor", 4.0, "bien", java.util.List.of(),
+                conductorId.toString()));
+        verify(servicioRepository).calificarPasajeroUnaVez(eq("s1"), eq(conductorId), eq(4.0), eq("bien"), any());
+    }
+
+    @Test
+    void unConductorAjenoNoPuedeCalificar() {
+        ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> servicioService
+                .calificarServicio("s1", "conductor", 4.0, "x", new ObjectId().toString()));
+        assertEquals(HttpStatus.FORBIDDEN, estado(e));
+        verify(servicioRepository, never()).calificarPasajeroUnaVez(any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void elPasajeroNoPuedeCalificarComoConductorCambiandoElRol() {
+        ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> servicioService
+                .calificarServicio("s1", "conductor", 1.0, "x", pasajeroId.toString()));
+        assertEquals(HttpStatus.FORBIDDEN, estado(e));
+        for (String inventado : new String[] { "admin", "ADMIN", "", null }) {
+            ResponseStatusException otro = assertThrows(ResponseStatusException.class, () -> servicioService
+                    .calificarServicio("s1", inventado, 1.0, "x", pasajeroId.toString()));
+            assertEquals(HttpStatus.FORBIDDEN, estado(otro));
+        }
+        verify(servicioRepository, never()).calificarPasajeroUnaVez(any(), any(), any(), any(), any());
+        verify(servicioRepository, never()).calificarConductorUnaVez(any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void sinUsuarioAutenticadoNoSeCalifica() {
+        for (String sinUsuario : new String[] { null, "", "  " }) {
+            ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> servicioService
+                    .calificarServicio("s1", "pasajero", 5.0, "x", sinUsuario));
+            assertEquals(HttpStatus.UNAUTHORIZED, estado(e));
+        }
+        verify(servicioRepository, never()).calificarConductorUnaVez(any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void noSeCalificaUnViajeCancelado() {
+        servicio.setEstado(EstadoServicio.CANCELADO);
+        ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> servicioService
+                .calificarServicio("s1", "pasajero", 5.0, "x", pasajeroId.toString()));
+        assertEquals(HttpStatus.BAD_REQUEST, estado(e));
+    }
+
+    @Test
+    void unaCalificacionRepetidaOConcurrenteDa409() {
+        when(servicioRepository.calificarConductorUnaVez(eq("s1"), eq(pasajeroId), any(), any(), any())).thenReturn(0L);
+        ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> servicioService
+                .calificarServicio("s1", "pasajero", 5.0, "x", pasajeroId.toString()));
+        assertEquals(HttpStatus.CONFLICT, estado(e));
+        verify(nivelesService, never()).registrarCalificacionConductor(any());
+    }
+
+    @Test
+    void elContratoPublicoNoTieneCalificarSinIdentidad() {
+        for (var m : ServicioService.class.getMethods()) {
+            if (m.getName().equals("calificarServicio")) {
+                Class<?>[] p = m.getParameterTypes();
+                assertEquals(String.class, p[p.length - 1], m + " debe recibir el usuario autenticado al final");
+                assertTrue(p.length >= 5, m.toString());
+            }
+        }
     }
 }

@@ -78,23 +78,32 @@ public class ControllerRating {
             @RequestParam String rol,
             Authentication authentication) {
 
-        // Validación de seguridad: el rol del parámetro debe coincidir con el rol
-        // autenticado
-        String authRole = authentication.getAuthorities().stream()
-                .findFirst()
-                .map(a -> a.getAuthority().replace("ROLE_", "").toLowerCase())
-                .orElse("user");
-
-        if (!rol.equals(authRole)) {
-            throw new RuntimeException("Rol no autorizado para esta calificación");
+        // El rol sale de Spring Security, no del formulario: el parámetro solo se acepta si coincide.
+        String rolReal = rolAutenticado(authentication);
+        if (!rolReal.equals(rol)) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "Rol no autorizado para esta calificación");
         }
 
-        servicioService.calificarServicio(servicioId, rol, calificacion, comentarios, factores,
+        servicioService.calificarServicio(servicioId, rolReal, calificacion, comentarios, factores,
                 idUsuario(authentication));
 
-        return "pasajero".equals(rol)
+        return "pasajero".equals(rolReal)
                 ? "redirect:/pasajero/panel"
                 : "redirect:/conductor/panel";
+    }
+
+    /** "pasajero" o "conductor" según la autoridad autenticada; cualquier otro caso se rechaza. */
+    static String rolAutenticado(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new org.springframework.security.access.AccessDeniedException("Inicia sesión para calificar");
+        }
+        boolean pasajero = authentication.getAuthorities().stream().anyMatch(a -> "ROLE_PASAJERO".equals(a.getAuthority()));
+        boolean conductor = authentication.getAuthorities().stream().anyMatch(a -> "ROLE_CONDUCTOR".equals(a.getAuthority()));
+        if (pasajero == conductor) {
+            throw new org.springframework.security.access.AccessDeniedException("Rol no autorizado para esta calificación");
+        }
+        return pasajero ? "pasajero" : "conductor";
     }
 
     private static String idUsuario(Authentication authentication) {
