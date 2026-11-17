@@ -422,6 +422,148 @@ class Phase3MongoIntegrationTest {
                 "avisos_viaje_pendientes").estado());
     }
 
+    private String avisoSintetico(AvisosPendientesService.Tipo tipo, EstadoServicio estado) {
+        Servicio viaje = new Servicio();
+        viaje.setEstado(estado);
+        String id = servicios.save(viaje).getId();
+        mongo.createCollection("avisos_viaje_pendientes");
+        // registrar fuera de transacción con un executor que no ejecuta: el aviso queda PENDIENTE
+        new AvisosPendientesService(mongo, servicios, mock(NotificadorTiempoReal.class), mock(AvisosService.class),
+                mock(DeudaService.class), tarea -> { }).registrar(id, tipo);
+        return id + ":" + tipo;
+    }
+
+    private AvisosPendientesService.Pendiente aviso(String avisoId) {
+        return mongo.findById(avisoId, AvisosPendientesService.Pendiente.class, "avisos_viaje_pendientes");
+    }
+
+    @Test
+    void dosTrabajadoresReclamanElMismoAvisoYSoloUnoLoEnvia() throws Exception {
+        String avisoId = avisoSintetico(AvisosPendientesService.Tipo.LLEGADA, EstadoServicio.ACEPTADO);
+        NotificadorTiempoReal socket = mock(NotificadorTiempoReal.class);
+        AvisosPendientesService bandeja = new AvisosPendientesService(mongo, servicios, socket,
+                mock(AvisosService.class), mock(DeudaService.class), tarea -> { });
+        var pool = Executors.newFixedThreadPool(2);
+        CountDownLatch inicio = new CountDownLatch(1);
+        try {
+            var a = pool.submit(() -> { inicio.await(); bandeja.despachar(avisoId); return null; });
+            var b = pool.submit(() -> { inicio.await(); bandeja.despachar(avisoId); return null; });
+            inicio.countDown();
+            a.get(10, TimeUnit.SECONDS);
+            b.get(10, TimeUnit.SECONDS);
+        } finally {
+            pool.shutdownNow();
+        }
+        verify(socket, times(1)).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any());
+        assertEquals("ENVIADO", aviso(avisoId).estado());
+        assertEquals(1, aviso(avisoId).intentos());
+    }
+
+    @Test
+    void quienPierdeElBloqueoNoPisaAlTrabajadorQueLoReclamoDespues() throws Exception {
+        String avisoId = avisoSintetico(AvisosPendientesService.Tipo.LLEGADA, EstadoServicio.ACEPTADO);
+        CountDownLatch primeroEnviando = new CountDownLatch(1);
+        CountDownLatch soltarPrimero = new CountDownLatch(1);
+        NotificadorTiempoReal lento = mock(NotificadorTiempoReal.class);
+        org.mockito.Mockito.doAnswer(inv -> {
+            primeroEnviando.countDown();
+            assertTrue(soltarPrimero.await(10, TimeUnit.SECONDS));
+            throw new IllegalStateException("el primero falla tarde");
+        }).when(lento).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any());
+        AvisosPendientesService primero = new AvisosPendientesService(mongo, servicios, lento,
+                mock(AvisosService.class), mock(DeudaService.class), tarea -> { });
+        NotificadorTiempoReal rapido = mock(NotificadorTiempoReal.class);
+        AvisosPendientesService segundo = new AvisosPendientesService(mongo, servicios, rapido,
+                mock(AvisosService.class), mock(DeudaService.class), tarea -> { });
+        var hilo = Executors.newSingleThreadExecutor();
+        try {
+            var envioLento = hilo.submit(() -> primero.despachar(avisoId));
+            assertTrue(primeroEnviando.await(10, TimeUnit.SECONDS));
+            String leaseDelPrimero = aviso(avisoId).lease();
+            assertNotNull(leaseDelPrimero);
+            // El bloqueo del primero vence (proceso lento o colgado)
+            mongo.updateFirst(Query.query(Criteria.where("_id").is(avisoId)),
+                    new Update().set("bloqueadoHasta", LocalDateTime.now().minusSeconds(1)), "avisos_viaje_pendientes");
+
+            segundo.despachar(avisoId);
+            assertEquals("ENVIADO", aviso(avisoId).estado(), "el nuevo trabajador completa el envío");
+
+            soltarPrimero.countDown();
+            envioLento.get(10, TimeUnit.SECONDS);
+        } finally {
+            hilo.shutdownNow();
+        }
+        AvisosPendientesService.Pendiente fin = aviso(avisoId);
+        assertEquals("ENVIADO", fin.estado(), "el fallo tardío del primero no lo devuelve a PENDIENTE");
+        assertNull(fin.ultimoError());
+        assertEquals(2, fin.intentos());
+        verify(rapido, times(1)).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void unAvisoBloqueadoPorUnProcesoCaidoSeRecuperaEnElBarrido() {
+        String avisoId = avisoSintetico(AvisosPendientesService.Tipo.LLEGADA, EstadoServicio.ACEPTADO);
+        // Un proceso lo reclamó y murió: queda EN_ENVIO con su lease y el bloqueo vencido
+        mongo.updateFirst(Query.query(Criteria.where("_id").is(avisoId)),
+                new Update().set("estado", "EN_ENVIO").set("lease", "proceso-caido").set("intentos", 1)
+                        .set("bloqueadoHasta", LocalDateTime.now().minusMinutes(1)), "avisos_viaje_pendientes");
+        NotificadorTiempoReal socket = mock(NotificadorTiempoReal.class);
+        AvisosPendientesService tras_reinicio = new AvisosPendientesService(mongo, servicios, socket,
+                mock(AvisosService.class), mock(DeudaService.class), Runnable::run);
+
+        tras_reinicio.procesar();
+
+        assertEquals("ENVIADO", aviso(avisoId).estado());
+        verify(socket, times(1)).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void unErrorPermanenteTerminaEnFallidoSinReintentosInfinitos() {
+        String avisoId = avisoSintetico(AvisosPendientesService.Tipo.LLEGADA, EstadoServicio.ACEPTADO);
+        NotificadorTiempoReal socket = mock(NotificadorTiempoReal.class);
+        doThrow(new IllegalStateException("siempre falla")).when(socket)
+                .notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any());
+        AvisosPendientesService bandeja = new AvisosPendientesService(mongo, servicios, socket,
+                mock(AvisosService.class), mock(DeudaService.class), tarea -> { }, 3, 600);
+        for (int i = 0; i < 5; i++) {
+            bandeja.despachar(avisoId);
+            mongo.updateFirst(Query.query(Criteria.where("_id").is(avisoId).and("estado").is("PENDIENTE")),
+                    new Update().set("proximoIntento", LocalDateTime.now().minusSeconds(1)), "avisos_viaje_pendientes");
+        }
+        AvisosPendientesService.Pendiente fin = aviso(avisoId);
+        assertEquals("FALLIDO", fin.estado());
+        assertEquals(3, fin.intentos());
+        assertTrue(fin.ultimoError().contains("siempre falla"));
+        verify(socket, times(3)).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void unFalloParcialDePushReintentaSoloLosTokensFallidosYNoRepiteStomp() {
+        String avisoId = avisoSintetico(AvisosPendientesService.Tipo.LLEGADA, EstadoServicio.ACEPTADO);
+        NotificadorTiempoReal socket = mock(NotificadorTiempoReal.class);
+        AvisosService push = mock(AvisosService.class);
+        doThrow(new com.example.MotvirsWeb.aplicacion.puerto.NotificadorPush.EnvioIncompleto(java.util.List.of("tok-b")))
+                .doNothing().when(push).ejecutarConfirmado(org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.any(Runnable.class));
+        AvisosPendientesService bandeja = new AvisosPendientesService(mongo, servicios, socket, push,
+                mock(DeudaService.class), tarea -> { });
+
+        bandeja.despachar(avisoId);
+        AvisosPendientesService.Pendiente tras = aviso(avisoId);
+        assertEquals("PENDIENTE", tras.estado());
+        assertTrue(tras.stompEnviado());
+        assertEquals(java.util.List.of("tok-b"), tras.tokensPendientes());
+
+        mongo.updateFirst(Query.query(Criteria.where("_id").is(avisoId)),
+                new Update().set("proximoIntento", LocalDateTime.now().minusSeconds(1)), "avisos_viaje_pendientes");
+        bandeja.despachar(avisoId);
+
+        assertEquals("ENVIADO", aviso(avisoId).estado());
+        verify(socket, times(1)).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any());
+        verify(push).ejecutarConfirmado(org.mockito.ArgumentMatchers.eq(java.util.List.of("tok-b")),
+                org.mockito.ArgumentMatchers.any(Runnable.class));
+    }
+
     @Test
     void aceptarYVencerSonTransicionesCondicionales() throws Exception {
         Servicio viaje = new Servicio();

@@ -84,10 +84,15 @@ public class NotificadorPushFcm implements NotificadorPush {
     @Override
     public void enviarConConfirmacion(Collection<String> tokens, Aviso aviso) {
         if (tokens == null) return;
+        java.util.Set<String> fallidos = new java.util.LinkedHashSet<>();
         for (String token : List.copyOf(tokens)) {
             if (!enviarUno(token, aviso)) {
-                throw new IllegalStateException("FCM no confirmó el aviso " + aviso.tipo());
+                fallidos.add(token); // se sigue con los demás: un token caído no bloquea al resto
             }
+        }
+        if (!fallidos.isEmpty()) {
+            log.warn("FCM no confirmó {} de {} envíos del aviso {}", fallidos.size(), tokens.size(), aviso.tipo());
+            throw new EnvioIncompleto(fallidos);
         }
     }
 

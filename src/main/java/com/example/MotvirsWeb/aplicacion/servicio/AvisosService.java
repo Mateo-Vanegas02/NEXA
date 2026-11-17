@@ -53,19 +53,53 @@ public class AvisosService {
     /** Conductores a los que se les avisó cada solicitud abierta: a ellos va el retiro silencioso. */
     private final Map<String, Set<ObjectId>> avisados = new ConcurrentHashMap<>();
     private final ThreadLocal<Boolean> confirmado = ThreadLocal.withInitial(() -> false);
+    /** En un reintento parcial, solo estos tokens; null = todos. */
+    private final ThreadLocal<Set<String>> soloTokens = new ThreadLocal<>();
+    private final ThreadLocal<Set<String>> tokensFallidos = new ThreadLocal<>();
 
     public void ejecutarConfirmado(Runnable envio) {
+        ejecutarConfirmado(null, envio);
+    }
+
+    /**
+     * Ejecuta los avisos esperando la confirmación del proveedor (lo usa la bandeja persistente). Los errores
+     * no se absorben; si algún token no se confirmó, al final lanza {@link NotificadorPush.EnvioIncompleto}
+     * con todos ellos. Con {@code solo} no vacío, envía únicamente a esos tokens (reintento parcial).
+     */
+    public void ejecutarConfirmado(Collection<String> solo, Runnable envio) {
         confirmado.set(true);
+        soloTokens.set(solo == null || solo.isEmpty() ? null : Set.copyOf(solo));
+        tokensFallidos.set(new LinkedHashSet<>());
         try {
             envio.run();
+            if (!tokensFallidos.get().isEmpty()) {
+                throw new NotificadorPush.EnvioIncompleto(tokensFallidos.get());
+            }
         } finally {
             confirmado.remove();
+            soloTokens.remove();
+            tokensFallidos.remove();
         }
     }
 
     private void enviarPush(Collection<String> tokens, Aviso aviso) {
-        if (confirmado.get()) push.enviarConConfirmacion(tokens, aviso);
-        else push.enviar(tokens, aviso);
+        if (!confirmado.get()) {
+            push.enviar(tokens, aviso);
+            return;
+        }
+        if (tokens == null || tokens.isEmpty()) {
+            return;
+        }
+        Set<String> solo = soloTokens.get();
+        List<String> destino = tokens.stream().filter(t -> solo == null || solo.contains(t)).toList();
+        if (destino.isEmpty()) {
+            return;
+        }
+        try {
+            push.enviarConConfirmacion(destino, aviso);
+        } catch (NotificadorPush.EnvioIncompleto e) {
+            tokensFallidos.get().addAll(e.tokensFallidos()); // se sigue con los demás destinatarios
+        }
     }
 
     /** Destinatarios de una solicitud abierta; la bandeja los conserva antes de retirar la tarjeta. */

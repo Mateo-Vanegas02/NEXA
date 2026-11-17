@@ -228,6 +228,34 @@ class AvisosServiceTest {
     }
 
     @Test
+    void conConfirmacionUnTokenCaidoNoFrenaALosDemasYSeReportaAlFinal() {
+        Servicio s = solicitud(CanalServicio.APP, 0);
+        s.setConductor(new Servicio.ConductorEmbedded(cerca));
+        when(dispositivos.tokensDe(s.getPasajero().getId())).thenReturn(List.of("tok-a", "tok-b"));
+        org.mockito.Mockito.doThrow(new NotificadorPush.EnvioIncompleto(List.of("tok-b")))
+                .when(push).enviarConConfirmacion(any(), any());
+
+        NotificadorPush.EnvioIncompleto e = org.junit.jupiter.api.Assertions.assertThrows(
+                NotificadorPush.EnvioIncompleto.class,
+                () -> avisos.ejecutarConfirmado(() -> avisos.viajeAceptado(s)));
+
+        assertEquals(java.util.Set.of("tok-b"), e.tokensFallidos());
+        verify(push).enviarConConfirmacion(org.mockito.ArgumentMatchers.eq(List.of("tok-a", "tok-b")), any());
+        verify(push, never()).enviar(any(), any());
+    }
+
+    @Test
+    void elReintentoParcialSoloVaALosTokensQueFallaron() {
+        Servicio s = solicitud(CanalServicio.APP, 0);
+        s.setConductor(new Servicio.ConductorEmbedded(cerca));
+        when(dispositivos.tokensDe(s.getPasajero().getId())).thenReturn(List.of("tok-a", "tok-b"));
+
+        avisos.ejecutarConfirmado(java.util.Set.of("tok-b"), () -> avisos.viajeAceptado(s));
+
+        verify(push).enviarConConfirmacion(org.mockito.ArgumentMatchers.eq(List.of("tok-b")), any());
+    }
+
+    @Test
     void formatos() {
         assertEquals("$6.964", AvisosService.pesos(6964));
         assertEquals("$1.000", AvisosService.pesos(1000));
