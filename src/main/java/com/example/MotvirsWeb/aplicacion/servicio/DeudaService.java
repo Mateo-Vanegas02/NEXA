@@ -15,6 +15,9 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.text.NumberFormat;
@@ -27,6 +30,12 @@ import java.util.Optional;
  * próximo viaje: el pasajero la ve y la acepta antes de pedirlo, y al finalizar paga tarifa + deuda en un solo
  * monto. El conductor solo ve el total a cobrar; el desglose lo ve el administrador. También puede pagarla aparte
  * (un administrador confirma) o condonarse. Solo puede existir una deuda por pasajero a la vez.
+ *
+ * <p>Concurrencia: cada resolución (cobrar con el viaje, confirmar pago, condonar) quita la deuda del pasajero solo
+ * si sigue siendo la misma que se leyó ({@code deuda.servicioId}) y marca el cargo del viaje solo si aún no estaba
+ * pagado ni condonado. Las dos escrituras van en una transacción: si la segunda no aplica, la primera se revierte.
+ * Así un pago no se registra dos veces, una deuda cobrada no se condona y una deuda nueva no se borra mientras se
+ * resolvía la anterior. Los correos salen después del commit.
  */
 @Slf4j
 @Service
@@ -37,6 +46,13 @@ public class DeudaService {
     private final ServicioRepository servicioRepository;
     private final MongoTemplate mongoTemplate;
     private final com.example.MotvirsWeb.aplicacion.puerto.NotificadorCorreo correo;
+    /** Confirmar pago y condonar abren su transacción con reintento; cobrar y registrar se unen a la del viaje. */
+    private EjecutorTransacciones transacciones = EjecutorTransacciones.sinTransaccion();
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    public void setTransacciones(EjecutorTransacciones transacciones) {
+        this.transacciones = transacciones;
+    }
 
     public static final String METODO_EFECTIVO = "EFECTIVO";
     /** Se cobró en efectivo junto con el siguiente viaje del pasajero. */
@@ -81,6 +97,7 @@ public class DeudaService {
      *
      * @return lo que se cobró de la deuda (0 si no había o ya estaba resuelta)
      */
+    @Transactional
     public long cobrarEnViaje(Servicio viaje, LocalDateTime ahora) {
         if (viaje == null || viaje.getDeudaPorCobrar() <= 0 || viaje.getDeudaServicioId() == null
                 || viaje.getPasajero() == null || viaje.getPasajero().getId() == null) {
@@ -93,8 +110,12 @@ public class DeudaService {
                     viaje.getDeudaServicioId(), viaje.getId());
             return 0;
         }
-        servicioRepository.findById(viaje.getDeudaServicioId())
-                .ifPresent(s -> marcarPagado(s, ahora, METODO_EN_VIAJE, "Cobrado en efectivo con el viaje " + viaje.getId()));
+        if (!marcarPagado(viaje.getDeudaServicioId(), ahora, METODO_EN_VIAJE,
+                "Cobrado en efectivo con el viaje " + viaje.getId())) {
+            // El pasajero pagó en efectivo con este viaje: la deuda se descuenta igual; solo se deja constancia.
+            log.warn("El cargo del servicio {} ya estaba resuelto al cobrarlo con el viaje {}",
+                    viaje.getDeudaServicioId(), viaje.getId());
+        }
         return viaje.getDeudaPorCobrar();
     }
 
@@ -103,6 +124,7 @@ public class DeudaService {
      *
      * @return false si ya había una deuda (no se registra la nueva)
      */
+    @Transactional
     public boolean registrar(ObjectId pasajeroId, String servicioId, long monto, LocalDateTime ahora) {
         Query sinDeuda = Query.query(Criteria.where("_id").is(pasajeroId).and("deuda").exists(false));
         Update poner = new Update().set("deuda", new DeudaCancelacion(servicioId, monto, ahora));
@@ -112,11 +134,16 @@ public class DeudaService {
                     pasajeroId, monto, servicioId);
             return false;
         }
-        usuarioRepository.findById(pasajeroId.toString())
-                .filter(Pasajero.class::isInstance).map(Pasajero.class::cast)
-                .ifPresent(p -> avisar(() -> correo.enviarDeudaSeCobraEnProximoViaje(
-                        p.getEmail(), p.getNombreCompleto(), monto)));
         return true;
+    }
+
+    /** Lo llama la bandeja persistente después de confirmar la cancelación. */
+    public void enviarAvisoDeuda(Servicio servicio) {
+        if (servicio.getPasajero() == null || servicio.getPasajero().getId() == null) return;
+        usuarioRepository.findById(servicio.getPasajero().getId().toString())
+                .filter(Pasajero.class::isInstance).map(Pasajero.class::cast)
+                .ifPresent(p -> correo.enviarDeudaSeCobraEnProximoViaje(
+                        p.getEmail(), p.getNombreCompleto(), servicio.getCargoCancelacion()));
     }
 
     /**
@@ -124,25 +151,36 @@ public class DeudaService {
      * había reconocido al conductor (no hubo llegada verificada), se le acredita ahora.
      */
     public DeudaCancelacion confirmarPago(String pasajeroId, LocalDateTime ahora) {
-        return confirmarPago(pasajeroId, ahora, METODO_EFECTIVO, null);
+        return confirmarPago(pasajeroId, null, ahora, METODO_EFECTIVO, null);
     }
 
     /** Igual que {@link #confirmarPago(String, LocalDateTime)} dejando el método de pago y una nota opcional. */
     public DeudaCancelacion confirmarPago(String pasajeroId, LocalDateTime ahora, String metodo, String nota) {
+        return confirmarPago(pasajeroId, null, ahora, metodo, nota);
+    }
+
+    /**
+     * Confirma el pago de la deuda que el administrador tiene en pantalla. Con {@code servicioIdEsperado} (el viaje
+     * de la deuda que vio), si el pasajero ya tiene otra deuda o ninguna, responde 409 en vez de resolver otra.
+     */
+    public DeudaCancelacion confirmarPago(String pasajeroId, String servicioIdEsperado, LocalDateTime ahora,
+                                          String metodo, String nota) {
+        return transacciones.ejecutar(() -> confirmarPagoEnTransaccion(pasajeroId, servicioIdEsperado, ahora, metodo, nota));
+    }
+
+    private DeudaCancelacion confirmarPagoEnTransaccion(String pasajeroId, String servicioIdEsperado, LocalDateTime ahora,
+                                                        String metodo, String nota) {
         if (!METODO_EFECTIVO.equals(metodo)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Por ahora solo se recibe pago en efectivo");
         }
         String notaLimpia = nota == null || nota.isBlank() ? null : nota.strip();
-        Pasajero pasajero = usuarioRepository.findById(pasajeroId)
-                .filter(Pasajero.class::isInstance).map(Pasajero.class::cast)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pasajero no encontrado"));
-        DeudaCancelacion deuda = pasajero.getDeuda();
-        if (deuda == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El pasajero no tiene deuda pendiente");
+        Pasajero pasajero = pasajero(pasajeroId);
+        DeudaCancelacion deuda = deudaEsperada(pasajero, servicioIdEsperado);
+        quitarSiSigueSiendo(pasajero.getId(), deuda);
+        if (!marcarPagado(deuda.getServicioId(), ahora, metodo, notaLimpia)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "El cargo de ese viaje ya estaba pagado o condonado");
         }
-        mongoTemplate.updateFirst(Query.query(Criteria.where("_id").is(pasajero.getId())),
-                new Update().unset("deuda"), Usuario.class);
-        servicioRepository.findById(deuda.getServicioId()).ifPresent(s -> marcarPagado(s, ahora, metodo, notaLimpia));
+        log.info("Pago de la deuda de {} del servicio {} confirmado", deuda.getMonto(), deuda.getServicioId());
         return deuda;
     }
 
@@ -152,35 +190,66 @@ public class DeudaService {
      * reconoció al conductor no se toca: lo absorbe la plataforma.
      */
     public DeudaCancelacion condonar(String pasajeroId, String adminEmail, String motivo, LocalDateTime ahora) {
+        return condonar(pasajeroId, null, adminEmail, motivo, ahora);
+    }
+
+    /** Como {@link #condonar(String, String, String, LocalDateTime)}, solo sobre la deuda que el admin vio. */
+    public DeudaCancelacion condonar(String pasajeroId, String servicioIdEsperado, String adminEmail, String motivo,
+                                     LocalDateTime ahora) {
+        return transacciones.ejecutar(() -> condonarEnTransaccion(pasajeroId, servicioIdEsperado, adminEmail, motivo, ahora));
+    }
+
+    private DeudaCancelacion condonarEnTransaccion(String pasajeroId, String servicioIdEsperado, String adminEmail,
+                                                   String motivo, LocalDateTime ahora) {
         String motivoLimpio = motivo == null ? "" : motivo.strip();
         if (motivoLimpio.length() < MOTIVO_MIN || motivoLimpio.length() > MOTIVO_MAX) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Escribe el motivo de la condonación (entre " + MOTIVO_MIN + " y " + MOTIVO_MAX + " caracteres)");
         }
-        Pasajero pasajero = usuarioRepository.findById(pasajeroId)
+        Pasajero pasajero = pasajero(pasajeroId);
+        DeudaCancelacion deuda = deudaEsperada(pasajero, servicioIdEsperado);
+        quitarSiSigueSiendo(pasajero.getId(), deuda);
+        Query cargoAbierto = cargoAbierto(deuda.getServicioId());
+        Update condonado = new Update().set("cargoCondonadoEn", ahora).set("cargoCondonadoPor", adminEmail)
+                .set("cargoMotivoCondonacion", motivoLimpio);
+        if (mongoTemplate.updateFirst(cargoAbierto, condonado, Servicio.class).getModifiedCount() == 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "El cargo de ese viaje ya estaba pagado o condonado");
+        }
+        log.info("Deuda de {} del servicio {} condonada por {}", deuda.getMonto(), deuda.getServicioId(), adminEmail);
+        despuesDelCommit(() -> avisar(() -> correo.enviarDeudaCondonada(pasajero.getEmail(),
+                pasajero.getNombreCompleto(), deuda.getMonto(), motivoLimpio)));
+        return deuda;
+    }
+
+    private Pasajero pasajero(String pasajeroId) {
+        return usuarioRepository.findById(pasajeroId)
                 .filter(Pasajero.class::isInstance).map(Pasajero.class::cast)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pasajero no encontrado"));
+    }
+
+    /** La deuda vigente; si el admin indicó cuál vio y ya no es esa (o ya no hay), 409. */
+    private static DeudaCancelacion deudaEsperada(Pasajero pasajero, String servicioIdEsperado) {
         DeudaCancelacion deuda = pasajero.getDeuda();
+        boolean esperaUna = servicioIdEsperado != null && !servicioIdEsperado.isBlank();
         if (deuda == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El pasajero no tiene deuda pendiente");
+            throw esperaUna
+                    ? new ResponseStatusException(HttpStatus.CONFLICT, "La deuda ya fue resuelta; recarga la lista")
+                    : new ResponseStatusException(HttpStatus.BAD_REQUEST, "El pasajero no tiene deuda pendiente");
         }
-        // Solo si sigue siendo esa misma deuda: si otro administrador la cerró entre tanto, no se repite
-        Query esaDeuda = Query.query(Criteria.where("_id").is(pasajero.getId())
-                .and("deuda.servicioId").is(deuda.getServicioId()));
-        var resultado = mongoTemplate.updateFirst(esaDeuda, new Update().unset("deuda"), Usuario.class);
-        if (resultado.getModifiedCount() == 0) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "La deuda ya fue resuelta por otro administrador");
+        if (esperaUna && !servicioIdEsperado.equals(deuda.getServicioId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "La deuda del pasajero cambió (es de otro viaje); recarga la lista");
         }
-        servicioRepository.findById(deuda.getServicioId()).ifPresent(s -> {
-            s.setCargoCondonadoEn(ahora);
-            s.setCargoCondonadoPor(adminEmail);
-            s.setCargoMotivoCondonacion(motivoLimpio);
-            servicioRepository.save(s);
-        });
-        log.info("Deuda de {} del servicio {} condonada por {}", deuda.getMonto(), deuda.getServicioId(), adminEmail);
-        avisar(() -> correo.enviarDeudaCondonada(pasajero.getEmail(), pasajero.getNombreCompleto(),
-                deuda.getMonto(), motivoLimpio));
         return deuda;
+    }
+
+    /** Quita la deuda solo si sigue siendo la que se leyó; si otro la resolvió o cambió, 409. */
+    private void quitarSiSigueSiendo(ObjectId pasajeroId, DeudaCancelacion deuda) {
+        Query esaDeuda = Query.query(Criteria.where("_id").is(pasajeroId)
+                .and("deuda.servicioId").is(deuda.getServicioId()));
+        if (mongoTemplate.updateFirst(esaDeuda, new Update().unset("deuda"), Usuario.class).getModifiedCount() == 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "La deuda ya fue resuelta por otra operación");
+        }
     }
 
     /** Deudas condonadas desde {@code desde} (más recientes primero, máx. 100). */
@@ -270,12 +339,30 @@ public class DeudaService {
             String servicioId, long monto, LocalDateTime creadaEn) {
     }
 
-    private void marcarPagado(Servicio s, LocalDateTime ahora, String metodo, String nota) {
-        s.setCargoPagadoEn(ahora);
-        s.setCargoMetodoPago(metodo);
-        s.setCargoNotaPago(nota);
-        s.setCargoAcreditadoConductor(true);
-        servicioRepository.save(s);
+    /** Cargo de cancelación de ese viaje que aún no está pagado ni condonado. */
+    private static Query cargoAbierto(String servicioId) {
+        return Query.query(Criteria.where("_id").is(servicioId)
+                .and("cargoPagadoEn").is(null).and("cargoCondonadoEn").is(null));
+    }
+
+    /** Marca el cargo como pagado solo si seguía abierto; false si ya estaba pagado o condonado. */
+    private boolean marcarPagado(String servicioId, LocalDateTime ahora, String metodo, String nota) {
+        Update pagado = new Update().set("cargoPagadoEn", ahora).set("cargoMetodoPago", metodo)
+                .set("cargoNotaPago", nota).set("cargoAcreditadoConductor", true);
+        return mongoTemplate.updateFirst(cargoAbierto(servicioId), pagado, Servicio.class).getModifiedCount() == 1;
+    }
+
+    private static void despuesDelCommit(Runnable accion) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    accion.run();
+                }
+            });
+        } else {
+            accion.run();
+        }
     }
 
     /** Un correo que no sale nunca debe tumbar la operación que lo dispara. */

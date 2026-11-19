@@ -14,6 +14,100 @@ permissions:
   contents: read
 
 jobs:
+  mongo-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+      - name: Pruebas con MongoDB desechable
+        run: mvn -B -Dtest=Phase3MongoIntegrationTest -Dexcluded.groups=none test
+
+  mongo-local-replica:
+    # El Mongo de docker-compose debe admitir transacciones (replica set rs0).
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Levantar el Mongo local de docker-compose
+        run: |
+          touch .env
+          docker compose --profile local-db up -d --wait --wait-timeout 120 mongo
+      - name: Confirmar replica set y una transacción
+        run: |
+          docker compose exec -T mongo mongosh --quiet --eval '
+            if (!db.hello().isWritablePrimary) { quit(1) }
+            const s = db.getMongo().startSession();
+            s.startTransaction();
+            s.getDatabase("ci_transaccion").prueba.insertOne({ ok: 1 });
+            s.commitTransaction();
+            print("transaccion ok, setName=" + db.hello().setName);'
+      - name: Script de inspección de Atlas sobre datos sintéticos (solo lectura)
+        run: |
+          docker compose cp scripts/atlas/inspeccion-solo-lectura.js mongo:/tmp/inspeccion.js
+          docker compose cp scripts/atlas/prueba/sembrar-datos-sinteticos.js mongo:/tmp/sembrar.js
+          docker compose exec -T mongo mongosh --quiet --eval 'var BASE="nexa_inspeccion_ci"' --file /tmp/sembrar.js
+          hash() { docker compose exec -T mongo mongosh --quiet --eval 'print(db.getSiblingDB("nexa_inspeccion_ci").runCommand({dbHash: 1}).md5)'; }
+          antes=$(hash)
+          docker compose exec -T mongo mongosh --quiet --eval 'var BASE="nexa_inspeccion_ci"' --file /tmp/inspeccion.js > inspeccion.json
+          despues=$(hash)
+          test "$antes" = "$despues" || { echo "La inspección modificó la base"; exit 1; }
+          node scripts/atlas/prueba/verificar-salida.mjs inspeccion.json
+
+      - name: Script de índices propuestos (plan, guardia de producción, crear y revertir en la base de prueba)
+        run: |
+          docker compose cp scripts/atlas/indices-propuestos.js mongo:/tmp/indices.js
+          run() { docker compose exec -T mongo mongosh --quiet --eval "$1" --file /tmp/indices.js; }
+          if run 'var BASE="motvirsweb"; var MODO="crear"' > guardia.txt 2>&1; then echo "La guardia de producción no frenó"; exit 1; fi
+          grep -q "PRODUCCION_APROBADA" guardia.txt
+          run 'var BASE="nexa_inspeccion_ci"; var MODO="plan"' > plan.json
+          run 'var BASE="nexa_inspeccion_ci"; var MODO="crear"' > crear.json
+          run 'var BASE="nexa_inspeccion_ci"; var MODO="revertir"' > revertir.json
+          node scripts/atlas/prueba/verificar-indices.mjs plan.json crear.json revertir.json
+
+      - name: Diagnóstico de tarjeta repetida (solo lectura, sin valores en la salida)
+        run: |
+          docker compose cp scripts/atlas/diagnostico-tarjeta-repetida.js mongo:/tmp/diagnostico.js
+          docker compose exec -T mongo mongosh --quiet --eval 'var BASE="nexa_inspeccion_ci"' --file /tmp/diagnostico.js > diagnostico.json
+          node scripts/atlas/prueba/verificar-diagnostico.mjs diagnostico.json
+
+      - name: Script de correcciones de datos (plan, guardia, aplicar y revertir el archivo en la base de prueba)
+        run: |
+          docker compose cp scripts/atlas/correcciones-datos-fase3-2.js mongo:/tmp/correcciones.js
+          run() { docker compose exec -T mongo mongosh --quiet --eval "$1" --file /tmp/correcciones.js; }
+          if run 'var BASE="motvirsweb"; var MODO="aplicar"' > guardia2.txt 2>&1; then echo "La guardia de producción no frenó"; exit 1; fi
+          grep -q "PRODUCCION_APROBADA" guardia2.txt
+          run 'var BASE="nexa_inspeccion_ci"' > c-plan.json
+          run 'var BASE="nexa_inspeccion_ci"; var MODO="aplicar"' > c-aplicar.json
+          run 'var BASE="nexa_inspeccion_ci"' > c-despues.json
+          run 'var BASE="nexa_inspeccion_ci"; var MODO="revertir-archivo"' > c-revertir.json
+          node scripts/atlas/prueba/verificar-correcciones.mjs c-plan.json c-aplicar.json c-despues.json c-revertir.json
+
+      - name: Rechazo de conductores de prueba con tarjeta repetida (plan, guardia, aplicar, repetir, revertir)
+        run: |
+          docker compose cp scripts/atlas/rechazar-conductores-prueba.js mongo:/tmp/rechazar.js
+          ids=$(docker compose exec -T mongo mongosh --quiet --eval 'print(db.getSiblingDB("nexa_inspeccion_ci").Usuarios.find({rol: "CONDUCTOR", tarjeta_de_propiedad: 700001}).toArray().map(u => u._id.toHexString()).join(","))')
+          otro=$(docker compose exec -T mongo mongosh --quiet --eval 'print(db.getSiblingDB("nexa_inspeccion_ci").Usuarios.findOne({rol: "PASAJERO"})._id.toHexString())')
+          run() { docker compose exec -T mongo mongosh --quiet --eval "var BASE='nexa_inspeccion_ci'; $1" --file /tmp/rechazar.js; }
+          if docker compose exec -T mongo mongosh --quiet --eval "var CONDUCTORES='$ids'; var MODO='aplicar'" --file /tmp/rechazar.js > g3.txt 2>&1; then echo "La guardia de producción no frenó"; exit 1; fi
+          grep -q "PRODUCCION_APROBADA" g3.txt
+          if run "var CONDUCTORES='$ids,$otro'" > g4.txt 2>&1; then echo "Aceptó un id que no es conductor"; exit 1; fi
+          grep -q "no es un conductor" g4.txt
+          run "var CONDUCTORES='$ids'" > r-plan.json
+          run "var CONDUCTORES='$ids'; var MODO='aplicar'" > r-aplicar.json
+          run "var CONDUCTORES='$ids'; var MODO='aplicar'" > r-repetir.json
+          run "var CONDUCTORES='$ids'; var MODO='revertir'" > r-revertir.json
+          run "var CONDUCTORES='$ids'" > r-tras-revertir.json
+          node scripts/atlas/prueba/verificar-rechazo.mjs r-plan.json r-aplicar.json r-repetir.json r-revertir.json r-tras-revertir.json
+
+      - name: Apagar
+        if: always()
+        run: docker compose --profile local-db down -v
+
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 20

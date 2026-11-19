@@ -68,6 +68,8 @@ public class ServicioServiceImplTest {
     private com.example.MotvirsWeb.aplicacion.puerto.CanalPeticion canalPeticion;
     @Mock
     private AvisosService avisos;
+    @Mock
+    private AvisosPendientesService avisosPendientes;
     @InjectMocks
     private ServicioServiceImpl servicioService;
 
@@ -185,8 +187,8 @@ public class ServicioServiceImplTest {
         assertNotNull(testServicio.getConductor());
         assertEquals(testConductorId, testServicio.getConductor().getId());
         verify(servicioRepository, never()).save(any());
-        verify(webSocketService).notificarCambioEstadoServicio(any());
-        verify(webSocketService).notificarSolicitudRetirada("s1", "TOMADO");
+        verify(avisosPendientes).registrar("s1", AvisosPendientesService.Tipo.ACEPTADO);
+        verify(webSocketService, never()).notificarCambioEstadoServicio(any());
     }
 
     @Test
@@ -247,13 +249,27 @@ public class ServicioServiceImplTest {
         testServicio.setEstado(EstadoServicio.EN_CURSO);
         testServicio.setConductor(new Servicio.ConductorEmbedded(testConductor));
         when(servicioRepository.findById("s1")).thenReturn(Optional.of(testServicio));
-        when(servicioRepository.save(any(Servicio.class))).thenReturn(testServicio);
+        when(servicioRepository.finalizarSiEnCurso(eq("s1"), eq(testConductor.getId()), any(), anyBoolean(), anyDouble()))
+                .thenReturn(1L);
 
         Map<String, Object> result = servicioService.finalizarServicio("s1", testConductor);
 
         assertNotNull(result);
         assertEquals(EstadoServicio.FINALIZADO, testServicio.getEstado());
-        verify(webSocketService).notificarCambioEstadoServicio(any());
+        verify(avisosPendientes).registrar("s1", AvisosPendientesService.Tipo.FINALIZADO);
+        verify(webSocketService, never()).notificarCambioEstadoServicio(any());
+    }
+
+    @Test
+    void finalizarServicio_ConflictoNoEmiteEfectos() {
+        testServicio.setEstado(EstadoServicio.EN_CURSO);
+        testServicio.setConductor(new Servicio.ConductorEmbedded(testConductor));
+        when(servicioRepository.findById("s1")).thenReturn(Optional.of(testServicio));
+        org.springframework.web.server.ResponseStatusException error = assertThrows(
+                org.springframework.web.server.ResponseStatusException.class,
+                () -> servicioService.finalizarServicio("s1", testConductor));
+        assertEquals(org.springframework.http.HttpStatus.CONFLICT, error.getStatusCode());
+        verify(webSocketService, never()).notificarCambioEstadoServicio(any());
     }
 
     @Test

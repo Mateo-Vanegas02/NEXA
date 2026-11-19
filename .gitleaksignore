@@ -1,0 +1,5 @@
+# Hallazgos de Gitleaks revisados (fase 3.2, docs/auditoria/FASE3_2_SECRETOS.md).
+# Solo se ignoran valores confirmados como ficticios. La clave de Firebase (rama app) y el enlace público
+# de Power BI siguen visibles hasta que el propietario confirme sus restricciones.
+# JWT_SECRET de prueba de la prueba de arranque de CI (base64 de un texto de prueba, no es una clave real).
+e110db5cc1dd7c6ecaef7cb02d2ba909fab6d8f4:.github/workflows/ci.yml:generic-api-key:92

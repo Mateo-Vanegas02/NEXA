@@ -49,6 +49,14 @@ public class DocumentosConductorService {
     }
 
     /** Verifica que estén los 4 documentos, una sola vez cada uno, y que cada archivo sea válido. */
+    /**
+     * ¿Algún otro conductor declaró esta tarjeta de propiedad al subir sus fotos (registro o vehículo agregado)?
+     * {@code exceptoConductorId} null = cualquiera (registro nuevo).
+     */
+    public boolean tarjetaDeclaradaPorOtro(long tarjeta, String exceptoConductorId) {
+        return tarjeta > 0 && repositorio.existeTarjetaDeclaradaPorOtro(String.valueOf(tarjeta), exceptoConductorId);
+    }
+
     public void validarConjunto(List<ArchivoSubido> archivos) {
         Set<TipoDocumento> vistos = EnumSet.noneOf(TipoDocumento.class);
         for (ArchivoSubido a : archivos) {

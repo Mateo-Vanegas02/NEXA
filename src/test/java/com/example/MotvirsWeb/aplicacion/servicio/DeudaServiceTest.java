@@ -46,6 +46,20 @@ class DeudaServiceTest {
     private void modificaDocumentos(long cuantos) {
         when(mongo.updateFirst(any(Query.class), any(UpdateDefinition.class), eq(Usuario.class)))
                 .thenReturn(UpdateResult.acknowledged(cuantos, cuantos, null));
+        cargoDelViaje(1);
+    }
+
+    /** Cuántos cargos de viaje (servicios) aceptan la escritura condicional: 0 = ya pagado o condonado. */
+    private void cargoDelViaje(long cuantos) {
+        when(mongo.updateFirst(any(Query.class), any(UpdateDefinition.class), eq(Servicio.class)))
+                .thenReturn(UpdateResult.acknowledged(cuantos, cuantos, null));
+    }
+
+    /** Lo que se escribió en el cargo del viaje ($set) y con qué filtro. */
+    private org.bson.Document setDelCargo(org.mockito.ArgumentCaptor<Query> filtro) {
+        org.mockito.ArgumentCaptor<UpdateDefinition> update = org.mockito.ArgumentCaptor.forClass(UpdateDefinition.class);
+        verify(mongo).updateFirst(filtro.capture(), update.capture(), eq(Servicio.class));
+        return update.getValue().getUpdateObject().get("$set", org.bson.Document.class);
     }
 
     @Test
@@ -87,14 +101,15 @@ class DeudaServiceTest {
         viaje.setPasajero(new Servicio.PasajeroEmbedded(pasajero.getId(), "Ana", "ana@test.com"));
         viaje.setDeudaPorCobrar(3000);
         viaje.setDeudaServicioId("s1");
-        Servicio cancelado = new Servicio();
-        cancelado.setId("s1");
-        when(servicios.findById("s1")).thenReturn(Optional.of(cancelado));
         modificaDocumentos(1);
 
         assertEquals(3000, deudas.cobrarEnViaje(viaje, LocalDateTime.now()));
-        assertEquals(DeudaService.METODO_EN_VIAJE, cancelado.getCargoMetodoPago());
-        assertNotNull(cancelado.getCargoPagadoEn());
+        var filtro = org.mockito.ArgumentCaptor.forClass(Query.class);
+        org.bson.Document set = setDelCargo(filtro);
+        assertEquals(DeudaService.METODO_EN_VIAJE, set.get("cargoMetodoPago"));
+        assertNotNull(set.get("cargoPagadoEn"));
+        assertEquals("s1", filtro.getValue().getQueryObject().get("_id"));
+        verify(servicios, never()).save(any());
     }
 
     @Test
@@ -107,7 +122,7 @@ class DeudaServiceTest {
         modificaDocumentos(0);
 
         assertEquals(0, deudas.cobrarEnViaje(viaje, LocalDateTime.now()));
-        verify(servicios, never()).findById("s1");
+        verify(mongo, never()).updateFirst(any(Query.class), any(UpdateDefinition.class), eq(Servicio.class));
     }
 
     @Test
@@ -128,19 +143,21 @@ class DeudaServiceTest {
     @Test
     void confirmarElPagoLiberaAlPasajeroYAcreditaAlConductor() {
         pasajero.setDeuda(new DeudaCancelacion("s1", 3000, LocalDateTime.now()));
-        Servicio s = new Servicio();
-        s.setId("s1");
-        when(servicios.findById("s1")).thenReturn(Optional.of(s));
         modificaDocumentos(1);
         LocalDateTime ahora = LocalDateTime.now();
 
         DeudaCancelacion pagada = deudas.confirmarPago(pasajero.getId().toString(), ahora);
 
         assertEquals(3000, pagada.getMonto());
-        assertEquals(ahora, s.getCargoPagadoEn());
-        assertTrue(s.isCargoAcreditadoConductor());
-        verify(servicios).save(s);
-        verify(mongo).updateFirst(any(Query.class), any(UpdateDefinition.class), eq(Usuario.class));
+        var filtro = org.mockito.ArgumentCaptor.forClass(Query.class);
+        org.bson.Document set = setDelCargo(filtro);
+        assertEquals(ahora, set.get("cargoPagadoEn"));
+        assertEquals(true, set.get("cargoAcreditadoConductor"));
+        verify(servicios, never()).save(any());
+        var usuario = org.mockito.ArgumentCaptor.forClass(Query.class);
+        verify(mongo).updateFirst(usuario.capture(), any(UpdateDefinition.class), eq(Usuario.class));
+        assertEquals("s1", usuario.getValue().getQueryObject().get("deuda.servicioId"),
+                "solo se quita la deuda si sigue siendo la que se leyó");
     }
 
     @Test
@@ -160,15 +177,13 @@ class DeudaServiceTest {
     @Test
     void confirmarElPagoGuardaMetodoYNota() {
         pasajero.setDeuda(new DeudaCancelacion("s1", 3000, LocalDateTime.now()));
-        Servicio s = new Servicio();
-        s.setId("s1");
-        when(servicios.findById("s1")).thenReturn(Optional.of(s));
         modificaDocumentos(1);
 
         deudas.confirmarPago(pasajero.getId().toString(), LocalDateTime.now(), "EFECTIVO", "  recibido en sede  ");
 
-        assertEquals("EFECTIVO", s.getCargoMetodoPago());
-        assertEquals("recibido en sede", s.getCargoNotaPago());
+        org.bson.Document set = setDelCargo(org.mockito.ArgumentCaptor.forClass(Query.class));
+        assertEquals("EFECTIVO", set.get("cargoMetodoPago"));
+        assertEquals("recibido en sede", set.get("cargoNotaPago"));
     }
 
     @Test
@@ -204,10 +219,6 @@ class DeudaServiceTest {
     @Test
     void condonarLiberaAlPasajeroYDejaElMotivoYQuienLoAutorizo() {
         pasajero.setDeuda(new DeudaCancelacion("s1", 3000, LocalDateTime.now()));
-        Servicio s = new Servicio();
-        s.setId("s1");
-        s.setCargoAcreditadoConductor(true);
-        when(servicios.findById("s1")).thenReturn(Optional.of(s));
         modificaDocumentos(1);
         LocalDateTime ahora = LocalDateTime.now();
 
@@ -215,12 +226,16 @@ class DeudaServiceTest {
                 "  el conductor pidió cancelar  ", ahora);
 
         assertEquals(3000, perdonada.getMonto());
-        assertEquals(ahora, s.getCargoCondonadoEn());
-        assertEquals("admin@nexa.com", s.getCargoCondonadoPor());
-        assertEquals("el conductor pidió cancelar", s.getCargoMotivoCondonacion());
-        assertNull(s.getCargoPagadoEn(), "condonar no es pagar");
-        assertTrue(s.isCargoAcreditadoConductor(), "lo reconocido al conductor no se toca");
-        verify(servicios).save(s);
+        var filtro = org.mockito.ArgumentCaptor.forClass(Query.class);
+        org.bson.Document set = setDelCargo(filtro);
+        assertEquals(ahora, set.get("cargoCondonadoEn"));
+        assertEquals("admin@nexa.com", set.get("cargoCondonadoPor"));
+        assertEquals("el conductor pidió cancelar", set.get("cargoMotivoCondonacion"));
+        assertFalse(set.containsKey("cargoPagadoEn"), "condonar no es pagar");
+        assertFalse(set.containsKey("cargoAcreditadoConductor"), "lo reconocido al conductor no se toca");
+        assertTrue(filtro.getValue().getQueryObject().containsKey("cargoPagadoEn"),
+                "no se condona un cargo ya pagado");
+        verify(correo).enviarDeudaCondonada(eq("ana@test.com"), any(), eq(3000L), eq("el conductor pidió cancelar"));
     }
 
     @Test
@@ -231,7 +246,7 @@ class DeudaServiceTest {
                     () -> deudas.condonar(pasajero.getId().toString(), "admin@nexa.com", motivo, LocalDateTime.now()));
             assertEquals(400, e.getStatusCode().value());
         }
-        verify(servicios, never()).save(any());
+        verify(mongo, never()).updateFirst(any(Query.class), any(UpdateDefinition.class), any(Class.class));
     }
 
     @Test
@@ -250,7 +265,55 @@ class DeudaServiceTest {
                 () -> deudas.condonar(pasajero.getId().toString(), "admin@nexa.com", "motivo válido", LocalDateTime.now()));
 
         assertEquals(409, e.getStatusCode().value());
-        verify(servicios, never()).save(any());
+        verify(mongo, never()).updateFirst(any(Query.class), any(UpdateDefinition.class), eq(Servicio.class));
+    }
+
+    @Test
+    void siLaDeudaQueVioElAdminYaNoEsLaVigenteResponde409SinTocarNada() {
+        pasajero.setDeuda(new DeudaCancelacion("s2-nueva", 4000, LocalDateTime.now()));
+        modificaDocumentos(1);
+
+        ResponseStatusException pago = assertThrows(ResponseStatusException.class,
+                () -> deudas.confirmarPago(pasajero.getId().toString(), "s1-vieja", LocalDateTime.now(), "EFECTIVO", null));
+        ResponseStatusException perdon = assertThrows(ResponseStatusException.class,
+                () -> deudas.condonar(pasajero.getId().toString(), "s1-vieja", "admin@nexa.com", "motivo válido",
+                        LocalDateTime.now()));
+
+        assertEquals(409, pago.getStatusCode().value());
+        assertEquals(409, perdon.getStatusCode().value());
+        verify(mongo, never()).updateFirst(any(Query.class), any(UpdateDefinition.class), any(Class.class));
+    }
+
+    @Test
+    void unPagoRepetidoSobreUnaDeudaYaResueltaResponde409() {
+        // la deuda ya no está (la resolvió la primera petición)
+        ResponseStatusException e = assertThrows(ResponseStatusException.class,
+                () -> deudas.confirmarPago(pasajero.getId().toString(), "s1", LocalDateTime.now(), "EFECTIVO", null));
+        assertEquals(409, e.getStatusCode().value());
+    }
+
+    @Test
+    void siElCargoYaEstabaPagadoAlConfirmarSeResponde409ParaRevertir() {
+        pasajero.setDeuda(new DeudaCancelacion("s1", 3000, LocalDateTime.now()));
+        when(mongo.updateFirst(any(Query.class), any(UpdateDefinition.class), eq(Usuario.class)))
+                .thenReturn(UpdateResult.acknowledged(1, 1L, null));
+        cargoDelViaje(0);
+
+        ResponseStatusException e = assertThrows(ResponseStatusException.class,
+                () -> deudas.confirmarPago(pasajero.getId().toString(), LocalDateTime.now()));
+        assertEquals(409, e.getStatusCode().value());
+    }
+
+    @Test
+    void cobrarYRegistrarSeUnenALaTransaccionDelViaje() throws Exception {
+        // confirmarPago y condonar abren la suya con EjecutorTransacciones (con reintento ante conflictos)
+        for (var m : DeudaService.class.getDeclaredMethods()) {
+            if (java.util.Set.of("cobrarEnViaje", "registrar").contains(m.getName())
+                    && java.lang.reflect.Modifier.isPublic(m.getModifiers())) {
+                assertNotNull(m.getAnnotation(org.springframework.transaction.annotation.Transactional.class),
+                        m + " debe ser @Transactional");
+            }
+        }
     }
 
     @Test

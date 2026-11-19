@@ -52,6 +52,72 @@ public class AvisosService {
 
     /** Conductores a los que se les avisó cada solicitud abierta: a ellos va el retiro silencioso. */
     private final Map<String, Set<ObjectId>> avisados = new ConcurrentHashMap<>();
+    private final ThreadLocal<Boolean> confirmado = ThreadLocal.withInitial(() -> false);
+    /** En un reintento parcial, solo estos tokens; null = todos. */
+    private final ThreadLocal<Set<String>> soloTokens = new ThreadLocal<>();
+    private final ThreadLocal<Set<String>> tokensFallidos = new ThreadLocal<>();
+
+    public void ejecutarConfirmado(Runnable envio) {
+        ejecutarConfirmado(null, envio);
+    }
+
+    /**
+     * Ejecuta los avisos esperando la confirmación del proveedor (lo usa la bandeja persistente). Los errores
+     * no se absorben; si algún token no se confirmó, al final lanza {@link NotificadorPush.EnvioIncompleto}
+     * con todos ellos. Con {@code solo} no vacío, envía únicamente a esos tokens (reintento parcial).
+     */
+    public void ejecutarConfirmado(Collection<String> solo, Runnable envio) {
+        confirmado.set(true);
+        soloTokens.set(solo == null || solo.isEmpty() ? null : Set.copyOf(solo));
+        tokensFallidos.set(new LinkedHashSet<>());
+        try {
+            envio.run();
+            if (!tokensFallidos.get().isEmpty()) {
+                throw new NotificadorPush.EnvioIncompleto(tokensFallidos.get());
+            }
+        } finally {
+            confirmado.remove();
+            soloTokens.remove();
+            tokensFallidos.remove();
+        }
+    }
+
+    private void enviarPush(Collection<String> tokens, Aviso aviso) {
+        if (!confirmado.get()) {
+            push.enviar(tokens, aviso);
+            return;
+        }
+        if (tokens == null || tokens.isEmpty()) {
+            return;
+        }
+        Set<String> solo = soloTokens.get();
+        List<String> destino = tokens.stream().filter(t -> solo == null || solo.contains(t)).toList();
+        if (destino.isEmpty()) {
+            return;
+        }
+        try {
+            push.enviarConConfirmacion(destino, aviso);
+        } catch (NotificadorPush.EnvioIncompleto e) {
+            tokensFallidos.get().addAll(e.tokensFallidos()); // se sigue con los demás destinatarios
+        }
+    }
+
+    /** Destinatarios de una solicitud abierta; la bandeja los conserva antes de retirar la tarjeta. */
+    public List<ObjectId> destinatariosRetirada(String servicioId) {
+        return List.copyOf(avisados.getOrDefault(servicioId, Set.of()));
+    }
+
+    public void solicitudRetiradaA(Servicio s, String motivo, Collection<ObjectId> destinatarios) {
+        seguro("solicitud retirada", () -> {
+            if (!deApp(s) || destinatarios == null || destinatarios.isEmpty()) return;
+            Set<ObjectId> otros = new LinkedHashSet<>(destinatarios);
+            if (s.getConductor() != null) otros.remove(s.getConductor().getId());
+            Aviso aviso = new Aviso("SOLICITUD_RETIRADA:" + s.getId(), "SOLICITUD_RETIRADA", Canal.SILENCIOSO,
+                    null, null, Map.of("servicioId", s.getId(), "motivo", motivo), vigenciaSolicitud());
+            enviarPush(tokens(otros), aviso);
+            avisados.remove(s.getId());
+        });
+    }
 
     // ─────────────────────────── CONDUCTORES ───────────────────────────
 
@@ -100,19 +166,7 @@ public class AvisosService {
 
     /** La solicitud ya no está (la tomó otro o se canceló): la app quita la tarjeta sin mostrar nada. */
     public void solicitudRetirada(Servicio s, String motivo) {
-        seguro("solicitud retirada", () -> {
-            Set<ObjectId> quienes = avisados.remove(s.getId());
-            if (!deApp(s) || quienes == null || quienes.isEmpty()) {
-                return;
-            }
-            Set<ObjectId> otros = new LinkedHashSet<>(quienes);
-            if (s.getConductor() != null) {
-                otros.remove(s.getConductor().getId()); // el que la tomó ya lo sabe
-            }
-            Aviso aviso = new Aviso("SOLICITUD_RETIRADA:" + s.getId(), "SOLICITUD_RETIRADA", Canal.SILENCIOSO,
-                    null, null, Map.of("servicioId", s.getId(), "motivo", motivo), vigenciaSolicitud());
-            push.enviar(tokens(otros), aviso);
-        });
+        solicitudRetiradaA(s, motivo, destinatariosRetirada(s.getId()));
     }
 
     // ─────────────────────────── EL VIAJE ───────────────────────────
@@ -161,7 +215,7 @@ public class AvisosService {
                 Aviso aviso = new Aviso("VIAJE_CANCELADO:" + s.getId(), "VIAJE_CANCELADO", Canal.VIAJE,
                         quien + " canceló el viaje", "Ya puedes recibir otras solicitudes",
                         Map.of("servicioId", s.getId()), vigenciaViaje());
-                push.enviar(dispositivos.tokensDe(s.getConductor().getId()), aviso);
+                enviarPush(dispositivos.tokensDe(s.getConductor().getId()), aviso);
             }
         });
     }
@@ -215,7 +269,7 @@ public class AvisosService {
             Map<String, String> datos = new HashMap<>();
             datos.put("servicioId", s.getId());
             datos.put("ganancia", Long.toString(niveles.gananciaEstimada(s, conductor)));
-            push.enviar(tokens.get(conductor.getId()), new Aviso(tipo + ":" + s.getId() + ":" + variante, tipo,
+            enviarPush(tokens.get(conductor.getId()), new Aviso(tipo + ":" + s.getId() + ":" + variante, tipo,
                     Canal.SOLICITUDES, titulo, cuerpo, datos, vigenciaSolicitud()));
         }
     }
@@ -239,7 +293,7 @@ public class AvisosService {
         if (s.getPasajero() == null || s.getPasajero().getId() == null) {
             return;
         }
-        push.enviar(dispositivos.tokensDe(s.getPasajero().getId()), new Aviso(tipo + ":" + s.getId(), tipo,
+        enviarPush(dispositivos.tokensDe(s.getPasajero().getId()), new Aviso(tipo + ":" + s.getId(), tipo,
                 Canal.VIAJE, titulo, cuerpo, Map.of("servicioId", s.getId()), vigenciaViaje()));
     }
 
@@ -258,6 +312,7 @@ public class AvisosService {
         try {
             accion.run();
         } catch (RuntimeException e) {
+            if (confirmado.get()) throw e;
             log.warn("No se pudo preparar el aviso de {}: {}", evento, e.getMessage());
         }
     }

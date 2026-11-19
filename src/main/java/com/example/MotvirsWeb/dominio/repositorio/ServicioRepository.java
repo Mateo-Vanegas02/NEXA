@@ -58,6 +58,58 @@ public interface ServicioRepository extends MongoRepository<Servicio, String> {
             + "'fechaCancelacion': ?1, 'cargoCancelacion': 0 } }")
     long vencerSiSigueSolicitado(String servicioId, java.time.LocalDateTime fecha);
 
+    @org.springframework.data.mongodb.repository.Query("{ '_id': ?0, 'estado': 'ACEPTADO', 'conductor._id': ?1, 'fechaLlegada': { '$ne': null } }")
+    @org.springframework.data.mongodb.repository.Update("{ '$set': { 'estado': 'EN_CURSO', 'fechaInicio': ?2, 'minutosEspera': ?3 } }")
+    long iniciarSiAceptado(String servicioId, ObjectId conductorId, java.time.LocalDateTime fecha, double espera);
+
+    @org.springframework.data.mongodb.repository.Query("{ '_id': ?0, 'estado': 'ACEPTADO', 'conductor._id': ?1, 'fechaLlegada': null }")
+    @org.springframework.data.mongodb.repository.Update("{ '$set': { 'fechaLlegada': ?2, 'ubicacionLlegada': ?3 } }")
+    long registrarLlegadaSiAceptado(String servicioId, ObjectId conductorId,
+                                   java.time.LocalDateTime fecha, Servicio.Coordenada ubicacion);
+
+    @org.springframework.data.mongodb.repository.Query("{ '_id': ?0, 'estado': 'EN_CURSO', 'conductor._id': ?1 }")
+    @org.springframework.data.mongodb.repository.Update("{ '$set': { 'estado': 'FINALIZADO', 'fechaFinalizacion': ?2, 'finalizadoAntesDelDestino': ?3, 'fraccionCobrada': ?4 } }")
+    long finalizarSiEnCurso(String servicioId, ObjectId conductorId, java.time.LocalDateTime fecha,
+                            boolean antesDelDestino, double fraccion);
+
+    @org.springframework.data.mongodb.repository.Query("{ '_id': ?0, 'estado': { '$in': ['ACEPTADO', 'EN_CURSO'] }, 'conductor._id': ?1 }")
+    @org.springframework.data.mongodb.repository.Update("{ '$set': { 'estado': 'CANCELADO', 'canceladoPor': 'CONDUCTOR', 'fechaCancelacion': ?2 } }")
+    long cancelarSiAsignado(String servicioId, ObjectId conductorId, java.time.LocalDateTime fecha);
+
+    @org.springframework.data.mongodb.repository.Query("{ '_id': ?0, 'estado': ?2, 'pasajero._id': ?1 }")
+    @org.springframework.data.mongodb.repository.Update("{ '$set': { 'estado': 'CANCELADO', 'canceladoPor': 'PASAJERO', 'fechaCancelacion': ?3, 'cargoCancelacion': ?4, 'cargoAcreditadoConductor': ?5, 'minutosEspera': ?6 } }")
+    long cancelarSiVigente(String servicioId, ObjectId pasajeroId, EstadoServicio estado,
+                           java.time.LocalDateTime fecha, long cargo, boolean acreditado, Double espera);
+
+    @org.springframework.data.mongodb.repository.Query("{ '_id': ?0, 'estado': 'FINALIZADO', 'pasajero._id': ?1, 'calificacionConductor': null, 'calificacionConductorRegistrada': { '$ne': true } }")
+    @org.springframework.data.mongodb.repository.Update("{ '$set': { 'calificacionConductor': ?2, 'comentariosConductor': ?3, 'factoresConductor': ?4, 'calificacionConductorRegistrada': true } }")
+    long calificarConductorUnaVez(String servicioId, ObjectId pasajeroId, Double nota, String comentario, List<String> factores);
+
+    @org.springframework.data.mongodb.repository.Query("{ '_id': ?0, 'estado': 'FINALIZADO', 'conductor._id': ?1, 'calificacionPasajero': null, 'calificacionPasajeroRegistrada': { '$ne': true } }")
+    @org.springframework.data.mongodb.repository.Update("{ '$set': { 'calificacionPasajero': ?2, 'comentariosPasajero': ?3, 'factoresPasajero': ?4, 'calificacionPasajeroRegistrada': true } }")
+    long calificarPasajeroUnaVez(String servicioId, ObjectId conductorId, Double nota, String comentario, List<String> factores);
+
+    @org.springframework.data.mongodb.repository.Query("{ '_id': ?0, 'estado': 'FINALIZADO' }")
+    @org.springframework.data.mongodb.repository.Update("{ '$set': { 'distanciaRecorridaKm': ?1, 'recorrido': ?2 } }")
+    long guardarRecorridoFinal(String servicioId, Double km, List<Servicio.Coordenada> puntos);
+
+    @org.springframework.data.mongodb.repository.Query("{ '_id': ?0, 'estado': 'FINALIZADO' }")
+    @org.springframework.data.mongodb.repository.Update("{ '$set': { 'deudaCobrada': ?1 } }")
+    long guardarDeudaCobrada(String servicioId, long deuda);
+
+    @org.springframework.data.mongodb.repository.Query("{ '_id': ?0, 'estado': 'FINALIZADO' }")
+    @org.springframework.data.mongodb.repository.Update("{ '$set': { 'desglose': ?1, 'xpGanadoPasajero': ?2, 'xpGanadoConductor': ?3, 'tarifa': ?4 } }")
+    long guardarResultadoNiveles(String servicioId, Servicio.DesgloseTarifa desglose, double pasajero, double conductor,
+                                 double tarifa);
+
+    @org.springframework.data.mongodb.repository.Query("{ '_id': ?0, 'estado': 'FINALIZADO' }")
+    @org.springframework.data.mongodb.repository.Update("{ '$set': { 'xpGanadoConductor': ?1 } }")
+    long guardarXpConductor(String servicioId, double xp);
+
+    @org.springframework.data.mongodb.repository.Query("{ '_id': ?0, 'estado': 'CANCELADO', 'canceladoPor': 'PASAJERO' }")
+    @org.springframework.data.mongodb.repository.Update("{ '$set': { 'cargoCancelacion': 0, 'cargoAcreditadoConductor': false } }")
+    long retirarCargoNoRegistrado(String servicioId);
+
     /** Guarda en qué ola y a qué distancia se aceptó (métricas del despacho). */
     @org.springframework.data.mongodb.repository.Query("{ '_id': ?0 }")
     @org.springframework.data.mongodb.repository.Update("{ '$set': { 'olaAceptacion': ?1, 'distanciaRecogidaKm': ?2 } }")

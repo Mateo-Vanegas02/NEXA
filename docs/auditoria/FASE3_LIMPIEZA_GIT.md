@@ -1,0 +1,7 @@
+# Fase 3: decisión sobre limpieza del historial
+
+Se inventariaron `main`, `app`, `codex/auditoria-seguridad`, `codex/fase-2-integridad` y `codex/fase-3-validacion`; no hay etiquetas observadas. PR #1 está fusionado; PR #2 y #3 son borradores. No se identificaron objetos LFS en el árbol inspeccionado. El estado de protecciones, forks y clones externos no se verificó.
+
+No se ejecutó reescritura local ni remota. La única coincidencia histórica de Gitleaks en las referencias disponibles es configuración cliente Firebase de Android; retirar a ciegas `google-services.json` afectaría la app y todavía no hay confirmación de credencial sensible activa. Tampoco hay una ruta o valor de secreto de servidor confirmado para filtrar. Por estas razones una simulación con `git-filter-repo` no tendría un objetivo definido. No se hizo `force-push` ni se tocaron protecciones.
+
+Si la revisión del proveedor confirma una exposición que exige saneamiento: rotar/restringir primero; inventariar referencias, PRs, protecciones, LFS y colaboradores; respaldar referencias en ubicación restringida; clonar en directorio aislado; filtrar únicamente rutas o valores confirmados con `git-filter-repo`; comparar ramas, compilación, pruebas y escaneo; coordinar clones/forks y soporte de GitHub para vistas en caché. Presentar hashes y ramas que cambiarían, reversión y efecto en PRs antes de solicitar autorización específica para cualquier actualización forzada. Las copias externas pueden persistir. La auditoría del repositorio `NEXA_Origin` es una tarea separada.

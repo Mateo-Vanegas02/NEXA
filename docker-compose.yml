@@ -1,7 +1,10 @@
 # NEXA con Docker Compose.
 #   Producción / servidor:   docker compose up -d --build            (lee .env)
 #   Con MongoDB local:       docker compose --profile local-db up -d --build
-#                            (en .env: MONGODB_URI=mongodb://mongo:27017/nexa)
+#                            (en .env: MONGODB_URI=mongodb://mongo:27017/nexa?replicaSet=rs0)
+#   La app usa transacciones de MongoDB, que exigen un replica set: el Mongo local corre como
+#   replica set de un nodo (rs0). Si la app corre fuera de Docker (./mvnw spring-boot:run) usa
+#   MONGODB_URI=mongodb://localhost:27017/nexa?directConnection=true
 # Variables: copia .env.example a .env y complétalo. NEXA_PROFILE=dev sirve para probar por http
 # en local (el perfil prod exige HTTPS por la cookie Secure).
 services:
@@ -42,12 +45,16 @@ services:
     image: mongo:7
     container_name: nexa-mongo
     profiles: ["local-db"]
+    # Replica set de un nodo: sin él, las transacciones del flujo del viaje fallan.
+    command: ["--replSet", "rs0", "--bind_ip_all"]
     ports:
       - "27017:27017"
     volumes:
       - nexa-mongo-data:/data/db
     healthcheck:
-      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      # Inicia el replica set la primera vez y solo queda sano cuando este nodo es primario.
+      test: ["CMD", "mongosh", "--quiet", "--eval",
+             "try { rs.status().ok } catch (e) { rs.initiate({_id: 'rs0', members: [{_id: 0, host: 'mongo:27017'}]}).ok }; quit(db.hello().isWritablePrimary ? 0 : 1)"]
       interval: 10s
       timeout: 5s
       retries: 10

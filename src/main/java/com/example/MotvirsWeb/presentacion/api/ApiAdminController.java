@@ -60,10 +60,14 @@ public class ApiAdminController {
                 "condonadas", deudaService.listarCondonadas(ahora.minusDays(30))));
     }
 
-    /** Cuerpo opcional al confirmar: método de pago (hoy solo EFECTIVO) y nota o referencia. */
+    /**
+     * Cuerpo opcional al confirmar: método de pago (hoy solo EFECTIVO), nota o referencia y, opcional, el viaje de la
+     * deuda que el administrador tiene en pantalla (si la deuda cambió entretanto, 409 en vez de resolver otra).
+     */
     public record ConfirmarPagoRequest(
             @jakarta.validation.constraints.Size(max = 20) String metodo,
-            @jakarta.validation.constraints.Size(max = 200) String nota) {
+            @jakarta.validation.constraints.Size(max = 200) String nota,
+            @jakarta.validation.constraints.Size(max = 64) String servicioId) {
     }
 
     /** El administrador confirma que el pasajero pagó su deuda: se libera y se acredita al conductor. */
@@ -73,8 +77,8 @@ public class ApiAdminController {
         try {
             String metodo = cuerpo == null || cuerpo.metodo() == null
                     ? com.example.MotvirsWeb.aplicacion.servicio.DeudaService.METODO_EFECTIVO : cuerpo.metodo();
-            var deuda = deudaService.confirmarPago(pasajeroId, java.time.LocalDateTime.now(), metodo,
-                    cuerpo == null ? null : cuerpo.nota());
+            var deuda = deudaService.confirmarPago(pasajeroId, cuerpo == null ? null : cuerpo.servicioId(),
+                    java.time.LocalDateTime.now(), metodo, cuerpo == null ? null : cuerpo.nota());
             return ResponseEntity.ok(Map.of("message", "Pago confirmado", "monto", deuda.getMonto(),
                     "servicioId", deuda.getServicioId()));
         } catch (ResponseStatusException e) {
@@ -86,7 +90,8 @@ public class ApiAdminController {
     public record CondonarRequest(
             @jakarta.validation.constraints.NotBlank(message = "Escribe el motivo de la condonación")
             @jakarta.validation.constraints.Size(max = 300, message = "El motivo no puede pasar de 300 caracteres")
-            String motivo) {
+            String motivo,
+            @jakarta.validation.constraints.Size(max = 64) String servicioId) {
     }
 
     /** El administrador perdona la deuda del pasajero (no hubo pago): se libera y queda el motivo registrado. */
@@ -94,7 +99,7 @@ public class ApiAdminController {
     public ResponseEntity<?> condonarDeuda(@PathVariable String pasajeroId,
             @jakarta.validation.Valid @RequestBody CondonarRequest cuerpo, Principal admin) {
         try {
-            var deuda = deudaService.condonar(pasajeroId, admin.getName(), cuerpo.motivo(),
+            var deuda = deudaService.condonar(pasajeroId, cuerpo.servicioId(), admin.getName(), cuerpo.motivo(),
                     java.time.LocalDateTime.now());
             return ResponseEntity.ok(Map.of("message", "Deuda condonada", "monto", deuda.getMonto(),
                     "servicioId", deuda.getServicioId()));

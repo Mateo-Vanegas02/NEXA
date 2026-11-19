@@ -198,7 +198,10 @@ public class NivelesService {
         for (Servicio s : pendientes) {
             try {
                 procesarFinalizacion(s);
-                servicioRepository.save(s);
+                // Solo los campos que calcula niveles: un save() completo pisaría, p. ej., una calificación
+                // registrada mientras corría el reproceso.
+                servicioRepository.guardarResultadoNiveles(s.getId(), s.getDesglose(), s.getXpGanadoPasajero(),
+                        s.getXpGanadoConductor(), s.getTarifa());
                 reprocesados++;
             } catch (Exception e) {
                 log.error("No se pudo reprocesar niveles del servicio {}", s.getId(), e);

@@ -161,11 +161,4 @@ public interface ServicioService {
 
     // ── Calificación (usada por ControllerRating y ControllerPasajero) ──
 
-    /**
-     * Registra la calificación de un participante sobre el otro.
-     * 
-     * @param rol "conductor" o "pasajero"
-     */
-    Map<String, Object> calificarServicio(String servicioId, String rol,
-            Double calificacion, String comentarios, java.util.List<String> factores);
 }

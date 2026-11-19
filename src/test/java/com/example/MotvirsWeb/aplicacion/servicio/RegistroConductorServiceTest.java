@@ -135,4 +135,16 @@ class RegistroConductorServiceTest {
         verify(vehiculoRepository).deleteById(vehiculoId);
         verify(usuarioRepository).deleteById(c.getIdString());
     }
+
+    @Test
+    void rechazaUnaTarjetaDeclaradaPorOtroConductorSinCrearNada() {
+        when(vehiculoRepository.findByPlaca("ABC123")).thenReturn(Optional.empty());
+        when(documentos.tarjetaDeclaradaPorOtro(987654321012L, null)).thenReturn(true);
+
+        IllegalStateException e = assertThrows(IllegalStateException.class, () -> servicio.registrar(solicitud()));
+
+        assertEquals(AuthService.TARJETA_REGISTRADA, e.getMessage());
+        verify(authService, never()).registrarConductor(anyString(), anyString(), anyString(), anyString(), anyLong(), anyLong(), anyLong());
+        verify(vehiculoRepository, never()).save(any());
+    }
 }

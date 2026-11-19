@@ -9,6 +9,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.ArgumentMatchers.*;
 
 import java.util.Optional;
 
@@ -45,6 +47,10 @@ class ServicioAccesoTest {
     private com.example.MotvirsWeb.aplicacion.puerto.CanalPeticion canalPeticion;
     @Mock
     private AvisosService avisos;
+    @Mock
+    private AvisosPendientesService avisosPendientes;
+    @Mock
+    private DeudaService deudaService;
     @InjectMocks
     private ServicioServiceImpl servicioService;
 
@@ -60,7 +66,13 @@ class ServicioAccesoTest {
         servicio.setConductor(new Servicio.ConductorEmbedded(Conductor.builder().id(conductorId)
                 .nombre_y_Apellido("Cond").build()));
         servicio.setEstado(EstadoServicio.FINALIZADO);
-        when(servicioRepository.findById("s1")).thenReturn(Optional.of(servicio));
+        lenient().when(servicioRepository.findById("s1")).thenReturn(Optional.of(servicio));
+        lenient().when(servicioRepository.iniciarSiAceptado(eq("s1"), eq(conductorId), any(), anyDouble()))
+                .thenReturn(1L);
+        lenient().when(servicioRepository.finalizarSiEnCurso(eq("s1"), eq(conductorId), any(), anyBoolean(), anyDouble()))
+                .thenReturn(1L);
+        lenient().when(servicioRepository.calificarConductorUnaVez(eq("s1"), eq(pasajeroId), any(), any(), any()))
+                .thenReturn(1L);
     }
 
     private static Conductor conductor(ObjectId id) {
@@ -122,7 +134,7 @@ class ServicioAccesoTest {
     void alFinalizarSeGuardaElRecorridoReal() {
         servicio.setEstado(EstadoServicio.EN_CURSO);
         var puntos = java.util.List.of(new Servicio.Coordenada(10.4, -75.5), new Servicio.Coordenada(10.41, -75.5));
-        when(viajeEnVivo.terminar(conductorId, "s1")).thenReturn(new ViajeEnVivoService.Recorrido(1.1, puntos));
+        when(viajeEnVivo.recorridoActual(conductorId, "s1")).thenReturn(new ViajeEnVivoService.Recorrido(1.1, puntos));
         servicioService.finalizarServicio("s1", conductor(conductorId));
         assertEquals(1.1, servicio.getDistanciaRecorridaKm());
         assertEquals(puntos, servicio.getRecorrido());
@@ -206,5 +218,115 @@ class ServicioAccesoTest {
     void elPasajeroDelViajeSiPuedeCalificar() {
         assertNotNull(servicioService.calificarServicio("s1", "pasajero", 4.5, "bien", pasajeroId.toString()));
         assertEquals(4.5, servicio.getCalificacionConductor());
+    }
+
+    @Test
+    void elConductorDelViajeCalificaAlPasajero() {
+        when(servicioRepository.calificarPasajeroUnaVez(eq("s1"), eq(conductorId), any(), any(), any())).thenReturn(1L);
+        assertNotNull(servicioService.calificarServicio("s1", "conductor", 4.0, "bien", java.util.List.of(),
+                conductorId.toString()));
+        verify(servicioRepository).calificarPasajeroUnaVez(eq("s1"), eq(conductorId), eq(4.0), eq("bien"), any());
+    }
+
+    @Test
+    void unConductorAjenoNoPuedeCalificar() {
+        ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> servicioService
+                .calificarServicio("s1", "conductor", 4.0, "x", new ObjectId().toString()));
+        assertEquals(HttpStatus.FORBIDDEN, estado(e));
+        verify(servicioRepository, never()).calificarPasajeroUnaVez(any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void elPasajeroNoPuedeCalificarComoConductorCambiandoElRol() {
+        ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> servicioService
+                .calificarServicio("s1", "conductor", 1.0, "x", pasajeroId.toString()));
+        assertEquals(HttpStatus.FORBIDDEN, estado(e));
+        for (String inventado : new String[] { "admin", "ADMIN", "", null }) {
+            ResponseStatusException otro = assertThrows(ResponseStatusException.class, () -> servicioService
+                    .calificarServicio("s1", inventado, 1.0, "x", pasajeroId.toString()));
+            assertEquals(HttpStatus.FORBIDDEN, estado(otro));
+        }
+        verify(servicioRepository, never()).calificarPasajeroUnaVez(any(), any(), any(), any(), any());
+        verify(servicioRepository, never()).calificarConductorUnaVez(any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void sinUsuarioAutenticadoNoSeCalifica() {
+        for (String sinUsuario : new String[] { null, "", "  " }) {
+            ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> servicioService
+                    .calificarServicio("s1", "pasajero", 5.0, "x", sinUsuario));
+            assertEquals(HttpStatus.UNAUTHORIZED, estado(e));
+        }
+        verify(servicioRepository, never()).calificarConductorUnaVez(any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void noSeCalificaUnViajeCancelado() {
+        servicio.setEstado(EstadoServicio.CANCELADO);
+        ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> servicioService
+                .calificarServicio("s1", "pasajero", 5.0, "x", pasajeroId.toString()));
+        assertEquals(HttpStatus.BAD_REQUEST, estado(e));
+    }
+
+    @Test
+    void unaCalificacionRepetidaOConcurrenteDa409() {
+        when(servicioRepository.calificarConductorUnaVez(eq("s1"), eq(pasajeroId), any(), any(), any())).thenReturn(0L);
+        ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> servicioService
+                .calificarServicio("s1", "pasajero", 5.0, "x", pasajeroId.toString()));
+        assertEquals(HttpStatus.CONFLICT, estado(e));
+        verify(nivelesService, never()).registrarCalificacionConductor(any());
+    }
+
+    @Test
+    void elContratoPublicoNoTieneCalificarSinIdentidad() {
+        for (var m : ServicioService.class.getMethods()) {
+            if (m.getName().equals("calificarServicio")) {
+                Class<?>[] p = m.getParameterTypes();
+                assertEquals(String.class, p[p.length - 1], m + " debe recibir el usuario autenticado al final");
+                assertTrue(p.length >= 5, m.toString());
+            }
+        }
+    }
+
+    @Test
+    void siNivelesFallaElViajeQuedaFinalizadoYPendienteDeReproceso() {
+        servicio.setEstado(EstadoServicio.EN_CURSO);
+        when(viajeEnVivo.estaEnElDestino(servicio, conductorId)).thenReturn(true);
+        when(nivelesService.procesarFinalizacion(any())).thenThrow(new IllegalStateException("niveles caído"));
+
+        var respuesta = servicioService.finalizarServicio("s1", conductor(conductorId));
+
+        assertEquals("s1", respuesta.get("servicioId"));
+        assertFalse(respuesta.containsKey("desglose"));
+        verify(servicioRepository).finalizarSiEnCurso(eq("s1"), eq(conductorId), any(), eq(false), eq(1.0));
+        verify(avisosPendientes).registrar("s1", AvisosPendientesService.Tipo.FINALIZADO);
+        verify(servicioRepository, never()).guardarResultadoNiveles(any(), any(), anyDouble(), anyDouble(), anyDouble());
+    }
+
+    @Test
+    void siFallaElCobroDeLaDeudaLaFinalizacionNoSeDaPorHecha() {
+        servicio.setEstado(EstadoServicio.EN_CURSO);
+        when(viajeEnVivo.estaEnElDestino(servicio, conductorId)).thenReturn(true);
+        when(deudaService.cobrarEnViaje(any(), any())).thenThrow(new IllegalStateException("Mongo caído"));
+
+        assertThrows(IllegalStateException.class, () -> servicioService.finalizarServicio("s1", conductor(conductorId)));
+
+        verify(avisosPendientes, never()).registrar(any(), any());
+        verify(nivelesService, never()).procesarFinalizacion(any());
+    }
+
+    @Test
+    void nivelesGuardaLaTarifaDefinitivaJuntoConElDesglose() {
+        servicio.setEstado(EstadoServicio.EN_CURSO);
+        when(viajeEnVivo.estaEnElDestino(servicio, conductorId)).thenReturn(true);
+        when(nivelesService.procesarFinalizacion(any())).thenAnswer(inv -> {
+            Servicio s = inv.getArgument(0);
+            s.setTarifa(8700);
+            return null;
+        });
+
+        servicioService.finalizarServicio("s1", conductor(conductorId));
+
+        verify(servicioRepository).guardarResultadoNiveles(eq("s1"), any(), anyDouble(), anyDouble(), eq(8700.0));
     }
 }

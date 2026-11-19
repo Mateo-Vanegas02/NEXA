@@ -16,6 +16,28 @@ public interface NotificadorPush {
     /** Encola el aviso para esos tokens; vuelve de inmediato. */
     void enviar(Collection<String> tokens, Aviso aviso);
 
+    /**
+     * Envía y espera la confirmación del proveedor. Intenta todos los tokens; si alguno no se confirmó lanza
+     * {@link EnvioIncompleto} con esos tokens, para que la bandeja persistente reintente solo esos.
+     */
+    default void enviarConConfirmacion(Collection<String> tokens, Aviso aviso) {
+        enviar(tokens, aviso);
+    }
+
+    /** El proveedor no confirmó el envío a estos tokens (los demás sí se entregaron). */
+    final class EnvioIncompleto extends RuntimeException {
+        private final java.util.Set<String> tokensFallidos;
+
+        public EnvioIncompleto(Collection<String> tokensFallidos) {
+            super("El proveedor no confirmó " + tokensFallidos.size() + " envío(s)");
+            this.tokensFallidos = java.util.Set.copyOf(new java.util.LinkedHashSet<>(tokensFallidos));
+        }
+
+        public java.util.Set<String> tokensFallidos() {
+            return tokensFallidos;
+        }
+    }
+
     /** false si el servidor no tiene credenciales de Firebase (los avisos se descartan). */
     boolean activo();
 

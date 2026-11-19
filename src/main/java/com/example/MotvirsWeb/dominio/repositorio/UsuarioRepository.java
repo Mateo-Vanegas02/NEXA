@@ -44,6 +44,13 @@ public interface UsuarioRepository extends MongoRepository <Usuario, String>  {
     @Query(value = "{ 'rol': ?0, 'soat': ?1 }", exists = true)
     boolean existsByRolAndSoat(Rol rol, Long soat);
 
+    /**
+     * ¿Otro conductor (distinto de {@code excepto}; null = cualquiera) ya registró esta tarjeta de propiedad?
+     * Regla de negocio: una moto no puede estar registrada por más de un conductor.
+     */
+    @Query(value = "{ 'rol': 'CONDUCTOR', 'tarjeta_de_propiedad': ?0, '_id': { '$ne': ?1 } }", exists = true)
+    boolean existeOtroConductorConTarjeta(Long tarjeta, org.bson.types.ObjectId excepto);
+
     List<Usuario> findByRolAndEstadoValidacion(Rol rol, EstadoValidacion estado);
 
     //metodos para los graficos panel del admin

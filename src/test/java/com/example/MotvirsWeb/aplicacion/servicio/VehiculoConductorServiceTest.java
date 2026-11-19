@@ -144,4 +144,28 @@ class VehiculoConductorServiceTest {
         assertTrue(b.estaVerificado());
         verify(vehiculoRepo).save(b);
     }
+
+    @Test
+    void agregarRechazaUnaTarjetaDeOtroConductor() {
+        when(vehiculoRepo.findByPlaca("ABC123")).thenReturn(java.util.Optional.empty());
+        when(usuarioRepo.existeOtroConductorConTarjeta(111L, conductor.getId())).thenReturn(true);
+
+        ResponseStatusException e = assertThrows(ResponseStatusException.class,
+                () -> servicio.agregar(conductor, nuevo("ABC123")));
+
+        assertEquals(409, e.getStatusCode().value());
+        verify(vehiculoRepo, never()).save(any());
+    }
+
+    @Test
+    void agregarRechazaUnaTarjetaDeclaradaPorOtroConductorEnSusFotos() {
+        when(vehiculoRepo.findByPlaca("ABC123")).thenReturn(java.util.Optional.empty());
+        when(documentos.tarjetaDeclaradaPorOtro(111L, conductor.getIdString())).thenReturn(true);
+
+        ResponseStatusException e = assertThrows(ResponseStatusException.class,
+                () -> servicio.agregar(conductor, nuevo("ABC123")));
+
+        assertEquals(409, e.getStatusCode().value());
+        verify(vehiculoRepo, never()).save(any());
+    }
 }

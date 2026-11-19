@@ -92,7 +92,7 @@ Este proyecto recomienda seguir la convención de [Conventional Commits](https:/
 
 - **Imagen:** `Dockerfile` multi-etapa (Maven + JDK 21 compila; JRE 21 ejecuta), con usuario sin privilegios, caché de dependencias, modelo Weka incluido y `HEALTHCHECK`. Los secretos **no** entran en la imagen: llegan por variables de entorno.
 - **Levantar:** `./deploy.sh` (comprueba que existe `.env`, construye, arranca y espera a que esté saludable). Equivale a `docker compose up -d --build`.
-- **Con MongoDB local:** `NEXA_LOCAL_DB=1 ./deploy.sh` (o `docker compose --profile local-db up -d --build`) y en `.env` pon `MONGODB_URI=mongodb://mongo:27017/nexa`.
+- **Con MongoDB local:** `NEXA_LOCAL_DB=1 ./deploy.sh` (o `docker compose --profile local-db up -d --build`) y en `.env` pon `MONGODB_URI=mongodb://mongo:27017/nexa?replicaSet=rs0`. El Mongo local corre como replica set de un nodo porque la app usa transacciones; desde fuera de Docker conéctate con `mongodb://localhost:27017/nexa?directConnection=true`.
 - **Probar por http en local:** el perfil `prod` exige HTTPS (cookie `Secure`). Para probar en `http://localhost:8080` añade `NEXA_PROFILE=dev` al `.env`.
 - **Logs y parada:** `docker compose logs -f nexa-backend` · `docker compose down`.
 - **CI:** el workflow `ci.yml` construye la imagen y la arranca contra una MongoDB desechable en cada push (no despliega nada).

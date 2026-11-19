@@ -81,35 +81,51 @@ public class NotificadorPushFcm implements NotificadorPush {
         }
     }
 
-    private void enviarUno(String token, Aviso aviso) {
+    @Override
+    public void enviarConConfirmacion(Collection<String> tokens, Aviso aviso) {
+        if (tokens == null) return;
+        java.util.Set<String> fallidos = new java.util.LinkedHashSet<>();
+        for (String token : List.copyOf(tokens)) {
+            if (!enviarUno(token, aviso)) {
+                fallidos.add(token); // se sigue con los demás: un token caído no bloquea al resto
+            }
+        }
+        if (!fallidos.isEmpty()) {
+            log.warn("FCM no confirmó {} de {} envíos del aviso {}", fallidos.size(), tokens.size(), aviso.tipo());
+            throw new EnvioIncompleto(fallidos);
+        }
+    }
+
+    private boolean enviarUno(String token, Aviso aviso) {
         for (int intento = 1; intento <= 2; intento++) {
             try {
                 HttpResponse<String> r = http.send(peticion(token, aviso), HttpResponse.BodyHandlers.ofString());
                 int codigo = r.statusCode();
                 if (codigo / 100 == 2) {
-                    return;
+                    return true;
                 }
                 String error = codigoError(r.body());
                 if (tokenInvalido(codigo, error)) {
                     long borrados = dispositivos.deleteByToken(token);
                     log.info("FCM rechazó un token ({}); dispositivos borrados: {}", error, borrados);
-                    return;
+                    return true;
                 }
                 if ((codigo == 429 || codigo >= 500) && intento == 1) {
                     Thread.sleep(1000);
                     continue;
                 }
                 log.warn("FCM respondió {} ({}) al aviso {}", codigo, error, aviso.tipo());
-                return;
+                return false;
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                return;
+                return false;
             } catch (IOException | RuntimeException e) {
                 if (intento == 2) {
                     log.warn("No se pudo enviar el aviso {} por FCM: {}", aviso.tipo(), e.getMessage());
                 }
             }
         }
+        return false;
     }
 
     private HttpRequest peticion(String token, Aviso aviso) throws IOException {

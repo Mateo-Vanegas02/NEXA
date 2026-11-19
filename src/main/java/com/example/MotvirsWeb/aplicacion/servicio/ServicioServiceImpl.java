@@ -63,7 +63,15 @@ public class ServicioServiceImpl implements ServicioService {
     private final com.example.MotvirsWeb.dominio.repositorio.VehiculoRepository vehiculoRepository;
     private final com.example.MotvirsWeb.aplicacion.puerto.CanalPeticion canalPeticion;
     private final AvisosService avisos;
+    private final AvisosPendientesService avisosPendientes;
     private final ModeloNexaProperties modeloNexa;
+    /** Transacción Mongo con reintento ante conflictos transitorios; sin Spring (pruebas), sin transacción. */
+    private EjecutorTransacciones transacciones = EjecutorTransacciones.sinTransaccion();
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    public void setTransacciones(EjecutorTransacciones transacciones) {
+        this.transacciones = transacciones;
+    }
 
     static final String VIAJE_NO_DISPONIBLE = "Otro conductor ya tomó este viaje. Ya no está disponible.";
 
@@ -71,6 +79,11 @@ public class ServicioServiceImpl implements ServicioService {
 
     @Override
     public Map<String, Object> aceptarServicio(String servicioId, Conductor conductor) {
+        return transacciones.ejecutar(() -> aceptarEnTransaccion(servicioId, conductor));
+    }
+
+    /** Lecturas, escrituras condicionales y avisos para después del commit: se puede reintentar entero. */
+    private Map<String, Object> aceptarEnTransaccion(String servicioId, Conductor conductor) {
         Servicio servicio = buscarServicio(servicioId);
 
         if (servicio.getEstado() != EstadoServicio.SOLICITADO) {
@@ -91,11 +104,8 @@ public class ServicioServiceImpl implements ServicioService {
         servicio.setEstado(EstadoServicio.ACEPTADO);
         servicio.setFechaAceptacion(ahora);
         registrarMetricasDespacho(servicio, conductor);
-        viajeEnVivo.seguir(servicio);
-        notificadorTiempoReal.notificarCambioEstadoServicio(servicio);
-        notificadorTiempoReal.notificarSolicitudRetirada(servicioId, "TOMADO");
-        avisos.viajeAceptado(servicio);
-        avisos.solicitudRetirada(servicio, "TOMADO");
+        despuesDeConfirmar(() -> viajeEnVivo.seguir(servicio));
+        avisosPendientes.registrar(servicioId, AvisosPendientesService.Tipo.ACEPTADO);
 
         return Map.of("mensaje", "Servicio aceptado con éxito", "servicioId", servicioId);
     }
@@ -141,6 +151,12 @@ public class ServicioServiceImpl implements ServicioService {
     @Override
     public Map<String, Object> confirmarLlegada(String servicioId, Conductor conductor, double latitud,
             double longitud, LocalDateTime ocurridoEn) {
+        return transacciones.ejecutar(() -> confirmarLlegadaEnTransaccion(servicioId, conductor, latitud, longitud, ocurridoEn));
+    }
+
+    /** Lecturas, escrituras condicionales y avisos para después del commit: se puede reintentar entero. */
+    private Map<String, Object> confirmarLlegadaEnTransaccion(String servicioId, Conductor conductor, double latitud,
+            double longitud, LocalDateTime ocurridoEn) {
         Servicio servicio = buscarServicio(servicioId);
         exigirConductorAsignado(servicio, conductor);
         exigirMismoCanal(servicio);
@@ -163,14 +179,21 @@ public class ServicioServiceImpl implements ServicioService {
         servicio.setFechaLlegada(ReglaSinConexion.horaEvento(LocalDateTime.now(), ocurridoEn,
                 servicio.getFechaAceptacion(), toleranciaSinConexion(servicio, false)));
         servicio.setUbicacionLlegada(new Servicio.Coordenada(latitud, longitud));
-        servicioRepository.save(servicio);
-        notificadorTiempoReal.notificarCambioEstadoServicio(servicio);
-        avisos.conductorLlego(servicio);
+        if (servicioRepository.registrarLlegadaSiAceptado(servicioId, conductor.getId(),
+                servicio.getFechaLlegada(), servicio.getUbicacionLlegada()) == 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "La llegada ya fue registrada o el viaje cambió de estado");
+        }
+        avisosPendientes.registrar(servicioId, AvisosPendientesService.Tipo.LLEGADA);
         return Map.of("mensaje", "Llegada registrada. Se cuenta la espera del pasajero.", "servicioId", servicioId);
     }
 
     @Override
     public Map<String, Object> iniciarServicio(String servicioId, Conductor conductor, LocalDateTime ocurridoEn) {
+        return transacciones.ejecutar(() -> iniciarEnTransaccion(servicioId, conductor, ocurridoEn));
+    }
+
+    /** Lecturas, escrituras condicionales y avisos para después del commit: se puede reintentar entero. */
+    private Map<String, Object> iniciarEnTransaccion(String servicioId, Conductor conductor, LocalDateTime ocurridoEn) {
         Servicio servicio = buscarServicio(servicioId);
 
         if (servicio.getEstado() != EstadoServicio.ACEPTADO) {
@@ -196,9 +219,12 @@ public class ServicioServiceImpl implements ServicioService {
         if (servicio.getFechaLlegada() != null) {
             servicio.setMinutosEspera(minutosEntre(servicio.getFechaLlegada(), ahora));
         }
-        servicioRepository.save(servicio);
-        viajeEnVivo.iniciar(servicio);
-        notificadorTiempoReal.notificarCambioEstadoServicio(servicio);
+        if (servicioRepository.iniciarSiAceptado(servicioId, conductor.getId(), ahora,
+                servicio.getMinutosEspera()) == 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "El viaje cambió de estado antes de iniciarse");
+        }
+        despuesDeConfirmar(() -> viajeEnVivo.iniciar(servicio));
+        avisosPendientes.registrar(servicioId, AvisosPendientesService.Tipo.INICIADO);
 
         return Map.of("mensaje", "Viaje iniciado con éxito", "servicioId", servicioId);
     }
@@ -215,54 +241,26 @@ public class ServicioServiceImpl implements ServicioService {
         return f > 0 && f <= 1.0 ? f : 1.0;
     }
 
+    /**
+     * Finaliza en dos partes. Crítico, en una transacción (todo o nada): el paso a FINALIZADO con la fracción
+     * cobrada, el recorrido, el cobro de la deuda aceptada y la inscripción del aviso. Recuperable, después del
+     * commit: niveles/XP y desglose definitivo; si fallan, el viaje queda finalizado y {@code NivelesScheduler}
+     * los reprocesa (es idempotente).
+     */
     @Override
     public Map<String, Object> finalizarServicio(String servicioId, Conductor conductor, LocalDateTime ocurridoEn) {
-        Servicio servicio = buscarServicio(servicioId);
+        Servicio servicio = transacciones.ejecutar(() -> finalizarEnTransaccion(servicioId, conductor, ocurridoEn));
 
-        if (servicio.getEstado() != EstadoServicio.EN_CURSO ||
-                !servicio.getConductor().getId().equals(conductor.getId())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "No puedes finalizar este servicio");
-        }
-        exigirMismoCanal(servicio);
-        // Regla de oro: el viaje lo finaliza siempre el conductor, en cualquier tramo. Si no llegó al destino
-        // (el pasajero se bajó antes) se cobra según lo recorrido: antes de la mitad, la mitad; desde la mitad, todo.
-        boolean enDestino = viajeEnVivo.estaEnElDestino(servicio, conductor.getId());
-        servicio.setEstado(EstadoServicio.FINALIZADO);
-        // Sin señal se finaliza con la hora del teléfono (dentro de la tolerancia); el cobro sigue saliendo de las
-        // posiciones que el servidor recibió (en vivo o en el lote al volver la señal), nunca de lo que diga la acción.
-        servicio.setFechaFinalizacion(ReglaSinConexion.horaEvento(LocalDateTime.now(), ocurridoEn,
-                servicio.getFechaInicio(), toleranciaSinConexion(servicio, true)));
-        ViajeEnVivoService.Recorrido recorrido = viajeEnVivo.terminar(conductor.getId(), servicioId);
-        if (recorrido != null && !recorrido.puntos().isEmpty()) {
-            servicio.setDistanciaRecorridaKm(recorrido.km());
-            servicio.setRecorrido(recorrido.puntos());
-        }
-        servicio.setFinalizadoAntesDelDestino(!enDestino);
-        servicio.setFraccionCobrada(enDestino ? 1.0 : fraccionValida(viajeEnVivo.factorCobro(servicio, conductor.getId(), recorrido)));
-        servicioRepository.save(servicio);
-
-        // La deuda que el pasajero aceptó al pedir el viaje se cobra ahora, en efectivo, junto con la tarifa.
-        try {
-            long cobrado = deudaService.cobrarEnViaje(servicio, servicio.getFechaFinalizacion());
-            if (cobrado != servicio.getDeudaCobrada()) {
-                servicio.setDeudaCobrada(cobrado);
-                servicioRepository.save(servicio);
-            }
-        } catch (RuntimeException e) {
-            log.error("No se pudo cobrar la deuda con el servicio {}", servicioId, e);
-        }
-
-        // Niveles: nunca debe impedir que el viaje se complete.
+        // Niveles: nunca debe impedir que el viaje se complete (se reprocesa si falla).
         NivelesService.ResultadoViaje niveles = null;
         try {
             niveles = nivelesService.procesarFinalizacion(servicio);
-            servicioRepository.save(servicio);
+            servicioRepository.guardarResultadoNiveles(servicioId, servicio.getDesglose(),
+                    servicio.getXpGanadoPasajero(), servicio.getXpGanadoConductor(), servicio.getTarifa());
         } catch (Exception e) {
-            log.error("No se pudo procesar niveles/XP del servicio {}", servicioId, e);
+            log.error("No se pudo procesar niveles/XP del servicio {}; queda para el reproceso", servicioId, e);
+            niveles = null;
         }
-        notificadorTiempoReal.notificarCambioEstadoServicio(servicio);
-        avisos.viajeFinalizado(servicio);
 
         Map<String, Object> respuesta = new HashMap<>();
         respuesta.put("mensaje", "Servicio finalizado con éxito. Redirigiendo a calificación...");
@@ -281,8 +279,61 @@ public class ServicioServiceImpl implements ServicioService {
         return respuesta;
     }
 
+    /** Parte crítica de {@link #finalizarServicio}: devuelve el viaje ya finalizado (en memoria) para niveles. */
+    private Servicio finalizarEnTransaccion(String servicioId, Conductor conductor, LocalDateTime ocurridoEn) {
+        Servicio servicio = buscarServicio(servicioId);
+
+        if (servicio.getEstado() != EstadoServicio.EN_CURSO ||
+                !servicio.getConductor().getId().equals(conductor.getId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "No puedes finalizar este servicio");
+        }
+        exigirMismoCanal(servicio);
+        // Regla de oro: el viaje lo finaliza siempre el conductor, en cualquier tramo. Si no llegó al destino
+        // (el pasajero se bajó antes) se cobra según lo recorrido: antes de la mitad, la mitad; desde la mitad, todo.
+        boolean enDestino = viajeEnVivo.estaEnElDestino(servicio, conductor.getId());
+        servicio.setEstado(EstadoServicio.FINALIZADO);
+        // Sin señal se finaliza con la hora del teléfono (dentro de la tolerancia); el cobro sigue saliendo de las
+        // posiciones que el servidor recibió (en vivo o en el lote al volver la señal), nunca de lo que diga la acción.
+        servicio.setFechaFinalizacion(ReglaSinConexion.horaEvento(LocalDateTime.now(), ocurridoEn,
+                servicio.getFechaInicio(), toleranciaSinConexion(servicio, true)));
+        ViajeEnVivoService.Recorrido recorridoPrevio = viajeEnVivo.recorridoActual(conductor.getId(), servicioId);
+        double fraccion = enDestino ? 1.0 : fraccionValida(viajeEnVivo.factorCobro(servicio, conductor.getId(), recorridoPrevio));
+        if (servicioRepository.finalizarSiEnCurso(servicioId, conductor.getId(), servicio.getFechaFinalizacion(),
+                !enDestino, fraccion) == 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "El viaje cambió de estado antes de finalizarse");
+        }
+        ViajeEnVivoService.Recorrido recorrido = recorridoPrevio;
+        if (recorrido != null && !recorrido.puntos().isEmpty()) {
+            servicio.setDistanciaRecorridaKm(recorrido.km());
+            servicio.setRecorrido(recorrido.puntos());
+        }
+        servicio.setFinalizadoAntesDelDestino(!enDestino);
+        servicio.setFraccionCobrada(fraccion);
+        if (recorrido != null && !recorrido.puntos().isEmpty()) {
+            servicioRepository.guardarRecorridoFinal(servicioId, recorrido.km(), recorrido.puntos());
+        }
+        despuesDeConfirmar(() -> viajeEnVivo.terminar(conductor.getId(), servicioId));
+
+        // La deuda que el pasajero aceptó al pedir el viaje se cobra ahora, en efectivo, junto con la tarifa.
+        // Es parte del cobro: si falla, se revierte la finalización entera (el conductor reintenta) en vez de
+        // dejar un viaje cerrado con la deuda a medias. Si otro ya la resolvió, cobrarEnViaje devuelve 0.
+        long cobrado = deudaService.cobrarEnViaje(servicio, servicio.getFechaFinalizacion());
+        if (cobrado != servicio.getDeudaCobrada()) {
+            servicio.setDeudaCobrada(cobrado);
+            servicioRepository.guardarDeudaCobrada(servicioId, cobrado);
+        }
+        avisosPendientes.registrar(servicioId, AvisosPendientesService.Tipo.FINALIZADO);
+        return servicio;
+    }
+
     @Override
     public Map<String, Object> cancelarServicioConductor(String servicioId, Conductor conductor) {
+        return transacciones.ejecutar(() -> cancelarConductorEnTransaccion(servicioId, conductor));
+    }
+
+    /** Lecturas, escrituras condicionales y avisos para después del commit: se puede reintentar entero. */
+    private Map<String, Object> cancelarConductorEnTransaccion(String servicioId, Conductor conductor) {
         Servicio servicio = buscarServicio(servicioId);
 
         if (!servicio.getConductor().getId().equals(conductor.getId())) {
@@ -300,10 +351,11 @@ public class ServicioServiceImpl implements ServicioService {
         servicio.setEstado(EstadoServicio.CANCELADO);
         servicio.setCanceladoPor("CONDUCTOR");
         servicio.setFechaCancelacion(LocalDateTime.now());
-        servicioRepository.save(servicio);
-        viajeEnVivo.terminar(conductor.getId(), servicioId);
-        notificadorTiempoReal.notificarCambioEstadoServicio(servicio);
-        avisos.viajeCancelado(servicio);
+        if (servicioRepository.cancelarSiAsignado(servicioId, conductor.getId(), servicio.getFechaCancelacion()) == 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "El viaje cambió de estado antes de cancelarse");
+        }
+        despuesDeConfirmar(() -> viajeEnVivo.terminar(conductor.getId(), servicioId));
+        avisosPendientes.registrar(servicioId, AvisosPendientesService.Tipo.CANCELADO);
 
         return Map.of("mensaje", "Servicio cancelado con éxito", "servicioId", servicioId);
     }
@@ -540,6 +592,11 @@ public class ServicioServiceImpl implements ServicioService {
 
     @Override
     public Map<String, Object> cancelarViajePasajero(String servicioId, Pasajero pasajero) {
+        return transacciones.ejecutar(() -> cancelarPasajeroEnTransaccion(servicioId, pasajero));
+    }
+
+    /** Lecturas, escrituras condicionales y avisos para después del commit: se puede reintentar entero. */
+    private Map<String, Object> cancelarPasajeroEnTransaccion(String servicioId, Pasajero pasajero) {
         Servicio servicio = buscarServicio(servicioId);
 
         if (servicio.getPasajero() == null || servicio.getPasajero().getId() == null ||
@@ -561,9 +618,7 @@ public class ServicioServiceImpl implements ServicioService {
         }
         LocalDateTime ahora = LocalDateTime.now();
         long cargo = calcularCargoCancelacion(servicio, ahora);
-        if (cargo > 0 && !deudaService.registrar(pasajero.getId(), servicioId, cargo, ahora)) {
-            cargo = 0; // ya debe otro servicio: solo puede haber una deuda a la vez
-        }
+        if (cargo > 0 && deudaService.deudaDe(pasajero.getId()).isPresent()) cargo = 0;
         boolean llegadaVerificada = servicio.getFechaLlegada() != null;
         if (llegadaVerificada) {
             servicio.setMinutosEspera(minutosEntre(servicio.getFechaLlegada(), ahora));
@@ -574,15 +629,19 @@ public class ServicioServiceImpl implements ServicioService {
         servicio.setEstado(EstadoServicio.CANCELADO);
         servicio.setCanceladoPor("PASAJERO");
         servicio.setFechaCancelacion(ahora);
-        Servicio cancelado = servicioRepository.save(servicio);
-        if (servicio.getConductor() != null) {
-            viajeEnVivo.terminar(servicio.getConductor().getId(), servicioId);
+        if (servicioRepository.cancelarSiVigente(servicioId, pasajero.getId(),
+                seguiaSolicitado ? EstadoServicio.SOLICITADO : EstadoServicio.ACEPTADO,
+                ahora, cargo, servicio.isCargoAcreditadoConductor(), servicio.getMinutosEspera()) == 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "El viaje cambió de estado antes de cancelarse");
         }
-        notificadorTiempoReal.notificarCambioEstadoServicio(cancelado);
-        avisos.viajeCancelado(cancelado);
-        if (seguiaSolicitado) {
-            notificadorTiempoReal.notificarSolicitudRetirada(servicioId, "CANCELADO");
-            avisos.solicitudRetirada(cancelado, "CANCELADO");
+        if (cargo > 0 && !deudaService.registrar(pasajero.getId(), servicioId, cargo, ahora)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "La deuda cambió antes de cancelar; intenta de nuevo");
+        }
+        avisosPendientes.registrar(servicioId, AvisosPendientesService.Tipo.CANCELADO);
+        if (cargo > 0) avisosPendientes.registrar(servicioId, AvisosPendientesService.Tipo.DEUDA);
+        if (servicio.getConductor() != null) {
+            org.bson.types.ObjectId conductorId = servicio.getConductor().getId();
+            despuesDeConfirmar(() -> viajeEnVivo.terminar(conductorId, servicioId));
         }
 
         Map<String, Object> respuesta = new HashMap<>();
@@ -638,6 +697,12 @@ public class ServicioServiceImpl implements ServicioService {
     @Override
     public Map<String, Object> calificarServicio(String servicioId, String rol,
             Double calificacion, String comentarios, List<String> factores, String usuarioId) {
+        if (usuarioId == null || usuarioId.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Inicia sesión para calificar");
+        }
+        if (!"pasajero".equals(rol) && !"conductor".equals(rol)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes calificar este servicio");
+        }
         Servicio servicio = buscarServicio(servicioId);
         org.bson.types.ObjectId participante = "pasajero".equals(rol)
                 ? (servicio.getPasajero() != null ? servicio.getPasajero().getId() : null)
@@ -665,13 +730,16 @@ public class ServicioServiceImpl implements ServicioService {
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
-        return calificarServicio(servicioId, rol, calificacion, comentarios, elegidos);
+        return registrarCalificacion(servicio, rol, calificacion, comentarios, elegidos);
     }
 
-    @Override
-    public Map<String, Object> calificarServicio(String servicioId, String rol,
+    /**
+     * Escribe la calificación ya autorizada. Privado a propósito: el único punto de entrada público es
+     * {@link #calificarServicio(String, String, Double, String, List, String)}, que exige al participante.
+     */
+    private Map<String, Object> registrarCalificacion(Servicio servicio, String rol,
             Double calificacion, String comentarios, List<String> factores) {
-        Servicio servicio = buscarServicio(servicioId);
+        String servicioId = servicio.getId();
         List<String> guardar = factores == null || factores.isEmpty() ? null : List.copyOf(factores);
 
         if ("pasajero".equals(rol)) {
@@ -687,13 +755,19 @@ public class ServicioServiceImpl implements ServicioService {
                     "Rol inválido: " + rol);
         }
 
-        servicio.setEstado(EstadoServicio.FINALIZADO);
-        servicioRepository.save(servicio);
+        long aplicado = "pasajero".equals(rol)
+                ? servicioRepository.calificarConductorUnaVez(servicioId, servicio.getPasajero().getId(),
+                        calificacion, comentarios, guardar)
+                : servicioRepository.calificarPasajeroUnaVez(servicioId, servicio.getConductor().getId(),
+                        calificacion, comentarios, guardar);
+        if (aplicado == 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "La calificación ya existe o el viaje cambió de estado");
+        }
 
         if ("pasajero".equals(rol)) {
             try {
                 if (nivelesService.registrarCalificacionConductor(servicio) != 0) {
-                    servicioRepository.save(servicio);
+                    servicioRepository.guardarXpConductor(servicioId, servicio.getXpGanadoConductor());
                 }
             } catch (Exception e) {
                 log.error("No se pudo ajustar el XP por calificación del servicio {}", servicioId, e);
@@ -828,6 +902,20 @@ public class ServicioServiceImpl implements ServicioService {
      * Esto evita que el dashboard pinte documentos residuales en Mongo que tengan
      * estado SOLICITADO pero no representen una petición real.
      */
+    private static void despuesDeConfirmar(Runnable accion) {
+        if (org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive()) {
+            org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+                    new org.springframework.transaction.support.TransactionSynchronization() {
+                        @Override public void afterCommit() {
+                            try { accion.run(); }
+                            catch (RuntimeException e) { log.warn("Falló la actualización del seguimiento en memoria", e); }
+                        }
+                    });
+        } else {
+            accion.run();
+        }
+    }
+
     private boolean esSolicitudVisibleParaConductor(Servicio servicio) {
         if (servicio == null || servicio.getEstado() != EstadoServicio.SOLICITADO) {
             return false;

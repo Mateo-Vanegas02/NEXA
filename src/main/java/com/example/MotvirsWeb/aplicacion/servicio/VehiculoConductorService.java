@@ -98,6 +98,11 @@ public class VehiculoConductorService {
         if (vehiculoRepository.findByPlaca(placa).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "La placa " + placa + " ya está registrada en el sistema");
         }
+        // Una moto no puede estar registrada por más de un conductor
+        if (usuarioRepository.existeOtroConductorConTarjeta(n.tarjetaPropiedad(), conductor.getId())
+                || documentos.tarjetaDeclaradaPorOtro(n.tarjetaPropiedad(), conductor.getIdString())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, AuthService.TARJETA_REGISTRADA);
+        }
         List<ArchivoSubido> fotos = n.fotos().stream().map(f -> new ArchivoSubido(f.tipo(), switch (f.tipo()) {
             case TARJETA_PROPIEDAD -> String.valueOf(n.tarjetaPropiedad());
             case SOAT -> String.valueOf(n.soat());

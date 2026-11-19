@@ -1,0 +1,9 @@
+# Fase 3: resultados y decisiones
+
+**Comprobado:** MongoDB 7 en Testcontainers ejecutó 7 pruebas de persistencia con éxito en GitHub Actions (run `44011991127`); los índices parciales del ensayo rechazan colisiones; una de dos escrituras concurrentes gana; el consumo de token es condicional y limpia sus campos; una contraseña débil no consume un token vigente; la aceptación y el vencimiento de solicitudes no se pisan. La suite regular, el arranque Docker y el escaneo de secretos también pasaron en ese commit.
+
+**Hallado:** la identidad por correo puede ser ambigua entre roles; la unicidad de conductores depende de índices realmente creados; varios cambios de estado de viajes hacen lectura y `save` sin condición; hay una coincidencia de configuración cliente Firebase en la rama `app`. No se confirmó un secreto de servidor en las referencias de NEXA. La URL Power BI requiere revisión de visibilidad.
+
+**Pendiente por acceso y decisión del propietario:** identificar la conexión Compass y sus permisos, obtener agregados anonimizados, respaldar y ensayar restauración, decidir política de identidad, preparar índices sobre copia real, revisar restricciones de Firebase y publicación Power BI, auditar por separado `NEXA_Origin`, y diseñar transiciones de viaje restantes. No se modificó producción, no se rotaron credenciales y no se reescribió historia. PR #3 permanece en borrador sobre PR #2; `main` no incluye estas fases.
+
+**Despliegue:** esperar a que CI de la revisión actual termine en verde; fusionar fases en orden solo tras revisión; aplicar índices/migraciones productivas únicamente tras inventario, respaldo restaurable y ensayo en copia. El código no sustituye el procedimiento de datos. Registrar errores de colisión, recuperación y estados de viaje durante la observación posterior.
