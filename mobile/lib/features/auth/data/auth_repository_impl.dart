@@ -16,11 +16,15 @@ class ApiAuthRepository implements AuthRepository {
   final TokenStorage _tokens;
 
   @override
-  Future<Sesion> login(String email, String password) async {
+  Future<Sesion> login(String email, String password, {Rol? rol}) async {
     try {
       final r = await _dio.post<Map<String, dynamic>>(
         '/auth/login',
-        data: {'email': email, 'password': password},
+        data: {
+          'email': email.trim().toLowerCase(),
+          'password': password,
+          if (rol != null) 'rol': rol.name.toUpperCase(),
+        },
         options: Options(extra: {kSinToken: true}),
       );
       final token = r.data?['token'] as String?;

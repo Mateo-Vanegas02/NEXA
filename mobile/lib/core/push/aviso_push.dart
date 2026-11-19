@@ -114,20 +114,15 @@ class AvisoPush {
       _ => '/p/inicio',
     },
   };
-}
 
-/// Recuerda los últimos eventos para ignorar un aviso repetido (FCM puede
-/// entregar dos veces el mismo).
-class Deduplicador {
-  Deduplicador([this.maximo = 100]);
-  final int maximo;
-  final _vistos = <String>[];
-
-  /// true la primera vez que llega ese evento.
-  bool nuevo(String eventoId) {
-    if (_vistos.contains(eventoId)) return false;
-    _vistos.add(eventoId);
-    if (_vistos.length > maximo) _vistos.removeAt(0);
-    return true;
+  /// Un aviso viejo no vuelve a abrir un viaje distinto o ya cerrado.
+  String rutaConViajeVigente(Rol rol, String? viajeVigenteId) {
+    final ruta = rutaAlTocar(rol);
+    if (rol == Rol.pasajero &&
+        ruta == '/p/viaje' &&
+        (viajeVigenteId == null || viajeVigenteId != servicioId)) {
+      return '/p/inicio';
+    }
+    return ruta;
   }
 }

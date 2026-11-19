@@ -280,6 +280,24 @@ abstract class AppLocalizations {
   /// **'Conductor'**
   String get rolConductor;
 
+  /// No description provided for @rolAdmin.
+  ///
+  /// In es, this message translates to:
+  /// **'Administrador'**
+  String get rolAdmin;
+
+  /// No description provided for @loginCuenta.
+  ///
+  /// In es, this message translates to:
+  /// **'Tipo de cuenta'**
+  String get loginCuenta;
+
+  /// No description provided for @loginCuentaUnica.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta única'**
+  String get loginCuentaUnica;
+
   /// No description provided for @nombreCompleto.
   ///
   /// In es, this message translates to:

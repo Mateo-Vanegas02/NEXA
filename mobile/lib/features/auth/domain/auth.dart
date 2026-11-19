@@ -88,7 +88,7 @@ class RegistroConductor {
 }
 
 abstract interface class AuthRepository {
-  Future<Sesion> login(String email, String password);
+  Future<Sesion> login(String email, String password, {Rol? rol});
 
   /// Crea una cuenta de pasajero y deja la sesión iniciada.
   Future<Sesion> registrarPasajero(RegistroPasajero datos);

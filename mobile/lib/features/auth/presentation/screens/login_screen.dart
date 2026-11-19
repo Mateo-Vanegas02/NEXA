@@ -4,6 +4,7 @@ import '../../../../core/theme/tokens.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/nexa_widgets.dart';
 import '../controllers/session_controller.dart';
+import '../../domain/auth.dart';
 import '../widgets/auth_scaffold.dart';
 
 import 'package:flutter/material.dart';
@@ -23,6 +24,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _pass = TextEditingController();
   bool _cargando = false;
   String? _error;
+  Rol? _rol;
 
   @override
   void dispose() {
@@ -40,7 +42,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     try {
       await ref
           .read(sesionProvider.notifier)
-          .login(_email.text.trim(), _pass.text);
+          .login(_email.text.trim(), _pass.text, rol: _rol);
     } on Object catch (e) {
       if (mounted) setState(() => _error = AppException.from(e).mensaje);
     } finally {
@@ -79,6 +81,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 onSubmitted: (_) => _enviar(),
                 autofillHints: const [AutofillHints.password],
                 validator: (v) => validarRequerido(l, v),
+              ),
+              const SizedBox(height: Sp.md),
+              DropdownButtonFormField<Rol>(
+                isExpanded: true,
+                initialValue: _rol,
+                decoration: InputDecoration(labelText: l.loginCuenta),
+                hint: Text(l.loginCuentaUnica),
+                items: [
+                  DropdownMenuItem(
+                    value: Rol.pasajero,
+                    child: Text(l.rolPasajero),
+                  ),
+                  DropdownMenuItem(
+                    value: Rol.conductor,
+                    child: Text(l.rolConductor),
+                  ),
+                  DropdownMenuItem(value: Rol.admin, child: Text(l.rolAdmin)),
+                ],
+                onChanged: (rol) => setState(() => _rol = rol),
               ),
             ],
           ),

@@ -1,5 +1,7 @@
 # Decisiones tomadas (app móvil)
 
+- **17 nov. 2026 — correo compartido y avisos repetidos.** El login permite elegir el rol cuando un correo pertenece a más de una cuenta; la API recibe `rol` explícito y el correo sin espacios externos ni mayúsculas. Los avisos FCM conservan los ids vistos durante 48 h (máximo 256) entre reinicios, tanto al recibir como al tocar, y el toque consulta el viaje vigente antes de abrirlo. Se borran esos ids al cerrar sesión.
+
 - La app solo cubre pasajero y conductor; el admin permanece en la web.
 - Estado con Riverpod 3 (`Notifier`/`AsyncNotifier`); navegación con go_router y guards por rol (`core/router/app_router.dart`, función `redirigir`).
 - Se usan repositorios mock por defecto (`USE_MOCKS=true`) porque el backend no soporta login de conductor ni registro JSON; con `USE_MOCKS=false` se usa la API real.

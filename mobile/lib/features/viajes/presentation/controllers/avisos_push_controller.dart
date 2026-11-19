@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -27,8 +26,6 @@ import 'viaje_pasajero_controller.dart';
 /// El estado es un mensaje para la pantalla del conductor cuando «Aceptar»
 /// no se pudo (null si no hay nada que avisar).
 class AvisosPushController extends Notifier<String?> {
-  final _deduplicador = Deduplicador();
-
   /// `correo|token` ya registrado en el servidor (no se repite).
   String? _registrado;
 
@@ -105,7 +102,12 @@ class AvisosPushController extends Notifier<String?> {
   }
 
   Future<void> _recibido(AvisoPush aviso) async {
-    if (!_deduplicador.nuevo(aviso.eventoId) || !_conSesion) return;
+    if (!_conSesion ||
+        !await ref
+            .read(eventosVistosProvider)
+            .reservar('recibido:${aviso.eventoId}')) {
+      return;
+    }
     try {
       await ref.read(bandejaAvisosProvider).registrar(aviso);
       ref.invalidate(bandejaProvider);
@@ -136,13 +138,24 @@ class AvisosPushController extends Notifier<String?> {
       _pendiente = aviso;
       return;
     }
+    if (!await ref
+        .read(eventosVistosProvider)
+        .reservar('tocado:${aviso.eventoId}')) {
+      return;
+    }
     final rol = _rol!;
     if (aviso.esSolicitud) {
       await ref
           .read(servicioPushProvider)
           .quitarNotificacion(aviso.idNotificacion);
     }
-    ref.read(routerProvider).go(aviso.rutaAlTocar(rol));
+    var ruta = aviso.rutaAlTocar(rol);
+    if (rol == Rol.pasajero && ruta == '/p/viaje') {
+      // El aviso solo despierta la app: el servidor decide cuál viaje sigue abierto.
+      final vigente = await ref.read(viajePasajeroProvider.future);
+      ruta = aviso.rutaConViajeVigente(rol, vigente?.id);
+    }
+    ref.read(routerProvider).go(ruta);
     final id = aviso.servicioId;
     if (rol == Rol.conductor &&
         aviso.esSolicitud &&

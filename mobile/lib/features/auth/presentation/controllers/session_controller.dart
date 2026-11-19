@@ -66,8 +66,8 @@ class SesionController extends Notifier<SesionState> {
     state = state.copyWith(onboardingVisto: true);
   }
 
-  Future<void> login(String email, String password) async {
-    final s = await _repo.login(email, password);
+  Future<void> login(String email, String password, {Rol? rol}) async {
+    final s = await _repo.login(email, password, rol: rol);
     state = state.copyWith(sesion: s, bienvenida: true);
   }
 
@@ -90,6 +90,7 @@ class SesionController extends Notifier<SesionState> {
       try {
         await ref.read(almacenSinConexionProvider).vaciar();
         await ref.read(bandejaAvisosProvider).vaciar();
+        await ref.read(eventosVistosProvider).vaciar();
       } on Object catch (e) {
         debugPrint('No se pudo vaciar la base local: $e');
       }

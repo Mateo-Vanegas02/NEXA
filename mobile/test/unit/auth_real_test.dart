@@ -26,6 +26,27 @@ void main() {
   );
 
   group('login de conductores', () {
+    test(
+      'envía rol explícito y correo normalizado cuando se comparte',
+      () async {
+        final jwt = jwtFalso({
+          'sub': 'c@b.co',
+          'roles': ['ROLE_CONDUCTOR'],
+          'userId': 'u2',
+        });
+        final adapter = FakeAdapter({
+          'POST /api/auth/login': (200, {'token': jwt}),
+        });
+        final repo = ApiAuthRepository(dioCon({}, adapter: adapter), tokens);
+        await repo.login(' C@B.CO ', 'x', rol: Rol.conductor);
+        expect(adapter.llamadas.single.data, {
+          'email': 'c@b.co',
+          'password': 'x',
+          'rol': 'CONDUCTOR',
+        });
+      },
+    );
+
     test('un conductor aprobado inicia sesión', () async {
       final jwt = jwtFalso({
         'sub': 'c@b.co',

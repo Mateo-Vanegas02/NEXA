@@ -22,7 +22,7 @@ class MockAuthRepository implements AuthRepository {
   final Map<String, String> _conductoresPendientes = {};
 
   @override
-  Future<Sesion> login(String email, String password) async {
+  Future<Sesion> login(String email, String password, {Rol? rol}) async {
     await Future<void>.delayed(const Duration(milliseconds: 300));
     final e = email.trim().toLowerCase();
     if (_conductoresPendientes[e] == password) {
@@ -40,12 +40,14 @@ class MockAuthRepository implements AuthRepository {
         statusCode: 401,
       );
     }
-    final rol = e.contains('admin')
-        ? Rol.admin
-        : e.contains('conductor') || e.contains('pendiente')
-        ? Rol.conductor
-        : Rol.pasajero;
-    return _crear(e, rol);
+    final rolElegido =
+        rol ??
+        (e.contains('admin')
+            ? Rol.admin
+            : e.contains('conductor') || e.contains('pendiente')
+            ? Rol.conductor
+            : Rol.pasajero);
+    return _crear(e, rolElegido);
   }
 
   @override
