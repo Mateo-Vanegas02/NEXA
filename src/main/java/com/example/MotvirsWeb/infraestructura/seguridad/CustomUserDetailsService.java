@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 
 import java.util.Collections;
 
@@ -23,8 +24,13 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + email));
+        Usuario usuario;
+        try {
+            usuario = usuarioRepository.findByEmail(email)
+                    .orElseThrow(() -> new UsernameNotFoundException("Credenciales inválidas"));
+        } catch (IncorrectResultSizeDataAccessException e) {
+            throw new UsernameNotFoundException("Credenciales inválidas", e);
+        }
 
         if (usuario instanceof Conductor conductor &&
                 conductor.getEstadoValidacion() != EstadoValidacion.APROBADO) {

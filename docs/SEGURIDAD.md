@@ -1,5 +1,7 @@
 # Informe de seguridad del back-end (auditoría nocturna)
 
+> **Archivo histórico.** Los apartados siguientes describen una rama y un despliegue Azure anteriores; no son una lista de fallos activos del `main` actual. Para estado vigente, pruebas y pendientes ver `docs/auditoria/AUDITORIA_INICIAL.md`, `CAMBIOS_REALIZADOS.md` y `RIESGOS_PENDIENTES.md`. El despliegue actual de este repositorio es AWS, descrito en `docs/CONFIGURACION.md`.
+
 Rama `claude/backend-security-8edf62`. Ningún valor de secreto aparece en este documento: solo archivo, nombre y commit.
 
 > **Estado actual de la rama `Nexa_New_Arquitecture`:** `application.properties` ya **no** trae valores por defecto

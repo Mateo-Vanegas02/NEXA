@@ -1,5 +1,19 @@
 # Arquitectura por capas
 
+```mermaid
+flowchart LR
+    W[Thymeleaf y sesión web] --> P[Controladores]
+    M[App móvil y JWT] --> P
+    P --> S[Servicios de aplicación]
+    S --> D[Reglas y entidades]
+    S --> R[Repositorios Spring Data]
+    R --> DB[(MongoDB)]
+    S --> E[Puertos de correo, push y tiempo real]
+    E --> X[SMTP, FCM y STOMP]
+```
+
+El despliegue AWS actual usa una sola instancia de NEXA detrás de Caddy (`infra/servidor/docker-compose.aws.yml`). El broker STOMP simple y el rate limiter en memoria comparten ese límite de escala: otra réplica necesitaría coordinación de mensajes, sesiones y contadores. Antes de agregar infraestructura hay que demostrar la necesidad con carga real. La autorización STOMP se decide al suscribirse con la identidad del handshake; un cambio de rol durante una conexión existente requiere desconexión o revalidación, pendiente de diseño.
+
 Paquete raíz: `com.example.MotvirsWeb`. Cada capa solo puede depender de las que están **por debajo** en la tabla; el dominio no depende de nada del proyecto.
 
 | Capa | Paquete | Contiene |

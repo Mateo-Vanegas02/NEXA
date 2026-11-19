@@ -62,10 +62,11 @@ public class ProfileController {
             }
             return "redirect:/";
 
-        } catch (Exception e) {
-            // AQUÍ ES DONDE SE CAPTURA EL ERROR "Contraseña Incorrecta"
-            // y se manda de vuelta al HTML para que salga la alerta roja.
+        } catch (org.springframework.security.authentication.BadCredentialsException | IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/profile/change-password";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "No se pudo actualizar la contraseña. Intenta de nuevo.");
             return "redirect:/profile/change-password";
         }
     }
