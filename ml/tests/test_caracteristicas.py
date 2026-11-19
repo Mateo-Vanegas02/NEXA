@@ -122,3 +122,11 @@ def test_corrige_el_desfase_de_5_horas_de_azure():
     # Una espera de 4 a 5 h no es el desfase conocido: se sigue descartando.
     raro = {**base, "solicitadoEn": aceptado - timedelta(minutes=260)}
     assert car.motivo_descarte(raro) == "fechas inconsistentes"
+
+
+def test_viaje_sin_calificar_completo_sirve_para_predecir():
+    sin_notas = {**VIAJE, "calificacionConductor": None, "calificacionPasajero": None}
+    assert car.motivo_descarte(sin_notas) == "sin calificaciones"
+    assert car.motivo_incompleto(sin_notas) is None
+    assert car.motivo_incompleto({k: v for k, v in sin_notas.items() if k != "fechaLlegada"}) == "incompleto"
+    assert car.motivo_incompleto({**sin_notas, "desglose": {}}) == "incompleto"

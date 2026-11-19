@@ -195,6 +195,15 @@ def motivo_descarte(viaje: Mapping[str, Any]) -> str | None:
     """Por qué un viaje no sirve para entrenar ni exportar, o None si sirve."""
     if all(v == SIN_ETIQUETA for v in etiquetas(viaje)):
         return "sin calificaciones"
+    return motivo_incompleto(viaje)
+
+
+def motivo_incompleto(viaje: Mapping[str, Any]) -> str | None:
+    """Por qué no se pueden calcular las variables de un viaje, o None si se pueden.
+
+    Es el mismo filtro del entrenamiento sin mirar las calificaciones: lo usa también la predicción de
+    riesgo, para que un viaje sin fechas o sin desglose no reciba variables rellenadas con cero.
+    """
     try:
         fechas = {campo: a_fecha(viaje.get(campo)) for campo in CAMPOS_OBLIGATORIOS}
     except ValueError:

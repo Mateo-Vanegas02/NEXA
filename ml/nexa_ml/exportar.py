@@ -87,7 +87,7 @@ def main(argv: list[str] | None = None) -> int:
     fuente = parser.add_mutually_exclusive_group(required=True)
     fuente.add_argument("--mongo-uri")
     fuente.add_argument("--json")
-    parser.add_argument("--base", default=os.environ.get("NEXA_MONGO_BASE", "nexa"))
+    parser.add_argument("--base", default=os.environ.get("NEXA_MONGO_BASE", "motvirsweb"))
     parser.add_argument("--csv", type=Path)
     parser.add_argument("--arff", type=Path)
     args = parser.parse_args(argv)

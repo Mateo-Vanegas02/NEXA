@@ -1,8 +1,7 @@
 # NEXA ML — minería de datos con TensorFlow
 
-Rama `ml-tensorflow` del repositorio NEXA_Origin. Contiene **solo Python**: no comparte historia con
-`master` (rama huérfana). Reemplazará al árbol J48 de Weka que hoy vive en el backend Java
-(`SatisfaccionClienteService`).
+Carpeta `ml/` del repositorio NEXA (la parte que se despliega en AWS). Contiene **solo Python**.
+Reemplaza al árbol J48 de Weka del backend Java (`SatisfaccionClienteService`).
 
 ## Qué predice
 
@@ -79,7 +78,8 @@ pytest
 
 # Entrenar con la base real (la URI por variable de entorno, nunca en el código)
 export NEXA_MONGO_URI="mongodb+srv://..."
-python -m nexa_ml.entrenar --mongo-uri "$NEXA_MONGO_URI" --base nexa --salida artefactos/
+# La base por defecto es motvirsweb (la de producción); otra con --base o NEXA_MONGO_BASE
+python -m nexa_ml.entrenar --mongo-uri "$NEXA_MONGO_URI" --salida artefactos/
 
 # O con una exportación
 mongoexport --uri "$NEXA_MONGO_URI" -c servicios -q '{"estado":"FINALIZADO"}' -o viajes.json

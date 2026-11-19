@@ -1,7 +1,7 @@
 """Entrena, evalúa y exporta el modelo de satisfacción (pasajero y conductor).
 
 Ejemplos:
-    python -m nexa_ml.entrenar --mongo-uri "$NEXA_MONGO_URI" --base nexa --salida artefactos/
+    python -m nexa_ml.entrenar --mongo-uri "$NEXA_MONGO_URI" --salida artefactos/
     python -m nexa_ml.entrenar --json viajes.json --salida artefactos/
 """
 from __future__ import annotations
@@ -153,7 +153,7 @@ def main(argv: list[str] | None = None) -> int:
     fuente = parser.add_mutually_exclusive_group(required=True)
     fuente.add_argument("--mongo-uri", default=None, help="URI de MongoDB (mejor por la variable NEXA_MONGO_URI)")
     fuente.add_argument("--json", help="Archivo exportado con mongoexport (arreglo o JSON por líneas)")
-    parser.add_argument("--base", default=os.environ.get("NEXA_MONGO_BASE", "nexa"))
+    parser.add_argument("--base", default=os.environ.get("NEXA_MONGO_BASE", "motvirsweb"))
     parser.add_argument("--salida", type=Path, default=Path("artefactos"))
     parser.add_argument("--permitir-pocos-datos", action="store_true")
     args = parser.parse_args(argv)

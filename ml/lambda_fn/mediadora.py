@@ -88,11 +88,16 @@ def _riesgo(n, lado: str, limite: int) -> dict:
     if not predictor or not meta:
         return {"umbral": 0.0, "modo": sat.modo_de(meta), "total": 0, "viajes": []}
     viajes = n.viajes_finalizados(datetime.now(timezone.utc) - timedelta(days=30), datetime.now(timezone.utc))
-    pendientes = [v for v in viajes if any(v.get(c) is None for c in sat.CAMPO_NOTA.values())]
+    from nexa_ml import caracteristicas as car
+
+    # Mismo filtro que el entrenamiento: sin él, las fechas o el desglose que faltan llegarían a la red como ceros.
+    sin_calificar = [v for v in viajes if any(v.get(c) is None for c in sat.CAMPO_NOTA.values())]
+    pendientes = [v for v in sin_calificar if car.motivo_incompleto(v) is None]
+    if len(pendientes) < len(sin_calificar):
+        log.info("Riesgo: %d viajes sin calificar se omiten por incompletos", len(sin_calificar) - len(pendientes))
     if not pendientes:
         return {"umbral": round(min(meta["umbrales"].values()), 2), "modo": sat.modo_de(meta), "total": 0,
                 "viajes": []}
-    from nexa_ml import caracteristicas as car
 
     probs = predictor.probabilidades([car.calcular(v) for v in pendientes])
     return sat.riesgo(pendientes, probs, meta["umbrales"], lado, limite, sat.modo_de(meta),

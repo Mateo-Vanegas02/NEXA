@@ -236,3 +236,26 @@ def test_motivos_y_lugar():
     assert [x["variable"] for x in m] == ["minutos_hasta_aceptacion", "finalizado_antes_del_destino"]
     assert m[0]["texto"] == "Esperó 7 min a que aceptaran" and m[0]["severidad"] == "alta"
     assert sat.lugar("Bocagrande, Avenida San Martín, Cartagena") == "Bocagrande"
+
+
+def test_riesgo_omite_viajes_incompletos(viajes_recientes):
+    from nexa_ml import caracteristicas as car
+
+    pendientes = [v for v in viajes_recientes if any(v.get(c) is None for c in sat.CAMPO_NOTA.values())]
+    assert len(pendientes) >= 2
+    rotos = pendientes[: len(pendientes) // 2]
+    for v in rotos:
+        v.pop("fechaLlegada", None)
+    vistos = []
+
+    class PredictorQueAnota(PredictorFalso):
+        def probabilidades(self, x):
+            vistos.extend(x)
+            return super().probabilidades(x)
+
+    n = NubeFalsa(viajes_recientes, publicado=True)
+    n.predictor = lambda: PredictorQueAnota()
+    estado, rg = llamar(n, "GET", "/riesgo", {"lado": "todos", "limite": "500"})
+    assert estado == 200
+    esperados = [v for v in pendientes if car.motivo_incompleto(v) is None]
+    assert len(vistos) == len(esperados) < len(pendientes)
