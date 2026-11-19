@@ -2,6 +2,8 @@ package com.example.MotvirsWeb.presentacion.web;
 
 import com.example.MotvirsWeb.aplicacion.puerto.NotificadorCorreo;
 import com.example.MotvirsWeb.aplicacion.servicio.PasswordResetService;
+import com.example.MotvirsWeb.dominio.modelo.Rol;
+import com.example.MotvirsWeb.dominio.regla.Correo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -28,9 +30,10 @@ public class PasswordResetController {
 
     // CORRECCIÓN DE DISEÑO: Cambiado de ResponseEntity a String (Redirect)
     @PostMapping("/forgot-password")
-    public String processForgotPassword(@RequestParam String email, RedirectAttributes redirectAttributes) {
+    public String processForgotPassword(@RequestParam String email,
+            @RequestParam(required = false) Rol rol, RedirectAttributes redirectAttributes) {
         try {
-            passwordResetService.initiatePasswordReset(email);
+            passwordResetService.initiatePasswordReset(Correo.normalizar(email), rol);
         } catch (Exception e) {
             // No revelar si el correo existe (enumeración de cuentas): mismo mensaje siempre.
             org.slf4j.LoggerFactory.getLogger(PasswordResetController.class)
@@ -86,6 +89,6 @@ public class PasswordResetController {
 
         // 3. DELEGAR EL ENVÍO AL EMAIL SERVICE
         // Aquí es donde ocurre la magia. Pasamos el email del usuario y el token.
-        notificadorCorreo.enviarCorreoRecuperacion(email, token);
+        notificadorCorreo.enviarCorreoRecuperacion(Correo.normalizar(email), token);
     }
 }

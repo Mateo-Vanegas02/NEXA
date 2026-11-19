@@ -3,6 +3,8 @@ package com.example.MotvirsWeb.aplicacion.servicio;
 import com.example.MotvirsWeb.dominio.modelo.Usuario;
 import com.example.MotvirsWeb.dominio.repositorio.UsuarioRepository;
 import com.example.MotvirsWeb.dominio.regla.PoliticaPassword;
+import com.example.MotvirsWeb.dominio.regla.Correo;
+import com.example.MotvirsWeb.dominio.modelo.Rol;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -37,7 +39,13 @@ public class PasswordResetService {
     private static final long EXPIRE_TOKEN_AFTER_MINUTES = 30;
 
     public void initiatePasswordReset(String email) {
-        Usuario usuario = usuarioRepository.findByEmail(email)
+        initiatePasswordReset(email, null);
+    }
+
+    public void initiatePasswordReset(String email, Rol rol) {
+        String correo = Correo.normalizar(email);
+        Usuario usuario = (rol == null ? usuarioRepository.findByEmail(correo)
+                : usuarioRepository.findByEmailAndRol(correo, rol))
                 .orElseThrow(() -> new IllegalArgumentException("No se encontró ninguna cuenta con ese correo electrónico"));
         procesarReset(usuario);
     }
@@ -96,7 +104,18 @@ public class PasswordResetService {
     @Transactional
     public void changePassword(String email, String currentPassword, String newPassword) {
         validarPassword(newPassword);
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(Correo.normalizar(email));
+
+        cambiarPassword(usuarioOpt, currentPassword, newPassword);
+    }
+
+    @Transactional
+    public void changePasswordCuenta(String id, String currentPassword, String newPassword) {
+        validarPassword(newPassword);
+        cambiarPassword(usuarioRepository.findById(id), currentPassword, newPassword);
+    }
+
+    private void cambiarPassword(Optional<Usuario> usuarioOpt, String currentPassword, String newPassword) {
 
         if (usuarioOpt.isEmpty()) {
             throw new RuntimeException("Usuario no encontrado.");

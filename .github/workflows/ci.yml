@@ -58,6 +58,30 @@ jobs:
           test "$antes" = "$despues" || { echo "La inspección modificó la base"; exit 1; }
           node scripts/atlas/prueba/verificar-salida.mjs inspeccion.json
 
+      - name: Normalización de correos (plan, colisión, guardia y copias sintéticas)
+        run: |
+          docker compose cp scripts/atlas/normalizar-correos.js mongo:/tmp/normalizar.js
+          run() { docker compose exec -T mongo mongosh --quiet --eval "$1" --file /tmp/normalizar.js; }
+          if run 'var MODO="aplicar"' > normalizar-guardia.txt 2>&1; then exit 1; fi
+          grep -q PRODUCCION_APROBADA normalizar-guardia.txt
+          run 'var BASE="nexa_inspeccion_ci"' > normalizar-plan.json
+          run 'var BASE="nexa_inspeccion_ci"; var MODO="aplicar"' > normalizar-aplicar.json
+          run 'var BASE="nexa_inspeccion_ci"' > normalizar-despues.json
+          node scripts/atlas/prueba/verificar-normalizacion.mjs normalizar-plan.json normalizar-aplicar.json normalizar-despues.json
+          if run 'var BASE="nexa_inspeccion_ci"; var MODO="indice"' > normalizar-colision.txt 2>&1; then exit 1; fi
+          grep -q 'colisiones por rol' normalizar-colision.txt
+          docker compose exec -T mongo mongosh --quiet --eval '
+            const b=db.getSiblingDB("nexa_correo_indice_ci");
+            b.Usuarios.insertMany([{email:"p@example.invalid",rol:"PASAJERO"},
+              {email:"p@example.invalid",rol:"CONDUCTOR"}]);'
+          run 'var BASE="nexa_correo_indice_ci"; var MODO="indice"' > normalizar-indice.json
+          grep -q email_rol_unique_idx normalizar-indice.json
+          docker compose exec -T mongo mongosh --quiet --eval '
+            const b=db.getSiblingDB("nexa_inspeccion_ci");
+            const u=b.Usuarios.findOne({email:"limpio.sintetico@example.invalid"});
+            if (!u || b.servicios.countDocuments({"pasajero._id":u._id,"pasajero.email":u.email})!==1
+                || b.dispositivos.countDocuments({usuarioId:u._id,email:u.email})!==1) quit(1);'
+
       - name: Script de índices propuestos (plan, guardia de producción, crear y revertir en la base de prueba)
         run: |
           docker compose cp scripts/atlas/indices-propuestos.js mongo:/tmp/indices.js

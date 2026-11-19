@@ -134,7 +134,7 @@ public class AvisosPendientesService {
             Servicio servicio = servicios.findById(tomado.servicioId()).orElse(null);
             if (servicio != null && vigente(servicio, tipo)) {
                 if (!stompEnviado) {
-                    notificarTiempoReal(servicio, tipo);
+                    notificarTiempoReal(servicio, tipo, tomado.id());
                     stompEnviado = true;
                 }
                 enviarExternos(servicio, tipo, tomado.destinatarios(), tokensPendientes);
@@ -240,11 +240,11 @@ public class AvisosPendientesService {
     }
 
     /** STOMP: una sola vez por aviso. */
-    private void notificarTiempoReal(Servicio s, Tipo tipo) {
+    private void notificarTiempoReal(Servicio s, Tipo tipo, String avisoId) {
         if (tipo == Tipo.DEUDA) {
             return;
         }
-        tiempoReal.notificarCambioEstadoServicio(s);
+        tiempoReal.notificarCambioEstadoServicio(s, avisoId);
         if (tipo == Tipo.ACEPTADO) {
             tiempoReal.notificarSolicitudRetirada(s.getId(), "TOMADO");
         } else if (tipo == Tipo.CANCELADO && s.getConductor() == null) {

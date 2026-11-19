@@ -13,4 +13,7 @@ public class LoginRequest {
     @NotBlank(message = "La contraseña es obligatoria")
     @Size(max = 100, message = "La contraseña no puede exceder 100 caracteres")
     private String password;
+
+    /** Opcional para correos de un solo rol; obligatorio si el correo pertenece a varios roles. */
+    private com.example.MotvirsWeb.dominio.modelo.Rol rol;
 }

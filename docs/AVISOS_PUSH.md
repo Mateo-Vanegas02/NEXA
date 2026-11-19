@@ -33,6 +33,14 @@ aplica, `canal`, `titulo`, `cuerpo`. El texto se arma en el servidor para cada d
 ver; la app pide el detalle a la API (`viaje-activo`, `viaje-en-camino`, `solicitud-activa`), que pasa por
 `VisibilidadServicio`.
 
+`eventoId` se deriva del tipo, el id del servicio y, donde corresponde, el destinatario o la variante. Se conserva
+idéntico en los reintentos de `AvisosPendientesService`. Los mensajes STOMP de cambio de estado llevan además
+`avisoId` en el objeto del viaje: para la bandeja persistente es el `_id` del aviso (`servicioId:tipo`), y para
+otros emisores es `servicioId:estado`. Los mensajes ligeros de solicitud también incluyen `avisoId` sin cambiar
+`id`, `estado`, `ola` ni `motivo`; la posición lleva `servicioId:POSICION:en`. El cliente debe tratar el id como
+clave de deduplicación y consultar el estado vigente por API antes de navegar o actuar. La app guarda los ids de
+push vistos durante 48 h (máximo 256) para cubrir reinicios.
+
 | `tipo` | Para | Canal Android | Forma | Texto de ejemplo | La app abre |
 |---|---|---|---|---|---|
 | `SOLICITUD_NUEVA` | conductores de la app que entran en la ola (incluye, en la última, los que tienen la pantalla bloqueada) | `nexa_solicitudes` | solo datos (la app arma la notificación con «Ver» / «Aceptar» y la cuenta regresiva); vence a los 45 s | Nueva solicitud · Ganas $6.964 — A 700 m · 3,4 km de viaje · C.C. Unicentro | tarjeta de la solicitud |

@@ -43,10 +43,11 @@ public class ProfileController {
         }
 
         try {
-            String email = authentication.getName();
-
-
-            passwordService.changePassword(email, currentPassword, newPassword);
+            if (authentication.getPrincipal() instanceof com.example.MotvirsWeb.infraestructura.seguridad.CustomUserDetails usuario) {
+                passwordService.changePasswordCuenta(usuario.getId(), currentPassword, newPassword);
+            } else {
+                passwordService.changePassword(authentication.getName(), currentPassword, newPassword);
+            }
 
             // 3. Mensaje de éxito
             redirectAttributes.addFlashAttribute("success", "¡Contraseña actualizada correctamente!");

@@ -11,6 +11,10 @@ public interface NotificadorTiempoReal {
 
     void notificarCambioEstadoServicio(Servicio servicio);
 
+    default void notificarCambioEstadoServicio(Servicio servicio, String avisoId) {
+        notificarCambioEstadoServicio(servicio);
+    }
+
     /**
      * Avisa a los conductores que hay una solicitud nueva. Viaja solo el id: cada conductor recarga su lista, que el
      * servidor filtra por ola y cercanía.
@@ -46,6 +50,10 @@ public interface NotificadorTiempoReal {
      */
     record PosicionViaje(String servicioId, String fase, double latitud, double longitud,
             double distanciaRestanteKm, int etaMinutos, long en) {
+        @com.fasterxml.jackson.annotation.JsonProperty("avisoId")
+        public String avisoId() {
+            return servicioId + ":POSICION:" + en;
+        }
     }
 
     void notificarNuevoRegistroAdmin(Usuario nuevoUsuario);

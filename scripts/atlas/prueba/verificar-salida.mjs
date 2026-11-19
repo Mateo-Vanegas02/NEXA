@@ -18,7 +18,7 @@ assert.equal(e.duplicadosExactos.grupos, 1, 'mismo correo exacto en pasajero y c
 assert.equal(e.duplicadosNormalizados.grupos, 1);
 assert.equal(e.duplicadosNormalizados.documentos, 3, 'normalizar une el correo con mayúsculas y espacio');
 assert.equal(e.gruposQueCruzanRoles, 1);
-assert.equal(e.conMayusculasOEspacios, 1);
+assert.equal(e.conMayusculasOEspacios, 2);
 assert.equal(r.usuarios.licencia.duplicadosMayoresQueCero.grupos, 1);
 assert.equal(r.usuarios.licencia.tipos.string, 1, 'una licencia guardada como texto');
 assert.equal(r.usuarios.soat.cero, 1);

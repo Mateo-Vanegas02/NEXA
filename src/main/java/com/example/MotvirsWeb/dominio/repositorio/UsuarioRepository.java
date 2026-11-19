@@ -13,12 +13,23 @@ import com.example.MotvirsWeb.dominio.modelo.EstadoValidacion;
 import com.example.MotvirsWeb.dominio.modelo.Pasajero;
 import com.example.MotvirsWeb.dominio.modelo.Rol;
 import com.example.MotvirsWeb.dominio.modelo.Usuario;
+import com.example.MotvirsWeb.dominio.regla.Correo;
 
 public interface UsuarioRepository extends MongoRepository <Usuario, String>  {
 
-    boolean existsByEmail(String email);
+    @Query(value = "{ 'email': ?0 }", exists = true)
+    boolean existeCorreoExacto(String email);
 
-    Optional<Usuario> findByEmail(String email);
+    default boolean existsByEmail(String email) {
+        return existeCorreoExacto(Correo.normalizar(email));
+    }
+
+    @Query("{ 'email': ?0 }")
+    Optional<Usuario> buscarCorreoExacto(String email);
+
+    default Optional<Usuario> findByEmail(String email) {
+        return buscarCorreoExacto(Correo.normalizar(email));
+    }
 
     // Búsquedas por rol (discriminador)
     default Optional<Pasajero> findPasajeroByEmail(String email) {
@@ -36,7 +47,12 @@ public interface UsuarioRepository extends MongoRepository <Usuario, String>  {
                 .map(usuario -> (Admin) usuario);
     }
 
-    Optional<Usuario> findByEmailAndRol(String email, Rol rol);
+    @Query("{ 'email': ?0, 'rol': ?1 }")
+    Optional<Usuario> buscarCorreoYRolExactos(String email, Rol rol);
+
+    default Optional<Usuario> findByEmailAndRol(String email, Rol rol) {
+        return buscarCorreoYRolExactos(Correo.normalizar(email), rol);
+    }
 
     @Query(value = "{ 'rol': ?0, 'licencia': ?1 }", exists = true)
     boolean existsByRolAndLicencia(Rol rol, long licencia);

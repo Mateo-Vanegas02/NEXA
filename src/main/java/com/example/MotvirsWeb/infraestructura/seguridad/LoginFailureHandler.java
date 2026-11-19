@@ -5,6 +5,8 @@ import com.example.MotvirsWeb.dominio.modelo.Conductor;
 import com.example.MotvirsWeb.dominio.modelo.EstadoValidacion;
 import com.example.MotvirsWeb.dominio.repositorio.AuditoriaVerificacionRepository;
 import com.example.MotvirsWeb.dominio.repositorio.UsuarioRepository;
+import com.example.MotvirsWeb.dominio.regla.Correo;
+import com.example.MotvirsWeb.dominio.modelo.Rol;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -56,7 +58,16 @@ public class LoginFailureHandler implements AuthenticationFailureHandler {
         if (email == null || password == null) {
             return Optional.empty();
         }
-        return usuarioRepository.findByEmail(email)
+        int separador = email.lastIndexOf('|');
+        Rol rol;
+        try {
+            rol = separador < 0 ? null : Rol.valueOf(email.substring(separador + 1));
+        } catch (IllegalArgumentException e) {
+            return Optional.empty();
+        }
+        String correo = Correo.normalizar(separador < 0 ? email : email.substring(0, separador));
+        return (rol == null ? usuarioRepository.findByEmail(correo)
+                : usuarioRepository.findByEmailAndRol(correo, rol))
                 .filter(Conductor.class::isInstance).map(Conductor.class::cast)
                 .filter(c -> c.getEstadoValidacion() != EstadoValidacion.APROBADO)
                 .filter(c -> c.getPassword() != null && passwordEncoder.matches(password, c.getPassword()))

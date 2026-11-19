@@ -46,7 +46,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             // Si tenemos email y el usuario no está autenticado en el contexto actual...
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+                String userId = jwtService.extractUserId(jwt);
+                UserDetails userDetails = userId == null
+                        ? this.userDetailsService.loadUserByUsername(userEmail)
+                        : this.userDetailsService.loadUserById(userId);
 
                 // Si el token es válido...
                 if (jwtService.isTokenValid(jwt, userDetails)) {

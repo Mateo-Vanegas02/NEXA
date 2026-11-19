@@ -20,6 +20,10 @@ public class Servicio {
     @Id
     private String id;
 
+    /** Identificador estable del aviso STOMP; no se guarda en MongoDB. */
+    @Transient
+    private String avisoId;
+
     // Datos del pasajero
     private PasajeroEmbedded pasajero;
 

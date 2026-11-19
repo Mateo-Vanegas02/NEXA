@@ -368,7 +368,7 @@ class Phase3MongoIntegrationTest {
         assertEquals(4000, deudas.deudaDe(pasajero.getId()).orElseThrow().getMonto());
         String avisoId = id + ":CANCELADO";
         doThrow(new IllegalStateException("socket caído")).doNothing()
-                .when(socket).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any());
+                .when(socket).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyString());
         bandeja.despachar(avisoId);
         assertEquals("PENDIENTE", mongo.findById(avisoId, AvisosPendientesService.Pendiente.class,
                 "avisos_viaje_pendientes").estado());
@@ -378,7 +378,7 @@ class Phase3MongoIntegrationTest {
         bandeja.despachar(avisoId);
         assertEquals("ENVIADO", mongo.findById(avisoId, AvisosPendientesService.Pendiente.class,
                 "avisos_viaje_pendientes").estado());
-        verify(socket, times(2)).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any());
+        verify(socket, times(2)).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyString());
 
         String avisoDeudaId = id + ":DEUDA";
         doThrow(new IllegalStateException("SMTP caído")).doNothing().when(correo)
@@ -414,10 +414,10 @@ class Phase3MongoIntegrationTest {
             bandeja.registrar(id, AvisosPendientesService.Tipo.LLEGADA);
             throw new IllegalStateException("fallo sintético antes del commit");
         }));
-        verify(socket, times(0)).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any());
+        verify(socket, times(0)).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyString());
 
         tx.executeWithoutResult(estado -> bandeja.registrar(id, AvisosPendientesService.Tipo.LLEGADA));
-        verify(socket, times(1)).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any());
+        verify(socket, times(1)).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyString());
         assertEquals("ENVIADO", mongo.findById(id + ":LLEGADA", AvisosPendientesService.Pendiente.class,
                 "avisos_viaje_pendientes").estado());
     }
@@ -454,7 +454,7 @@ class Phase3MongoIntegrationTest {
         } finally {
             pool.shutdownNow();
         }
-        verify(socket, times(1)).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any());
+        verify(socket, times(1)).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyString());
         assertEquals("ENVIADO", aviso(avisoId).estado());
         assertEquals(1, aviso(avisoId).intentos());
     }
@@ -469,7 +469,7 @@ class Phase3MongoIntegrationTest {
             primeroEnviando.countDown();
             assertTrue(soltarPrimero.await(10, TimeUnit.SECONDS));
             throw new IllegalStateException("el primero falla tarde");
-        }).when(lento).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any());
+        }).when(lento).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyString());
         AvisosPendientesService primero = new AvisosPendientesService(mongo, servicios, lento,
                 mock(AvisosService.class), mock(DeudaService.class), tarea -> { });
         NotificadorTiempoReal rapido = mock(NotificadorTiempoReal.class);
@@ -497,7 +497,7 @@ class Phase3MongoIntegrationTest {
         assertEquals("ENVIADO", fin.estado(), "el fallo tardío del primero no lo devuelve a PENDIENTE");
         assertNull(fin.ultimoError());
         assertEquals(2, fin.intentos());
-        verify(rapido, times(1)).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any());
+        verify(rapido, times(1)).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyString());
     }
 
     @Test
@@ -514,7 +514,7 @@ class Phase3MongoIntegrationTest {
         tras_reinicio.procesar();
 
         assertEquals("ENVIADO", aviso(avisoId).estado());
-        verify(socket, times(1)).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any());
+        verify(socket, times(1)).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyString());
     }
 
     @Test
@@ -522,7 +522,7 @@ class Phase3MongoIntegrationTest {
         String avisoId = avisoSintetico(AvisosPendientesService.Tipo.LLEGADA, EstadoServicio.ACEPTADO);
         NotificadorTiempoReal socket = mock(NotificadorTiempoReal.class);
         doThrow(new IllegalStateException("siempre falla")).when(socket)
-                .notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any());
+                .notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyString());
         AvisosPendientesService bandeja = new AvisosPendientesService(mongo, servicios, socket,
                 mock(AvisosService.class), mock(DeudaService.class), tarea -> { }, 3, 600);
         for (int i = 0; i < 5; i++) {
@@ -534,7 +534,7 @@ class Phase3MongoIntegrationTest {
         assertEquals("FALLIDO", fin.estado());
         assertEquals(3, fin.intentos());
         assertTrue(fin.ultimoError().contains("siempre falla"));
-        verify(socket, times(3)).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any());
+        verify(socket, times(3)).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyString());
     }
 
     @Test
@@ -559,7 +559,7 @@ class Phase3MongoIntegrationTest {
         bandeja.despachar(avisoId);
 
         assertEquals("ENVIADO", aviso(avisoId).estado());
-        verify(socket, times(1)).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any());
+        verify(socket, times(1)).notificarCambioEstadoServicio(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyString());
         verify(push).ejecutarConfirmado(org.mockito.ArgumentMatchers.eq(java.util.List.of("tok-b")),
                 org.mockito.ArgumentMatchers.any(Runnable.class));
     }

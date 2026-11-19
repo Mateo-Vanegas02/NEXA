@@ -5,6 +5,7 @@ import com.example.MotvirsWeb.presentacion.dto.LoginRequest;
 import com.example.MotvirsWeb.presentacion.dto.LoginResponse;
 import com.example.MotvirsWeb.aplicacion.puerto.EmisorTokens;
 import com.example.MotvirsWeb.infraestructura.seguridad.LoginFailureHandler;
+import com.example.MotvirsWeb.dominio.regla.Correo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus; // Importar
 import org.springframework.http.ResponseEntity;
@@ -37,7 +38,8 @@ public class ApiAuthController {
         try {
             authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            loginRequest.getEmail(),
+                            Correo.normalizar(loginRequest.getEmail()) +
+                                    (loginRequest.getRol() == null ? "" : "|" + loginRequest.getRol().name()),
                             loginRequest.getPassword()
                     )
             );
@@ -45,7 +47,9 @@ public class ApiAuthController {
             // Conductor sin aprobar: solo se le dice su estado si la contraseña es correcta
             // (igual que en el login web), para no revelar a un tercero qué correos son conductores.
             return loginFailureHandler
-                    .estadoSiCredencialesValidas(loginRequest.getEmail(), loginRequest.getPassword())
+                    .estadoSiCredencialesValidas(Correo.normalizar(loginRequest.getEmail()) +
+                            (loginRequest.getRol() == null ? "" : "|" + loginRequest.getRol().name()),
+                            loginRequest.getPassword())
                     .<ResponseEntity<?>>map(this::cuentaSinAprobar)
                     .orElseThrow(() -> new BadCredentialsException("Bad credentials"));
         }
