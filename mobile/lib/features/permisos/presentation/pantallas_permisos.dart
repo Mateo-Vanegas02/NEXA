@@ -255,14 +255,23 @@ class _N03State extends ConsumerState<SegundoPlanoScreen> {
 
   Future<void> _terminar({required bool pedir}) async {
     setState(() => _cargando = true);
+    // Con «Seguir sin segundo plano» no se vuelve a ofrecer. Si pidió activarlo
+    // pero no eligió «Permitir todo el tiempo», se ofrece otra vez la próxima
+    // vez que se ponga en línea.
+    var marcar = true;
     if (pedir) {
       try {
-        await ref.read(permisosProvider).pedirSegundoPlano();
+        final r = await ref.read(permisosProvider).pedirSegundoPlano();
+        marcar = r == EstadoUbicacion.siempre;
       } on Object {
         // Sin plugin.
       }
     }
-    await ref.read(guiaPermisosProvider).marcarVisto(PasoPermiso.segundoPlano);
+    if (marcar) {
+      await ref
+          .read(guiaPermisosProvider)
+          .marcarVisto(PasoPermiso.segundoPlano);
+    }
     if (mounted) _cerrar(context, true);
   }
 

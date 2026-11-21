@@ -144,6 +144,56 @@ void main() {
     expect(find.text('resultado: true'), findsOneWidget);
   });
 
+  testWidgets('N03: si no elige «todo el tiempo» se ofrece otra vez', (
+    t,
+  ) async {
+    final store = MemorySecureStore();
+    final permisos = PermisosFijos(
+      EstadoUbicacion.alUsar,
+      alPedirSegundoPlano: EstadoUbicacion.alUsar,
+    );
+    await _abrir(
+      t,
+      const SegundoPlanoScreen(),
+      permisos: permisos,
+      store: store,
+    );
+    await t.tap(find.text('Continuar'));
+    await t.pumpAndSettle();
+    expect(find.text('resultado: true'), findsOneWidget);
+    expect(await store.read('permiso_visto_segundoPlano'), isNull);
+  });
+
+  testWidgets('N03: con «todo el tiempo» ya no se repite', (t) async {
+    final store = MemorySecureStore();
+    final permisos = PermisosFijos(
+      EstadoUbicacion.alUsar,
+      alPedirSegundoPlano: EstadoUbicacion.siempre,
+    );
+    await _abrir(
+      t,
+      const SegundoPlanoScreen(),
+      permisos: permisos,
+      store: store,
+    );
+    await t.tap(find.text('Continuar'));
+    await t.pumpAndSettle();
+    expect(await store.read('permiso_visto_segundoPlano'), '1');
+  });
+
+  testWidgets('N03: «Seguir sin segundo plano» no se repite', (t) async {
+    final store = MemorySecureStore();
+    await _abrir(
+      t,
+      const SegundoPlanoScreen(),
+      permisos: PermisosFijos(EstadoUbicacion.alUsar),
+      store: store,
+    );
+    await t.tap(find.text('Seguir sin segundo plano'));
+    await t.pumpAndSettle();
+    expect(await store.read('permiso_visto_segundoPlano'), '1');
+  });
+
   testWidgets('N04: cada marca muestra sus pasos', (t) async {
     await t.pumpWidget(envolver(const GuiaBateriaScreen()));
     await t.pumpAndSettle();

@@ -1,4 +1,8 @@
+import 'dart:async' show TimeoutException;
+import 'dart:io' show Platform;
+
 import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 /// Permiso de ubicación del teléfono, en los términos que usa NEXA.
 enum EstadoUbicacion {
@@ -59,7 +63,22 @@ class PermisosGeolocator implements PermisosDispositivo {
   Future<EstadoUbicacion> pedirSegundoPlano() async {
     final actual = await ubicacion();
     if (actual != EstadoUbicacion.alUsar) return actual;
-    // Con «al usar» concedido, geolocator pide ACCESS_BACKGROUND_LOCATION
+    if (Platform.isAndroid) {
+      // No se usa Geolocator.requestPermission(): pide FINE + COARSE +
+      // BACKGROUND en la misma solicitud, y desde Android 11 el sistema ignora
+      // las solicitudes que mezclan primer y segundo plano (no sale nada y el
+      // Future puede no terminar nunca). Aquí se pide SOLO
+      // ACCESS_BACKGROUND_LOCATION: Android abre la página de ubicación de la
+      // app con la opción «Permitir todo el tiempo».
+      try {
+        await Permission.locationAlways.request().timeout(
+          const Duration(minutes: 2),
+        );
+      } on TimeoutException {
+        // Se vuelve a leer el estado abajo.
+      }
+      return ubicacion();
+    }
     return _traducir(await Geolocator.requestPermission());
   }
 
