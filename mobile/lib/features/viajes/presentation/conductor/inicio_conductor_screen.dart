@@ -12,6 +12,7 @@ import '../../../../core/widgets/nexa_widgets.dart';
 import '../../../../core/utils/mi_posicion.dart';
 import '../../../niveles/presentation/widgets/nivel_banner.dart';
 import '../../domain/opcion_ruta.dart';
+import '../../domain/zonas_documentos.dart';
 import '../../domain/servicio.dart';
 import '../../../../core/sin_conexion/reglas_sin_conexion.dart';
 import '../controllers/avisos_push_controller.dart';
@@ -175,7 +176,8 @@ class _Panel extends ConsumerWidget {
             zonas: estado.enLinea && activo == null
                 ? [
                     for (final z
-                        in ref.watch(zonasDemandaProvider).value ?? const [])
+                        in ref.watch(zonasDemandaProvider).value ??
+                            const <ZonaDemanda>[])
                       (LatLng(z.latitud, z.longitud), z.intensidad),
                   ]
                 : const [],
