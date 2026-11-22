@@ -81,7 +81,6 @@ void main() {
         // Una solicitud nueva ocupa la pantalla; «Ver en el mapa» la deja en
         // la lista y vuelve al panel.
         if (find.text('Ver en el mapa').evaluate().isNotEmpty) {
-          expect(find.text('Nueva solicitud'.toUpperCase()), findsOneWidget);
           await t.tap(find.text('Ver en el mapa'));
           await _ratos(t, 400);
           expect(find.text('Ver en el mapa'), findsNothing);

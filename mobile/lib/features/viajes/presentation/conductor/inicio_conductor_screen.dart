@@ -393,7 +393,11 @@ class _Panel extends ConsumerWidget {
         ),
         // Una solicitud nueva ocupa la pantalla (rediseño 2026) hasta que la
         // acepta o la manda a la lista con «Ver en el mapa».
-        if (entrante != null) SolicitudEntrante(servicio: entrante),
+        if (entrante != null)
+          SolicitudEntrante(
+            servicio: entrante,
+            pendientes: [for (final s in estado.solicitudes) s.id],
+          ),
       ],
     );
   }

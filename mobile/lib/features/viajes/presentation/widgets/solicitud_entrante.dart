@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
-import '../../../../core/theme/nexa_texto.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../domain/servicio.dart';
 import 'solicitud_card.dart';
@@ -12,7 +11,8 @@ class SolicitudesVistasNotifier extends Notifier<Set<String>> {
   @override
   Set<String> build() => const {};
 
-  void ver(String id) => state = {...state, id};
+  /// Manda a la lista estas solicitudes (todas las que había al tocar).
+  void ver(Iterable<String> ids) => state = {...state, ...ids};
 }
 
 final solicitudesVistasProvider =
@@ -24,8 +24,15 @@ final solicitudesVistasProvider =
 /// y queda al centro la tarjeta con su cuenta regresiva, el precio y
 /// «Aceptar». «Ver en el mapa» la deja en la lista de la hoja.
 class SolicitudEntrante extends ConsumerWidget {
-  const SolicitudEntrante({required this.servicio, super.key});
+  const SolicitudEntrante({
+    required this.servicio,
+    this.pendientes = const [],
+    super.key,
+  });
   final Servicio servicio;
+
+  /// Todas las solicitudes abiertas: «Ver en el mapa» las deja en la lista.
+  final List<String> pendientes;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -48,27 +55,6 @@ class SolicitudEntrante extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 10,
-                            height: 10,
-                            decoration: const BoxDecoration(
-                              color: NexaColors.gold,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: Sp.sm),
-                          Text(
-                            l.solicitudNueva.toUpperCase(),
-                            style: NexaTexto.etiqueta.copyWith(
-                              color: NexaColors.gold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: Sp.md),
                       SolicitudCard(servicio: servicio),
                       const SizedBox(height: Sp.sm),
                       TextButton.icon(
@@ -77,7 +63,7 @@ class SolicitudEntrante extends ConsumerWidget {
                         ),
                         onPressed: () => ref
                             .read(solicitudesVistasProvider.notifier)
-                            .ver(servicio.id),
+                            .ver([servicio.id, ...pendientes]),
                         icon: const Icon(
                           Icons.map_outlined,
                           color: NexaColors.muted,
