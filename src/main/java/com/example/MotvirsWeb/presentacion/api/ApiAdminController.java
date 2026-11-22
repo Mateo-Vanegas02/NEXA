@@ -33,6 +33,13 @@ public class ApiAdminController {
     private final com.example.MotvirsWeb.aplicacion.servicio.DeudaService deudaService;
     private final com.example.MotvirsWeb.aplicacion.servicio.MetricasDespachoService metricasDespacho;
     private final com.example.MotvirsWeb.aplicacion.servicio.SaldoConductorService saldoConductorService;
+    private final com.example.MotvirsWeb.aplicacion.servicio.OperacionAdminService operacionAdmin;
+
+    /** Operación en vivo (inicio del admin en la app): viajes del día, flota en línea y alertas. */
+    @GetMapping("/operacion")
+    public com.example.MotvirsWeb.presentacion.dto.OperacionAdminDto operacion() {
+        return operacionAdmin.resumen();
+    }
 
     /** Saldo de cada conductor con NEXA: cuánto efectivo cobró de más (comisión y deudas) o cuánto se le debe. */
     @GetMapping("/conductores/saldos")

@@ -107,6 +107,18 @@ public class UbicacionConductorService {
                 .count();
     }
 
+    /** Una moto en el mapa de la flota del admin: sin id ni nombre, solo dónde está y si está libre. */
+    public record PosicionFlota(double latitud, double longitud, boolean disponible) {
+    }
+
+    /** Todas las posiciones vigentes (en línea), de cualquier canal. */
+    public List<PosicionFlota> flota() {
+        return ultimas.values().stream()
+                .filter(this::esVigente)
+                .map(r -> new PosicionFlota(r.punto().latitud(), r.punto().longitud(), r.disponible()))
+                .toList();
+    }
+
     /** Descarta las posiciones que ya no sirven ni para contar conductores en línea; devuelve cuántas. */
     public int purgar() {
         int antes = ultimas.size();
