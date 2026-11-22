@@ -74,6 +74,8 @@ public class SecurityConstants {
 
         public static final String[] WEBSOCKET_URLS = {
                         "/ws/**",
+                        "/ws-app/**",
+                        "/ws-app",
                         "/topic/**"
         };
 

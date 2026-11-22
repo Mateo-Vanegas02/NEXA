@@ -8,6 +8,8 @@ import java.util.List;
 public interface DocumentoConductorRepository extends MongoRepository<DocumentoConductor, String> {
     List<DocumentoConductor> findByConductorId(String conductorId);
 
+    List<DocumentoConductor> findByVenceElBefore(java.time.LocalDate fecha);
+
     void deleteByConductorId(String conductorId);
 
     /** ¿Otro conductor (distinto de {@code excepto}; null = cualquiera) declaró este número de tarjeta de propiedad? */

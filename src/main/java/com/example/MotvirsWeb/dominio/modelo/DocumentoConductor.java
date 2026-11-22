@@ -36,4 +36,6 @@ public class DocumentoConductor {
     private String contentType;
     private long tamano;
     private LocalDateTime subidoEn;
+    /** Fecha de vencimiento que anotó el admin al revisar la foto; null si no la tiene o el documento no vence. */
+    private java.time.LocalDate venceEl;
 }

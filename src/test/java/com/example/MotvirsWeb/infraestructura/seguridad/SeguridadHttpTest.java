@@ -186,7 +186,8 @@ class SeguridadHttpTest {
                     mock(com.example.MotvirsWeb.aplicacion.servicio.SaldoConductorService.class),
                     mock(com.example.MotvirsWeb.aplicacion.servicio.IdempotenciaService.class),
                     mock(com.example.MotvirsWeb.aplicacion.servicio.UbicacionLoteService.class),
-                    mock(com.example.MotvirsWeb.aplicacion.servicio.NivelesService.class));
+                    mock(com.example.MotvirsWeb.aplicacion.servicio.NivelesService.class),
+                    mock(com.example.MotvirsWeb.aplicacion.servicio.RutaEnVivoService.class));
         }
 
         @Bean
@@ -205,7 +206,8 @@ class SeguridadHttpTest {
                 com.example.MotvirsWeb.aplicacion.verificacion.VerificacionConductorService v) {
             return new ApiAdminController(a, d, n, v, mock(com.example.MotvirsWeb.aplicacion.servicio.DeudaService.class),
                     mock(com.example.MotvirsWeb.aplicacion.servicio.MetricasDespachoService.class),
-                    mock(com.example.MotvirsWeb.aplicacion.servicio.SaldoConductorService.class));
+                    mock(com.example.MotvirsWeb.aplicacion.servicio.SaldoConductorService.class),
+                    mock(com.example.MotvirsWeb.aplicacion.servicio.OperacionAdminService.class));
         }
 
         @Bean
@@ -257,9 +259,17 @@ class SeguridadHttpTest {
     @Test
     void apiProtegidaSinTokenDevuelve401() throws Exception {
         for (String ruta : new String[] { "/api/pasajero/perfil", "/api/conductor/perfil", "/api/admin/notas",
-                "/api/niveles/me", "/api/user-id" }) {
+                "/api/admin/operacion", "/api/niveles/me", "/api/user-id" }) {
             mvc.perform(get(ruta)).andExpect(status().isUnauthorized());
         }
+    }
+
+    @Test
+    void laOperacionEnVivoEsSoloDelAdmin() throws Exception {
+        mvc.perform(get("/api/admin/operacion").with(user("conductor").roles("CONDUCTOR")))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/api/admin/operacion").with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -291,6 +301,16 @@ class SeguridadHttpTest {
         mvc.perform(get("/api/conductor/perfil").with(user("p@x.com").roles("PASAJERO")))
                 .andExpect(status().isForbidden());
         mvc.perform(get("/api/admin/notas").with(user("p@x.com").roles("PASAJERO")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void rutasEnVivoSoloParaConductor() throws Exception {
+        String cuerpo = "{\"latitud\":10.4,\"longitud\":-75.5}";
+        mvc.perform(post("/api/conductor/rutas/v1").with(csrf()).contentType(MediaType.APPLICATION_JSON).content(cuerpo))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/conductor/rutas/v1").with(user("p@x.com").roles("PASAJERO")).with(csrf())
+                .contentType(MediaType.APPLICATION_JSON).content(cuerpo))
                 .andExpect(status().isForbidden());
     }
 
