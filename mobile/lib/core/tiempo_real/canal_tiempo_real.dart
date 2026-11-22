@@ -15,8 +15,10 @@ class CanalTiempoReal {
     conectar,
   }) : _conectar =
            conectar ??
-           ((u, h) => WebSocket.connect(u, headers: h)
-               .timeout(const Duration(seconds: 10)));
+           ((u, h) => WebSocket.connect(
+             u,
+             headers: h,
+           ).timeout(const Duration(seconds: 10)));
 
   /// p. ej. `wss://servidor/ws-app`.
   final String url;

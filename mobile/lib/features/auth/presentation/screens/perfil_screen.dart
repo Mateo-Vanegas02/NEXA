@@ -615,16 +615,13 @@ class _TarjetaDocumentos extends ConsumerWidget {
                   ),
                   const SizedBox(width: Sp.md),
                   Expanded(
-                    child: Text(
-                      switch (d.tipo) {
-                        'LICENCIA' => l.tipoLicencia,
-                        'TARJETA_PROPIEDAD' => l.tipoTarjetaPropiedad,
-                        'SOAT' => l.tipoSoat,
-                        'TECNOMECANICA' => l.tipoTecnomecanica,
-                        _ => d.tipo,
-                      },
-                      style: NexaTexto.cuerpo,
-                    ),
+                    child: Text(switch (d.tipo) {
+                      'LICENCIA' => l.tipoLicencia,
+                      'TARJETA_PROPIEDAD' => l.tipoTarjetaPropiedad,
+                      'SOAT' => l.tipoSoat,
+                      'TECNOMECANICA' => l.tipoTecnomecanica,
+                      _ => d.tipo,
+                    }, style: NexaTexto.cuerpo),
                   ),
                   const SizedBox(width: Sp.sm),
                   Flexible(

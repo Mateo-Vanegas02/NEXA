@@ -409,8 +409,7 @@ class _Documento extends ConsumerWidget {
               style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
             ),
           // El vencimiento lo anota el admin leyendo la foto (rediseño 2026).
-          if (doc.vence)
-            _Vencimiento(doc: doc),
+          if (doc.vence) _Vencimiento(doc: doc),
         ],
       ),
     );
@@ -531,7 +530,9 @@ class _VencimientoState extends ConsumerState<_Vencimiento> {
     final mensajes = ScaffoldMessenger.of(context);
     setState(() => _guardando = true);
     try {
-      await ref.read(adminRepositoryProvider).fijarVencimiento(widget.doc.id, f);
+      await ref
+          .read(adminRepositoryProvider)
+          .fijarVencimiento(widget.doc.id, f);
       if (mounted) setState(() => _fecha = f);
       ref.invalidate(operacionProvider);
     } on Object catch (e) {

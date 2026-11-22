@@ -108,9 +108,7 @@ class ConductorInfoCard extends StatelessWidget {
                 Text(
                   l.requisitosCumplidos(cumplidos, total),
                   style: NexaTexto.pequeno.copyWith(
-                    color: cumplidos == total
-                        ? NexaColors.ok
-                        : NexaColors.gold,
+                    color: cumplidos == total ? NexaColors.ok : NexaColors.gold,
                     fontWeight: FontWeight.w700,
                   ),
                 ),

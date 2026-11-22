@@ -77,6 +77,11 @@ _Servicio _$ServicioFromJson(Map<String, dynamic> json) => _Servicio(
       : DateTime.parse(json['fechaFinalizacion'] as String),
   duracionEstimadaMin: (json['duracionEstimadaMin'] as num?)?.toDouble() ?? 0,
   rutaGeometria: json['rutaGeometria'] as String?,
+  pasosRuta:
+      (json['pasosRuta'] as List<dynamic>?)
+          ?.map((e) => PasoRuta.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const <PasoRuta>[],
   tarifa: (json['tarifa'] as num?)?.toDouble() ?? 0,
   extraVoluntario: (json['extraVoluntario'] as num?)?.toDouble() ?? 0,
   deudaCobrada: (json['deudaCobrada'] as num?)?.toDouble() ?? 0,
@@ -108,6 +113,7 @@ Map<String, dynamic> _$ServicioToJson(_Servicio instance) => <String, dynamic>{
   'fechaFinalizacion': instance.fechaFinalizacion?.toIso8601String(),
   'duracionEstimadaMin': instance.duracionEstimadaMin,
   'rutaGeometria': instance.rutaGeometria,
+  'pasosRuta': instance.pasosRuta,
   'tarifa': instance.tarifa,
   'extraVoluntario': instance.extraVoluntario,
   'deudaCobrada': instance.deudaCobrada,

@@ -48,7 +48,9 @@ class FrameStomp {
   static List<FrameStomp> leer(String datos) {
     final frames = <FrameStomp>[];
     for (final crudo in datos.split('\u0000')) {
-      final texto = crudo.replaceAll('\r\n', '\n').replaceFirst(RegExp(r'^\n+'), '');
+      final texto = crudo
+          .replaceAll('\r\n', '\n')
+          .replaceFirst(RegExp(r'^\n+'), '');
       if (texto.isEmpty) continue;
       final fin = texto.indexOf('\n\n');
       final cabeza = fin < 0 ? texto : texto.substring(0, fin);

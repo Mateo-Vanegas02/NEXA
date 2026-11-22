@@ -34,9 +34,14 @@ void main() {
     });
 
     test('la URL en vivo sale de la del servidor', () {
-      expect(urlTiempoReal('https://18-227-59-40.sslip.io'),
-          'wss://18-227-59-40.sslip.io/ws-app');
-      expect(urlTiempoReal('http://10.0.2.2:8080'), 'ws://10.0.2.2:8080/ws-app');
+      expect(
+        urlTiempoReal('https://18-227-59-40.sslip.io'),
+        'wss://18-227-59-40.sslip.io/ws-app',
+      );
+      expect(
+        urlTiempoReal('http://10.0.2.2:8080'),
+        'ws://10.0.2.2:8080/ws-app',
+      );
     });
   });
 
@@ -48,8 +53,19 @@ void main() {
       LatLng(10.41, -75.49),
     ];
     const pasos = [
-      PasoRuta(latitud: 10.40, longitud: -75.50, maniobra: 'depart', calle: 'Carrera 2'),
-      PasoRuta(latitud: 10.40002, longitud: -75.49001, maniobra: 'turn', modificador: 'left', calle: 'Calle 30'),
+      PasoRuta(
+        latitud: 10.40,
+        longitud: -75.50,
+        maniobra: 'depart',
+        calle: 'Carrera 2',
+      ),
+      PasoRuta(
+        latitud: 10.40002,
+        longitud: -75.49001,
+        maniobra: 'turn',
+        modificador: 'left',
+        calle: 'Calle 30',
+      ),
       PasoRuta(latitud: 10.41, longitud: -75.49, maniobra: 'arrive'),
     ];
 
@@ -71,7 +87,12 @@ void main() {
         'geometria': 'abc',
         'etiqueta': 'RAPIDA',
         'pasos': [
-          {'latitud': 1, 'longitud': 2, 'maniobra': 'turn', 'calle': ' Calle 5 '},
+          {
+            'latitud': 1,
+            'longitud': 2,
+            'maniobra': 'turn',
+            'calle': ' Calle 5 ',
+          },
         ],
       });
       expect(o.pasos.single.calle, 'Calle 5');

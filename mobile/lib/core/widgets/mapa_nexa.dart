@@ -564,7 +564,9 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
 
   Future<void> _zonas(ml.MapLibreMapController c) async {
     final z = widget.zonas;
-    final firma = z.map((e) => '${e.$1.latitude},${e.$1.longitude},${e.$2}').join(';');
+    final firma = z
+        .map((e) => '${e.$1.latitude},${e.$1.longitude},${e.$2}')
+        .join(';');
     if (firma == _firmaZonas) return;
     _firmaZonas = firma;
     if (_circulosZonas.isNotEmpty) {
