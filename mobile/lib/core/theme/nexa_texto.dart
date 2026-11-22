@@ -97,7 +97,19 @@ abstract final class NexaTexto {
       bodyMedium: cuerpo.copyWith(color: s.onSurface, fontSize: 14),
       bodySmall: pequeno.copyWith(color: s.onSurfaceVariant),
       labelLarge: boton.copyWith(color: s.onSurface),
-      labelSmall: etiqueta.copyWith(color: s.onSurfaceVariant),
+      // Rótulos chicos en texto normal (sin el espaciado de [etiqueta], que
+      // es solo para mayúsculas): así los datos del panel de satisfacción se
+      // leen igual que el resto de la app.
+      labelMedium: pequeno.copyWith(
+        color: s.onSurface,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0,
+      ),
+      labelSmall: pequeno.copyWith(
+        color: s.onSurfaceVariant,
+        fontSize: 12,
+        letterSpacing: 0,
+      ),
     );
   }
 }

@@ -154,7 +154,8 @@ class _Panel extends ConsumerWidget {
         Positioned.fill(
           child: MapaNexa(
             centro: moto ?? recogida,
-            origen: recogida,
+            // Sin viaje no hay recogida: solo su moto (antes salía un pin viejo).
+            origen: activo == null ? null : recogida,
             destino: destino,
             ruta: rutaMapa,
             alternativas: [

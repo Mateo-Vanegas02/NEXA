@@ -44,6 +44,7 @@ class PasosViaje extends StatelessWidget {
                       etiquetas[i],
                       textAlign: TextAlign.center,
                       style: context.textos.labelSmall?.copyWith(
+                        letterSpacing: 0.8,
                         fontWeight: i == _actual ? FontWeight.w700 : null,
                         color: i <= _actual ? null : context.muted,
                       ),
