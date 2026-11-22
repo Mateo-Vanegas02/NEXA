@@ -130,10 +130,7 @@ class PerfilScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Text(
-                            l.mapaEstilo,
-                            style: NexaTexto.subtitulo,
-                          ),
+                          Text(l.mapaEstilo, style: NexaTexto.subtitulo),
                           Text(
                             l.mapaIndependiente,
                             style: NexaTexto.pequeno.copyWith(
@@ -528,7 +525,10 @@ class _TarjetaMoto extends ConsumerWidget {
     final l = AppLocalizations.of(context);
     final moto = ref.watch(motoActivaProvider).value;
     if (moto == null) return const SizedBox.shrink();
-    final nombre = [moto.marca, moto.modelo].where((e) => e.isNotEmpty).join(' ');
+    final nombre = [
+      moto.marca,
+      moto.modelo,
+    ].where((e) => e.isNotEmpty).join(' ');
     return NexaCard(
       child: Row(
         children: [

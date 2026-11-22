@@ -1618,8 +1618,7 @@ class SelectorEstiloMapa extends ConsumerWidget {
               nombre: nombre,
               icono: icono,
               elegido: estilo == actual,
-              onTap: () =>
-                  ref.read(estiloMapaProvider.notifier).elegir(estilo),
+              onTap: () => ref.read(estiloMapaProvider.notifier).elegir(estilo),
             ),
           ),
         ],

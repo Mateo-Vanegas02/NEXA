@@ -65,10 +65,7 @@ void main() {
       final a = ResumenGanancias.horasConActividad(h, ahora);
       expect(a.desde, 9);
       expect(a.montos, hasLength(7)); // 9h..15h
-      expect(
-        ResumenGanancias.porHora([i('2026-11-22', 1000)], ahora),
-        isEmpty,
-      );
+      expect(ResumenGanancias.porHora([i('2026-11-22', 1000)], ahora), isEmpty);
     });
   });
 }

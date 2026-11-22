@@ -164,35 +164,37 @@ class _ViajeActivoCardState extends ConsumerState<ViajeActivoCard> {
         ],
         const SizedBox(height: Sp.lg),
         // En viaje, primero a qué hora llega (rediseño 2026; ETA del servidor).
-        if (fase == FaseConductor.enViaje && pos != null && pos.etaMinutos > 0)
-          ...[
-            Text(
-              l.llevandoA(nombre.split(' ').first, s.destino),
-              style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            Wrap(
-              crossAxisAlignment: WrapCrossAlignment.end,
-              spacing: Sp.sm,
-              children: [
-                Text(
-                  DateFormat('H:mm', 'es_CO').format(
-                    DateTime.now().add(Duration(minutes: pos.etaMinutos)),
-                  ),
-                  style: NexaTexto.numero.copyWith(fontSize: 30, height: 1.1),
+        if (fase == FaseConductor.enViaje &&
+            pos != null &&
+            pos.etaMinutos > 0) ...[
+          Text(
+            l.llevandoA(nombre.split(' ').first, s.destino),
+            style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.end,
+            spacing: Sp.sm,
+            children: [
+              Text(
+                DateFormat(
+                  'H:mm',
+                  'es_CO',
+                ).format(DateTime.now().add(Duration(minutes: pos.etaMinutos))),
+                style: NexaTexto.numero.copyWith(fontSize: 30, height: 1.1),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  [l.minutosValor(pos.etaMinutos), ?km].join(' · '),
+                  style: NexaTexto.cuerpo.copyWith(color: NexaColors.muted),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: Text(
-                    [l.minutosValor(pos.etaMinutos), ?km].join(' · '),
-                    style: NexaTexto.cuerpo.copyWith(color: NexaColors.muted),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: Sp.lg),
-          ],
+              ),
+            ],
+          ),
+          const SizedBox(height: Sp.lg),
+        ],
         if (fase == FaseConductor.enElPunto && s.fechaLlegada != null) ...[
           _Esperando(nombre: nombre, desde: s.fechaLlegada!),
           const SizedBox(height: Sp.lg),

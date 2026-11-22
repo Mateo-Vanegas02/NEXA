@@ -119,33 +119,36 @@ class _HistorialPasajeroScreenState
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: Row(
-                          children: [
-                            for (final (f, texto) in [
-                              (_Filtro.todos, l.filtroTodos),
-                              (_Filtro.completados, l.filtroCompletados),
-                              (_Filtro.cancelados, l.filtroCancelados),
-                            ])
-                              Padding(
-                                padding: const EdgeInsets.only(right: Sp.sm),
-                                child: ChoiceChip(
-                                visualDensity: VisualDensity.compact,
-                                label: Text(texto),
-                                selected: _filtro == f,
-                                showCheckmark: false,
-                                onSelected: (_) => setState(() => _filtro = f),
-                                selectedColor: NexaColors.cyan,
-                                backgroundColor: NexaColors.card,
-                                side: const BorderSide(color: NexaColors.line),
-                                shape: const StadiumBorder(),
-                                labelStyle: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: _filtro == f
-                                      ? NexaColors.bg
-                                      : NexaColors.texto,
+                            children: [
+                              for (final (f, texto) in [
+                                (_Filtro.todos, l.filtroTodos),
+                                (_Filtro.completados, l.filtroCompletados),
+                                (_Filtro.cancelados, l.filtroCancelados),
+                              ])
+                                Padding(
+                                  padding: const EdgeInsets.only(right: Sp.sm),
+                                  child: ChoiceChip(
+                                    visualDensity: VisualDensity.compact,
+                                    label: Text(texto),
+                                    selected: _filtro == f,
+                                    showCheckmark: false,
+                                    onSelected: (_) =>
+                                        setState(() => _filtro = f),
+                                    selectedColor: NexaColors.cyan,
+                                    backgroundColor: NexaColors.card,
+                                    side: const BorderSide(
+                                      color: NexaColors.line,
+                                    ),
+                                    shape: const StadiumBorder(),
+                                    labelStyle: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: _filtro == f
+                                          ? NexaColors.bg
+                                          : NexaColors.texto,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                              ),
-                          ],
+                            ],
                           ),
                         ),
                         const SizedBox(height: Sp.lg),

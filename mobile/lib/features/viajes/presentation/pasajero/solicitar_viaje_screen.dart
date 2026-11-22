@@ -354,9 +354,10 @@ class _SolicitarViajeScreenState extends ConsumerState<SolicitarViajeScreen> {
                       _destinoTxt.trim().isEmpty
                           ? AppLocalizations.of(context).destino
                           : _destinoTxt.trim(),
-                      DateFormat('H:mm', 'es_CO').format(
-                        DateTime.now().add(Duration(minutes: minutos)),
-                      ),
+                      DateFormat(
+                        'H:mm',
+                        'es_CO',
+                      ).format(DateTime.now().add(Duration(minutes: minutos))),
                     ),
               onTap: _alTocarMapa,
             ),

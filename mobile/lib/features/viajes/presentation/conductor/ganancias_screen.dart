@@ -180,7 +180,10 @@ class _Cifra extends StatelessWidget {
         FittedBox(
           fit: BoxFit.scaleDown,
           alignment: Alignment.centerLeft,
-          child: Text(valor, style: NexaTexto.numeroMedio.copyWith(fontSize: 20)),
+          child: Text(
+            valor,
+            style: NexaTexto.numeroMedio.copyWith(fontSize: 20),
+          ),
         ),
       ],
     ),
@@ -372,7 +375,11 @@ class _GananciasScreenState extends ConsumerState<GananciasScreen> {
                             ),
                             child: Column(
                               children: [
-                                for (var k = 0; k < lista.length && k < 20; k++) ...[
+                                for (
+                                  var k = 0;
+                                  k < lista.length && k < 20;
+                                  k++
+                                ) ...[
                                   if (k > 0)
                                     Divider(
                                       height: 1,

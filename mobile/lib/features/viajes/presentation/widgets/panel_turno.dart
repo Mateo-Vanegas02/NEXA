@@ -34,11 +34,7 @@ class PanelFueraDeLinea extends ConsumerWidget {
         .split(' ')
         .first;
     final todos = ref.watch(ingresosProvider).value ?? const [];
-    final hoy = ResumenGanancias.delPeriodo(
-      todos,
-      PeriodoGanancias.hoy,
-      ahora,
-    );
+    final hoy = ResumenGanancias.delPeriodo(todos, PeriodoGanancias.hoy, ahora);
     final semana = ResumenGanancias.delPeriodo(
       todos,
       PeriodoGanancias.semana,
@@ -93,19 +89,14 @@ class PanelEnLinea extends ConsumerWidget {
     final l = AppLocalizations.of(context);
     final ahora = DateTime.now();
     final todos = ref.watch(ingresosProvider).value ?? const [];
-    final hoy = ResumenGanancias.delPeriodo(
-      todos,
-      PeriodoGanancias.hoy,
-      ahora,
-    );
+    final hoy = ResumenGanancias.delPeriodo(todos, PeriodoGanancias.hoy, ahora);
     final horas = ResumenGanancias.horasConActividad(
       ResumenGanancias.porHora(hoy, ahora),
       ahora,
     );
     final gps = ref.watch(posicionEnVivoProvider).value;
     final gpsVivo =
-        gps != null &&
-        ahora.difference(gps.en) < const Duration(seconds: 20);
+        gps != null && ahora.difference(gps.en) < const Duration(seconds: 20);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -189,11 +180,17 @@ class _Cifra extends StatelessWidget {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(titulo, style: NexaTexto.pequeno.copyWith(color: NexaColors.muted)),
+        Text(
+          titulo,
+          style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
+        ),
         FittedBox(
           fit: BoxFit.scaleDown,
           alignment: Alignment.centerLeft,
-          child: Text(valor, style: NexaTexto.numeroMedio.copyWith(fontSize: 21)),
+          child: Text(
+            valor,
+            style: NexaTexto.numeroMedio.copyWith(fontSize: 21),
+          ),
         ),
         Text(detalle, style: NexaTexto.pequeno.copyWith(color: NexaColors.ok)),
       ],

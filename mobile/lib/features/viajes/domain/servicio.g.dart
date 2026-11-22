@@ -173,6 +173,7 @@ _Ingreso _$IngresoFromJson(Map<String, dynamic> json) => _Ingreso(
   monto: (json['monto'] as num?)?.toDouble() ?? 0,
   montoBruto: (json['montoBruto'] as num?)?.toDouble() ?? 0,
   descripcion: json['descripcion'] as String? ?? '',
+  hora: json['hora'] as String?,
 );
 
 Map<String, dynamic> _$IngresoToJson(_Ingreso instance) => <String, dynamic>{
@@ -180,4 +181,5 @@ Map<String, dynamic> _$IngresoToJson(_Ingreso instance) => <String, dynamic>{
   'monto': instance.monto,
   'montoBruto': instance.montoBruto,
   'descripcion': instance.descripcion,
+  'hora': instance.hora,
 };

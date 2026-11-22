@@ -1603,7 +1603,8 @@ as double,
 /// @nodoc
 mixin _$Ingreso {
 
- String get fecha; double get monto; double get montoBruto; String get descripcion;
+ String get fecha; double get monto; double get montoBruto; String get descripcion;/// Fecha y hora del viaje (ISO 8601); los servidores viejos no la envían.
+ String? get hora;
 /// Create a copy of Ingreso
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1617,20 +1618,20 @@ $IngresoCopyWith<Ingreso> get copyWith => _$IngresoCopyWithImpl<Ingreso>(this as
 @override
 bool operator ==(Object other) {
   final _this = this as Ingreso;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Ingreso&&(identical(other.fecha, _this.fecha) || other.fecha == _this.fecha)&&(identical(other.monto, _this.monto) || other.monto == _this.monto)&&(identical(other.montoBruto, _this.montoBruto) || other.montoBruto == _this.montoBruto)&&(identical(other.descripcion, _this.descripcion) || other.descripcion == _this.descripcion));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Ingreso&&(identical(other.fecha, _this.fecha) || other.fecha == _this.fecha)&&(identical(other.monto, _this.monto) || other.monto == _this.monto)&&(identical(other.montoBruto, _this.montoBruto) || other.montoBruto == _this.montoBruto)&&(identical(other.descripcion, _this.descripcion) || other.descripcion == _this.descripcion)&&(identical(other.hora, _this.hora) || other.hora == _this.hora));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as Ingreso;
-  return Object.hash(runtimeType,_this.fecha,_this.monto,_this.montoBruto,_this.descripcion);
+  return Object.hash(runtimeType,_this.fecha,_this.monto,_this.montoBruto,_this.descripcion,_this.hora);
 }
 
 @override
 String toString() {
   final _this = this as Ingreso;
-  return 'Ingreso(fecha: ${_this.fecha}, monto: ${_this.monto}, montoBruto: ${_this.montoBruto}, descripcion: ${_this.descripcion})';
+  return 'Ingreso(fecha: ${_this.fecha}, monto: ${_this.monto}, montoBruto: ${_this.montoBruto}, descripcion: ${_this.descripcion}, hora: ${_this.hora})';
 }
 
 
@@ -1641,7 +1642,7 @@ abstract mixin class $IngresoCopyWith<$Res>  {
   factory $IngresoCopyWith(Ingreso value, $Res Function(Ingreso) _then) = _$IngresoCopyWithImpl;
 @useResult
 $Res call({
- String fecha, double monto, double montoBruto, String descripcion
+ String fecha, double monto, double montoBruto, String descripcion, String? hora
 });
 
 
@@ -1658,13 +1659,14 @@ class _$IngresoCopyWithImpl<$Res>
 
 /// Create a copy of Ingreso
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? fecha = null,Object? monto = null,Object? montoBruto = null,Object? descripcion = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? fecha = null,Object? monto = null,Object? montoBruto = null,Object? descripcion = null,Object? hora = freezed,}) {
   return _then(Ingreso(
 fecha: null == fecha ? _self.fecha : fecha // ignore: cast_nullable_to_non_nullable
 as String,monto: null == monto ? _self.monto : monto // ignore: cast_nullable_to_non_nullable
 as double,montoBruto: null == montoBruto ? _self.montoBruto : montoBruto // ignore: cast_nullable_to_non_nullable
 as double,descripcion: null == descripcion ? _self.descripcion : descripcion // ignore: cast_nullable_to_non_nullable
-as String,
+as String,hora: freezed == hora ? _self.hora : hora // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -1749,10 +1751,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String fecha,  double monto,  double montoBruto,  String descripcion)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String fecha,  double monto,  double montoBruto,  String descripcion,  String? hora)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Ingreso() when $default != null:
-return $default(_that.fecha,_that.monto,_that.montoBruto,_that.descripcion);case _:
+return $default(_that.fecha,_that.monto,_that.montoBruto,_that.descripcion,_that.hora);case _:
   return orElse();
 
 }
@@ -1770,10 +1772,10 @@ return $default(_that.fecha,_that.monto,_that.montoBruto,_that.descripcion);case
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String fecha,  double monto,  double montoBruto,  String descripcion)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String fecha,  double monto,  double montoBruto,  String descripcion,  String? hora)  $default,) {final _that = this;
 switch (_that) {
 case _Ingreso():
-return $default(_that.fecha,_that.monto,_that.montoBruto,_that.descripcion);case _:
+return $default(_that.fecha,_that.monto,_that.montoBruto,_that.descripcion,_that.hora);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1790,10 +1792,10 @@ return $default(_that.fecha,_that.monto,_that.montoBruto,_that.descripcion);case
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String fecha,  double monto,  double montoBruto,  String descripcion)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String fecha,  double monto,  double montoBruto,  String descripcion,  String? hora)?  $default,) {final _that = this;
 switch (_that) {
 case _Ingreso() when $default != null:
-return $default(_that.fecha,_that.monto,_that.montoBruto,_that.descripcion);case _:
+return $default(_that.fecha,_that.monto,_that.montoBruto,_that.descripcion,_that.hora);case _:
   return null;
 
 }
@@ -1805,13 +1807,15 @@ return $default(_that.fecha,_that.monto,_that.montoBruto,_that.descripcion);case
 @JsonSerializable()
 
 class _Ingreso implements Ingreso {
-  const _Ingreso({required this.fecha, this.monto = 0, this.montoBruto = 0, this.descripcion = ''});
+  const _Ingreso({required this.fecha, this.monto = 0, this.montoBruto = 0, this.descripcion = '', this.hora});
   factory _Ingreso.fromJson(Map<String, dynamic> json) => _$IngresoFromJson(json);
 
 @override final  String fecha;
 @override@JsonKey() final  double monto;
 @override@JsonKey() final  double montoBruto;
 @override@JsonKey() final  String descripcion;
+/// Fecha y hora del viaje (ISO 8601); los servidores viejos no la envían.
+@override final  String? hora;
 
 /// Create a copy of Ingreso
 /// with the given fields replaced by the non-null parameter values.
@@ -1826,18 +1830,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Ingreso&&(identical(other.fecha, fecha) || other.fecha == fecha)&&(identical(other.monto, monto) || other.monto == monto)&&(identical(other.montoBruto, montoBruto) || other.montoBruto == montoBruto)&&(identical(other.descripcion, descripcion) || other.descripcion == descripcion));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Ingreso&&(identical(other.fecha, fecha) || other.fecha == fecha)&&(identical(other.monto, monto) || other.monto == monto)&&(identical(other.montoBruto, montoBruto) || other.montoBruto == montoBruto)&&(identical(other.descripcion, descripcion) || other.descripcion == descripcion)&&(identical(other.hora, hora) || other.hora == hora));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,fecha,monto,montoBruto,descripcion);
+    return Object.hash(runtimeType,fecha,monto,montoBruto,descripcion,hora);
 }
 
 @override
 String toString() {
-    return 'Ingreso(fecha: $fecha, monto: $monto, montoBruto: $montoBruto, descripcion: $descripcion)';
+    return 'Ingreso(fecha: $fecha, monto: $monto, montoBruto: $montoBruto, descripcion: $descripcion, hora: $hora)';
 }
 
 
@@ -1848,7 +1852,7 @@ abstract mixin class _$IngresoCopyWith<$Res> implements $IngresoCopyWith<$Res> {
   factory _$IngresoCopyWith(_Ingreso value, $Res Function(_Ingreso) _then) = __$IngresoCopyWithImpl;
 @override @useResult
 $Res call({
- String fecha, double monto, double montoBruto, String descripcion
+ String fecha, double monto, double montoBruto, String descripcion, String? hora
 });
 
 
@@ -1865,13 +1869,14 @@ class __$IngresoCopyWithImpl<$Res>
 
 /// Create a copy of Ingreso
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? fecha = null,Object? monto = null,Object? montoBruto = null,Object? descripcion = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? fecha = null,Object? monto = null,Object? montoBruto = null,Object? descripcion = null,Object? hora = freezed,}) {
   return _then(_Ingreso(
 fecha: null == fecha ? _self.fecha : fecha // ignore: cast_nullable_to_non_nullable
 as String,monto: null == monto ? _self.monto : monto // ignore: cast_nullable_to_non_nullable
 as double,montoBruto: null == montoBruto ? _self.montoBruto : montoBruto // ignore: cast_nullable_to_non_nullable
 as double,descripcion: null == descripcion ? _self.descripcion : descripcion // ignore: cast_nullable_to_non_nullable
-as String,
+as String,hora: freezed == hora ? _self.hora : hora // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
