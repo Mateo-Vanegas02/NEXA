@@ -1,3 +1,4 @@
+import 'opcion_ruta.dart';
 import '../../../core/sin_conexion/reglas_sin_conexion.dart';
 import 'perfil_pasajero.dart';
 import 'oferta_activa.dart';
@@ -56,6 +57,14 @@ abstract interface class ConductorRepository {
 
   /// Dónde está el pasajero mientras el conductor va a recogerlo, o `null`.
   Future<PosicionPasajero?> ubicacionPasajero(String id);
+
+  /// Rutas desde [desde] hasta la recogida o el destino (el servidor elige el
+  /// objetivo según la fase), la sugerida primero (`POST /conductor/rutas/{id}`).
+  Future<List<OpcionRuta>> rutasDesde(String id, Coordenada desde);
+
+  /// Elige una de las rutas recién ofrecidas (`PUT /conductor/rutas/{id}`). Con
+  /// el viaje en curso, el pasajero la ve; devuelve el trazado elegido.
+  Future<String?> elegirRuta(String id, int indice);
 
   /// "Llegué": el servidor verifica que esté a ≤ 50 m de la recogida (409 si no).
   /// [llave] (idempotencia) y [ocurridoEn] sirven para enviarlo tras un corte

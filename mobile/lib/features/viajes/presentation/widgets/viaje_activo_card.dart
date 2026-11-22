@@ -417,12 +417,59 @@ class ResumenViajeCard extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
               ),
+              // Ya terminó: el aviso de «antes de finalizar» confundía; se dice
+              // qué pasó y que se cobró solo lo recorrido (rediseño 2026).
               if (servicio.finalizadoAntesDelDestino) ...[
-                const SizedBox(height: Sp.sm),
-                Text(
-                  l.finalizarAntesTexto,
-                  textAlign: TextAlign.center,
-                  style: NexaTexto.pequeno.copyWith(color: NexaColors.gold),
+                const SizedBox(height: Sp.md),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: Sp.md,
+                    vertical: Sp.sm,
+                  ),
+                  decoration: BoxDecoration(
+                    color: NexaColors.gold.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(Rad.md),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        l.finalizadoAntesTitulo,
+                        textAlign: TextAlign.center,
+                        style: NexaTexto.pequeno.copyWith(
+                          color: NexaColors.gold,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Text(
+                        l.finalizadoAntesCobro,
+                        textAlign: TextAlign.center,
+                        style: NexaTexto.pequeno.copyWith(
+                          color: NexaColors.muted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              if (servicio.xpGanadoConductor > 0) ...[
+                const SizedBox(height: Sp.md),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.bolt,
+                      size: 18,
+                      color: NexaColors.cyan,
+                    ),
+                    const SizedBox(width: Sp.xs),
+                    Text(
+                      l.xpGanado(servicio.xpGanadoConductor),
+                      style: NexaTexto.pequeno.copyWith(
+                        color: NexaColors.cyan,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ],

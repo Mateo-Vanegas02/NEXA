@@ -57,6 +57,19 @@ final miUbicacionViajeProvider =
       MiUbicacionViajeNotifier.new,
     );
 
+/// Cuenta cada vez que el conductor cambia la ruta del viaje en curso (tomó
+/// otra calle y eligió una ruta nueva): la pantalla del viaje lo avisa.
+class RutaCambiadaNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
+
+  void avisar() => state++;
+}
+
+final rutaCambiadaProvider = NotifierProvider<RutaCambiadaNotifier, int>(
+  RutaCambiadaNotifier.new,
+);
+
 /// Viaje en curso del pasajero (o recién finalizado, hasta que se califica).
 ///
 /// Hace polling cada 5 s SOLO mientras el viaje está activo (el WebSocket del
@@ -67,7 +80,9 @@ final miUbicacionViajeProvider =
 ///   pasajero para que el conductor lo vea.
 class ViajePasajeroController extends AsyncNotifier<Servicio?> {
   Timer? _timer;
+  Timer? _timerPosicion;
   bool _sondeando = false;
+  bool _siguiendo = false;
 
   @override
   Future<Servicio?> build() async {
@@ -94,11 +109,43 @@ class ViajePasajeroController extends AsyncNotifier<Servicio?> {
   void _iniciarPolling() {
     _timer?.cancel();
     _timer = Timer.periodic(Env.pollingInterval, (_) => sondear());
+    // Rediseño 2026: la moto se consulta más seguido que el viaje, para que el
+    // mapa la mueva fluida.
+    _timerPosicion?.cancel();
+    _timerPosicion = Timer.periodic(
+      Env.pollingPosicion,
+      (_) => seguirMoto(),
+    );
   }
 
   void _detener() {
     _timer?.cancel();
     _timer = null;
+    _timerPosicion?.cancel();
+    _timerPosicion = null;
+  }
+
+  /// Con el conductor asignado, solo la posición de la moto (cada 2 s).
+  Future<void> seguirMoto() async {
+    final actual = state.value;
+    if (actual == null ||
+        _sondeando ||
+        _siguiendo ||
+        (actual.estado != EstadoServicio.aceptado &&
+            actual.estado != EstadoServicio.enCurso)) {
+      return;
+    }
+    _siguiendo = true;
+    try {
+      final p = await _repo.posicionConductor(actual.id);
+      if (p != null && state.value?.id == actual.id) {
+        ref.read(posicionConductorProvider.notifier).poner(p);
+      }
+    } on Object {
+      // Se conserva la anterior; el ciclo de 5 s vuelve a intentar.
+    } finally {
+      _siguiendo = false;
+    }
   }
 
   Future<void> sondear() async {
@@ -112,6 +159,14 @@ class ViajePasajeroController extends AsyncNotifier<Servicio?> {
     _sondeando = true;
     try {
       final nuevo = await _repo.detalle(actual.id);
+      // El conductor tomó otra calle y eligió una ruta nueva.
+      if (actual.estado == EstadoServicio.enCurso &&
+          nuevo.estado == EstadoServicio.enCurso &&
+          actual.rutaGeometria != null &&
+          nuevo.rutaGeometria != null &&
+          actual.rutaGeometria != nuevo.rutaGeometria) {
+        ref.read(rutaCambiadaProvider.notifier).avisar();
+      }
       state = AsyncData(nuevo);
       if (!nuevo.estado.activo) {
         _detener();

@@ -9,7 +9,9 @@ import '../../../../core/mapa/reglas_marcadores.dart';
 import '../../../../core/widgets/mapa_nexa.dart';
 import '../../../../core/widgets/nexa_diseno.dart';
 import '../../../../core/widgets/nexa_widgets.dart';
+import '../../../../core/utils/mi_posicion.dart';
 import '../../../niveles/presentation/widgets/nivel_banner.dart';
+import '../../domain/opcion_ruta.dart';
 import '../../domain/servicio.dart';
 import '../../../../core/sin_conexion/reglas_sin_conexion.dart';
 import '../controllers/avisos_push_controller.dart';
@@ -17,6 +19,7 @@ import '../controllers/sin_conexion_controller.dart';
 import '../controllers/viaje_conductor_controller.dart';
 import '../widgets/cuenta_bloqueada.dart';
 import '../widgets/navegacion_conductor.dart';
+import '../widgets/rutas_desvio.dart';
 import '../widgets/solicitud_card.dart';
 import '../widgets/viaje_activo_card.dart';
 import '../../../permisos/presentation/flujo_permisos.dart';
@@ -37,6 +40,18 @@ class InicioConductorScreen extends ConsumerWidget {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(mensaje)));
       ref.read(avisosPushProvider.notifier).consumirMensaje();
+    });
+    // Al tomar un viaje, el mapa pasa solo a navegación (rediseño 2026: el
+    // conductor no tiene que tocar «Navegar»); puede salir cuando quiera.
+    ref.listen(conductorProvider.select((e) => e.value?.activo?.id), (
+      antes,
+      ahora,
+    ) {
+      if (ahora != null && ahora != antes) {
+        ref
+            .read(orientacionMapaProvider.notifier)
+            .cambiarModo(ModoOrientacion.navegacion);
+      }
     });
     // Un paso hecho sin señal que el servidor ya no aceptó: gana el servidor.
     ref.listen(sinConexionProvider.select((e) => e.rechazo), (_, rechazo) {
@@ -92,7 +107,28 @@ class _Panel extends ConsumerWidget {
             activo!.ubicacionDestino!.latitud,
             activo.ubicacionDestino!.longitud,
           );
-    final moto = pos == null ? null : LatLng(pos.latitud, pos.longitud);
+    // Su propia moto sale del GPS del teléfono apenas llega cada dato (1 por
+    // segundo en viaje), sin esperar al servidor; si el dato es viejo, la
+    // última posición que confirmó el servidor.
+    final enVivo = ref.watch(posicionEnVivoProvider).value;
+    final gpsFresco =
+        enVivo != null &&
+        (estado.enLinea || activo != null) &&
+        DateTime.now().difference(enVivo.en) < const Duration(seconds: 6);
+    final moto = gpsFresco
+        ? enVivo!.punto
+        : (pos == null ? null : LatLng(pos.latitud, pos.longitud));
+    // Rutas: las que ofrece el servidor al desviarse (la sugerida resaltada),
+    // la elegida o la del viaje.
+    final opciones = estado.desvio == EstadoDesvio.opciones
+        ? estado.rutasOfrecidas
+        : const <OpcionRuta>[];
+    final rutaVigente = estado.rutaVigente;
+    final rutaMapa = opciones.isNotEmpty
+        ? rutaDe(opciones.first.geometria)
+        : (rutaVigente ?? rutaDe(activo?.rutaGeometria));
+    final conRutaRecogida =
+        estado.fase == FaseConductor.aRecoger && rutaVigente != null;
     // Modo navegación: solo en línea o con un viaje (lo enciende el conductor).
     final puedeNavegar = estado.enLinea || activo != null;
     final modoMapa = ref.watch(orientacionMapaProvider.select((o) => o.modo));
@@ -112,7 +148,11 @@ class _Panel extends ConsumerWidget {
             centro: moto ?? recogida,
             origen: recogida,
             destino: destino,
-            ruta: rutaDe(activo?.rutaGeometria),
+            ruta: rutaMapa,
+            alternativas: [
+              for (final o in opciones.skip(1)) rutaDe(o.geometria),
+            ],
+            progreso: rutaVigente != null && opciones.isEmpty,
             conductor: moto,
             motoPropia: true,
             pasajero: estado.pasajero == null
@@ -129,17 +169,43 @@ class _Panel extends ConsumerWidget {
         if (puedeNavegar)
           SafeArea(
             child: Padding(
+              // Debajo de la brújula y del botón de capas del mapa.
               padding: const EdgeInsets.only(
-                top: Sp.md + Sizes.touch + Sp.sm,
+                top: Sp.md + (Sizes.touch + 4 + Sp.sm) * 2,
                 right: Sp.md,
               ),
               child: Align(
                 alignment: Alignment.topRight,
-                child: _BotonNavegar(activo: navegando),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    _BotonNavegar(activo: navegando),
+                    if (activo != null &&
+                        estado.fase != FaseConductor.enElPunto) ...[
+                      const SizedBox(height: Sp.sm),
+                      _BotonRutas(onTap: ctrl.pedirRutas),
+                    ],
+                  ],
+                ),
               ),
             ),
           ),
-        if (navegando &&
+        if (activo != null && estado.desvio != EstadoDesvio.ninguno)
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                Sp.md,
+                Sp.md,
+                Sizes.touch + Sp.md + Sp.sm,
+                0,
+              ),
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: TarjetaDesvio(estado: estado),
+              ),
+            ),
+          )
+        else if (navegando &&
             activo != null &&
             moto != null &&
             (estado.fase ?? FaseConductor.aRecoger) != FaseConductor.enElPunto)
@@ -155,7 +221,8 @@ class _Panel extends ConsumerWidget {
               child: NavegacionConductor(
                 fase: estado.fase ?? FaseConductor.aRecoger,
                 moto: moto,
-                ruta: rutaDe(activo.rutaGeometria),
+                ruta: rutaVigente ?? rutaDe(activo.rutaGeometria),
+                conRutaRecogida: conRutaRecogida,
                 recogida: recogida,
                 destino: activo.destino,
                 pasajero: activo.pasajero?.nombre ?? '',
@@ -186,9 +253,13 @@ class _Panel extends ConsumerWidget {
               ),
             ),
           ),
+        // Con un viaje, la hoja deja ver el mapa (en el video del conductor la
+        // hoja tapaba la recogida); el resumen final sí ocupa más.
         NexaHojaArrastrable(
-          inicial: enViaje ? 0.6 : 0.5,
-          minimo: 0.3,
+          inicial: estado.terminado != null
+              ? 0.62
+              : (activo != null ? 0.36 : 0.5),
+          minimo: activo != null ? 0.2 : 0.3,
           children: [
             if (!enViaje) ...[
               Row(
@@ -223,7 +294,7 @@ class _Panel extends ConsumerWidget {
             ],
             const NivelBanner(rutaNiveles: '/c/niveles', irEnLugar: true),
             const SizedBox(height: Sp.md),
-            if (estado.pasajeroCancelo) ...[
+            if (estado.pasajeroCancelo && estado.terminado == null) ...[
               NexaCard(
                 child: Row(
                   children: [
@@ -415,6 +486,48 @@ class _BotonNavegar extends ConsumerWidget {
                     activo ? l.navegacionSalir : l.navegacionActivar,
                     style: TextStyle(
                       color: activo ? NexaColors.bg : NexaColors.texto,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Pide rutas desde donde va (también salen solas al desviarse).
+class _BotonRutas extends StatelessWidget {
+  const _BotonRutas({required this.onTap});
+  final Future<void> Function() onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    return Semantics(
+      button: true,
+      child: Material(
+        color: NexaColors.glass,
+        shape: const StadiumBorder(side: BorderSide(color: NexaColors.line)),
+        child: InkWell(
+          customBorder: const StadiumBorder(),
+          onTap: onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: Sizes.touch),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: Sp.lg),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.alt_route, color: NexaColors.texto, size: 20),
+                  const SizedBox(width: Sp.sm),
+                  Text(
+                    l.rutasBoton,
+                    style: const TextStyle(
+                      color: NexaColors.texto,
                       fontWeight: FontWeight.w700,
                     ),
                   ),

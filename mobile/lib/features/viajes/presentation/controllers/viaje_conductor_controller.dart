@@ -1,11 +1,14 @@
 import '../../../../core/config/env.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/mapa/polyline.dart';
+import '../../../../core/mapa/reglas_ruta.dart';
 import '../../../../core/providers.dart';
 import '../../../../core/segundo_plano/modo_segundo_plano.dart';
 import '../../../../core/sin_conexion/reglas_sin_conexion.dart';
 import '../../../../core/utils/mi_posicion.dart';
 import '../../../auth/presentation/controllers/session_controller.dart';
 import '../../../niveles/presentation/controllers/niveles_controller.dart';
+import '../../domain/opcion_ruta.dart';
 import '../../domain/servicio.dart';
 import '../../domain/viajes_repository.dart';
 import 'sin_conexion_controller.dart';
@@ -14,9 +17,13 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:latlong2/latlong.dart';
 
 /// Fase visible del viaje del conductor (la deduce el estado y `fechaLlegada`).
 enum FaseConductor { aRecoger, enElPunto, enViaje }
+
+/// Qué pasa con la ruta cuando el conductor toma otra calle (rediseño 2026).
+enum EstadoDesvio { ninguno, buscando, opciones, sinOpciones }
 
 class ConductorState {
   const ConductorState({
@@ -30,6 +37,10 @@ class ConductorState {
     this.desgloseTerminado,
     this.pasajeroCancelo = false,
     this.copiaDe,
+    this.desvio = EstadoDesvio.ninguno,
+    this.rutasOfrecidas = const [],
+    this.rutaPropia,
+    this.rutaPropiaFase,
   });
 
   final EstadoAprobacion aprobacion;
@@ -52,6 +63,28 @@ class ConductorState {
 
   /// Sin señal al abrir: el viaje sale de la copia guardada a esta hora.
   final DateTime? copiaDe;
+
+  /// Desvío de la ruta y las rutas que ofreció el servidor para elegir.
+  final EstadoDesvio desvio;
+  final List<OpcionRuta> rutasOfrecidas;
+
+  /// Ruta que eligió el conductor (o la que el servidor dio hasta el
+  /// pasajero), válida solo en la fase [rutaPropiaFase].
+  final List<LatLng>? rutaPropia;
+  final FaseConductor? rutaPropiaFase;
+
+  /// La ruta que se dibuja y contra la que se mide el desvío: la elegida en
+  /// esta fase o, en viaje, la del servidor. Yendo a recoger sin ruta propia
+  /// no hay (la del servidor es la del viaje, no la de la recogida).
+  List<LatLng>? get rutaVigente {
+    final f = fase;
+    if (f == null) return null;
+    final propia = rutaPropia;
+    if (propia != null && rutaPropiaFase == f) return propia;
+    if (f != FaseConductor.enViaje) return null;
+    final delServidor = rutaDe(activo?.rutaGeometria);
+    return delServidor.length >= 2 ? delServidor : null;
+  }
 
   FaseConductor? get fase {
     final a = activo;
@@ -78,6 +111,10 @@ class ConductorState {
     bool? pasajeroCancelo,
     DateTime? copiaDe,
     bool limpiarCopia = false,
+    EstadoDesvio? desvio,
+    List<OpcionRuta>? rutasOfrecidas,
+    List<LatLng>? rutaPropia,
+    FaseConductor? rutaPropiaFase,
   }) => ConductorState(
     aprobacion: aprobacion ?? this.aprobacion,
     enLinea: enLinea ?? this.enLinea,
@@ -91,6 +128,17 @@ class ConductorState {
         : (desgloseTerminado ?? this.desgloseTerminado),
     pasajeroCancelo: pasajeroCancelo ?? this.pasajeroCancelo,
     copiaDe: limpiarCopia ? null : (copiaDe ?? this.copiaDe),
+    // Sin viaje no hay ruta propia ni desvío.
+    desvio: limpiarActivo
+        ? EstadoDesvio.ninguno
+        : (desvio ?? this.desvio),
+    rutasOfrecidas: limpiarActivo
+        ? const []
+        : (rutasOfrecidas ?? this.rutasOfrecidas),
+    rutaPropia: limpiarActivo ? null : (rutaPropia ?? this.rutaPropia),
+    rutaPropiaFase: limpiarActivo
+        ? null
+        : (rutaPropiaFase ?? this.rutaPropiaFase),
   );
 }
 
@@ -104,13 +152,26 @@ class ConductorState {
 ///   la fase/ETA que calcula el servidor y, yendo a recoger, la posición del pasajero.
 class ConductorController extends AsyncNotifier<ConductorState> {
   Timer? _timer;
+  Timer? _timerPosicion;
   bool _sondeando = false;
+  bool _reportando = false;
   int _ciclo = 0;
   final Set<String> _rechazadas = {};
+  final _detector = DetectorDesvio();
+
+  /// Viaje para el que ya se pidió la ruta hasta el pasajero.
+  String? _rutaRecogidaPara;
+
+  /// El servidor no tiene rutas en vivo (404): solo se avisa el desvío.
+  bool _sinRutasEnServidor = false;
+
+  /// Un paso propio (Llegué, Iniciar, Finalizar) va en camino: si el sondeo
+  /// ve el viaje cerrado mientras tanto, no es que el pasajero cancelara.
+  bool _avanzando = false;
 
   @override
   Future<ConductorState> build() async {
-    ref.onDispose(() => _timer?.cancel());
+    ref.onDispose(_pararTimers);
     // Sin sesión (recién cerrada) no se consulta nada: respondería 401.
     if (sinSesionActiva(ref)) {
       return Completer<ConductorState>().future;
@@ -187,6 +248,18 @@ class ConductorController extends AsyncNotifier<ConductorState> {
   void _iniciarPolling() {
     _timer?.cancel();
     _timer = Timer.periodic(Env.pollingInterval, (_) => sondear());
+    _timerPosicion?.cancel();
+    _timerPosicion = Timer.periodic(
+      Env.pollingPosicion,
+      (_) => reportarPosicion(),
+    );
+  }
+
+  void _pararTimers() {
+    _timer?.cancel();
+    _timer = null;
+    _timerPosicion?.cancel();
+    _timerPosicion = null;
   }
 
   Coordenada _coord(({double lat, double lng}) p) =>
@@ -201,7 +274,7 @@ class ConductorController extends AsyncNotifier<ConductorState> {
     final actual = state.value;
     if (actual == null) return;
     if (!actual.enLinea && actual.activo == null) {
-      _timer?.cancel();
+      _pararTimers();
       return;
     }
     if (_sondeando) return;
@@ -275,8 +348,11 @@ class ConductorController extends AsyncNotifier<ConductorState> {
     }
     final vigente = await _repo.viajeActivo();
     if (vigente == null) {
+      // Un paso propio en marcha (p. ej. «Finalizar») también deja el viaje
+      // sin activo: no es que el pasajero cancelara. Lo resuelve ese paso.
+      if (_avanzando || state.value?.activo?.id != activo.id) return;
       // 204: el viaje ya no está activo (lo canceló el pasajero).
-      _timer?.cancel();
+      _pararTimers();
       state = AsyncData(
         _s.copyWith(
           limpiarActivo: true,
@@ -311,7 +387,7 @@ class ConductorController extends AsyncNotifier<ConductorState> {
       await sondear();
     } else {
       state = AsyncData(_s.copyWith(solicitudes: const []));
-      if (_s.activo == null) _timer?.cancel();
+      if (_s.activo == null) _pararTimers();
       // Avisa al servidor para que deje de despacharle solicitudes.
       final gps = await _gps();
       if (gps != null) {
@@ -371,6 +447,16 @@ class ConductorController extends AsyncNotifier<ConductorState> {
   /// enviar»; al volver la señal se envía con la misma llave, así nunca se
   /// repite. Si el servidor dice que ya no aplica, gana el servidor.
   Future<void> avanzar() async {
+    if (_avanzando) return;
+    _avanzando = true;
+    try {
+      await _avanzar();
+    } finally {
+      _avanzando = false;
+    }
+  }
+
+  Future<void> _avanzar() async {
     final activo = _s.activo;
     final fase = _s.fase;
     if (activo == null || fase == null) return;
@@ -456,9 +542,10 @@ class ConductorController extends AsyncNotifier<ConductorState> {
             limpiarPasajero: true,
             terminado: fin,
             desgloseTerminado: desglose,
+            pasajeroCancelo: false,
           ),
         );
-        if (!_s.enLinea) _timer?.cancel();
+        if (!_s.enLinea) _pararTimers();
         if (enCola) return;
         ref.invalidate(ingresosProvider);
         ref.invalidate(saldoProvider);
@@ -485,6 +572,155 @@ class ConductorController extends AsyncNotifier<ConductorState> {
     }
   }
 
+  /// Con un viaje en marcha, cada [Env.pollingPosicion]: envía el último dato
+  /// del GPS (sin pedirlo de nuevo) para que el pasajero vea la moto casi en
+  /// vivo, y revisa si el conductor se salió de la ruta.
+  Future<void> reportarPosicion() async {
+    final actual = state.value;
+    final activo = actual?.activo;
+    if (actual == null || activo == null || _reportando) return;
+    final rastreador = ref.read(rastreadorProvider);
+    final p = rastreador.ultima;
+    final en = rastreador.ultimaEn;
+    if (p == null ||
+        en == null ||
+        DateTime.now().difference(en) > const Duration(seconds: 6)) {
+      return;
+    }
+    _reportando = true;
+    try {
+      // El ciclo de 5 s también reporta: si está en curso, este se salta.
+      if (!_sondeando) {
+        final posicion = await _repo.reportarUbicacion(
+          Coordenada(latitud: p.latitude, longitud: p.longitude),
+          disponible: false,
+        );
+        final ahora = state.value;
+        if (posicion != null && ahora?.activo?.id == activo.id) {
+          state = AsyncData(ahora!.copyWith(posicion: posicion));
+        }
+      }
+    } on Object {
+      // Sin señal: el ciclo de 5 s guarda el punto para el recorrido real.
+    } finally {
+      _reportando = false;
+    }
+    revisarRuta(p);
+  }
+
+  /// Yendo a recoger pide una vez la ruta hasta el pasajero; en cualquier
+  /// fase, si la moto se salió de la ruta, pide rutas nuevas.
+  void revisarRuta(LatLng p) {
+    final s = state.value;
+    final a = s?.activo;
+    if (s == null || a == null) return;
+    if (s.fase == FaseConductor.aRecoger &&
+        _rutaRecogidaPara != a.id &&
+        !_sinRutasEnServidor) {
+      _rutaRecogidaPara = a.id;
+      unawaited(pedirRutas(desde: p, automatica: true));
+      return;
+    }
+    if (s.desvio != EstadoDesvio.ninguno) return;
+    final ruta = s.rutaVigente;
+    if (ruta == null) return;
+    if (_detector.registrar(ruta, p, DateTime.now())) {
+      unawaited(pedirRutas(desde: p));
+    }
+  }
+
+  /// Pide rutas desde donde va (al salirse de la ruta o con «Rutas»).
+  /// [automatica]: la ruta hasta el pasajero; se toma la sugerida sin
+  /// preguntar y sin avisos.
+  Future<void> pedirRutas({LatLng? desde, bool automatica = false}) async {
+    final a = state.value?.activo;
+    if (a == null) return;
+    EstadoDesvio fallo() =>
+        automatica ? EstadoDesvio.ninguno : EstadoDesvio.sinOpciones;
+    if (_sinRutasEnServidor) {
+      if (!automatica) state = AsyncData(_s.copyWith(desvio: fallo()));
+      return;
+    }
+    var origen = desde;
+    if (origen == null) {
+      final g = await _gps();
+      if (g != null) origen = LatLng(g.lat, g.lng);
+    }
+    if (origen == null) {
+      if (!automatica) state = AsyncData(_s.copyWith(desvio: fallo()));
+      return;
+    }
+    if (!automatica) {
+      state = AsyncData(_s.copyWith(desvio: EstadoDesvio.buscando));
+    }
+    try {
+      final opciones = await _repo.rutasDesde(
+        a.id,
+        Coordenada(latitud: origen.latitude, longitud: origen.longitude),
+      );
+      final s = state.value;
+      if (s == null || s.activo?.id != a.id) return;
+      final validas = [
+        for (final o in opciones)
+          if (rutaDe(o.geometria).length >= 2) o,
+      ];
+      if (validas.isEmpty) {
+        state = AsyncData(s.copyWith(desvio: fallo()));
+      } else if (automatica) {
+        state = AsyncData(
+          s.copyWith(
+            rutaPropia: rutaDe(validas.first.geometria),
+            rutaPropiaFase: s.fase,
+          ),
+        );
+        _detector.reiniciar();
+      } else {
+        state = AsyncData(
+          s.copyWith(desvio: EstadoDesvio.opciones, rutasOfrecidas: validas),
+        );
+      }
+    } on Object catch (e) {
+      final codigo = AppException.from(e).statusCode;
+      // El servidor aún no tiene rutas en vivo: desde aquí solo se avisa.
+      if (codigo == 404 || codigo == 405) _sinRutasEnServidor = true;
+      final s = state.value;
+      if (s != null && s.activo?.id == a.id) {
+        state = AsyncData(s.copyWith(desvio: fallo()));
+      }
+    }
+  }
+
+  /// Elige una de las rutas ofrecidas: se dibuja al instante y se avisa al
+  /// servidor (con el viaje en curso, el pasajero la ve en su mapa).
+  Future<void> elegirRuta(int indice) async {
+    final s = state.value;
+    final a = s?.activo;
+    if (s == null || a == null || s.rutasOfrecidas.isEmpty) return;
+    final op = s.rutasOfrecidas.firstWhere(
+      (o) => o.indice == indice,
+      orElse: () => s.rutasOfrecidas.first,
+    );
+    state = AsyncData(
+      s.copyWith(
+        desvio: EstadoDesvio.ninguno,
+        rutasOfrecidas: const [],
+        rutaPropia: rutaDe(op.geometria),
+        rutaPropiaFase: s.fase,
+      ),
+    );
+    _detector.reiniciar();
+    try {
+      await _repo.elegirRuta(a.id, op.indice);
+    } on Object {
+      // La ruta vale en el teléfono; el pasajero sigue viendo la anterior.
+    }
+  }
+
+  /// Cierra el aviso de desvío o la lista de rutas sin elegir.
+  void descartarRutas() => state = AsyncData(
+    _s.copyWith(desvio: EstadoDesvio.ninguno, rutasOfrecidas: const []),
+  );
+
   Future<void> cancelarActivo() async {
     final activo = _s.activo;
     if (activo == null) return;
@@ -496,7 +732,7 @@ class ConductorController extends AsyncNotifier<ConductorState> {
         limpiarPasajero: true,
       ),
     );
-    if (!_s.enLinea) _timer?.cancel();
+    if (!_s.enLinea) _pararTimers();
   }
 
   void cerrarResumen() =>

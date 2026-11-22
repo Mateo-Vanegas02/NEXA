@@ -14,6 +14,7 @@ import '../../../../core/mapa/reglas_marcadores.dart';
 import '../../../../core/rumbo/orientacion_mapa.dart';
 import '../../../../core/utils/acciones_externas.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/utils/mi_posicion.dart';
 import '../../../../core/mapa/polyline.dart';
 import '../../../../core/widgets/mapa_nexa.dart';
 import '../../../../core/widgets/nexa_diseno.dart';
@@ -84,8 +85,16 @@ class _Seguimiento extends ConsumerWidget {
     // Posición, distancia y ETA reales del conductor (los calcula el servidor).
     final pos = ref.watch(posicionConductorProvider);
     final moto = pos == null ? null : LatLng(pos.latitud, pos.longitud);
+    // Su propio punto sale del GPS apenas llega (cada 2 s mientras la moto
+    // viene); si no hay dato reciente, el último que se envió al servidor.
+    final enVivo = ref.watch(posicionEnVivoProvider).value;
+    final yoVivo =
+        enVivo != null &&
+            DateTime.now().difference(enVivo.en) < const Duration(seconds: 8)
+        ? enVivo.punto
+        : null;
     final yo = s.estado == EstadoServicio.aceptado
-        ? ref.watch(miUbicacionViajeProvider)
+        ? (yoVivo ?? ref.watch(miUbicacionViajeProvider))
         : null;
     final total = s.duracionEstimadaMin > 0
         ? s.duracionEstimadaMin.ceil()
@@ -102,6 +111,24 @@ class _Seguimiento extends ConsumerWidget {
     final enElPunto =
         s.estado == EstadoServicio.aceptado && s.fechaLlegada != null;
     final nombre = (s.conductor?.nombre ?? l.tuConductor).split(' ').first;
+    // El conductor tomó otra calle y eligió una ruta nueva (rediseño 2026).
+    ref.listen(rutaCambiadaProvider, (antes, ahora) {
+      if (ahora <= (antes ?? 0)) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${l.rutaCambiadaTitulo(nombre)} · ${l.rutaCambiadaTexto}'),
+        ),
+      );
+    });
+    // La cámara sigue a la moto con lo que importa en cada fase: viniendo por
+    // ti, tú y la moto; en viaje, la moto y el destino.
+    final List<LatLng>? encuadre = moto == null
+        ? null
+        : switch (s.estado) {
+            EstadoServicio.aceptado => [moto, yo ?? origen],
+            EstadoServicio.enCurso => [moto, ?destino],
+            _ => null,
+          };
     final fases = [
       l.faseAceptado,
       l.faseEnCamino,
@@ -179,6 +206,9 @@ class _Seguimiento extends ConsumerWidget {
             conductor: moto,
             pasajero: yo,
             orientable: true,
+            progreso: s.estado == EstadoServicio.enCurso,
+            encuadre: encuadre,
+            margenInferior: MediaQuery.sizeOf(context).height * 0.48,
           ),
         ),
         if (arriba != null)
@@ -195,7 +225,7 @@ class _Seguimiento extends ConsumerWidget {
             ),
           ),
         NexaHojaArrastrable(
-          inicial: s.estado == EstadoServicio.solicitado ? 0.62 : 0.56,
+          inicial: s.estado == EstadoServicio.solicitado ? 0.62 : 0.46,
           minimo: 0.3,
           children: [
             if (s.estado == EstadoServicio.solicitado) ...[

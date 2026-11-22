@@ -11,6 +11,7 @@ import 'package:nexa_mobile/features/viajes/presentation/controllers/sin_conexio
 import 'package:nexa_mobile/features/auth/presentation/controllers/session_controller.dart';
 import 'package:nexa_mobile/features/viajes/data/viajes_repository_impl.dart';
 import 'package:nexa_mobile/features/viajes/domain/servicio.dart';
+import 'package:nexa_mobile/features/viajes/domain/opcion_ruta.dart';
 import 'package:nexa_mobile/features/viajes/domain/viajes_repository.dart';
 import 'package:nexa_mobile/features/viajes/presentation/controllers/viaje_conductor_controller.dart';
 
@@ -432,7 +433,109 @@ void main() {
       c.read(conductorProvider.notifier).cerrarResumen();
       expect(c.read(conductorProvider).requireValue.terminado, isNull);
     });
+
+    group('rutas en vivo (rediseño 2026)', () {
+      // Ruta del viaje: recta hacia el este; la moto se va 110 m al norte.
+      final delViaje = _codificar(const [LatLng(10.40, -75.50), LatLng(10.40, -75.49)]);
+      final nueva = _codificar(const [LatLng(10.401, -75.495), LatLng(10.42, -75.52)]);
+      final otra = _codificar(const [LatLng(10.401, -75.495), LatLng(10.41, -75.53), LatLng(10.42, -75.52)]);
+      const fuera = LatLng(10.401, -75.495);
+
+      Future<(ProviderContainer, _Repo)> enViaje() async {
+        final falso = _Repo(
+          activo: _viaje(EstadoServicio.enCurso).copyWith(rutaGeometria: delViaje),
+        )..rutas = [
+            OpcionRuta(indice: 0, geometria: nueva, distanciaKm: 2.6, duracionMin: 7, etiqueta: EtiquetaRuta.rapida),
+            OpcionRuta(indice: 1, geometria: otra, distanciaKm: 2.4, duracionMin: 9, etiqueta: EtiquetaRuta.corta),
+          ];
+        final c = contenedor(falso, gps: fuera);
+        await c.read(sesionProvider.notifier).login('conductor@x.co', '123456');
+        await c.read(conductorProvider.future);
+        return (c, falso);
+      }
+
+      test('dos lecturas fuera de la ruta ofrecen rutas desde donde va', () async {
+        final (c, _) = await enViaje();
+        final ctrl = c.read(conductorProvider.notifier);
+        expect(c.read(conductorProvider).requireValue.rutaVigente, hasLength(2));
+
+        ctrl.revisarRuta(fuera);
+        expect(c.read(conductorProvider).requireValue.desvio, EstadoDesvio.ninguno);
+        ctrl.revisarRuta(fuera);
+        await pumpEventQueue();
+
+        final s = c.read(conductorProvider).requireValue;
+        expect(s.desvio, EstadoDesvio.opciones);
+        expect(s.rutasOfrecidas.map((o) => o.etiqueta), [EtiquetaRuta.rapida, EtiquetaRuta.corta]);
+      });
+
+      test('elegir una ruta la dibuja y avisa al servidor', () async {
+        final (c, falso) = await enViaje();
+        final ctrl = c.read(conductorProvider.notifier);
+        await ctrl.pedirRutas(desde: fuera);
+        await ctrl.elegirRuta(1);
+
+        final s = c.read(conductorProvider).requireValue;
+        expect(s.desvio, EstadoDesvio.ninguno);
+        expect(s.rutasOfrecidas, isEmpty);
+        expect(s.rutaVigente, hasLength(3));
+        expect(falso.elegidas, [1]);
+      });
+
+      test('sin rutas nuevas lo avisa y se puede cerrar', () async {
+        final (c, falso) = await enViaje();
+        falso.rutas = const [];
+        final ctrl = c.read(conductorProvider.notifier);
+        await ctrl.pedirRutas(desde: fuera);
+        expect(c.read(conductorProvider).requireValue.desvio, EstadoDesvio.sinOpciones);
+        ctrl.descartarRutas();
+        expect(c.read(conductorProvider).requireValue.desvio, EstadoDesvio.ninguno);
+      });
+
+      test('yendo a recoger toma sola la ruta hasta el pasajero', () async {
+        final falso = _Repo(activo: _viaje(EstadoServicio.aceptado))
+          ..rutas = [
+            OpcionRuta(indice: 0, geometria: nueva, distanciaKm: 1, duracionMin: 3, etiqueta: EtiquetaRuta.rapida),
+          ];
+        final c = contenedor(falso, gps: fuera);
+        await c.read(sesionProvider.notifier).login('conductor@x.co', '123456');
+        await c.read(conductorProvider.future);
+        expect(c.read(conductorProvider).requireValue.rutaVigente, isNull);
+
+        c.read(conductorProvider.notifier).revisarRuta(fuera);
+        await pumpEventQueue();
+
+        final s = c.read(conductorProvider).requireValue;
+        expect(s.desvio, EstadoDesvio.ninguno);
+        expect(s.rutaVigente, hasLength(2));
+      });
+    });
   });
+}
+
+/// Codifica una polyline (precisión 5) para armar rutas de prueba.
+String _codificar(List<LatLng> puntos) {
+  final b = StringBuffer();
+  var lat0 = 0;
+  var lng0 = 0;
+  void valor(int v) {
+    var x = v < 0 ? ~(v << 1) : v << 1;
+    while (x >= 0x20) {
+      b.writeCharCode((0x20 | (x & 0x1f)) + 63);
+      x >>= 5;
+    }
+    b.writeCharCode(x + 63);
+  }
+
+  for (final p in puntos) {
+    final lat = (p.latitude * 1e5).round();
+    final lng = (p.longitude * 1e5).round();
+    valor(lat - lat0);
+    valor(lng - lng0);
+    lat0 = lat;
+    lng0 = lng;
+  }
+  return b.toString();
 }
 
 Servicio _solicitud(String id) => Servicio(
@@ -509,6 +612,17 @@ class _Repo implements ConductorRepository {
 
   @override
   Future<PosicionPasajero?> ubicacionPasajero(String id) async => pasajero;
+  @override
+  Future<List<OpcionRuta>> rutasDesde(String id, Coordenada desde) async =>
+      rutas;
+  @override
+  Future<String?> elegirRuta(String id, int indice) async {
+    elegidas.add(indice);
+    return rutas.isEmpty ? null : rutas[indice].geometria;
+  }
+
+  List<OpcionRuta> rutas = const [];
+  final List<int> elegidas = [];
   @override
   @override
   Future<List<Servicio>> disponibles({double? lat, double? lng}) async {

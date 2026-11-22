@@ -29,6 +29,7 @@ class NavegacionConductor extends ConsumerWidget {
     required this.destino,
     required this.pasajero,
     this.restanteKm,
+    this.conRutaRecogida = false,
     super.key,
   });
 
@@ -42,6 +43,10 @@ class NavegacionConductor extends ConsumerWidget {
   /// Distancia que calcula el servidor (a la recogida o al destino).
   final double? restanteKm;
 
+  /// Yendo a recoger, [ruta] ya es la ruta hasta el pasajero (la dio el
+  /// servidor al aceptar): se navega giro a giro en vez de con la flecha.
+  final bool conRutaRecogida;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
@@ -52,7 +57,10 @@ class NavegacionConductor extends ConsumerWidget {
     final String distancia;
     final String instruccion;
     String? luego;
-    if (fase == FaseConductor.enViaje) {
+    final objetivo = fase == FaseConductor.enViaje
+        ? l.navLlegasA(destino)
+        : l.navHaciaPunto(nombre);
+    if (fase == FaseConductor.enViaje || conRutaRecogida) {
       final m = ReglasManiobra.siguiente(ruta, moto);
       if (m == null) {
         icono = Icons.alt_route;
@@ -78,9 +86,9 @@ class NavegacionConductor extends ConsumerWidget {
           Giro.ligeraIzquierda => l.navLigeraIzquierda,
           Giro.vuelta => l.navDaLaVuelta,
           Giro.recto => l.navSigueRecto,
-          Giro.llegada => l.navLlegasA(destino),
+          Giro.llegada => objetivo,
         };
-        if (m.giro != Giro.llegada) luego = l.navLlegasA(destino);
+        if (m.giro != Giro.llegada) luego = objetivo;
       }
     } else {
       // Hacia la recogida: la flecha apunta al punto respecto de su rumbo.

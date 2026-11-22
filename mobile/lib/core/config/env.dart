@@ -53,4 +53,8 @@ abstract final class Env {
 
   /// Intervalo de polling del viaje activo.
   static const Duration pollingInterval = Duration(seconds: 5);
+
+  /// Con un viaje en marcha, la posición de la moto se envía y se consulta más
+  /// seguido (rediseño 2026): el mapa la mueve fluida entre un dato y otro.
+  static const Duration pollingPosicion = Duration(seconds: 2);
 }
