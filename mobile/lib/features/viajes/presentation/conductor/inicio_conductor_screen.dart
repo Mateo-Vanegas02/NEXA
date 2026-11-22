@@ -164,6 +164,7 @@ class _Panel extends ConsumerWidget {
             progreso: rutaVigente != null && opciones.isEmpty,
             conductor: moto,
             motoPropia: true,
+            velocidadKmh: enVivo?.velocidad == null ? null : enVivo!.velocidad! * 3.6,
             pasajero: estado.pasajero == null
                 ? null
                 : LatLng(estado.pasajero!.latitud, estado.pasajero!.longitud),
