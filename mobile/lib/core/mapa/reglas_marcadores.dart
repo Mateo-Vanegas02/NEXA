@@ -21,6 +21,31 @@ abstract final class ReglasMarcadores {
   /// Con una posición más vieja que esto la moto se pinta «sin señal».
   static const sinSenalTras = Duration(seconds: 20);
 
+  /// Con un dato del GPS más nuevo que esto se prefiere al del servidor.
+  static const gpsFrescoPor = Duration(seconds: 6);
+
+  /// Dónde pintar la moto propia del conductor.
+  ///
+  /// Prefiere el GPS del teléfono si es reciente; si no, la última posición
+  /// que confirmó el servidor (solo la hay con viaje). Sin ninguna de las dos
+  /// se queda con el último dato del GPS aunque sea viejo: quieto, el GPS no
+  /// manda datos nuevos y la moto no debe desaparecer del mapa.
+  static LatLng? motoPropia({
+    required bool activo,
+    LatLng? gps,
+    DateTime? gpsEn,
+    LatLng? servidor,
+    required DateTime ahora,
+  }) {
+    final usable = activo ? gps : null;
+    final fresco =
+        usable != null &&
+        gpsEn != null &&
+        ahora.difference(gpsEn) < gpsFrescoPor;
+    if (fresco) return usable;
+    return servidor ?? usable;
+  }
+
   static const _distancia = Distance();
 
   static double normalizar(double grados) => ((grados % 360) + 360) % 360;

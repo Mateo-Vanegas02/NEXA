@@ -73,4 +73,60 @@ void main() {
     expect(ReglasMarcadores.sinSenal(10), isFalse);
     expect(ReglasMarcadores.sinSenal(25), isTrue);
   });
+
+  group('motoPropia', () {
+    final ahora = DateTime(2026, 11, 22, 16, 25);
+    const gps = LatLng(10.37, -75.48);
+    const servidor = LatLng(10.36, -75.47);
+
+    test('GPS reciente gana al servidor', () {
+      expect(
+        ReglasMarcadores.motoPropia(
+          activo: true,
+          gps: gps,
+          gpsEn: ahora.subtract(const Duration(seconds: 2)),
+          servidor: servidor,
+          ahora: ahora,
+        ),
+        gps,
+      );
+    });
+
+    test('GPS viejo con viaje: la del servidor', () {
+      expect(
+        ReglasMarcadores.motoPropia(
+          activo: true,
+          gps: gps,
+          gpsEn: ahora.subtract(const Duration(minutes: 1)),
+          servidor: servidor,
+          ahora: ahora,
+        ),
+        servidor,
+      );
+    });
+
+    test('en línea quieto sin viaje: no desaparece', () {
+      expect(
+        ReglasMarcadores.motoPropia(
+          activo: true,
+          gps: gps,
+          gpsEn: ahora.subtract(const Duration(minutes: 5)),
+          ahora: ahora,
+        ),
+        gps,
+      );
+    });
+
+    test('desconectado y sin viaje: no hay moto', () {
+      expect(
+        ReglasMarcadores.motoPropia(
+          activo: false,
+          gps: gps,
+          gpsEn: ahora,
+          ahora: ahora,
+        ),
+        isNull,
+      );
+    });
+  });
 }
