@@ -116,16 +116,16 @@ class _Panel extends ConsumerWidget {
         ? estado.solicitudes.where((s) => !vistas.contains(s.id)).firstOrNull
         : null;
     // Su propia moto sale del GPS del teléfono apenas llega cada dato (1 por
-    // segundo en viaje), sin esperar al servidor; si el dato es viejo, la
-    // última posición que confirmó el servidor.
+    // segundo en viaje), sin esperar al servidor. Quieto, el GPS no manda
+    // datos nuevos: se conserva el último para que la moto no desaparezca.
     final enVivo = ref.watch(posicionEnVivoProvider).value;
-    final gpsFresco =
-        enVivo != null &&
-        (estado.enLinea || activo != null) &&
-        DateTime.now().difference(enVivo.en) < const Duration(seconds: 6);
-    final moto = gpsFresco
-        ? enVivo.punto
-        : (pos == null ? null : LatLng(pos.latitud, pos.longitud));
+    final moto = ReglasMarcadores.motoPropia(
+      activo: estado.enLinea || activo != null,
+      gps: enVivo?.punto,
+      gpsEn: enVivo?.en,
+      servidor: pos == null ? null : LatLng(pos.latitud, pos.longitud),
+      ahora: DateTime.now(),
+    );
     // Rutas: las que ofrece el servidor al desviarse (la sugerida resaltada),
     // la elegida o la del viaje.
     final opciones = estado.desvio == EstadoDesvio.opciones
