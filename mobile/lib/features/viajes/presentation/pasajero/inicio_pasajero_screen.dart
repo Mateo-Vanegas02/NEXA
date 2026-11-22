@@ -126,7 +126,10 @@ class _Encabezado extends ConsumerWidget {
     final viajes =
         p?.viajes ??
         historial?.where((s) => s.estado.name == 'finalizado').length;
+    // El saludo usa todo el ancho que deja la campana (con un Spacer al lado
+    // se quedaba en la mitad y cortaba el nombre).
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Flexible(
           child: DecoratedBox(
@@ -154,6 +157,8 @@ class _Encabezado extends ConsumerWidget {
                       children: [
                         Text(
                           _saludo(l, DateTime.now().hour),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: context.textos.bodySmall?.copyWith(
                             color: context.muted,
                           ),
@@ -178,7 +183,7 @@ class _Encabezado extends ConsumerWidget {
             ),
           ),
         ),
-        const Spacer(),
+        const SizedBox(width: Sp.md),
         IconButton(
           tooltip: l.notificaciones,
           onPressed: () => context.push('/notificaciones'),

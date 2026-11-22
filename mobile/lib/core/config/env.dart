@@ -44,7 +44,9 @@ abstract final class Env {
   /// (p. ej. por mapas propios en AWS).
   static const String estiloMapaOscuro = String.fromEnvironment(
     'MAPA_ESTILO_OSCURO',
-    defaultValue: 'https://tiles.openfreemap.org/styles/dark',
+    // Fiord: azul pizarra con calles legibles (el «dark» casi negro no
+    // dejaba ver las calles en la prueba del 22 nov.).
+    defaultValue: 'https://tiles.openfreemap.org/styles/fiord',
   );
   static const String estiloMapaClaro = String.fromEnvironment(
     'MAPA_ESTILO_CLARO',
