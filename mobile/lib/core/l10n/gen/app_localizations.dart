@@ -5246,6 +5246,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Conduce con NEXA'**
   String get portadaConducir;
+
+  /// No description provided for @precioHoy.
+  ///
+  /// In es, this message translates to:
+  /// **'hoy'**
+  String get precioHoy;
+
+  /// No description provided for @precioHoySemantica.
+  ///
+  /// In es, this message translates to:
+  /// **'Ir hoy cuesta cerca de {precio}'**
+  String precioHoySemantica(String precio);
 }
 
 class _AppLocalizationsDelegate

@@ -2903,4 +2903,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get portadaConducir => 'Conduce con NEXA';
+
+  @override
+  String get precioHoy => 'hoy';
+
+  @override
+  String precioHoySemantica(String precio) {
+    return 'Ir hoy cuesta cerca de $precio';
+  }
 }

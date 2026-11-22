@@ -1811,5 +1811,14 @@
   "portadaTitulo": "Tu moto, a un toque.",
   "portadaTexto": "Ves el precio antes de pedir y sigues el viaje en vivo, con conductores verificados en Cartagena.",
   "portadaPedir": "Pide tu primer viaje",
-  "portadaConducir": "Conduce con NEXA"
+  "portadaConducir": "Conduce con NEXA",
+  "precioHoy": "hoy",
+  "precioHoySemantica": "Ir hoy cuesta cerca de {precio}",
+  "@precioHoySemantica": {
+    "placeholders": {
+      "precio": {
+        "type": "String"
+      }
+    }
+  }
 }
