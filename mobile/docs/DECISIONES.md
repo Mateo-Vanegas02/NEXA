@@ -130,3 +130,10 @@ Durante la recogida y el trayecto, el velocímetro flota sobre el mapa incluso c
 - **Notificación con avance (punto 9).** La notificación fija del viaje del conductor muestra una barra (distancia total y restante del servidor, pasos de 5 %) y es pública en la pantalla de bloqueo. Yendo a recoger no hay barra: el servidor no da la distancia total de ese tramo. El pasajero en viaje no tiene notificación fija (el GPS en segundo plano solo corre mientras el conductor va por él).
 - **Splash (punto 6, decidido por Mateo).** La N de NEXA se dibuja como una ruta: sale de un punto que late, recorre la letra con el degradado cian → azul y termina en un pin de destino; luego el nombre, el lema y la firma. 2,4 s una sola vez; con «reducir animaciones», el cuadro final. Reemplaza la carátula «Pulso» (calle y faro).
 - **«Llegué» (punto 8, decidido por Mateo).** Se queda como está: la guía de distancia orienta y el control no se bloquea; el servidor exige los 50 m.
+
+## 22-nov-2026 · Prueba en el teléfono: login, ubicación y conexión del conductor
+
+- **Volver desde el login.** Botón de volver arriba y el atrás del teléfono llevan a la portada (`/inicio`).
+- **Ubicarse al entrar.** `ubicacionProvider` se descarta cuando ninguna pantalla lo usa (al cerrar sesión) y vuelve a leer el GPS al entrar; si el GPS no responde a tiempo usa la última posición conocida. `MapaNexa` mueve la cámara cuando cambia `centro` (llegó el GPS), salvo si la persona está moviendo el mapa o este ya sigue otra cosa. El conductor fuera de línea ve su moto donde está, sin tener que conectarse.
+- **Una sola forma de conectarse.** El estado de arriba del conductor ya no es un interruptor: solo dice «En línea» o «Fuera de línea». Conectarse es deslizar en la hoja; desconectarse, «Desconectarme».
+- **Bienvenida tras reinstalar.** Las 4 páginas salen una sola vez por instalación (antes de la portada): al borrar la app se borra la marca de «vista» y vuelven a salir. Es lo esperado.

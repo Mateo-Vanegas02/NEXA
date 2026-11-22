@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexa_mobile/core/rumbo/reglas_rumbo.dart';
+import 'package:nexa_mobile/core/widgets/nexa_diseno.dart';
 import 'package:nexa_mobile/features/viajes/presentation/widgets/navegacion_conductor.dart';
 import 'package:nexa_mobile/features/auth/domain/auth.dart';
 import 'package:nexa_mobile/features/auth/presentation/controllers/session_controller.dart';
@@ -74,7 +76,16 @@ void main() {
         expect(find.text('¿Listo para rodar?'), findsOneWidget);
         expect(find.text('Desliza para conectarte'), findsOneWidget);
 
-        await t.tap(find.bySemanticsLabel('Conectarme'));
+        // Una sola forma de conectarse: deslizar (el estado de arriba ya no
+        // es un interruptor).
+        expect(find.bySemanticsLabel('Conectarme'), findsNothing);
+        await t.drag(
+          find.descendant(
+            of: find.byType(NexaDeslizar),
+            matching: find.byIcon(Icons.arrow_forward),
+          ),
+          const Offset(600, 0),
+        );
         await _ratos(t, 800);
         expect(find.text('En línea'), findsOneWidget);
         expect(find.text('Buscando solicitudes cerca de ti'), findsOneWidget);
@@ -85,10 +96,14 @@ void main() {
           await _ratos(t, 400);
           expect(find.text('Ver en el mapa'), findsNothing);
         }
-        // El interruptor de arriba y el botón de la hoja.
-        expect(find.bySemanticsLabel('Desconectarme'), findsWidgets);
+        // Desconectarse: solo el botón de la hoja.
+        expect(find.bySemanticsLabel('Desconectarme'), findsOneWidget);
 
-        await t.tap(find.bySemanticsLabel('Desconectarme').first);
+        // En 360×640 queda más abajo en la hoja: se desplaza hasta él.
+        final desconectar = find.bySemanticsLabel('Desconectarme');
+        await t.ensureVisible(desconectar);
+        await t.pump();
+        await t.tap(desconectar);
         await _ratos(t, 800);
         expect(find.text('Fuera de línea'), findsOneWidget);
         semantica.dispose();

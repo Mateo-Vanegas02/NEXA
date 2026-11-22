@@ -28,7 +28,9 @@ final mapasHabilitadosProvider = Provider<bool>((ref) => true);
 ///
 /// No pide el permiso: lo piden las pantallas de permisos (N02 / E01) con su
 /// explicación; después se invalida este provider para centrar el mapa.
-final ubicacionProvider = FutureProvider<LatLng>((ref) async {
+/// Se descarta cuando ninguna pantalla lo usa (p. ej. al cerrar sesión): al
+/// entrar de nuevo se vuelve a leer el GPS en vez de quedarse con el de antes.
+final ubicacionProvider = FutureProvider.autoDispose<LatLng>((ref) async {
   try {
     if (!await Geolocator.isLocationServiceEnabled()) return kCentroPorDefecto;
     final permiso = await Geolocator.checkPermission();
@@ -36,10 +38,18 @@ final ubicacionProvider = FutureProvider<LatLng>((ref) async {
         permiso == LocationPermission.deniedForever) {
       return kCentroPorDefecto;
     }
-    final p = await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(timeLimit: Duration(seconds: 8)),
-    );
-    return LatLng(p.latitude, p.longitude);
+    try {
+      final p = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          timeLimit: Duration(seconds: 8),
+        ),
+      );
+      return LatLng(p.latitude, p.longitude);
+    } on Object {
+      // Sin un dato nuevo a tiempo, el último que conoce el teléfono.
+      final u = await Geolocator.getLastKnownPosition();
+      return u == null ? kCentroPorDefecto : LatLng(u.latitude, u.longitude);
+    }
   } on Object {
     return kCentroPorDefecto;
   }
@@ -286,6 +296,19 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
         widget.destino != anterior.destino ||
         widget.ruta != anterior.ruta;
     if (widget.encuadrarRuta && cambioRuta) _enCola(_encuadrar);
+    // El centro cambió (p. ej. llegó el GPS tras abrir el mapa en el centro
+    // por defecto): la cámara va hasta allí sin que haya que tocar el mapa,
+    // salvo si la persona lo está moviendo o el mapa ya sigue otra cosa.
+    if (widget.centro != anterior.centro &&
+        !widget.navegacion &&
+        widget.encuadre == null &&
+        !widget.encuadrarRuta &&
+        !_enPausa) {
+      final destino = widget.centro;
+      _enCola(() async {
+        await _ml?.animateCamera(ml.CameraUpdate.newLatLng(_aMl(destino)));
+      });
+    }
     if (_usaOrientacion &&
         (widget.navegacion != anterior.navegacion ||
             (widget.navegacion &&

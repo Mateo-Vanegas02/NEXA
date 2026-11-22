@@ -170,7 +170,11 @@ class _Panel extends ConsumerWidget {
               for (final o in opciones.skip(1)) rutaDe(o.geometria),
             ],
             progreso: rutaVigente != null && opciones.isEmpty,
-            conductor: moto,
+            // Fuera de línea su moto queda donde dice el GPS del teléfono, para
+            // ubicarse apenas entra (antes solo aparecía al conectarse).
+            conductor:
+                moto ??
+                (activo == null && centro != kCentroPorDefecto ? centro : null),
             motoPropia: true,
             velocidadKmh: velocidadKmh,
             pasajero: estado.pasajero == null
@@ -264,20 +268,9 @@ class _Panel extends ConsumerWidget {
               padding: const EdgeInsets.all(Sp.md),
               child: Align(
                 alignment: Alignment.topLeft,
-                child: _EstadoFlotante(
-                  enLinea: estado.enLinea,
-                  // Sin viaje se conecta o desconecta desde aquí (diseño C01).
-                  onTap: enViaje
-                      ? null
-                      : () async {
-                          // Antes de conectarse: ubicación y, la primera vez, N03.
-                          if (!estado.enLinea &&
-                              !await prepararConexion(context, ref)) {
-                            return;
-                          }
-                          await ctrl.alternarLinea();
-                        },
-                ),
+                // Solo muestra el estado: conectarse es deslizar en la hoja y
+                // desconectarse, «Desconectarme» (una sola forma de cada uno).
+                child: _EstadoFlotante(enLinea: estado.enLinea),
               ),
             ),
           ),
@@ -415,61 +408,55 @@ class _Panel extends ConsumerWidget {
 
 /// «En línea» con su interruptor, flotando sobre el mapa (diseño C01).
 class _EstadoFlotante extends StatelessWidget {
-  const _EstadoFlotante({required this.enLinea, this.onTap});
+  const _EstadoFlotante({required this.enLinea});
   final bool enLinea;
-
-  /// null = con un viaje no se puede desconectar desde aquí.
-  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final color = enLinea ? NexaColors.ok : NexaColors.muted;
     return Semantics(
-      button: onTap != null,
-      toggled: enLinea,
-      label: onTap == null
-          ? (enLinea ? l.enLinea : l.fueraDeLinea)
-          : (enLinea ? l.desconectarme : l.conectarme),
+      liveRegion: true,
+      label: enLinea ? l.enLinea : l.fueraDeLinea,
       child: ExcludeSemantics(
-        child: Material(
-          color: NexaColors.glass,
-          shape: StadiumBorder(
-            side: BorderSide(color: color.withValues(alpha: 0.5)),
+        child: DecoratedBox(
+          decoration: ShapeDecoration(
+            color: NexaColors.glass,
+            shape: StadiumBorder(
+              side: BorderSide(color: color.withValues(alpha: 0.5)),
+            ),
           ),
-          child: InkWell(
-            customBorder: const StadiumBorder(),
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(Sp.lg, Sp.xs, Sp.xs, Sp.xs),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Flexible(
-                    child: Text(
-                      enLinea ? l.enLinea : l.fueraDeLinea,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: color,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15,
-                      ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: Sp.lg,
+              vertical: Sp.sm + 2,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                    boxShadow: enLinea ? NexaShadows.glow : null,
+                  ),
+                ),
+                const SizedBox(width: Sp.sm),
+                Flexible(
+                  child: Text(
+                    enLinea ? l.enLinea : l.fueraDeLinea,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
                     ),
                   ),
-                  const SizedBox(width: Sp.sm),
-                  IgnorePointer(
-                    child: Switch(
-                      value: enLinea,
-                      onChanged: onTap == null ? null : (_) {},
-                      activeThumbColor: NexaColors.texto,
-                      activeTrackColor: NexaColors.ok,
-                      inactiveThumbColor: NexaColors.muted,
-                      inactiveTrackColor: NexaColors.raised,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
