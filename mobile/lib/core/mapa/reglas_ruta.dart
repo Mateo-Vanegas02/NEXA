@@ -129,7 +129,8 @@ class DetectorDesvio {
     _fuera++;
     if (_fuera < ReglasRuta.lecturasDesvio) return false;
     final ultimo = _ultimoAviso;
-    if (ultimo != null && ahora.difference(ultimo) < ReglasRuta.esperaEntreAvisos) {
+    if (ultimo != null &&
+        ahora.difference(ultimo) < ReglasRuta.esperaEntreAvisos) {
       return false;
     }
     _ultimoAviso = ahora;

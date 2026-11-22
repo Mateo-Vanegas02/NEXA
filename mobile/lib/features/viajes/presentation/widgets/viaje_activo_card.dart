@@ -456,11 +456,7 @@ class ResumenViajeCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
-                      Icons.bolt,
-                      size: 18,
-                      color: NexaColors.cyan,
-                    ),
+                    const Icon(Icons.bolt, size: 18, color: NexaColors.cyan),
                     const SizedBox(width: Sp.xs),
                     Text(
                       l.xpGanado(servicio.xpGanadoConductor),

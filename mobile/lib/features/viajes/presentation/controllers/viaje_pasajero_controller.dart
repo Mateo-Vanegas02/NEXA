@@ -112,10 +112,7 @@ class ViajePasajeroController extends AsyncNotifier<Servicio?> {
     // Rediseño 2026: la moto se consulta más seguido que el viaje, para que el
     // mapa la mueva fluida.
     _timerPosicion?.cancel();
-    _timerPosicion = Timer.periodic(
-      Env.pollingPosicion,
-      (_) => seguirMoto(),
-    );
+    _timerPosicion = Timer.periodic(Env.pollingPosicion, (_) => seguirMoto());
   }
 
   void _detener() {

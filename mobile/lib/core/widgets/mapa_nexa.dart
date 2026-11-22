@@ -516,11 +516,14 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
   /// La moto y su proa (también en cada cuadro de la animación).
   Future<void> _moto(ml.MapLibreMapController c, {EstadoOrientacion? o}) async {
     if (!_estiloListo || !mounted) return;
-    final orient =
-        o ??
-        (_usaOrientacion
-            ? ref.read(orientacionMapaProvider)
-            : const EstadoOrientacion());
+    final EstadoOrientacion orient;
+    if (o != null) {
+      orient = o;
+    } else if (_usaOrientacion) {
+      orient = ref.read(orientacionMapaProvider);
+    } else {
+      orient = const EstadoOrientacion();
+    }
     final giroMapa = orient.orientado ? orient.rotacionMapa : 0.0;
     final moto = _motoVista ?? widget.conductor;
     final gris = widget.conductorSinSenal;
@@ -637,11 +640,9 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
       e = math.max(e, p.longitude);
     }
     // Puntos muy juntos (o uno solo): se centra con un acercamiento fijo.
-    final ml.CameraUpdate cambio = (n - s).abs() < 0.0015 && (e - w).abs() < 0.0015
-        ? ml.CameraUpdate.newLatLngZoom(
-            ml.LatLng((n + s) / 2, (e + w) / 2),
-            16,
-          )
+    final ml.CameraUpdate cambio =
+        (n - s).abs() < 0.0015 && (e - w).abs() < 0.0015
+        ? ml.CameraUpdate.newLatLngZoom(ml.LatLng((n + s) / 2, (e + w) / 2), 16)
         : ml.CameraUpdate.newLatLngBounds(
             ml.LatLngBounds(
               southwest: ml.LatLng(s, w),
@@ -802,10 +803,7 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
     return Stack(
       children: [
         Positioned.fill(
-          child: Listener(
-            onPointerMove: (_) => _alGesto(),
-            child: mapa,
-          ),
+          child: Listener(onPointerMove: (_) => _alGesto(), child: mapa),
         ),
         if (etiqueta != null)
           Positioned(
@@ -882,7 +880,9 @@ class _BotonMapa extends StatelessWidget {
       child: Material(
         color: destacado ? NexaColors.cyan : NexaColors.glass,
         shape: CircleBorder(
-          side: BorderSide(color: destacado ? NexaColors.cyan : NexaColors.line),
+          side: BorderSide(
+            color: destacado ? NexaColors.cyan : NexaColors.line,
+          ),
         ),
         elevation: 6,
         shadowColor: Colors.black,
@@ -1100,7 +1100,9 @@ class _MiniMapaPainter extends CustomPainter {
     c.drawRect(
       Offset.zero & s,
       Paint()
-        ..color = oscuro ? NexaColors.mapaOscuroFondo : NexaColors.mapaClaroFondo,
+        ..color = oscuro
+            ? NexaColors.mapaOscuroFondo
+            : NexaColors.mapaClaroFondo,
     );
     c.drawPath(
       Path()

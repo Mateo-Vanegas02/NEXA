@@ -116,7 +116,7 @@ class _Panel extends ConsumerWidget {
         (estado.enLinea || activo != null) &&
         DateTime.now().difference(enVivo.en) < const Duration(seconds: 6);
     final moto = gpsFresco
-        ? enVivo!.punto
+        ? enVivo.punto
         : (pos == null ? null : LatLng(pos.latitud, pos.longitud));
     // Rutas: las que ofrece el servidor al desviarse (la sugerida resaltada),
     // la elegida o la del viaje.
@@ -522,7 +522,11 @@ class _BotonRutas extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.alt_route, color: NexaColors.texto, size: 20),
+                  const Icon(
+                    Icons.alt_route,
+                    color: NexaColors.texto,
+                    size: 20,
+                  ),
                   const SizedBox(width: Sp.sm),
                   Text(
                     l.rutasBoton,

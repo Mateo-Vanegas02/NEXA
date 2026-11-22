@@ -129,9 +129,7 @@ class ConductorState {
     pasajeroCancelo: pasajeroCancelo ?? this.pasajeroCancelo,
     copiaDe: limpiarCopia ? null : (copiaDe ?? this.copiaDe),
     // Sin viaje no hay ruta propia ni desvío.
-    desvio: limpiarActivo
-        ? EstadoDesvio.ninguno
-        : (desvio ?? this.desvio),
+    desvio: limpiarActivo ? EstadoDesvio.ninguno : (desvio ?? this.desvio),
     rutasOfrecidas: limpiarActivo
         ? const []
         : (rutasOfrecidas ?? this.rutasOfrecidas),

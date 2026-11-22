@@ -436,38 +436,75 @@ void main() {
 
     group('rutas en vivo (rediseño 2026)', () {
       // Ruta del viaje: recta hacia el este; la moto se va 110 m al norte.
-      final delViaje = _codificar(const [LatLng(10.40, -75.50), LatLng(10.40, -75.49)]);
-      final nueva = _codificar(const [LatLng(10.401, -75.495), LatLng(10.42, -75.52)]);
-      final otra = _codificar(const [LatLng(10.401, -75.495), LatLng(10.41, -75.53), LatLng(10.42, -75.52)]);
+      final delViaje = _codificar(const [
+        LatLng(10.40, -75.50),
+        LatLng(10.40, -75.49),
+      ]);
+      final nueva = _codificar(const [
+        LatLng(10.401, -75.495),
+        LatLng(10.42, -75.52),
+      ]);
+      final otra = _codificar(const [
+        LatLng(10.401, -75.495),
+        LatLng(10.41, -75.53),
+        LatLng(10.42, -75.52),
+      ]);
       const fuera = LatLng(10.401, -75.495);
 
       Future<(ProviderContainer, _Repo)> enViaje() async {
-        final falso = _Repo(
-          activo: _viaje(EstadoServicio.enCurso).copyWith(rutaGeometria: delViaje),
-        )..rutas = [
-            OpcionRuta(indice: 0, geometria: nueva, distanciaKm: 2.6, duracionMin: 7, etiqueta: EtiquetaRuta.rapida),
-            OpcionRuta(indice: 1, geometria: otra, distanciaKm: 2.4, duracionMin: 9, etiqueta: EtiquetaRuta.corta),
-          ];
+        final falso =
+            _Repo(
+                activo: _viaje(EstadoServicio.enCurso)
+                    .copyWith(rutaGeometria: delViaje),
+              )
+              ..rutas = [
+                OpcionRuta(
+                  indice: 0,
+                  geometria: nueva,
+                  distanciaKm: 2.6,
+                  duracionMin: 7,
+                  etiqueta: EtiquetaRuta.rapida,
+                ),
+                OpcionRuta(
+                  indice: 1,
+                  geometria: otra,
+                  distanciaKm: 2.4,
+                  duracionMin: 9,
+                  etiqueta: EtiquetaRuta.corta,
+                ),
+              ];
         final c = contenedor(falso, gps: fuera);
         await c.read(sesionProvider.notifier).login('conductor@x.co', '123456');
         await c.read(conductorProvider.future);
         return (c, falso);
       }
 
-      test('dos lecturas fuera de la ruta ofrecen rutas desde donde va', () async {
-        final (c, _) = await enViaje();
-        final ctrl = c.read(conductorProvider.notifier);
-        expect(c.read(conductorProvider).requireValue.rutaVigente, hasLength(2));
+      test(
+        'dos lecturas fuera de la ruta ofrecen rutas desde donde va',
+        () async {
+          final (c, _) = await enViaje();
+          final ctrl = c.read(conductorProvider.notifier);
+          expect(
+            c.read(conductorProvider).requireValue.rutaVigente,
+            hasLength(2),
+          );
 
-        ctrl.revisarRuta(fuera);
-        expect(c.read(conductorProvider).requireValue.desvio, EstadoDesvio.ninguno);
-        ctrl.revisarRuta(fuera);
-        await pumpEventQueue();
+          ctrl.revisarRuta(fuera);
+          expect(
+            c.read(conductorProvider).requireValue.desvio,
+            EstadoDesvio.ninguno,
+          );
+          ctrl.revisarRuta(fuera);
+          await pumpEventQueue();
 
-        final s = c.read(conductorProvider).requireValue;
-        expect(s.desvio, EstadoDesvio.opciones);
-        expect(s.rutasOfrecidas.map((o) => o.etiqueta), [EtiquetaRuta.rapida, EtiquetaRuta.corta]);
-      });
+          final s = c.read(conductorProvider).requireValue;
+          expect(s.desvio, EstadoDesvio.opciones);
+          expect(s.rutasOfrecidas.map((o) => o.etiqueta), [
+            EtiquetaRuta.rapida,
+            EtiquetaRuta.corta,
+          ]);
+        },
+      );
 
       test('elegir una ruta la dibuja y avisa al servidor', () async {
         final (c, falso) = await enViaje();
@@ -487,15 +524,27 @@ void main() {
         falso.rutas = const [];
         final ctrl = c.read(conductorProvider.notifier);
         await ctrl.pedirRutas(desde: fuera);
-        expect(c.read(conductorProvider).requireValue.desvio, EstadoDesvio.sinOpciones);
+        expect(
+          c.read(conductorProvider).requireValue.desvio,
+          EstadoDesvio.sinOpciones,
+        );
         ctrl.descartarRutas();
-        expect(c.read(conductorProvider).requireValue.desvio, EstadoDesvio.ninguno);
+        expect(
+          c.read(conductorProvider).requireValue.desvio,
+          EstadoDesvio.ninguno,
+        );
       });
 
       test('yendo a recoger toma sola la ruta hasta el pasajero', () async {
         final falso = _Repo(activo: _viaje(EstadoServicio.aceptado))
           ..rutas = [
-            OpcionRuta(indice: 0, geometria: nueva, distanciaKm: 1, duracionMin: 3, etiqueta: EtiquetaRuta.rapida),
+            OpcionRuta(
+              indice: 0,
+              geometria: nueva,
+              distanciaKm: 1,
+              duracionMin: 3,
+              etiqueta: EtiquetaRuta.rapida,
+            ),
           ];
         final c = contenedor(falso, gps: fuera);
         await c.read(sesionProvider.notifier).login('conductor@x.co', '123456');

@@ -58,7 +58,10 @@ void main() {
     test('una sola lectura fuera es ruido; dos seguidas, desvío', () {
       final d = DetectorDesvio();
       expect(d.registrar(_ruta, fuera, t0), isFalse);
-      expect(d.registrar(_ruta, fuera, t0.add(const Duration(seconds: 1))), isTrue);
+      expect(
+        d.registrar(_ruta, fuera, t0.add(const Duration(seconds: 1))),
+        isTrue,
+      );
     });
 
     test('volver a la ruta reinicia la cuenta', () {
@@ -90,7 +93,10 @@ void main() {
   group('Estilo del mapa', () {
     test('automático: oscuro de noche y claro de día', () {
       expect(
-        ReglasEstiloMapa.oscuro(EstiloMapa.automatico, DateTime(2026, 1, 1, 19)),
+        ReglasEstiloMapa.oscuro(
+          EstiloMapa.automatico,
+          DateTime(2026, 1, 1, 19),
+        ),
         isTrue,
       );
       expect(
@@ -98,11 +104,20 @@ void main() {
         isTrue,
       );
       expect(
-        ReglasEstiloMapa.oscuro(EstiloMapa.automatico, DateTime(2026, 1, 1, 12)),
+        ReglasEstiloMapa.oscuro(
+          EstiloMapa.automatico,
+          DateTime(2026, 1, 1, 12),
+        ),
         isFalse,
       );
-      expect(ReglasEstiloMapa.oscuro(EstiloMapa.claro, DateTime(2026)), isFalse);
-      expect(ReglasEstiloMapa.oscuro(EstiloMapa.oscuro, DateTime(2026, 1, 1, 12)), isTrue);
+      expect(
+        ReglasEstiloMapa.oscuro(EstiloMapa.claro, DateTime(2026)),
+        isFalse,
+      );
+      expect(
+        ReglasEstiloMapa.oscuro(EstiloMapa.oscuro, DateTime(2026, 1, 1, 12)),
+        isTrue,
+      );
     });
 
     test('lee lo guardado y descarta valores desconocidos', () {

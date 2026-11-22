@@ -116,7 +116,9 @@ class _Seguimiento extends ConsumerWidget {
       if (ahora <= (antes ?? 0)) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${l.rutaCambiadaTitulo(nombre)} · ${l.rutaCambiadaTexto}'),
+          content: Text(
+            '${l.rutaCambiadaTitulo(nombre)} · ${l.rutaCambiadaTexto}',
+          ),
         ),
       );
     });
