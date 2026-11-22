@@ -2890,4 +2890,17 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get loginCuentaAyuda =>
       'Opcional: elígelo solo si tu correo tiene más de una cuenta.';
+
+  @override
+  String get portadaTitulo => 'Tu moto, a un toque.';
+
+  @override
+  String get portadaTexto =>
+      'Ves el precio antes de pedir y sigues el viaje en vivo, con conductores verificados en Cartagena.';
+
+  @override
+  String get portadaPedir => 'Pide tu primer viaje';
+
+  @override
+  String get portadaConducir => 'Conduce con NEXA';
 }

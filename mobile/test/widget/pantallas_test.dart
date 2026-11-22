@@ -10,6 +10,7 @@ import 'package:nexa_mobile/core/widgets/nexa_widgets.dart';
 import 'package:nexa_mobile/features/auth/data/auth_repository_mock.dart';
 import 'package:nexa_mobile/features/auth/domain/auth.dart';
 import 'package:nexa_mobile/features/auth/presentation/controllers/session_controller.dart';
+import 'package:nexa_mobile/features/auth/presentation/screens/portada_screen.dart';
 import 'package:nexa_mobile/features/auth/presentation/screens/login_screen.dart';
 import 'package:nexa_mobile/features/auth/presentation/screens/perfil_screen.dart';
 import 'package:nexa_mobile/features/auth/presentation/screens/registro_screen.dart';
@@ -135,6 +136,13 @@ void main() {
         await montar(t, const OnboardingScreen());
         expect(find.text('El precio, antes de pedir.'), findsOneWidget);
         expect(find.text('Crear cuenta'), findsOneWidget);
+        expect(find.text('Ya tengo cuenta'), findsOneWidget);
+      });
+
+      testWidgets('portada: dos caminos y entrar', (t) async {
+        await montar(t, const PortadaScreen(), esperar: false);
+        expect(find.text('Pide tu primer viaje'), findsOneWidget);
+        expect(find.text('Conduce con NEXA'), findsOneWidget);
         expect(find.text('Ya tengo cuenta'), findsOneWidget);
       });
 
