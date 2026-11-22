@@ -50,13 +50,26 @@ El pasajero **nunca** finaliza el viaje. Cada rol ve solo su propia calificació
 | `POST /finalizar-servicio/{id}` | — | `Servicio`; en cualquier tramo, cobra según lo recorrido (ver docs/niveles) |
 | `POST /cancelar-servicio/{id}` | — | `Servicio` (también en curso) |
 | `GET /servicios-en-curso`, `GET /historial?fecha=&pasajero=` | — | `[Servicio]` |
-| `GET /ingresos?periodo=&fecha=` | — | `[{fecha, monto, montoBruto, descripcion}]` |
-| `GET /saldo?dias=30` | — | saldo con NEXA (vista sin comisión ni deudas) |
+| `GET /ingresos?periodo=&fecha=` | — | `[{fecha, hora, monto, montoBruto, descripcion}]` (`hora` ISO, desde `feat/admin-operacion`) |
+| `GET /saldo?dias=30` | — | saldo con NEXA (vista sin comisión ni deudas); la app pide 1, 7 o 30 días |
 | `POST /rutas/{id}` | `{latitud, longitud}` | `[{indice, geometria, distanciaKm, duracionMin, etiqueta}]` (hasta 3, la sugerida primero; `etiqueta` = `RAPIDA`/`CORTA`/`ALTERNATIVA`) desde esa posición hasta la recogida (ACEPTADO) o el destino (EN_CURSO). 403 si no es su viaje, 409 si no está activo. Las ofertas valen 10 min |
 | `PUT /rutas/{id}` | `{indice}` | `{geometria}`; con el viaje EN_CURSO cambia `rutaGeometria` (el pasajero la ve). 404 si la oferta venció |
 
 `PosicionViaje` = `{servicioId, fase, latitud, longitud, distanciaRestanteKm, etaMinutos, en}`. ETA y distancia las calcula
 el servidor; la app no las calcula.
+
+## Admin (`/api/admin/**`, solo ROLE_ADMIN)
+| Método y ruta | Cuerpo | Respuesta |
+|---|---|---|
+| `GET /operacion` | — | `{viajesHoy, finalizadosHoy, canceladosHoy, enCurso, yendoARecoger, solicitudesAbiertas, conductoresEnLinea, conductoresDisponibles, conductoresPendientes, flota:[{latitud, longitud, disponible}], alertas:[{tipo, texto, servicioId, minutos}]}` |
+| `GET /conductores?estado=PENDIENTE\|EN_REVISION\|APROBADO\|RECHAZADO` | — | `[Conductor]` (`email`, `nombre_y_Apellido`, `ntelefono`, `fechaRegistro`, `revisionMensaje`) |
+| `GET /verificacion/documentos?email=` | — | `[{id, tipo, numeroDeclarado, contentType, subidoEn}]` |
+| `GET /verificacion/documentos/{id}/archivo` | — | la foto (bytes) |
+| `GET /verificacion/vehiculos?email=` | — | `[{id, placa, marca, modelo, color, verificado}]` |
+| `GET /verificacion/estado?email=` | — | `{ultimaVerificacion:{resultado}, ...}` |
+| `POST /verificacion/manual` | `{email, resultado:"VERIFIED", nota}` | auditoría (el admin revisó los documentos) |
+| `POST /verificacion/decision` | `{email, aprobar, motivo}` | auditoría; aprobar exige verificación VERIFIED |
+| `POST /verificacion/solicitar-info` | `{email, mensaje}` | auditoría; queda EN_REVISION |
 
 ## Servicio (campos relevantes)
 `id, pasajero{id,nombre,email,fotoUrl}, conductor{id,nombre,fotoUrl,nivel,calificacion,vehiculo,placa}, origen, destino,

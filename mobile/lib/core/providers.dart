@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../features/admin/data/admin_repository_impl.dart';
+import '../features/admin/domain/admin.dart';
 import '../features/auth/data/auth_repository_impl.dart';
 import '../features/auth/data/auth_repository_mock.dart';
 import '../features/auth/data/perfil_repository_impl.dart';
@@ -157,6 +159,12 @@ final perfilRepositoryProvider = Provider<PerfilRepository>(
   (ref) => ref.watch(useMocksProvider)
       ? MockPerfilRepository()
       : ApiPerfilRepository(ref.watch(dioProvider)),
+);
+
+final adminRepositoryProvider = Provider<AdminRepository>(
+  (ref) => ref.watch(useMocksProvider)
+      ? MockAdminRepository()
+      : ApiAdminRepository(ref.watch(dioProvider)),
 );
 
 final vehiculosRepositoryProvider = Provider<VehiculosRepository>(

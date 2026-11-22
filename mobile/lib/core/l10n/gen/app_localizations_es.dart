@@ -2647,4 +2647,160 @@ class AppLocalizationsEs extends AppLocalizations {
   String kmRecorridosDe(String recorridos, String total) {
     return '$recorridos de $total km recorridos';
   }
+
+  @override
+  String get adminOperacionEtiqueta => 'Admin · operación en vivo';
+
+  @override
+  String get adminOperacionTitulo => 'Hoy en NEXA';
+
+  @override
+  String get adminAlertas => 'Alertas';
+
+  @override
+  String get adminSinAlertas => 'Todo en orden: no hay alertas.';
+
+  @override
+  String get adminViajesHoy => 'Viajes hoy';
+
+  @override
+  String adminFinalizadosCancelados(int f, int c) {
+    return '$f finalizados · $c cancelados';
+  }
+
+  @override
+  String get adminEnCurso => 'En curso';
+
+  @override
+  String adminYendoAbiertas(int a, int s) {
+    return '$a yendo a recoger · $s sin conductor';
+  }
+
+  @override
+  String get adminEnLinea => 'Conductores en línea';
+
+  @override
+  String adminLibres(int n) {
+    return '$n libres';
+  }
+
+  @override
+  String get adminPorAprobar => 'Por aprobar';
+
+  @override
+  String get adminVerConductores => 'Ver conductores';
+
+  @override
+  String get adminFlota => 'Flota en línea';
+
+  @override
+  String get adminLibre => 'Libre';
+
+  @override
+  String get adminEnViaje => 'En viaje';
+
+  @override
+  String get revisionPendientes => 'Pendientes';
+
+  @override
+  String get revisionEnRevision => 'Con información pedida';
+
+  @override
+  String get revisionAprobados => 'Aprobados';
+
+  @override
+  String get revisionRechazados => 'Rechazados';
+
+  @override
+  String get revisionVacia => 'No hay conductores en este estado';
+
+  @override
+  String registradoEl(String fecha) {
+    return 'Se registró el $fecha';
+  }
+
+  @override
+  String get revisionTitulo => 'Revisión';
+
+  @override
+  String revisionPedido(String mensaje) {
+    return 'Pedido: $mensaje';
+  }
+
+  @override
+  String get revisionDocumentos => 'Documentos';
+
+  @override
+  String get revisionSinDocumentos => 'Aún no ha subido documentos.';
+
+  @override
+  String get revisionVerificado => 'Verificado: ya se puede aprobar.';
+
+  @override
+  String get revisionSinVerificar =>
+      'Sin verificación exitosa: al aprobar confirmas que revisaste los documentos y queda como verificación manual.';
+
+  @override
+  String get revisionAprobar => 'Aprobar';
+
+  @override
+  String get revisionRechazar => 'Rechazar';
+
+  @override
+  String get revisionPedirInfo => 'Pedir información';
+
+  @override
+  String get revisionQueFalta => '¿Qué le falta enviar?';
+
+  @override
+  String revisionAprobarTitulo(String nombre) {
+    return '¿Aprobar a $nombre?';
+  }
+
+  @override
+  String revisionRechazarTitulo(String nombre) {
+    return '¿Rechazar a $nombre?';
+  }
+
+  @override
+  String get revisionConfirmoDocumentos =>
+      'Revisé los documentos y coinciden con lo que declaró.';
+
+  @override
+  String get revisionNotaManual => 'Documentos revisados en la app';
+
+  @override
+  String get revisionAprobado => 'Conductor aprobado';
+
+  @override
+  String get revisionRechazado => 'Conductor rechazado';
+
+  @override
+  String get revisionInfoPedida => 'Le pedimos la información';
+
+  @override
+  String get revisionMotivo => 'Motivo';
+
+  @override
+  String get revisionNotaOpcional => 'Nota (opcional)';
+
+  @override
+  String revisionNumero(String numero) {
+    return 'N.º $numero';
+  }
+
+  @override
+  String get tipoLicencia => 'Licencia';
+
+  @override
+  String get tipoTarjetaPropiedad => 'Tarjeta de propiedad';
+
+  @override
+  String get tipoSoat => 'SOAT';
+
+  @override
+  String get tipoTecnomecanica => 'Tecnomecánica';
+
+  @override
+  String get enviar => 'Enviar';
 }

@@ -1627,5 +1627,113 @@
         "type": "String"
       }
     }
-  }
+  },
+  "adminOperacionEtiqueta": "Admin · operación en vivo",
+  "adminOperacionTitulo": "Hoy en NEXA",
+  "adminAlertas": "Alertas",
+  "adminSinAlertas": "Todo en orden: no hay alertas.",
+  "adminViajesHoy": "Viajes hoy",
+  "adminFinalizadosCancelados": "{f} finalizados · {c} cancelados",
+  "@adminFinalizadosCancelados": {
+    "placeholders": {
+      "f": {
+        "type": "int"
+      },
+      "c": {
+        "type": "int"
+      }
+    }
+  },
+  "adminEnCurso": "En curso",
+  "adminYendoAbiertas": "{a} yendo a recoger · {s} sin conductor",
+  "@adminYendoAbiertas": {
+    "placeholders": {
+      "a": {
+        "type": "int"
+      },
+      "s": {
+        "type": "int"
+      }
+    }
+  },
+  "adminEnLinea": "Conductores en línea",
+  "adminLibres": "{n} libres",
+  "@adminLibres": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "adminPorAprobar": "Por aprobar",
+  "adminVerConductores": "Ver conductores",
+  "adminFlota": "Flota en línea",
+  "adminLibre": "Libre",
+  "adminEnViaje": "En viaje",
+  "revisionPendientes": "Pendientes",
+  "revisionEnRevision": "Con información pedida",
+  "revisionAprobados": "Aprobados",
+  "revisionRechazados": "Rechazados",
+  "revisionVacia": "No hay conductores en este estado",
+  "registradoEl": "Se registró el {fecha}",
+  "@registradoEl": {
+    "placeholders": {
+      "fecha": {
+        "type": "String"
+      }
+    }
+  },
+  "revisionTitulo": "Revisión",
+  "revisionPedido": "Pedido: {mensaje}",
+  "@revisionPedido": {
+    "placeholders": {
+      "mensaje": {
+        "type": "String"
+      }
+    }
+  },
+  "revisionDocumentos": "Documentos",
+  "revisionSinDocumentos": "Aún no ha subido documentos.",
+  "revisionVerificado": "Verificado: ya se puede aprobar.",
+  "revisionSinVerificar": "Sin verificación exitosa: al aprobar confirmas que revisaste los documentos y queda como verificación manual.",
+  "revisionAprobar": "Aprobar",
+  "revisionRechazar": "Rechazar",
+  "revisionPedirInfo": "Pedir información",
+  "revisionQueFalta": "¿Qué le falta enviar?",
+  "revisionAprobarTitulo": "¿Aprobar a {nombre}?",
+  "@revisionAprobarTitulo": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "revisionRechazarTitulo": "¿Rechazar a {nombre}?",
+  "@revisionRechazarTitulo": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "revisionConfirmoDocumentos": "Revisé los documentos y coinciden con lo que declaró.",
+  "revisionNotaManual": "Documentos revisados en la app",
+  "revisionAprobado": "Conductor aprobado",
+  "revisionRechazado": "Conductor rechazado",
+  "revisionInfoPedida": "Le pedimos la información",
+  "revisionMotivo": "Motivo",
+  "revisionNotaOpcional": "Nota (opcional)",
+  "revisionNumero": "N.º {numero}",
+  "@revisionNumero": {
+    "placeholders": {
+      "numero": {
+        "type": "String"
+      }
+    }
+  },
+  "tipoLicencia": "Licencia",
+  "tipoTarjetaPropiedad": "Tarjeta de propiedad",
+  "tipoSoat": "SOAT",
+  "tipoTecnomecanica": "Tecnomecánica",
+  "enviar": "Enviar"
 }

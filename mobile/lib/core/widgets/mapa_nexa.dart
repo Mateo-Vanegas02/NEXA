@@ -103,6 +103,7 @@ class MapaNexa extends ConsumerStatefulWidget {
     this.progreso = false,
     this.alternativas = const [],
     this.rutaAnterior,
+    this.flota = const [],
     this.tiempoEnRuta,
     this.etiquetaDestino,
     this.encuadre,
@@ -164,6 +165,10 @@ class MapaNexa extends ConsumerStatefulWidget {
   /// La ruta de antes de un cambio (el conductor tomó otra calle): tenue,
   /// debajo de todo.
   final List<LatLng>? rutaAnterior;
+
+  /// Motos de la flota (panel del admin): punto y si está libre (cian) o en
+  /// un viaje (gris). Sin datos de quién es.
+  final List<(LatLng, bool)> flota;
 
   /// Texto sobre la propia línea de la ruta, p. ej. «11 min» (rediseño 2026).
   final String? tiempoEnRuta;
@@ -343,6 +348,8 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
     _estructuraLineas = '';
     _simbolos.clear();
     _firmas.clear();
+    _rotulosCargados.clear();
+    _flotaDibujada = 0;
     _solapePermitido = false;
     for (final e in (await _imagenes()).entries) {
       await c.addImage(e.key, e.value);
@@ -539,6 +546,111 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
     );
     await _moto(c, o: o);
     await _rotulos(c);
+    await _flota(c);
+  }
+
+  int _flotaDibujada = 0;
+
+  Future<void> _flota(ml.MapLibreMapController c) async {
+    final f = widget.flota;
+    for (var i = 0; i < f.length; i++) {
+      final (punto, libre) = f[i];
+      await _simbolo(
+        c,
+        'flota$i',
+        _op(
+          punto,
+          libre ? ImagenMarcador.moto : ImagenMarcador.motoGris,
+          z: 6,
+          escala: 0.8,
+        ),
+      );
+    }
+    for (var i = f.length; i < _flotaDibujada; i++) {
+      await _simbolo(c, 'flota$i', null);
+    }
+    _flotaDibujada = f.length;
+  }
+
+  /// Rótulos ya cargados en el estilo actual (se borran con el estilo).
+  final _rotulosCargados = <String>{};
+
+  /// Carga (una vez por estilo) la imagen de un rótulo y devuelve su nombre.
+  Future<String> _rotulo(
+    ml.MapLibreMapController c,
+    String texto, {
+    bool resaltado = false,
+  }) async {
+    final oscuro = _oscuro;
+    final nombre = 'nx-txt-${oscuro ? 'o' : 'c'}${resaltado ? 'r' : ''}-$texto';
+    if (_rotulosCargados.add(nombre)) {
+      await c.addImage(
+        nombre,
+        await dibujarRotulo(texto, oscuro: oscuro, resaltado: resaltado),
+      );
+    }
+    return nombre;
+  }
+
+  /// Textos sobre el mapa: el tiempo en la mitad de lo que falta de la ruta y
+  /// el nombre (con la hora) junto al destino.
+  Future<void> _rotulos(ml.MapLibreMapController c) async {
+    final tiempo = widget.tiempoEnRuta;
+    final ruta = _puntosRuta;
+    LatLng? mitad;
+    if (tiempo != null && ruta.length >= 2) {
+      final moto = _motoVista ?? widget.conductor;
+      final falta = widget.progreso && moto != null
+          ? ReglasRuta.dividir(ruta, moto).falta
+          : ruta;
+      mitad = falta.length >= 2 ? falta[falta.length ~/ 2] : null;
+    }
+    await _simbolo(
+      c,
+      'tiempoRuta',
+      mitad == null
+          ? null
+          : _op(
+              mitad,
+              await _rotulo(c, tiempo!, resaltado: true),
+              z: 9,
+            ),
+    );
+    final destino = widget.destino;
+    final nombre = widget.etiquetaDestino;
+    await _simbolo(
+      c,
+      'rotuloDestino',
+      destino == null || nombre == null
+          ? null
+          : _op(destino, await _rotulo(c, nombre), z: 8, ancla: 'top')
+                .copyWith(
+                  ml.SymbolOptions(iconOffset: const Offset(0, 14)),
+                ),
+    );
+  }
+
+  int _flotaDibujada = 0;
+
+  Future<void> _flota(ml.MapLibreMapController c) async {
+    final f = widget.flota;
+    for (var i = 0; i < f.length; i++) {
+      final (punto, libre) = f[i];
+      await _simbolo(
+        c,
+        'flota$i',
+        _op(
+          punto,
+          libre ? ImagenMarcador.moto : ImagenMarcador.motoGris,
+          z: 6,
+          escala: 0.8,
+        ),
+      );
+    }
+    for (var i = f.length; i < _flotaDibujada; i++) {
+      await _simbolo(c, 'flota$i', null);
+    }
+    _flotaDibujada = f.length;
   }
 
   /// Textos sobre el mapa: el tiempo en la mitad de lo que falta de la ruta y

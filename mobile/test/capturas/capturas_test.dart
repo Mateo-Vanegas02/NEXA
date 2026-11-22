@@ -240,6 +240,8 @@ void main() {
     ('C08', '/c/ganancias', Rol.conductor, 'conductor@nexa.co', []),
     ('C09', '/c/niveles', Rol.conductor, 'conductor@nexa.co', []),
     ('C10', '/c/perfil', Rol.conductor, 'conductor@nexa.co', []),
+    ('D00', '/a/inicio', Rol.admin, 'admin@nexa.co', []),
+    ('D05', '/a/conductores', Rol.admin, 'admin@nexa.co', []),
     ('D01', '/a/satisfaccion', Rol.admin, 'admin@nexa.co', []),
     ('D02', '/a/satisfaccion/factores', Rol.admin, 'admin@nexa.co', []),
     ('D03', '/a/satisfaccion/riesgo', Rol.admin, 'admin@nexa.co', []),

@@ -2,7 +2,6 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/rumbo/orientacion_mapa.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/theme_x.dart';
-import '../../../../core/theme/nexa_texto.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/mapa/polyline.dart';
 import '../../../../core/mapa/reglas_marcadores.dart';
