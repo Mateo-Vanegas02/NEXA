@@ -4854,8 +4854,14 @@ abstract class AppLocalizations {
   /// No description provided for @adminEnLinea.
   ///
   /// In es, this message translates to:
-  /// **'Conductores en línea'**
+  /// **'En línea ahora'**
   String get adminEnLinea;
+
+  /// No description provided for @llegadaPendiente.
+  ///
+  /// In es, this message translates to:
+  /// **'Esperando la hora de llegada'**
+  String get llegadaPendiente;
 
   /// No description provided for @adminLibres.
   ///

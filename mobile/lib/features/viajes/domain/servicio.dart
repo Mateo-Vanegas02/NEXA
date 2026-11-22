@@ -319,16 +319,16 @@ class PosicionViaje {
     fase: j['fase'] as String? ?? '',
     latitud: (j['latitud'] as num).toDouble(),
     longitud: (j['longitud'] as num).toDouble(),
-    distanciaRestanteKm: (j['distanciaRestanteKm'] as num?)?.toDouble() ?? 0,
-    etaMinutos: (j['etaMinutos'] as num?)?.toInt() ?? 0,
+    distanciaRestanteKm: (j['distanciaRestanteKm'] as num?)?.toDouble(),
+    etaMinutos: (j['etaMinutos'] as num?)?.toInt(),
   );
 
   /// `ACEPTADO` (va a recoger) o `EN_CURSO` (va al destino).
   final String fase;
   final double latitud;
   final double longitud;
-  final double distanciaRestanteKm;
-  final int etaMinutos;
+  final double? distanciaRestanteKm;
+  final int? etaMinutos;
 }
 
 /// Estado de aprobación de un conductor (campo `estadoValidacion` del backend).

@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:nexa_mobile/core/errors/app_exception.dart';
 import 'package:nexa_mobile/core/geocoding/geocoding_service.dart';
 import 'package:nexa_mobile/core/providers.dart';
+import 'package:nexa_mobile/core/widgets/mapa_nexa.dart';
 import 'package:nexa_mobile/features/auth/domain/auth.dart';
 import 'package:nexa_mobile/features/auth/presentation/controllers/session_controller.dart';
 import 'package:nexa_mobile/features/viajes/data/mock_backend.dart';
@@ -103,9 +104,30 @@ void main() {
     expect(find.textContaining('Tu nivel te ahorra'), findsOneWidget);
     expect(find.textContaining('Pedir NEXA · '), findsOneWidget);
     expect(find.textContaining('8.910'), findsWidgets);
+    expect(find.text('4,6 km'), findsOneWidget);
+    expect(t.widget<MapaNexa>(find.byType(MapaNexa)).tiempoEnRuta, isNull);
     expect(_boton(t).onPressed, isNotNull);
     // Ya no hay precio ajustable por el pasajero: lo fija el servidor.
     expect(find.byIcon(Icons.add_circle_outline), findsNothing);
+  });
+
+  testWidgets('la duración de la cotización llega al mapa y a la tarifa', (
+    t,
+  ) async {
+    final repo = _Repo(
+      MockBackend(),
+      cotizacion: const Cotizacion(
+        distanciaKm: 4.6,
+        duracionMin: 8.5,
+        tarifa: 9000,
+        descuento: 0,
+        precio: 9000,
+        totalAPagar: 9000,
+      ),
+    );
+    await _montar(t, repo);
+    expect(find.textContaining('4,6 km · 9 min'), findsOneWidget);
+    expect(t.widget<MapaNexa>(find.byType(MapaNexa)).tiempoEnRuta, '9 min');
   });
 
   testWidgets('el desglose aparece solo al pedirlo', (t) async {

@@ -1656,7 +1656,8 @@
       }
     }
   },
-  "adminEnLinea": "Conductores en línea",
+  "adminEnLinea": "En línea ahora",
+  "llegadaPendiente": "Esperando la hora de llegada",
   "adminLibres": "{n} libres",
   "@adminLibres": {
     "placeholders": {

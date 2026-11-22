@@ -37,16 +37,14 @@ abstract final class TextosAvisoViaje {
     if (viaje == null || fase == null) return null;
     final nombre = _primerNombre(viaje.pasajero?.nombre, l.avisoElPasajero);
     final pos = s.posicion;
-    final eta = pos == null
-        ? null
-        : l.avisoEtaDistancia(
-            pos.etaMinutos < 1 ? 1 : pos.etaMinutos,
-            distancia(pos.distanciaRestanteKm),
-          );
+    final eta = [
+      if (pos?.etaMinutos case final minutos?) l.minutosValor(minutos),
+      if (pos?.distanciaRestanteKm case final km?) distancia(km),
+    ].join(' · ');
     return switch (fase) {
       FaseConductor.aRecoger => AvisoViaje(
         l.avisoRecoger(nombre),
-        eta ?? viaje.origen,
+        eta.isEmpty ? viaje.origen : eta,
       ),
       FaseConductor.enElPunto => AvisoViaje(
         l.avisoEsperando(nombre),
@@ -54,7 +52,7 @@ abstract final class TextosAvisoViaje {
       ),
       FaseConductor.enViaje => AvisoViaje(
         l.avisoLlevando(nombre),
-        eta ?? viaje.destino,
+        eta.isEmpty ? viaje.destino : eta,
       ),
     };
   }
@@ -79,10 +77,8 @@ abstract final class TextosAvisoViaje {
     final c = viaje.conductor;
     final nombre = _primerNombre(c?.nombre, l.avisoTuConductor);
     final partes = [
-      if (posicionConductor != null)
-        l.avisoLlegaEn(
-          posicionConductor.etaMinutos < 1 ? 1 : posicionConductor.etaMinutos,
-        ),
+      if (posicionConductor?.etaMinutos case final minutos?)
+        l.avisoLlegaEn(minutos),
       if ((c?.placa ?? '').trim().isNotEmpty) c!.placa!.trim(),
     ];
     return AvisoViaje(

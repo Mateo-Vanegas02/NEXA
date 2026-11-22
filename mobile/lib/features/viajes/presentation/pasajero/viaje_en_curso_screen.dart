@@ -20,7 +20,6 @@ import '../../../../core/widgets/mapa_nexa.dart';
 import '../../../../core/widgets/nexa_diseno.dart';
 import '../../../../core/widgets/nexa_popup.dart';
 import '../../../../core/widgets/nexa_widgets.dart';
-import '../../domain/estimado_tarifa.dart';
 import '../../domain/servicio.dart';
 import '../controllers/viaje_pasajero_controller.dart';
 import '../widgets/conductor_card.dart';
@@ -96,18 +95,16 @@ class _Seguimiento extends ConsumerWidget {
     final yo = s.estado == EstadoServicio.aceptado
         ? (yoVivo ?? ref.watch(miUbicacionViajeProvider))
         : null;
-    final total = s.duracionEstimadaMin > 0
-        ? s.duracionEstimadaMin.ceil()
-        : minutosEstimados(s.distanciaKM);
-    final restantes = !s.estado.activo
-        ? 0
-        : pos != null && pos.etaMinutos > 0
-        ? pos.etaMinutos
-        : total;
-    final llegada = DateFormat(
-      'H:mm',
-      'es_CO',
-    ).format(DateTime.now().add(Duration(minutes: restantes)));
+    // Al iniciar el viaje todavía puede estar en memoria la posición de recogida.
+    final seguimiento = pos?.fase == s.estado.codigo ? pos : null;
+    final restantes = seguimiento?.etaMinutos;
+    final kmRestantes = seguimiento?.distanciaRestanteKm;
+    final llegada = restantes == null
+        ? null
+        : DateFormat(
+            'H:mm',
+            'es_CO',
+          ).format(DateTime.now().add(Duration(minutes: restantes)));
     final enElPunto =
         s.estado == EstadoServicio.aceptado && s.fechaLlegada != null;
     final nombre = (s.conductor?.nombre ?? l.tuConductor).split(' ').first;
@@ -189,20 +186,28 @@ class _Seguimiento extends ConsumerWidget {
       ),
       EstadoServicio.aceptado => TarjetaFlotante(
         icono: Icons.timer_outlined,
-        titulo: l.llegaEnMin(restantes),
+        titulo: restantes == null
+            ? l.llegadaPendiente
+            : l.llegaEnMin(restantes),
         detalle: lado ?? l.vaHaciaTuPunto(nombre),
         colorDetalle: lado == null ? null : NexaColors.cyan,
       ),
       // En viaje, lo importante arriba: hora de llegada, minutos, km que
       // faltan y una barra con lo recorrido (rediseño 2026; todo del servidor).
-      EstadoServicio.enCurso => TarjetaLlegada(
-        destino: s.destino,
-        hora: llegada,
-        minutos: restantes,
-        kmRestantes: pos?.distanciaRestanteKm,
-        avance: s.distanciaKM > 0 && pos != null
-            ? (1 - pos.distanciaRestanteKm / s.distanciaKM).clamp(0.0, 1.0)
-            : null,
+      EstadoServicio.enCurso when restantes != null && llegada != null =>
+        TarjetaLlegada(
+          destino: s.destino,
+          hora: llegada,
+          minutos: restantes,
+          kmRestantes: kmRestantes,
+          avance: s.distanciaKM > 0 && kmRestantes != null
+              ? (1 - kmRestantes / s.distanciaKM).clamp(0.0, 1.0)
+              : null,
+        ),
+      EstadoServicio.enCurso => TarjetaFlotante(
+        icono: Icons.route,
+        titulo: l.llegasA(s.destino),
+        detalle: l.llegadaPendiente,
       ),
       _ => null,
     };
@@ -222,11 +227,12 @@ class _Seguimiento extends ConsumerWidget {
             rutaAnterior: s.estado == EstadoServicio.enCurso
                 ? rutaAnterior
                 : null,
-            tiempoEnRuta: s.estado == EstadoServicio.enCurso
+            tiempoEnRuta:
+                s.estado == EstadoServicio.enCurso && restantes != null
                 ? l.minutosValor(restantes)
                 : null,
             etiquetaDestino: s.estado == EstadoServicio.enCurso
-                ? '${s.destino} · $llegada'
+                ? [s.destino, ?llegada].join(' · ')
                 : null,
             encuadre: encuadre,
             margenInferior: MediaQuery.sizeOf(context).height * 0.48,
@@ -352,12 +358,14 @@ class _Seguimiento extends ConsumerWidget {
                 const SizedBox(height: Sp.lg),
                 _Acciones(servicio: s),
               ] else if (s.estado == EstadoServicio.enCurso) ...[
-                _Avance(
-                  destino: s.destino,
-                  totalKm: s.distanciaKM,
-                  restanteKm: pos?.distanciaRestanteKm,
-                ),
-                const SizedBox(height: Sp.lg),
+                if (s.distanciaKM > 0 && kmRestantes != null) ...[
+                  _Avance(
+                    destino: s.destino,
+                    totalKm: s.distanciaKM,
+                    restanteKm: kmRestantes,
+                  ),
+                  const SizedBox(height: Sp.lg),
+                ],
                 if (s.conductor != null) ConductorCard(conductor: s.conductor!),
                 const SizedBox(height: Sp.lg),
                 _AccionesEnViaje(servicio: s),
@@ -481,14 +489,14 @@ class _Avance extends StatelessWidget {
 
   final String destino;
   final double totalKm;
-  final double? restanteKm;
+  final double restanteKm;
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final km = NumberFormat('0.0', 'es_CO');
-    final resta = (restanteKm ?? totalKm).clamp(0.0, totalKm);
-    final hecho = totalKm <= 0 ? 0.0 : 1 - resta / totalKm;
+    final recorrido = (totalKm - restanteKm).clamp(0.0, totalKm);
+    final hecho = recorrido / totalKm;
     return NexaCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -527,14 +535,14 @@ class _Avance extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  l.kmRecorridos(km.format(totalKm - resta)),
+                  l.kmRecorridos(km.format(recorrido)),
                   style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
                 ),
               ),
               const SizedBox(width: Sp.sm),
               Expanded(
                 child: Text(
-                  l.kmPorRecorrer(km.format(resta)),
+                  l.kmPorRecorrer(km.format(restanteKm)),
                   textAlign: TextAlign.end,
                   style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
                 ),

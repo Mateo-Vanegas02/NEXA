@@ -2677,7 +2677,10 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get adminEnLinea => 'Conductores en línea';
+  String get adminEnLinea => 'En línea ahora';
+
+  @override
+  String get llegadaPendiente => 'Esperando la hora de llegada';
 
   @override
   String adminLibres(int n) {

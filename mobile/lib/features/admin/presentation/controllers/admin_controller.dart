@@ -13,8 +13,14 @@ class OperacionController extends AsyncNotifier<OperacionAdmin> {
 
   @override
   Future<OperacionAdmin> build() async {
-    _timer?.cancel();
-    _timer = Timer.periodic(intervalo, (_) => refrescar());
+    void iniciarSondeo() {
+      _timer?.cancel();
+      _timer = Timer.periodic(intervalo, (_) => refrescar());
+    }
+
+    iniciarSondeo();
+    ref.onCancel(() => _timer?.cancel());
+    ref.onResume(iniciarSondeo);
     ref.onDispose(() => _timer?.cancel());
     return ref.read(adminRepositoryProvider).operacion();
   }

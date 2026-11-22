@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -39,15 +41,22 @@ class NotificacionesScreen extends ConsumerStatefulWidget {
 }
 
 class _NotificacionesScreenState extends ConsumerState<NotificacionesScreen> {
+  late final Timer _lectura;
+
   @override
   void initState() {
     super.initState();
     // Se ven con su punto de «nuevo» y quedan leídas para la próxima vez.
-    Future<void>.delayed(const Duration(seconds: 2), () async {
-      if (!mounted) return;
+    _lectura = Timer(const Duration(seconds: 2), () async {
       await ref.read(bandejaAvisosProvider).marcarLeidas();
       if (mounted) ref.invalidate(bandejaProvider);
     });
+  }
+
+  @override
+  void dispose() {
+    _lectura.cancel();
+    super.dispose();
   }
 
   @override

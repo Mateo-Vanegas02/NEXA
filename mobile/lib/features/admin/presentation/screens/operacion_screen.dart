@@ -183,8 +183,6 @@ class _Cifra extends StatelessWidget {
             Expanded(
               child: Text(
                 titulo,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
                 style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
               ),
             ),
@@ -192,11 +190,7 @@ class _Cifra extends StatelessWidget {
         ),
         const SizedBox(height: Sp.xs),
         Text(valor, style: NexaTexto.numero.copyWith(fontSize: 30)),
-        Text(
-          detalle,
-          maxLines: 2,
-          style: NexaTexto.pequeno.copyWith(color: color),
-        ),
+        Text(detalle, style: NexaTexto.pequeno.copyWith(color: color)),
       ],
     ),
   );

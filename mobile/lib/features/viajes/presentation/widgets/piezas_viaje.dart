@@ -257,32 +257,20 @@ class TarjetaLlegada extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
+              Text(
+                l.llegasA(destino),
+                style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
+              ),
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.end,
+                spacing: Sp.md,
+                runSpacing: Sp.xs,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l.llegasA(destino),
-                          style: NexaTexto.pequeno.copyWith(
-                            color: NexaColors.muted,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Text(
-                          hora,
-                          style: NexaTexto.numero.copyWith(
-                            fontSize: 30,
-                            height: 1.1,
-                          ),
-                        ),
-                      ],
-                    ),
+                  Text(
+                    hora,
+                    style: NexaTexto.numero.copyWith(fontSize: 30, height: 1.1),
                   ),
-                  const SizedBox(width: Sp.md),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [

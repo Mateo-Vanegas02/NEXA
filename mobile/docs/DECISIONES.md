@@ -101,3 +101,7 @@ Lo que pidió el conductor tras probar la app en la calle (videos del 21 nov.):
 - **Todos.** El perfil tiene la sección «Mapa» con el mismo selector de estilo que el botón de capas.
 - **Administrador.** El inicio es la operación en vivo (`GET /api/admin/operacion`, nuevo en `main`): viajes del día, en curso, conductores en línea y libres, por aprobar, la flota en el mapa (sin identificar a nadie) y alertas (solicitudes sin conductor más de 5 min, conductores por aprobar); se refresca cada 15 s. «Conductores» lista por estado y abre el expediente: moto con placa, estado de la verificación y los cuatro documentos con su foto y el número declarado. Aprobar sin verificación previa pide confirmar que se revisaron los documentos y deja una verificación manual en la auditoría antes de la decisión (la regla de aprobar solo con VERIFIED sigue en el servidor). Rechazar y pedir información exigen motivo.
 - **No se hizo** (depende del servidor, ver `PENDIENTES_BACKEND.md` V1–V6): WebSocket con JWT, vencimientos de SOAT, mapa de calor, ruta sin giros a la izquierda, nombres de calle en la maniobra y contactar desde riesgo.
+
+## 22-nov-2026 · Hora de llegada del pasajero
+
+La confirmación muestra la duración de la cotización cuando el servidor la envía. Durante la recogida y el viaje, los minutos y el avance corresponden a la posición que reporta el servidor para esa fase. Mientras llega la primera ETA se muestra «Esperando la hora de llegada». Una ETA de cero y una distancia restante de cero son valores válidos.

@@ -127,9 +127,9 @@ class _ViajeActivoCardState extends ConsumerState<ViajeActivoCard> {
       FaseConductor.enElPunto => l.iniciarViaje,
       FaseConductor.enViaje => l.finalizarViaje,
     };
-    final km = pos == null
-        ? null
-        : '${pos.distanciaRestanteKm.toStringAsFixed(1)} km';
+    final restante = pos?.distanciaRestanteKm;
+    final minutos = pos?.etaMinutos;
+    final km = restante == null ? null : '${restante.toStringAsFixed(1)} km';
     final nombre = s.pasajero?.nombre ?? '';
     // Un paso hecho sin señal que aún no llega al servidor.
     final pendiente = ref.watch(
@@ -139,10 +139,8 @@ class _ViajeActivoCardState extends ConsumerState<ViajeActivoCard> {
     );
     final detalle = <String>[
       if (s.nivelPasajero > 0) l.pasajeraNivel(s.nivelPasajero),
-      if (fase != FaseConductor.enElPunto &&
-          pos != null &&
-          pos.etaMinutos > 0) ...[
-        l.minutosValor(pos.etaMinutos),
+      if (fase != FaseConductor.enElPunto) ...[
+        if (minutos != null) l.minutosValor(minutos),
         ?km,
       ],
     ];
@@ -164,9 +162,7 @@ class _ViajeActivoCardState extends ConsumerState<ViajeActivoCard> {
         ],
         const SizedBox(height: Sp.lg),
         // En viaje, primero a qué hora llega (rediseño 2026; ETA del servidor).
-        if (fase == FaseConductor.enViaje &&
-            pos != null &&
-            pos.etaMinutos > 0) ...[
+        if (fase == FaseConductor.enViaje && minutos != null) ...[
           Text(
             l.llevandoA(nombre.split(' ').first, s.destino),
             style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
@@ -181,13 +177,13 @@ class _ViajeActivoCardState extends ConsumerState<ViajeActivoCard> {
                 DateFormat(
                   'H:mm',
                   'es_CO',
-                ).format(DateTime.now().add(Duration(minutes: pos.etaMinutos))),
+                ).format(DateTime.now().add(Duration(minutes: minutos))),
                 style: NexaTexto.numero.copyWith(fontSize: 30, height: 1.1),
               ),
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Text(
-                  [l.minutosValor(pos.etaMinutos), ?km].join(' · '),
+                  [l.minutosValor(minutos), ?km].join(' · '),
                   style: NexaTexto.cuerpo.copyWith(color: NexaColors.muted),
                 ),
               ),
@@ -282,8 +278,8 @@ class _ViajeActivoCardState extends ConsumerState<ViajeActivoCard> {
         // Guía de cercanía para «Llegué» (el servidor exige estar a 50 m).
         // Solo orienta: el control nunca se bloquea, porque sin señal la
         // distancia del servidor puede estar vieja.
-        if (fase == FaseConductor.aRecoger && pos != null) ...[
-          _GuiaLlegada(km: pos.distanciaRestanteKm),
+        if (fase == FaseConductor.aRecoger && restante != null) ...[
+          _GuiaLlegada(km: restante),
           const SizedBox(height: Sp.sm),
         ],
         NexaDeslizar(texto: boton, onConfirmado: _cargando ? null : _avanzar),
