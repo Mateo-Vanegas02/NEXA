@@ -45,7 +45,8 @@ class ApiConductorCalificacionTest {
         api = new ApiConductorController(servicios, mock(OptimizerService.class), contexto,
                 mock(SeguimientoPasajeroService.class), mock(UbicacionConductorService.class),
                 mock(CanalPeticion.class), mock(ViajeEnVivoService.class), mock(SaldoConductorService.class),
-                mock(IdempotenciaService.class), mock(UbicacionLoteService.class), niveles);
+                mock(IdempotenciaService.class), mock(UbicacionLoteService.class), niveles,
+                mock(com.example.MotvirsWeb.aplicacion.servicio.RutaEnVivoService.class));
     }
 
     @Test

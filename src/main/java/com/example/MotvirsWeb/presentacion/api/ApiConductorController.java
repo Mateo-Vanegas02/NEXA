@@ -44,6 +44,7 @@ public class ApiConductorController {
     private final com.example.MotvirsWeb.aplicacion.servicio.IdempotenciaService idempotencia;
     private final com.example.MotvirsWeb.aplicacion.servicio.UbicacionLoteService ubicacionLote;
     private final com.example.MotvirsWeb.aplicacion.servicio.NivelesService nivelesService;
+    private final com.example.MotvirsWeb.aplicacion.servicio.RutaEnVivoService rutaEnVivo;
 
     @GetMapping("/perfil")
     public ResponseEntity<Conductor> obtenerPerfil() {
@@ -210,6 +211,30 @@ public class ApiConductorController {
     private static java.time.LocalDateTime hora(java.time.Instant ocurridoEn) {
         return ocurridoEn == null ? null
                 : java.time.LocalDateTime.ofInstant(ocurridoEn, java.time.ZoneId.systemDefault());
+    }
+
+    /**
+     * Rutas nuevas desde donde va el conductor (cuando toma otra calle): hasta tres, la más rápida primero. El
+     * objetivo es la recogida si va por el pasajero y el destino si el viaje está en curso. 403 si no es su viaje,
+     * 409 si ya no está activo.
+     */
+    @PostMapping("/rutas/{servicioId}")
+    public ResponseEntity<?> rutasDesdeAqui(@PathVariable String servicioId,
+            @Valid @RequestBody com.example.MotvirsWeb.presentacion.dto.RutasEnVivoDto.Desde desde) {
+        Conductor conductor = usuarioContext.getConductorAutenticado();
+        return responder(() -> rutaEnVivo.alternativas(conductor, servicioId,
+                new PuntoGeo(desde.latitud(), desde.longitud())));
+    }
+
+    /**
+     * El conductor elige una de las rutas recién ofrecidas. Con el viaje en curso, el pasajero ve la nueva; el precio
+     * no cambia. 409 si la lista venció (hay que pedirla otra vez).
+     */
+    @PutMapping("/rutas/{servicioId}")
+    public ResponseEntity<?> elegirRuta(@PathVariable String servicioId,
+            @Valid @RequestBody com.example.MotvirsWeb.presentacion.dto.RutasEnVivoDto.Eleccion eleccion) {
+        Conductor conductor = usuarioContext.getConductorAutenticado();
+        return responder(() -> rutaEnVivo.elegir(conductor, servicioId, eleccion.indice()));
     }
 
     @GetMapping("/servicios-en-curso")

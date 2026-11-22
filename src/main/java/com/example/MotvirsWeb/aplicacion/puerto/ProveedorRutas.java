@@ -11,4 +11,12 @@ import com.example.MotvirsWeb.dominio.regla.Ruta;
 public interface ProveedorRutas {
 
     Ruta calcular(PuntoGeo origen, PuntoGeo destino);
+
+    /**
+     * Hasta tres rutas distintas entre dos puntos, la principal primero. Sirve para recalcular la ruta en vivo cuando
+     * el conductor toma otra calle; un proveedor sin alternativas devuelve solo la principal.
+     */
+    default java.util.List<Ruta> alternativas(PuntoGeo origen, PuntoGeo destino) {
+        return java.util.List.of(calcular(origen, destino));
+    }
 }

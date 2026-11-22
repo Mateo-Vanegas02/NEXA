@@ -186,7 +186,8 @@ class SeguridadHttpTest {
                     mock(com.example.MotvirsWeb.aplicacion.servicio.SaldoConductorService.class),
                     mock(com.example.MotvirsWeb.aplicacion.servicio.IdempotenciaService.class),
                     mock(com.example.MotvirsWeb.aplicacion.servicio.UbicacionLoteService.class),
-                    mock(com.example.MotvirsWeb.aplicacion.servicio.NivelesService.class));
+                    mock(com.example.MotvirsWeb.aplicacion.servicio.NivelesService.class),
+                    mock(com.example.MotvirsWeb.aplicacion.servicio.RutaEnVivoService.class));
         }
 
         @Bean
@@ -291,6 +292,16 @@ class SeguridadHttpTest {
         mvc.perform(get("/api/conductor/perfil").with(user("p@x.com").roles("PASAJERO")))
                 .andExpect(status().isForbidden());
         mvc.perform(get("/api/admin/notas").with(user("p@x.com").roles("PASAJERO")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void rutasEnVivoSoloParaConductor() throws Exception {
+        String cuerpo = "{\"latitud\":10.4,\"longitud\":-75.5}";
+        mvc.perform(post("/api/conductor/rutas/v1").with(csrf()).contentType(MediaType.APPLICATION_JSON).content(cuerpo))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/conductor/rutas/v1").with(user("p@x.com").roles("PASAJERO")).with(csrf())
+                .contentType(MediaType.APPLICATION_JSON).content(cuerpo))
                 .andExpect(status().isForbidden());
     }
 

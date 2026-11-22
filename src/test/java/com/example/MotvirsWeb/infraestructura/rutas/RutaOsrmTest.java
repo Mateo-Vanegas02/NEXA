@@ -105,4 +105,28 @@ class RutaOsrmTest {
         assertEquals("recta", osrm.calcular(A, B).fuente());
         assertEquals("osrm", osrm.calcular(A, B).fuente());
     }
+
+    @Test
+    void alternativasDevuelveTodasLasRutasYPideAlternativasAOsrm() {
+        AtomicReference<URI> pedida = new AtomicReference<>();
+        String tres = "{\"code\":\"Ok\",\"routes\":[{\"distance\":5200,\"duration\":600,\"geometry\":\"a\"},"
+                + "{\"distance\":4800,\"duration\":660,\"geometry\":\"b\"},{\"distance\":0,\"duration\":1}]}";
+        java.util.List<Ruta> rutas = new RutaOsrm("https://osrm.test", uri -> {
+            pedida.set(uri);
+            return tres;
+        }, respaldo).alternativas(A, B);
+        assertTrue(pedida.get().getQuery().contains("alternatives=2"));
+        assertEquals(2, rutas.size());
+        assertEquals("a", rutas.get(0).geometria());
+        assertEquals(11.0, rutas.get(1).duracionMin(), 1e-9);
+    }
+
+    @Test
+    void alternativasSinOsrmCaeALaLineaRecta() {
+        java.util.List<Ruta> rutas = new RutaOsrm("https://osrm.test", uri -> {
+            throw new IllegalStateException("timeout");
+        }, respaldo).alternativas(A, B);
+        assertEquals(1, rutas.size());
+        assertEquals("recta", rutas.get(0).fuente());
+    }
 }

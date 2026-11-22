@@ -130,6 +130,14 @@ public interface ServicioRepository extends MongoRepository<Servicio, String> {
     long subirExtra(String servicioId, ObjectId pasajeroId, long maximoActual, long incremento,
             Servicio.OfertaExtra oferta);
 
+    /**
+     * Cambia el trazado que ve el pasajero cuando el conductor toma otra ruta. Solo con el viaje EN_CURSO y del
+     * conductor (atómico: 0 si ya terminó o no es suyo). No toca el precio: se cobra por lo recorrido.
+     */
+    @org.springframework.data.mongodb.repository.Query("{ '_id': ?0, 'estado': 'EN_CURSO', 'conductor._id': ?1 }")
+    @org.springframework.data.mongodb.repository.Update("{ '$set': { 'rutaGeometria': ?2 } }")
+    long cambiarRutaEnCurso(String servicioId, ObjectId conductorId, String rutaGeometria);
+
     List<Servicio> findByConductorIdAndCalificacionPasajeroIsNotNull(ObjectId conductorId);
     List<Servicio> findByPasajeroIdAndCalificacionConductorIsNotNull(ObjectId pasajeroId);
 }

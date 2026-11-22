@@ -82,22 +82,56 @@ public class RutaOsrm implements ProveedorRutas {
         }
     }
 
+    /**
+     * Rutas alternativas desde una posición en vivo (sin caché: el conductor se mueve). OSRM devuelve la principal y
+     * hasta dos alternativas; si falla, queda solo la línea recta.
+     */
+    @Override
+    public java.util.List<Ruta> alternativas(PuntoGeo origen, PuntoGeo destino) {
+        try {
+            if (base.isEmpty()) {
+                throw new IllegalStateException("nexa.rutas.osrm-url no está configurada");
+            }
+            URI uri = URI.create(String.format(Locale.ROOT,
+                    "%s/route/v1/driving/%.6f,%.6f;%.6f,%.6f?overview=full&geometries=polyline&steps=false&alternatives=2",
+                    base, origen.longitud(), origen.latitud(), destino.longitud(), destino.latitud()));
+            return parsearTodas(http.apply(uri), origen.distanciaKm(destino));
+        } catch (RuntimeException e) {
+            log.warn("OSRM no respondió las alternativas ({}); se usa la línea recta", e.getMessage());
+            return java.util.List.of(respaldo.calcular(origen, destino));
+        }
+    }
+
     /** Convierte la respuesta de OSRM en una {@link Ruta}; lanza si no es una ruta válida. */
     Ruta parsear(String cuerpo, double rectaKm) {
+        return parsearTodas(cuerpo, rectaKm).get(0);
+    }
+
+    /** Todas las rutas válidas de la respuesta, en el orden de OSRM (la principal primero). */
+    java.util.List<Ruta> parsearTodas(String cuerpo, double rectaKm) {
         try {
             JsonNode raiz = json.readTree(cuerpo);
             if (!"Ok".equals(raiz.path("code").asText())) {
                 throw new IllegalStateException("código " + raiz.path("code").asText("?"));
             }
-            JsonNode r = raiz.path("routes").path(0);
-            double km = r.path("distance").asDouble(-1) / 1000.0;
-            if (!(km > 0) || !Double.isFinite(km)) {
-                throw new IllegalStateException("distancia inválida");
+            java.util.List<Ruta> rutas = new java.util.ArrayList<>();
+            for (JsonNode r : raiz.path("routes")) {
+                double km = r.path("distance").asDouble(-1) / 1000.0;
+                if (!(km > 0) || !Double.isFinite(km)) {
+                    if (rutas.isEmpty()) {
+                        throw new IllegalStateException("distancia inválida");
+                    }
+                    continue;
+                }
+                double minutos = Math.max(0, r.path("duration").asDouble(0) / 60.0);
+                String geometria = r.path("geometry").asText(null);
+                // Por calle nunca es menos que la línea recta; si OSRM "ajusta" los puntos y da menos, manda la recta
+                rutas.add(new Ruta(Math.max(km, rectaKm), rectaKm, FUENTE, minutos, geometria));
             }
-            double minutos = Math.max(0, r.path("duration").asDouble(0) / 60.0);
-            String geometria = r.path("geometry").asText(null);
-            // Por calle nunca es menos que la línea recta; si OSRM "ajusta" los puntos y da menos, manda la recta
-            return new Ruta(Math.max(km, rectaKm), rectaKm, FUENTE, minutos, geometria);
+            if (rutas.isEmpty()) {
+                throw new IllegalStateException("sin rutas");
+            }
+            return rutas;
         } catch (java.io.IOException e) {
             throw new IllegalStateException("respuesta ilegible", e);
         }

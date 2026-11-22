@@ -35,4 +35,9 @@ public class ProveedorRutasConfigurado implements ProveedorRutas {
     public Ruta calcular(PuntoGeo origen, PuntoGeo destino) {
         return elegido.calcular(origen, destino);
     }
+
+    @Override
+    public java.util.List<Ruta> alternativas(PuntoGeo origen, PuntoGeo destino) {
+        return elegido.alternativas(origen, destino);
+    }
 }
