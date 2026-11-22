@@ -94,7 +94,10 @@ class _ConductoresScreenState extends ConsumerState<ConductoresScreen> {
                       const SizedBox(height: Sp.md),
                       ...lista.when(
                         loading: () => [
-                          const SizedBox(height: 240, child: CargandoSkeleton()),
+                          const SizedBox(
+                            height: 240,
+                            child: CargandoSkeleton(),
+                          ),
                         ],
                         error: (e, _) => [
                           SizedBox(
@@ -170,7 +173,9 @@ class _FilaConductor extends StatelessWidget {
                 ),
                 if (f != null)
                   Text(
-                    l.registradoEl(DateFormat('d MMM, H:mm', 'es_CO').format(f)),
+                    l.registradoEl(
+                      DateFormat('d MMM, H:mm', 'es_CO').format(f),
+                    ),
                     style: NexaTexto.pequeno.copyWith(color: NexaColors.tenue),
                   ),
               ],

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexa_mobile/core/providers.dart';
 import 'package:nexa_mobile/features/admin/data/admin_repository_impl.dart';

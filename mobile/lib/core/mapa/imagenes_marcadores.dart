@@ -102,14 +102,10 @@ Future<Uint8List> dibujarRotulo(
       Radius.circular(alto / 2),
     );
     c
-      ..drawRRect(
-        caja.shift(const Offset(0, 1.5)),
-        Paint()..color = _sombra,
-      )
+      ..drawRRect(caja.shift(const Offset(0, 1.5)), Paint()..color = _sombra)
       ..drawRRect(
         caja,
-        Paint()
-          ..color = oscuro ? NexaColors.glass : NexaColors.texto,
+        Paint()..color = oscuro ? NexaColors.glass : NexaColors.texto,
       )
       ..drawRRect(
         caja,

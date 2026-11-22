@@ -35,8 +35,7 @@ class OperacionScreen extends ConsumerWidget {
               onReintentar: () => ref.invalidate(operacionProvider),
             ),
             data: (o) => RefreshIndicator(
-              onRefresh: () =>
-                  ref.read(operacionProvider.notifier).refrescar(),
+              onRefresh: () => ref.read(operacionProvider.notifier).refrescar(),
               child: ListView(
                 padding: EdgeInsets.fromLTRB(
                   context.gutter,
@@ -109,7 +108,10 @@ class _Cifras extends StatelessWidget {
         color: NexaColors.cyan,
         valor: '${o.viajesHoy}',
         titulo: l.adminViajesHoy,
-        detalle: l.adminFinalizadosCancelados(o.finalizadosHoy, o.canceladosHoy),
+        detalle: l.adminFinalizadosCancelados(
+          o.finalizadosHoy,
+          o.canceladosHoy,
+        ),
       ),
       _Cifra(
         icono: Icons.route,
@@ -229,9 +231,7 @@ class _Flota extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(Sp.lg, Sp.md, Sp.lg, Sp.sm),
             child: Row(
               children: [
-                Expanded(
-                  child: Text(l.adminFlota, style: NexaTexto.subtitulo),
-                ),
+                Expanded(child: Text(l.adminFlota, style: NexaTexto.subtitulo)),
                 _Leyenda(color: NexaColors.cyan, texto: l.adminLibre),
                 const SizedBox(width: Sp.md),
                 _Leyenda(color: NexaColors.muted, texto: l.adminEnViaje),

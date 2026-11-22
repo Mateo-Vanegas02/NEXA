@@ -337,7 +337,10 @@ class _Documentos extends StatelessWidget {
         runSpacing: Sp.md,
         children: [
           for (final d in documentos)
-            SizedBox(width: ancho, child: _Documento(doc: d)),
+            SizedBox(
+              width: ancho,
+              child: _Documento(doc: d),
+            ),
         ],
       );
     },
