@@ -2806,4 +2806,81 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get enviar => 'Enviar';
+
+  @override
+  String navGiroEnCalle(String giro, String calle) {
+    return '$giro en $calle';
+  }
+
+  @override
+  String get zonasMasSolicitudes =>
+      'Las manchas doradas del mapa son las zonas con más solicitudes en las últimas 2 horas.';
+
+  @override
+  String get tusDocumentos => 'Tus documentos';
+
+  @override
+  String get docNoVence => 'No vence';
+
+  @override
+  String get docSinFecha => 'Sin fecha de vencimiento';
+
+  @override
+  String docVencio(String fecha) {
+    return 'Venció el $fecha';
+  }
+
+  @override
+  String docVenceEnDias(int dias) {
+    return 'Vence en $dias días';
+  }
+
+  @override
+  String docVence(String fecha) {
+    return 'Vence el $fecha';
+  }
+
+  @override
+  String get revisionVenceEl => 'Fecha de vencimiento en la foto';
+
+  @override
+  String get revisionAnotarVencimiento => 'Anotar vencimiento';
+
+  @override
+  String get solicitudNueva => 'Nueva solicitud';
+
+  @override
+  String get solicitudVerEnMapa => 'Ver en el mapa';
+
+  @override
+  String get atajoCasa => 'Casa';
+
+  @override
+  String get atajoUniversidad => 'Universidad';
+
+  @override
+  String get atajoComoGuardar =>
+      'Busca el lugar y mantenlo presionado para guardarlo.';
+
+  @override
+  String get atajoGuardarComo => 'Guardar en este teléfono como';
+
+  @override
+  String atajoGuardado(String nombre) {
+    return 'Guardado como $nombre';
+  }
+
+  @override
+  String get indicadorCalificacion => 'Calificación';
+
+  @override
+  String get indicadorAceptacion => 'Aceptación';
+
+  @override
+  String get indicadorCancelacion => 'Cancelación';
+
+  @override
+  String requisitosCumplidos(int cumplidos, int total) {
+    return '$cumplidos de $total';
+  }
 }

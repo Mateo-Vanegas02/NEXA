@@ -104,6 +104,7 @@ class MapaNexa extends ConsumerStatefulWidget {
     this.alternativas = const [],
     this.rutaAnterior,
     this.flota = const [],
+    this.zonas = const [],
     this.tiempoEnRuta,
     this.etiquetaDestino,
     this.encuadre,
@@ -169,6 +170,10 @@ class MapaNexa extends ConsumerStatefulWidget {
   /// Motos de la flota (panel del admin): punto y si está libre (cian) o en
   /// un viaje (gris). Sin datos de quién es.
   final List<(LatLng, bool)> flota;
+
+  /// Zonas con más solicitudes (mapa del conductor en línea): centro e
+  /// intensidad 0..1. Se dibujan como manchas doradas bajo todo lo demás.
+  final List<(LatLng, double)> zonas;
 
   /// Texto sobre la propia línea de la ruta, p. ej. «11 min» (rediseño 2026).
   final String? tiempoEnRuta;
@@ -349,6 +354,8 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
     _simbolos.clear();
     _firmas.clear();
     _rotulosCargados.clear();
+    _circulosZonas.clear();
+    _firmaZonas = '';
     _flotaDibujada = 0;
     _solapePermitido = false;
     for (final e in (await _imagenes()).entries) {
@@ -547,9 +554,38 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
     await _moto(c, o: o);
     await _rotulos(c);
     await _flota(c);
+    await _zonas(c);
   }
 
   int _flotaDibujada = 0;
+
+  final _circulosZonas = <ml.Circle>[];
+  String _firmaZonas = '';
+
+  Future<void> _zonas(ml.MapLibreMapController c) async {
+    final z = widget.zonas;
+    final firma = z.map((e) => '${e.$1.latitude},${e.$1.longitude},${e.$2}').join(';');
+    if (firma == _firmaZonas) return;
+    _firmaZonas = firma;
+    if (_circulosZonas.isNotEmpty) {
+      await c.removeCircles(List.of(_circulosZonas));
+      _circulosZonas.clear();
+    }
+    if (z.isEmpty) return;
+    final color = _hex(NexaColors.gold);
+    _circulosZonas.addAll(
+      await c.addCircles([
+        for (final (punto, intensidad) in z)
+          ml.CircleOptions(
+            geometry: _aMl(punto),
+            circleRadius: 22 + 26 * intensidad.clamp(0, 1),
+            circleColor: color,
+            circleOpacity: 0.16 + 0.22 * intensidad.clamp(0, 1),
+            circleBlur: 0.7,
+          ),
+      ]),
+    );
+  }
 
   Future<void> _flota(ml.MapLibreMapController c) async {
     final f = widget.flota;

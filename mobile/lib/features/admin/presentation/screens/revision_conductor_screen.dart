@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
@@ -407,6 +408,9 @@ class _Documento extends ConsumerWidget {
               l.revisionNumero(doc.numeroDeclarado!),
               style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
             ),
+          // El vencimiento lo anota el admin leyendo la foto (rediseño 2026).
+          if (doc.vence)
+            _Vencimiento(doc: doc),
         ],
       ),
     );
@@ -498,6 +502,73 @@ class _DialogoDecisionState extends State<_DialogoDecision> {
           child: Text(widget.textoBoton),
         ),
       ],
+    );
+  }
+}
+
+class _Vencimiento extends ConsumerStatefulWidget {
+  const _Vencimiento({required this.doc});
+  final DocumentoRevision doc;
+
+  @override
+  ConsumerState<_Vencimiento> createState() => _VencimientoState();
+}
+
+class _VencimientoState extends ConsumerState<_Vencimiento> {
+  late DateTime? _fecha = widget.doc.venceEl;
+  bool _guardando = false;
+
+  Future<void> _elegir() async {
+    final hoy = DateTime.now();
+    final f = await showDatePicker(
+      context: context,
+      initialDate: _fecha ?? hoy.add(const Duration(days: 365)),
+      firstDate: DateTime(hoy.year - 2),
+      lastDate: DateTime(hoy.year + 12),
+      helpText: AppLocalizations.of(context).revisionVenceEl,
+    );
+    if (f == null || !mounted) return;
+    final mensajes = ScaffoldMessenger.of(context);
+    setState(() => _guardando = true);
+    try {
+      await ref.read(adminRepositoryProvider).fijarVencimiento(widget.doc.id, f);
+      if (mounted) setState(() => _fecha = f);
+      ref.invalidate(operacionProvider);
+    } on Object catch (e) {
+      mensajes.showSnackBar(
+        SnackBar(content: Text(AppException.from(e).mensaje)),
+      );
+    } finally {
+      if (mounted) setState(() => _guardando = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final f = _fecha;
+    final vencido = f != null && f.isBefore(DateUtils.dateOnly(DateTime.now()));
+    return TextButton.icon(
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.zero,
+        minimumSize: const Size(0, Sizes.touch),
+        alignment: Alignment.centerLeft,
+      ),
+      onPressed: _guardando ? null : _elegir,
+      icon: Icon(
+        Icons.event_outlined,
+        size: 18,
+        color: vencido ? NexaColors.error : NexaColors.cyan,
+      ),
+      label: Text(
+        f == null
+            ? l.revisionAnotarVencimiento
+            : l.docVence(DateFormat('d MMM y', 'es_CO').format(f)),
+        style: NexaTexto.pequeno.copyWith(
+          color: vencido ? NexaColors.error : NexaColors.cyan,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
     );
   }
 }

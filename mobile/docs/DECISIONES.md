@@ -107,3 +107,14 @@ Lo que pidió el conductor tras probar la app en la calle (videos del 21 nov.):
 La confirmación muestra la duración de la cotización cuando el servidor la envía. Durante la recogida y el viaje, los minutos y el avance corresponden a la posición que reporta el servidor para esa fase. Mientras llega la primera ETA se muestra «Esperando la hora de llegada». Una ETA de cero y una distancia restante de cero son valores válidos.
 
 Durante la recogida y el trayecto, el velocímetro flota sobre el mapa incluso con el norte arriba. Muestra la velocidad del GPS del teléfono y oculta la última lectura a los cinco segundos. La espera en el punto y la elección de ruta dejan libre ese espacio.
+
+## 22-nov-2026 · Rediseño del video: lo que faltaba
+
+- **Calles en la navegación.** El servidor pide a OSRM los pasos (`steps=true`) y los guarda en `Servicio.pasosRuta`; las rutas en vivo también los traen. La app sigue calculando el giro con el trazado y busca el paso del servidor más cercano (≤ 40 m) para decir «Gira a la derecha en Calle 30» (`calleDeManiobra`). Sin pasos, la instrucción queda como antes.
+- **Posición en vivo por WebSocket.** `CanalTiempoReal` (STOMP 1.2 mínimo sobre `dart:io`, sin dependencias) conecta a `/ws-app` con el JWT en el CONNECT. El pasajero recibe la moto en `/topic/pasajero/{id}/posicion` y los cambios del viaje en `/topic/pasajero/{id}`; el conductor, `/topic/servicios-disponibles` y `/topic/conductor/{id}`. Reconecta con espera creciente (2–60 s). El sondeo sigue de respaldo; el pasajero no pide la posición por HTTP si el canal la trajo hace menos de 3 s.
+- **Zonas con más solicitudes.** `GET /api/conductor/zonas`: celdas de ~550 m con 2 o más solicitudes en las últimas 2 h (el centro de la celda, nunca el punto de un pasajero). El conductor en línea las ve como manchas doradas; se refrescan cada 2 min.
+- **Vencimientos.** El admin anota la fecha de vencimiento de la licencia, el SOAT y la tecnomecánica al revisar la foto. El conductor ve sus documentos con «Vence el…», «Vence en N días» (30 días o menos) o «Venció…», y la operación del admin avisa los vencidos.
+- **Solicitud a pantalla completa.** Una solicitud nueva oscurece el mapa y queda al centro con su cuenta regresiva; «Ver en el mapa» la deja en la lista.
+- **Casa y Universidad.** Atajos en la búsqueda; se guardan solo en el teléfono (mantener presionado un resultado).
+- **Niveles del conductor.** Comisión actual → siguiente, calificación, aceptación y cancelación, y requisitos con «N de M».
+- **No se hizo:** ruta que evita giros a la izquierda (OSRM no la ofrece) y contactar al pasajero desde «viajes en riesgo» (la Lambda no envía contacto, por privacidad).

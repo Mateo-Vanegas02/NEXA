@@ -11,6 +11,7 @@ import '../../../../core/theme/theme_x.dart';
 import '../../../../core/theme/nexa_texto.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/utils/resaltar.dart';
+import '../controllers/lugares_guardados.dart';
 import '../../../../core/widgets/nexa_icono_app.dart';
 
 /// Lo que devuelve [ElegirLugarScreen]: un lugar buscado, o la petición de
@@ -100,10 +101,55 @@ class _ElegirLugarScreenState extends ConsumerState<ElegirLugarScreen> {
 
   void _cerrar([ResultadoLugar? r]) => Navigator.of(context).pop(r);
 
+  Future<void> _guardarComo(Lugar lugar) async {
+    final l = AppLocalizations.of(context);
+    final atajo = await showModalBottomSheet<AtajoLugar>(
+      context: context,
+      backgroundColor: NexaColors.card,
+      builder: (c) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: Text(lugar.nombre, style: NexaTexto.subtitulo),
+              subtitle: Text(l.atajoGuardarComo),
+            ),
+            for (final a in AtajoLugar.values)
+              ListTile(
+                leading: Icon(
+                  a == AtajoLugar.casa
+                      ? Icons.home_outlined
+                      : Icons.school_outlined,
+                  color: NexaColors.cyan,
+                ),
+                title: Text(
+                  a == AtajoLugar.casa ? l.atajoCasa : l.atajoUniversidad,
+                ),
+                onTap: () => Navigator.pop(c, a),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (atajo == null || !mounted) return;
+    await ref.read(lugaresGuardadosProvider.notifier).guardar(atajo, lugar);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          l.atajoGuardado(
+            atajo == AtajoLugar.casa ? l.atajoCasa : l.atajoUniversidad,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final otro = widget.esOrigen ? widget.destinoTexto : widget.origenTexto;
+    final guardados = ref.watch(lugaresGuardadosProvider);
     final campo = _Campo(
       esOrigen: widget.esOrigen,
       controller: _ctrl,
@@ -170,6 +216,36 @@ class _ElegirLugarScreenState extends ConsumerState<ElegirLugarScreen> {
                     onPressed: () =>
                         _cerrar(const ResultadoLugar(fijarEnMapa: true)),
                   ),
+                  // Casa y Universidad (rediseño 2026): con un lugar guardado
+                  // lo elige al instante; si no, explica cómo guardarlo.
+                  for (final a in AtajoLugar.values)
+                    ActionChip(
+                      avatar: Icon(
+                        a == AtajoLugar.casa
+                            ? Icons.home_outlined
+                            : Icons.school_outlined,
+                        size: 16,
+                        color: guardados[a] == null
+                            ? NexaColors.muted
+                            : NexaColors.cyan,
+                      ),
+                      label: Text(
+                        a == AtajoLugar.casa ? l.atajoCasa : l.atajoUniversidad,
+                      ),
+                      shape: const StadiumBorder(),
+                      side: const BorderSide(color: NexaColors.line),
+                      backgroundColor: NexaColors.card,
+                      onPressed: () {
+                        final g = guardados[a];
+                        if (g != null) {
+                          _cerrar(ResultadoLugar(lugar: g));
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(l.atajoComoGuardar)),
+                          );
+                        }
+                      },
+                    ),
                   if (widget.esOrigen)
                     ActionChip(
                       avatar: const Icon(
@@ -247,6 +323,8 @@ class _Lista extends StatelessWidget {
         );
         return InkWell(
           onTap: () => estado._cerrar(ResultadoLugar(lugar: lugar)),
+          // Mantener presionado: guardarlo como Casa o Universidad.
+          onLongPress: () => estado._guardarComo(lugar),
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 64),
             child: Row(

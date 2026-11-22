@@ -99,6 +99,21 @@ class ApiAdminRepository implements AdminRepository {
   });
 
   @override
+  Future<void> fijarVencimiento(String documentoId, DateTime? venceEl) =>
+      _guard(() async {
+        await _dio.put<_Json>(
+          '/admin/verificacion/documentos/$documentoId/vencimiento',
+          data: {
+            'venceEl': venceEl == null
+                ? null
+                : '${venceEl.year.toString().padLeft(4, '0')}-'
+                      '${venceEl.month.toString().padLeft(2, '0')}-'
+                      '${venceEl.day.toString().padLeft(2, '0')}',
+          },
+        );
+      });
+
+  @override
   Future<void> pedirInformacion(String email, String mensaje) =>
       _guard(() async {
         await _dio.post<_Json>(
@@ -181,6 +196,7 @@ class MockAdminRepository implements AdminRepository {
               tipo: t,
               numeroDeclarado: '10${i}2345678',
               contentType: 'image/jpeg',
+              venceEl: vencimientos['d$i'],
             ),
         ],
         vehiculos: const [
@@ -204,6 +220,12 @@ class MockAdminRepository implements AdminRepository {
     required String motivo,
     bool marcarVerificado = false,
   }) async => _pendientes.removeWhere((c) => c.email == email);
+
+  final vencimientos = <String, DateTime?>{};
+
+  @override
+  Future<void> fijarVencimiento(String documentoId, DateTime? venceEl) async =>
+      vencimientos[documentoId] = venceEl;
 
   @override
   Future<void> pedirInformacion(String email, String mensaje) async =>

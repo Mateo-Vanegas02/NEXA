@@ -292,6 +292,10 @@ class _Alerta extends StatelessWidget {
         Icons.how_to_reg_outlined,
         NexaColors.gold,
       ),
+      TipoAlerta.documentoVencido => (
+        Icons.event_busy_outlined,
+        NexaColors.error,
+      ),
       TipoAlerta.otra => (Icons.info_outline, NexaColors.cyan),
     };
     return TarjetaSat(

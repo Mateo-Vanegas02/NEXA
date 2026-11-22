@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../domain/paso_ruta.dart';
 import '../../../../core/mapa/maniobra.dart';
 import '../../../../core/mapa/reglas_marcadores.dart';
 import '../../../../core/rumbo/reglas_rumbo.dart';
@@ -30,6 +31,7 @@ class NavegacionConductor extends ConsumerWidget {
     required this.pasajero,
     this.restanteKm,
     this.conRutaRecogida = false,
+    this.pasos = const [],
     super.key,
   });
 
@@ -47,6 +49,9 @@ class NavegacionConductor extends ConsumerWidget {
   /// servidor al aceptar): se navega giro a giro en vez de con la flecha.
   final bool conRutaRecogida;
 
+  /// Pasos del servidor con el nombre de cada calle.
+  final List<PasoRuta> pasos;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
@@ -55,7 +60,7 @@ class NavegacionConductor extends ConsumerWidget {
     final IconData icono;
     double giroIcono = 0;
     final String distancia;
-    final String instruccion;
+    String instruccion;
     String? luego;
     final objetivo = fase == FaseConductor.enViaje
         ? l.navLlegasA(destino)
@@ -88,6 +93,12 @@ class NavegacionConductor extends ConsumerWidget {
           Giro.recto => l.navSigueRecto,
           Giro.llegada => objetivo,
         };
+        // «Gira a la derecha en Calle 30» cuando el servidor da la calle.
+        final punto = m.punto;
+        final calle = m.giro == Giro.llegada || punto == null
+            ? null
+            : calleDeManiobra(pasos, punto);
+        if (calle != null) instruccion = l.navGiroEnCalle(instruccion, calle);
         if (m.giro != Giro.llegada) luego = objetivo;
       }
     } else {

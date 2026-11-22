@@ -11,6 +11,7 @@ import '../../../../core/widgets/nexa_widgets.dart';
 import '../../../auth/presentation/controllers/perfil_controller.dart';
 import '../../domain/resumen_ganancias.dart';
 import '../controllers/viaje_conductor_controller.dart';
+import '../controllers/zonas_documentos_controller.dart';
 
 String _saludo(AppLocalizations l, int hora) {
   if (hora < 12) return l.saludoManana;
@@ -139,6 +140,33 @@ class PanelEnLinea extends ConsumerWidget {
         if (horas.montos.length > 1) ...[
           const SizedBox(height: Sp.md),
           _BarrasHoras(montos: horas.montos),
+        ],
+        if ((ref.watch(zonasDemandaProvider).value ?? const []).isNotEmpty) ...[
+          const SizedBox(height: Sp.md),
+          Row(
+            children: [
+              Container(
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      NexaColors.gold.withValues(alpha: 0.7),
+                      NexaColors.gold.withValues(alpha: 0),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: Sp.md),
+              Expanded(
+                child: Text(
+                  l.zonasMasSolicitudes,
+                  style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
+                ),
+              ),
+            ],
+          ),
         ],
         const SizedBox(height: Sp.md),
         Row(

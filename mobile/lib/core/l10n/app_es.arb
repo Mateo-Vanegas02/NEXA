@@ -1736,5 +1736,74 @@
   "tipoTarjetaPropiedad": "Tarjeta de propiedad",
   "tipoSoat": "SOAT",
   "tipoTecnomecanica": "Tecnomecánica",
-  "enviar": "Enviar"
+  "enviar": "Enviar",
+  "navGiroEnCalle": "{giro} en {calle}",
+  "@navGiroEnCalle": {
+    "placeholders": {
+      "giro": {
+        "type": "String"
+      },
+      "calle": {
+        "type": "String"
+      }
+    }
+  },
+  "zonasMasSolicitudes": "Las manchas doradas del mapa son las zonas con más solicitudes en las últimas 2 horas.",
+  "tusDocumentos": "Tus documentos",
+  "docNoVence": "No vence",
+  "docSinFecha": "Sin fecha de vencimiento",
+  "docVencio": "Venció el {fecha}",
+  "@docVencio": {
+    "placeholders": {
+      "fecha": {
+        "type": "String"
+      }
+    }
+  },
+  "docVenceEnDias": "Vence en {dias} días",
+  "@docVenceEnDias": {
+    "placeholders": {
+      "dias": {
+        "type": "int"
+      }
+    }
+  },
+  "docVence": "Vence el {fecha}",
+  "@docVence": {
+    "placeholders": {
+      "fecha": {
+        "type": "String"
+      }
+    }
+  },
+  "revisionVenceEl": "Fecha de vencimiento en la foto",
+  "revisionAnotarVencimiento": "Anotar vencimiento",
+  "solicitudNueva": "Nueva solicitud",
+  "solicitudVerEnMapa": "Ver en el mapa",
+  "atajoCasa": "Casa",
+  "atajoUniversidad": "Universidad",
+  "atajoComoGuardar": "Busca el lugar y mantenlo presionado para guardarlo.",
+  "atajoGuardarComo": "Guardar en este teléfono como",
+  "atajoGuardado": "Guardado como {nombre}",
+  "@atajoGuardado": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "indicadorCalificacion": "Calificación",
+  "indicadorAceptacion": "Aceptación",
+  "indicadorCancelacion": "Cancelación",
+  "requisitosCumplidos": "{cumplidos} de {total}",
+  "@requisitosCumplidos": {
+    "placeholders": {
+      "cumplidos": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  }
 }

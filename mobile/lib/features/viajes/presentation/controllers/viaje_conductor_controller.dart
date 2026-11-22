@@ -5,10 +5,12 @@ import '../../../../core/mapa/reglas_ruta.dart';
 import '../../../../core/providers.dart';
 import '../../../../core/segundo_plano/modo_segundo_plano.dart';
 import '../../../../core/sin_conexion/reglas_sin_conexion.dart';
+import '../../../../core/tiempo_real/tiempo_real_provider.dart';
 import '../../../../core/utils/mi_posicion.dart';
 import '../../../auth/presentation/controllers/session_controller.dart';
 import '../../../niveles/presentation/controllers/niveles_controller.dart';
 import '../../domain/opcion_ruta.dart';
+import '../../domain/paso_ruta.dart';
 import '../../domain/servicio.dart';
 import '../../domain/viajes_repository.dart';
 import 'sin_conexion_controller.dart';
@@ -41,6 +43,7 @@ class ConductorState {
     this.rutasOfrecidas = const [],
     this.rutaPropia,
     this.rutaPropiaFase,
+    this.pasosPropios = const [],
   });
 
   final EstadoAprobacion aprobacion;
@@ -72,6 +75,19 @@ class ConductorState {
   /// pasajero), válida solo en la fase [rutaPropiaFase].
   final List<LatLng>? rutaPropia;
   final FaseConductor? rutaPropiaFase;
+
+  /// Maniobras con nombre de calle de [rutaPropia].
+  final List<PasoRuta> pasosPropios;
+
+  /// Las maniobras de la ruta que se dibuja (con nombre de calle).
+  List<PasoRuta> get pasosVigentes {
+    final f = fase;
+    if (f == null) return const [];
+    if (rutaPropia != null && rutaPropiaFase == f) return pasosPropios;
+    return f == FaseConductor.enViaje
+        ? (activo?.pasosRuta ?? const [])
+        : const [];
+  }
 
   /// La ruta que se dibuja y contra la que se mide el desvío: la elegida en
   /// esta fase o, en viaje, la del servidor. Yendo a recoger sin ruta propia
@@ -115,6 +131,7 @@ class ConductorState {
     List<OpcionRuta>? rutasOfrecidas,
     List<LatLng>? rutaPropia,
     FaseConductor? rutaPropiaFase,
+    List<PasoRuta>? pasosPropios,
   }) => ConductorState(
     aprobacion: aprobacion ?? this.aprobacion,
     enLinea: enLinea ?? this.enLinea,
@@ -137,6 +154,9 @@ class ConductorState {
     rutaPropiaFase: limpiarActivo
         ? null
         : (rutaPropiaFase ?? this.rutaPropiaFase),
+    pasosPropios: limpiarActivo
+        ? const []
+        : (pasosPropios ?? this.pasosPropios),
   );
 }
 
@@ -251,9 +271,30 @@ class ConductorController extends AsyncNotifier<ConductorState> {
       Env.pollingPosicion,
       (_) => reportarPosicion(),
     );
+    _escucharEnVivo();
+  }
+
+  /// Suscripciones al canal en vivo: solicitudes nuevas o retiradas y cambios
+  /// del propio viaje se consultan al instante (rediseño 2026); el sondeo de
+  /// 5 s queda de respaldo.
+  final _enVivo = <void Function()>[];
+
+  void _escucharEnVivo() {
+    if (_enVivo.isNotEmpty) return;
+    final canal = ref.read(canalTiempoRealProvider);
+    final uid = ref.read(sesionProvider).sesion?.userId;
+    if (canal == null || uid == null) return;
+    void avisar(Object? _) => unawaited(sondear());
+    _enVivo
+      ..add(canal.suscribir('/topic/servicios-disponibles', avisar))
+      ..add(canal.suscribir('/topic/conductor/$uid', avisar));
   }
 
   void _pararTimers() {
+    for (final cancelar in _enVivo) {
+      cancelar();
+    }
+    _enVivo.clear();
     _timer?.cancel();
     _timer = null;
     _timerPosicion?.cancel();
@@ -669,6 +710,7 @@ class ConductorController extends AsyncNotifier<ConductorState> {
           s.copyWith(
             rutaPropia: rutaDe(validas.first.geometria),
             rutaPropiaFase: s.fase,
+            pasosPropios: validas.first.pasos,
           ),
         );
         _detector.reiniciar();
@@ -704,6 +746,7 @@ class ConductorController extends AsyncNotifier<ConductorState> {
         rutasOfrecidas: const [],
         rutaPropia: rutaDe(op.geometria),
         rutaPropiaFase: s.fase,
+        pasosPropios: op.pasos,
       ),
     );
     _detector.reiniciar();

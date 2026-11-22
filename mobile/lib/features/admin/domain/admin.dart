@@ -71,7 +71,12 @@ class PosicionFlota {
   final bool disponible;
 }
 
-enum TipoAlerta { solicitudSinConductor, conductoresPorAprobar, otra }
+enum TipoAlerta {
+  solicitudSinConductor,
+  documentoVencido,
+  conductoresPorAprobar,
+  otra,
+}
 
 class AlertaAdmin {
   const AlertaAdmin({
@@ -85,6 +90,7 @@ class AlertaAdmin {
     tipo: switch (j['tipo']) {
       'SOLICITUD_SIN_CONDUCTOR' => TipoAlerta.solicitudSinConductor,
       'CONDUCTORES_POR_APROBAR' => TipoAlerta.conductoresPorAprobar,
+      'DOCUMENTO_VENCIDO' => TipoAlerta.documentoVencido,
       _ => TipoAlerta.otra,
     },
     texto: j['texto'] as String? ?? '',
@@ -158,6 +164,7 @@ class DocumentoRevision {
     this.numeroDeclarado,
     this.contentType = '',
     this.subidoEn,
+    this.venceEl,
   });
 
   factory DocumentoRevision.fromJson(Map<String, dynamic> j) =>
@@ -167,7 +174,11 @@ class DocumentoRevision {
         numeroDeclarado: j['numeroDeclarado'] as String?,
         contentType: j['contentType'] as String? ?? '',
         subidoEn: DateTime.tryParse(j['subidoEn']?.toString() ?? ''),
+        venceEl: DateTime.tryParse(j['venceEl']?.toString() ?? ''),
       );
+
+  /// La tarjeta de propiedad no vence; los demás sí.
+  bool get vence => tipo != 'TARJETA_PROPIEDAD';
 
   final String id;
 
@@ -176,6 +187,9 @@ class DocumentoRevision {
   final String? numeroDeclarado;
   final String contentType;
   final DateTime? subidoEn;
+
+  /// Vencimiento anotado por un admin (null si falta).
+  final DateTime? venceEl;
 
   bool get esImagen => contentType.startsWith('image/');
 }
@@ -237,6 +251,9 @@ abstract interface class AdminRepository {
     required String motivo,
     bool marcarVerificado = false,
   });
+
+  /// Anota (o borra con null) la fecha de vencimiento leída en la foto.
+  Future<void> fijarVencimiento(String documentoId, DateTime? venceEl);
 
   /// Pide al conductor información adicional (queda EN_REVISION).
   Future<void> pedirInformacion(String email, String mensaje);

@@ -14,17 +14,20 @@ enum Giro {
 }
 
 class Maniobra {
-  const Maniobra({required this.giro, required this.metros});
+  const Maniobra({required this.giro, required this.metros, this.punto});
 
   final Giro giro;
+
+  /// Dónde es el giro (para buscar el nombre de la calle).
+  final LatLng? punto;
 
   /// Distancia hasta el cruce (o hasta el final de la ruta en [Giro.llegada]).
   final double metros;
 }
 
-/// Siguiente giro sobre la ruta del servidor, calculado solo con su trazado:
-/// no hay nombres de calles ni instrucciones del servidor, así que se mira
-/// dónde cambia el rumbo del trazado. Nada de esto toca el cobro.
+/// Siguiente giro sobre la ruta del servidor, calculado con su trazado: se
+/// mira dónde cambia el rumbo. El nombre de la calle sale de los pasos del
+/// servidor (`calleDeManiobra`). Nada de esto toca el cobro.
 abstract final class ReglasManiobra {
   /// Un cambio de rumbo menor a esto es «seguir derecho».
   static const giroMinimo = 35.0;
@@ -93,10 +96,12 @@ abstract final class ReglasManiobra {
         ReglasMarcadores.rumboEntre(ruta[k], ruta[k + 1]),
       );
       final giro = _giro(cambio);
-      if (giro != Giro.recto) return Maniobra(giro: giro, metros: metros);
+      if (giro != Giro.recto) {
+        return Maniobra(giro: giro, metros: metros, punto: ruta[k]);
+      }
       metros += _m(ruta[k], ruta[k + 1]);
     }
-    return Maniobra(giro: Giro.llegada, metros: metros);
+    return Maniobra(giro: Giro.llegada, metros: metros, punto: ruta.last);
   }
 
   /// Distancia redondeada para leerla de un vistazo: de 10 en 10 m bajo 1 km,
