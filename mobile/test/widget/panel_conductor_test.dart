@@ -99,7 +99,11 @@ void main() {
         // Desconectarse: solo el botón de la hoja.
         expect(find.bySemanticsLabel('Desconectarme'), findsOneWidget);
 
-        await t.tap(find.bySemanticsLabel('Desconectarme').first);
+        // En 360×640 queda más abajo en la hoja: se desplaza hasta él.
+        final desconectar = find.bySemanticsLabel('Desconectarme');
+        await t.ensureVisible(desconectar);
+        await t.pump();
+        await t.tap(desconectar);
         await _ratos(t, 800);
         expect(find.text('Fuera de línea'), findsOneWidget);
         semantica.dispose();
