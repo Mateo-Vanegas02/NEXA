@@ -105,3 +105,5 @@ Lo que pidió el conductor tras probar la app en la calle (videos del 21 nov.):
 ## 22-nov-2026 · Hora de llegada del pasajero
 
 La confirmación muestra la duración de la cotización cuando el servidor la envía. Durante la recogida y el viaje, los minutos y el avance corresponden a la posición que reporta el servidor para esa fase. Mientras llega la primera ETA se muestra «Esperando la hora de llegada». Una ETA de cero y una distancia restante de cero son valores válidos.
+
+Durante la recogida y el trayecto, el velocímetro flota sobre el mapa incluso con el norte arriba. Muestra la velocidad del GPS del teléfono y oculta la última lectura a los cinco segundos. La espera en el punto y la elección de ruta dejan libre ese espacio.

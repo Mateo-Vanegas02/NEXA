@@ -1,4 +1,5 @@
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/providers.dart';
 import '../../../../core/rumbo/orientacion_mapa.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/theme_x.dart';
@@ -250,6 +251,18 @@ class _Panel extends ConsumerWidget {
                           await ctrl.alternarLinea();
                         },
                 ),
+              ),
+            ),
+          ),
+        if (activo != null &&
+            estado.fase != FaseConductor.enElPunto &&
+            estado.desvio == EstadoDesvio.ninguno)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(left: Sp.md),
+              child: VelocimetroGps(
+                movimiento: ref.read(rastreadorProvider).movimiento,
               ),
             ),
           ),

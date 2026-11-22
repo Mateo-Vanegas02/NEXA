@@ -8,7 +8,7 @@ import 'package:latlong2/latlong.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/mapa/maniobra.dart';
 import '../../../../core/mapa/reglas_marcadores.dart';
-import '../../../../core/providers.dart';
+import '../../../../core/rumbo/reglas_rumbo.dart';
 import '../../../../core/rumbo/orientacion_mapa.dart';
 import '../../../../core/theme/nexa_texto.dart';
 import '../../../../core/theme/tokens.dart';
@@ -195,48 +195,65 @@ class NavegacionConductor extends ConsumerWidget {
             ),
           ),
         ],
-        const SizedBox(height: Sp.sm),
-        const _Velocidad(),
       ],
     );
   }
 }
 
 /// Velocidad del GPS (km/h), si el dato es reciente.
-class _Velocidad extends ConsumerStatefulWidget {
-  const _Velocidad();
+class VelocimetroGps extends StatefulWidget {
+  const VelocimetroGps({required this.movimiento, super.key});
+  final MovimientoGps? movimiento;
 
   @override
-  ConsumerState<_Velocidad> createState() => _VelocidadState();
+  State<VelocimetroGps> createState() => _VelocimetroGpsState();
 }
 
-class _VelocidadState extends ConsumerState<_Velocidad> {
-  late final Timer _reloj = Timer.periodic(
-    const Duration(seconds: 1),
-    (_) => setState(() {}),
-  );
+class _VelocimetroGpsState extends State<VelocimetroGps> {
+  Timer? _vencimiento;
+  int? _kmh;
+
+  @override
+  void initState() {
+    super.initState();
+    _leer();
+  }
+
+  @override
+  void didUpdateWidget(VelocimetroGps anterior) {
+    super.didUpdateWidget(anterior);
+    if (widget.movimiento != anterior.movimiento) _leer();
+  }
+
+  void _leer() {
+    _vencimiento?.cancel();
+    _kmh = null;
+    final m = widget.movimiento;
+    if (m == null || !m.velocidad.isFinite || m.velocidad < 0) return;
+    final restante = m.en
+        .add(const Duration(seconds: 5))
+        .difference(DateTime.now());
+    if (restante <= Duration.zero) return;
+    _kmh = (m.velocidad * 3.6).round();
+    _vencimiento = Timer(restante, () => setState(() => _kmh = null));
+  }
 
   @override
   void dispose() {
-    _reloj.cancel();
+    _vencimiento?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final m = ref.read(rastreadorProvider).movimiento;
-    if (m == null ||
-        m.velocidad < 0 ||
-        DateTime.now().difference(m.en) > const Duration(seconds: 5)) {
-      return const SizedBox.shrink();
-    }
-    final kmh = (m.velocidad * 3.6).round();
+    final kmh = _kmh;
+    if (kmh == null) return const SizedBox.shrink();
     return Semantics(
       label: '$kmh km/h',
       child: ExcludeSemantics(
         child: Container(
-          width: 64,
-          height: 64,
+          width: MediaQuery.textScalerOf(context).scale(Sizes.boton),
+          height: MediaQuery.textScalerOf(context).scale(Sizes.boton),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: NexaColors.glass,
@@ -246,7 +263,13 @@ class _VelocidadState extends ConsumerState<_Velocidad> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('$kmh', style: NexaTexto.subtitulo.copyWith(height: 1)),
+              Text(
+                '$kmh',
+                style: NexaTexto.subtitulo.copyWith(
+                  height: 1,
+                  color: NexaColors.texto,
+                ),
+              ),
               const Text(
                 'km/h',
                 style: TextStyle(fontSize: 10, color: NexaColors.muted),
