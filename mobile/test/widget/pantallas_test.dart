@@ -218,7 +218,7 @@ void main() {
           overrides: [_sesion(Rol.pasajero), _viaje(EstadoServicio.enCurso)],
         );
         expect(find.text('En viaje'.toUpperCase()), findsOneWidget);
-        expect(find.text('Vas hacia Centro Comercial Plaza'), findsOneWidget);
+        expect(find.text('Llegas a Centro Comercial Plaza'), findsOneWidget);
         expect(find.text('Carlos Mendoza'), findsOneWidget);
         expect(find.text('ABC 12D'), findsOneWidget);
         expect(find.text('Compartir viaje'), findsOneWidget);

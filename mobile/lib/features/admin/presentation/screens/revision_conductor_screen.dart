@@ -180,7 +180,9 @@ class _RevisionConductorScreenState
                     const SizedBox(height: Sp.md),
                     ...exp.when(
                       loading: () => [
-                        const SizedBox(height: 300, child: CargandoSkeleton()),
+                        const Skeleton(height: 72),
+                        const SizedBox(height: Sp.md),
+                        const Skeleton(height: 160),
                       ],
                       error: (e, _) => [
                         SizedBox(

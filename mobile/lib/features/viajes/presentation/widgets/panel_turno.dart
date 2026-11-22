@@ -151,14 +151,17 @@ class PanelEnLinea extends ConsumerWidget {
                 style: NexaTexto.subtitulo.copyWith(fontSize: 15),
               ),
             ),
-            TextButton(
-              onPressed: onDesconectar,
-              child: Text(
-                l.desconectarme,
-                style: const TextStyle(color: NexaColors.muted),
-              ),
-            ),
           ],
+        ),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            onPressed: onDesconectar,
+            child: Text(
+              l.desconectarme,
+              style: const TextStyle(color: NexaColors.muted),
+            ),
+          ),
         ),
       ],
     );

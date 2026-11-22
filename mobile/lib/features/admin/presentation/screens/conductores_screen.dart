@@ -94,10 +94,9 @@ class _ConductoresScreenState extends ConsumerState<ConductoresScreen> {
                       const SizedBox(height: Sp.md),
                       ...lista.when(
                         loading: () => [
-                          const SizedBox(
-                            height: 240,
-                            child: CargandoSkeleton(),
-                          ),
+                          const Skeleton(height: 72),
+                          const SizedBox(height: Sp.sm),
+                          const Skeleton(height: 72),
                         ],
                         error: (e, _) => [
                           SizedBox(

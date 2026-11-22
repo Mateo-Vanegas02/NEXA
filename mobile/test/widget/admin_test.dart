@@ -87,6 +87,7 @@ void main() {
     expect(t.takeException(), isNull);
 
     await t.ensureVisible(find.text('Aprobar'));
+    await t.pump();
     await t.tap(find.text('Aprobar'));
     await _ratos(t, 400);
     // Sin verificación previa, el botón del diálogo espera la casilla.
@@ -119,6 +120,7 @@ void main() {
     );
     await _ratos(t, 500);
     await t.ensureVisible(find.text('Rechazar'));
+    await t.pump();
     await t.tap(find.text('Rechazar'));
     await _ratos(t, 400);
     final confirmar = find.descendant(
