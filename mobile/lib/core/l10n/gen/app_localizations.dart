@@ -4652,6 +4652,438 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Se cobra solo lo recorrido.'**
   String get finalizadoAntesCobro;
+
+  /// No description provided for @esteMes.
+  ///
+  /// In es, this message translates to:
+  /// **'Este mes'**
+  String get esteMes;
+
+  /// No description provided for @viajesCuenta.
+  ///
+  /// In es, this message translates to:
+  /// **'Viajes: {n}'**
+  String viajesCuenta(int n);
+
+  /// No description provided for @recorridoMes.
+  ///
+  /// In es, this message translates to:
+  /// **'Recorrido del mes'**
+  String get recorridoMes;
+
+  /// No description provided for @enMoto.
+  ///
+  /// In es, this message translates to:
+  /// **'en moto'**
+  String get enMoto;
+
+  /// No description provided for @seccionMapa.
+  ///
+  /// In es, this message translates to:
+  /// **'Mapa'**
+  String get seccionMapa;
+
+  /// No description provided for @mapaIndependiente.
+  ///
+  /// In es, this message translates to:
+  /// **'Independiente del tema de la app'**
+  String get mapaIndependiente;
+
+  /// No description provided for @tuMoto.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu moto'**
+  String get tuMoto;
+
+  /// No description provided for @motoVerificada.
+  ///
+  /// In es, this message translates to:
+  /// **'Verificada'**
+  String get motoVerificada;
+
+  /// No description provided for @motoEnRevision.
+  ///
+  /// In es, this message translates to:
+  /// **'En revisión'**
+  String get motoEnRevision;
+
+  /// No description provided for @destinoLlegas.
+  ///
+  /// In es, this message translates to:
+  /// **'{destino} · llegas {hora}'**
+  String destinoLlegas(String destino, String hora);
+
+  /// No description provided for @llegasA.
+  ///
+  /// In es, this message translates to:
+  /// **'Llegas a {destino}'**
+  String llegasA(String destino);
+
+  /// No description provided for @llegasAHora.
+  ///
+  /// In es, this message translates to:
+  /// **'Llegas a {destino} a las {hora}'**
+  String llegasAHora(String destino, String hora);
+
+  /// No description provided for @kmRestantes.
+  ///
+  /// In es, this message translates to:
+  /// **'{km} km restantes'**
+  String kmRestantes(String km);
+
+  /// No description provided for @periodoHoy.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy'**
+  String get periodoHoy;
+
+  /// No description provided for @periodoSemana.
+  ///
+  /// In es, this message translates to:
+  /// **'Semana'**
+  String get periodoSemana;
+
+  /// No description provided for @periodo30Dias.
+  ///
+  /// In es, this message translates to:
+  /// **'30 días'**
+  String get periodo30Dias;
+
+  /// No description provided for @viajesYPromedio.
+  ///
+  /// In es, this message translates to:
+  /// **'{n} viajes · {promedio} por viaje'**
+  String viajesYPromedio(int n, String promedio);
+
+  /// No description provided for @listoParaRodar.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Listo para rodar?'**
+  String get listoParaRodar;
+
+  /// No description provided for @deslizaConectarte.
+  ///
+  /// In es, this message translates to:
+  /// **'Desliza para conectarte'**
+  String get deslizaConectarte;
+
+  /// No description provided for @ultimos7Dias.
+  ///
+  /// In es, this message translates to:
+  /// **'Últimos 7 días'**
+  String get ultimos7Dias;
+
+  /// No description provided for @ganadoHoy.
+  ///
+  /// In es, this message translates to:
+  /// **'Ganado hoy'**
+  String get ganadoHoy;
+
+  /// No description provided for @gpsActivo.
+  ///
+  /// In es, this message translates to:
+  /// **'GPS'**
+  String get gpsActivo;
+
+  /// No description provided for @gpsSinSenal.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin GPS'**
+  String get gpsSinSenal;
+
+  /// No description provided for @llevandoA.
+  ///
+  /// In es, this message translates to:
+  /// **'Llevando a {nombre} · {destino}'**
+  String llevandoA(String nombre, String destino);
+
+  /// No description provided for @kmRecorridosDe.
+  ///
+  /// In es, this message translates to:
+  /// **'{recorridos} de {total} km recorridos'**
+  String kmRecorridosDe(String recorridos, String total);
+
+  /// No description provided for @adminOperacionEtiqueta.
+  ///
+  /// In es, this message translates to:
+  /// **'Admin · operación en vivo'**
+  String get adminOperacionEtiqueta;
+
+  /// No description provided for @adminOperacionTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy en NEXA'**
+  String get adminOperacionTitulo;
+
+  /// No description provided for @adminAlertas.
+  ///
+  /// In es, this message translates to:
+  /// **'Alertas'**
+  String get adminAlertas;
+
+  /// No description provided for @adminSinAlertas.
+  ///
+  /// In es, this message translates to:
+  /// **'Todo en orden: no hay alertas.'**
+  String get adminSinAlertas;
+
+  /// No description provided for @adminViajesHoy.
+  ///
+  /// In es, this message translates to:
+  /// **'Viajes hoy'**
+  String get adminViajesHoy;
+
+  /// No description provided for @adminFinalizadosCancelados.
+  ///
+  /// In es, this message translates to:
+  /// **'{f} finalizados · {c} cancelados'**
+  String adminFinalizadosCancelados(int f, int c);
+
+  /// No description provided for @adminEnCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'En curso'**
+  String get adminEnCurso;
+
+  /// No description provided for @adminYendoAbiertas.
+  ///
+  /// In es, this message translates to:
+  /// **'{a} yendo a recoger · {s} sin conductor'**
+  String adminYendoAbiertas(int a, int s);
+
+  /// No description provided for @adminEnLinea.
+  ///
+  /// In es, this message translates to:
+  /// **'En línea ahora'**
+  String get adminEnLinea;
+
+  /// No description provided for @llegadaPendiente.
+  ///
+  /// In es, this message translates to:
+  /// **'Esperando la hora de llegada'**
+  String get llegadaPendiente;
+
+  /// No description provided for @adminLibres.
+  ///
+  /// In es, this message translates to:
+  /// **'{n} libres'**
+  String adminLibres(int n);
+
+  /// No description provided for @adminPorAprobar.
+  ///
+  /// In es, this message translates to:
+  /// **'Por aprobar'**
+  String get adminPorAprobar;
+
+  /// No description provided for @adminVerConductores.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver conductores'**
+  String get adminVerConductores;
+
+  /// No description provided for @adminFlota.
+  ///
+  /// In es, this message translates to:
+  /// **'Flota en línea'**
+  String get adminFlota;
+
+  /// No description provided for @adminLibre.
+  ///
+  /// In es, this message translates to:
+  /// **'Libre'**
+  String get adminLibre;
+
+  /// No description provided for @adminEnViaje.
+  ///
+  /// In es, this message translates to:
+  /// **'En viaje'**
+  String get adminEnViaje;
+
+  /// No description provided for @revisionPendientes.
+  ///
+  /// In es, this message translates to:
+  /// **'Pendientes'**
+  String get revisionPendientes;
+
+  /// No description provided for @revisionEnRevision.
+  ///
+  /// In es, this message translates to:
+  /// **'Con información pedida'**
+  String get revisionEnRevision;
+
+  /// No description provided for @revisionAprobados.
+  ///
+  /// In es, this message translates to:
+  /// **'Aprobados'**
+  String get revisionAprobados;
+
+  /// No description provided for @revisionRechazados.
+  ///
+  /// In es, this message translates to:
+  /// **'Rechazados'**
+  String get revisionRechazados;
+
+  /// No description provided for @revisionVacia.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay conductores en este estado'**
+  String get revisionVacia;
+
+  /// No description provided for @registradoEl.
+  ///
+  /// In es, this message translates to:
+  /// **'Se registró el {fecha}'**
+  String registradoEl(String fecha);
+
+  /// No description provided for @revisionTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisión'**
+  String get revisionTitulo;
+
+  /// No description provided for @revisionPedido.
+  ///
+  /// In es, this message translates to:
+  /// **'Pedido: {mensaje}'**
+  String revisionPedido(String mensaje);
+
+  /// No description provided for @revisionDocumentos.
+  ///
+  /// In es, this message translates to:
+  /// **'Documentos'**
+  String get revisionDocumentos;
+
+  /// No description provided for @revisionSinDocumentos.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no ha subido documentos.'**
+  String get revisionSinDocumentos;
+
+  /// No description provided for @revisionVerificado.
+  ///
+  /// In es, this message translates to:
+  /// **'Verificado: ya se puede aprobar.'**
+  String get revisionVerificado;
+
+  /// No description provided for @revisionSinVerificar.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin verificación exitosa: al aprobar confirmas que revisaste los documentos y queda como verificación manual.'**
+  String get revisionSinVerificar;
+
+  /// No description provided for @revisionAprobar.
+  ///
+  /// In es, this message translates to:
+  /// **'Aprobar'**
+  String get revisionAprobar;
+
+  /// No description provided for @revisionRechazar.
+  ///
+  /// In es, this message translates to:
+  /// **'Rechazar'**
+  String get revisionRechazar;
+
+  /// No description provided for @revisionPedirInfo.
+  ///
+  /// In es, this message translates to:
+  /// **'Pedir información'**
+  String get revisionPedirInfo;
+
+  /// No description provided for @revisionQueFalta.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Qué le falta enviar?'**
+  String get revisionQueFalta;
+
+  /// No description provided for @revisionAprobarTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Aprobar a {nombre}?'**
+  String revisionAprobarTitulo(String nombre);
+
+  /// No description provided for @revisionRechazarTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Rechazar a {nombre}?'**
+  String revisionRechazarTitulo(String nombre);
+
+  /// No description provided for @revisionConfirmoDocumentos.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisé los documentos y coinciden con lo que declaró.'**
+  String get revisionConfirmoDocumentos;
+
+  /// No description provided for @revisionNotaManual.
+  ///
+  /// In es, this message translates to:
+  /// **'Documentos revisados en la app'**
+  String get revisionNotaManual;
+
+  /// No description provided for @revisionAprobado.
+  ///
+  /// In es, this message translates to:
+  /// **'Conductor aprobado'**
+  String get revisionAprobado;
+
+  /// No description provided for @revisionRechazado.
+  ///
+  /// In es, this message translates to:
+  /// **'Conductor rechazado'**
+  String get revisionRechazado;
+
+  /// No description provided for @revisionInfoPedida.
+  ///
+  /// In es, this message translates to:
+  /// **'Le pedimos la información'**
+  String get revisionInfoPedida;
+
+  /// No description provided for @revisionMotivo.
+  ///
+  /// In es, this message translates to:
+  /// **'Motivo'**
+  String get revisionMotivo;
+
+  /// No description provided for @revisionNotaOpcional.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota (opcional)'**
+  String get revisionNotaOpcional;
+
+  /// No description provided for @revisionNumero.
+  ///
+  /// In es, this message translates to:
+  /// **'N.º {numero}'**
+  String revisionNumero(String numero);
+
+  /// No description provided for @tipoLicencia.
+  ///
+  /// In es, this message translates to:
+  /// **'Licencia'**
+  String get tipoLicencia;
+
+  /// No description provided for @tipoTarjetaPropiedad.
+  ///
+  /// In es, this message translates to:
+  /// **'Tarjeta de propiedad'**
+  String get tipoTarjetaPropiedad;
+
+  /// No description provided for @tipoSoat.
+  ///
+  /// In es, this message translates to:
+  /// **'SOAT'**
+  String get tipoSoat;
+
+  /// No description provided for @tipoTecnomecanica.
+  ///
+  /// In es, this message translates to:
+  /// **'Tecnomecánica'**
+  String get tipoTecnomecanica;
+
+  /// No description provided for @enviar.
+  ///
+  /// In es, this message translates to:
+  /// **'Enviar'**
+  String get enviar;
 }
 
 class _AppLocalizationsDelegate

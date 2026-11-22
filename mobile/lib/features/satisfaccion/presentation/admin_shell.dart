@@ -47,47 +47,6 @@ class AdminShell extends StatelessWidget {
   }
 }
 
-enum SeccionAdmin { inicio, conductores }
-
-/// Secciones del admin que por ahora solo existen en la web.
-class AdminProximamenteScreen extends StatelessWidget {
-  const AdminProximamenteScreen({required this.seccion, super.key});
-
-  final SeccionAdmin seccion;
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context);
-    return Scaffold(
-      body: FondoNexa(
-        child: SafeArea(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: context.gutter),
-            child: Column(
-              children: [
-                EncabezadoSat(
-                  etiqueta: l.adminRol,
-                  titulo: switch (seccion) {
-                    SeccionAdmin.inicio => l.navInicio,
-                    SeccionAdmin.conductores => l.adminConductores,
-                  },
-                ),
-                Expanded(
-                  child: EstadoVacio(
-                    titulo: l.adminProximamente,
-                    detalle: l.adminProximamenteDetalle,
-                    icon: Icons.construction_outlined,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 /// Perfil mínimo del admin: correo y cerrar sesión.
 class AdminPerfilScreen extends ConsumerWidget {
   const AdminPerfilScreen({super.key});

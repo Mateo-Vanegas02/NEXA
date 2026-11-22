@@ -240,6 +240,20 @@ void main() {
       },
     );
 
+    test('una posición sin mediciones conserva la ubicación', () async {
+      final p = await repo(
+        FakeAdapter({
+          'GET /api/pasajero/posicion-conductor/s1': (
+            200,
+            {'fase': 'EN_CURSO', 'latitud': 10.41, 'longitud': -75.51},
+          ),
+        }),
+      ).posicionConductor('s1');
+      expect(p?.latitud, 10.41);
+      expect(p?.etaMinutos, isNull);
+      expect(p?.distanciaRestanteKm, isNull);
+    });
+
     test('sin posición (204) devuelve null', () async {
       final p = await repo(
         FakeAdapter({'GET /api/pasajero/posicion-conductor/s1': (204, null)}),

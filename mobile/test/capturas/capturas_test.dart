@@ -15,11 +15,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexa_mobile/core/router/app_router.dart';
+import 'package:nexa_mobile/core/providers.dart';
 import 'package:nexa_mobile/features/auth/domain/auth.dart';
 import 'package:nexa_mobile/features/auth/presentation/controllers/session_controller.dart';
 import 'package:nexa_mobile/features/auth/presentation/screens/splash_screen.dart';
 import 'package:nexa_mobile/features/viajes/domain/oferta_activa.dart';
 import 'package:nexa_mobile/features/viajes/domain/servicio.dart';
+import 'package:nexa_mobile/features/viajes/presentation/controllers/viaje_conductor_controller.dart';
 import 'package:nexa_mobile/features/viajes/presentation/controllers/viaje_pasajero_controller.dart';
 
 import '../helpers.dart';
@@ -106,6 +108,25 @@ Override _ola(int ola) =>
 
 Override _viaje(Servicio s) =>
     viajePasajeroProvider.overrideWith(() => _ViajeFijo(s));
+
+// Ingresos de prueba del período visible, a cualquier fecha de ejecución.
+final _ingresos = ingresosProvider.overrideWith((ref) {
+  final hoy = DateTime.now();
+  return [
+    for (final (dias, monto) in [(0, 8500.0), (2, 7200.0), (5, 9600.0)])
+      Ingreso(
+        fecha: DateTime(hoy.year, hoy.month, hoy.day - dias).toIso8601String(),
+        hora: DateTime(
+          hoy.year,
+          hoy.month,
+          hoy.day - dias,
+          hoy.hour,
+        ).toIso8601String(),
+        monto: monto,
+        descripcion: 'Centro Histórico',
+      ),
+  ];
+});
 
 Future<void> _fuentes() async {
   for (final peso in ['Regular', 'Medium', 'SemiBold', 'Bold']) {
@@ -224,7 +245,18 @@ void main() {
       '/p/viaje',
       Rol.pasajero,
       '',
-      [_viaje(_servicio(EstadoServicio.enCurso, llegada: DateTime.now()))],
+      [
+        _viaje(_servicio(EstadoServicio.enCurso, llegada: DateTime.now())),
+        posicionConductorProvider.overrideWithBuild(
+          (_, _) => const PosicionViaje(
+            fase: 'EN_CURSO',
+            latitud: 10.412,
+            longitud: -75.548,
+            distanciaRestanteKm: 1.7,
+            etaMinutos: 6,
+          ),
+        ),
+      ],
     ),
     (
       'P08',
@@ -233,13 +265,51 @@ void main() {
       '',
       [_viaje(_servicio(EstadoServicio.finalizado, llegada: DateTime.now()))],
     ),
-    ('P10', '/p/viajes', Rol.pasajero, '', []),
+    (
+      'P10',
+      '/p/viajes',
+      Rol.pasajero,
+      '',
+      [
+        historialPasajeroProvider.overrideWith((ref) async {
+          final historial = await ref
+              .watch(pasajeroRepositoryProvider)
+              .historial();
+          return [
+            for (final s in historial)
+              if (s.estado == EstadoServicio.finalizado)
+                s.copyWith(rutaGeometria: r'_gn~@nzblMgw@nKgE_XoK?g^wj@wQvj@')
+              else
+                s,
+          ];
+        }),
+      ],
+    ),
     ('P11', '/p/niveles', Rol.pasajero, '', []),
     ('P12', '/p/perfil', Rol.pasajero, '', []),
-    ('C01', '/c/inicio', Rol.conductor, 'conductor@nexa.co', []),
-    ('C08', '/c/ganancias', Rol.conductor, 'conductor@nexa.co', []),
+    ('C01', '/c/inicio', Rol.conductor, 'conductor@nexa.co', [_ingresos]),
+    (
+      'C08',
+      '/c/ganancias',
+      Rol.conductor,
+      'conductor@nexa.co',
+      [
+        _ingresos,
+        saldoProvider(7).overrideWith(
+          (ref) => const SaldoConductor(
+            dias: 7,
+            viajes: 3,
+            cobradoEfectivo: 27500,
+            ganado: 25300,
+            saldoConNexa: 2200,
+          ),
+        ),
+      ],
+    ),
     ('C09', '/c/niveles', Rol.conductor, 'conductor@nexa.co', []),
     ('C10', '/c/perfil', Rol.conductor, 'conductor@nexa.co', []),
+    ('D00', '/a/inicio', Rol.admin, 'admin@nexa.co', []),
+    ('D05', '/a/conductores', Rol.admin, 'admin@nexa.co', []),
     ('D01', '/a/satisfaccion', Rol.admin, 'admin@nexa.co', []),
     ('D02', '/a/satisfaccion/factores', Rol.admin, 'admin@nexa.co', []),
     ('D03', '/a/satisfaccion/riesgo', Rol.admin, 'admin@nexa.co', []),

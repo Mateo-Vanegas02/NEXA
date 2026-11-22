@@ -1531,5 +1531,210 @@
   },
   "rutaCambiadaTexto": "Ruta actualizada. El precio no cambia.",
   "finalizadoAntesTitulo": "Finalizado antes del destino",
-  "finalizadoAntesCobro": "Se cobra solo lo recorrido."
+  "finalizadoAntesCobro": "Se cobra solo lo recorrido.",
+  "esteMes": "Este mes",
+  "viajesCuenta": "Viajes: {n}",
+  "@viajesCuenta": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "recorridoMes": "Recorrido del mes",
+  "enMoto": "en moto",
+  "seccionMapa": "Mapa",
+  "mapaIndependiente": "Independiente del tema de la app",
+  "tuMoto": "Tu moto",
+  "motoVerificada": "Verificada",
+  "motoEnRevision": "En revisión",
+  "destinoLlegas": "{destino} · llegas {hora}",
+  "@destinoLlegas": {
+    "placeholders": {
+      "destino": {
+        "type": "String"
+      },
+      "hora": {
+        "type": "String"
+      }
+    }
+  },
+  "llegasA": "Llegas a {destino}",
+  "@llegasA": {
+    "placeholders": {
+      "destino": {
+        "type": "String"
+      }
+    }
+  },
+  "llegasAHora": "Llegas a {destino} a las {hora}",
+  "@llegasAHora": {
+    "placeholders": {
+      "destino": {
+        "type": "String"
+      },
+      "hora": {
+        "type": "String"
+      }
+    }
+  },
+  "kmRestantes": "{km} km restantes",
+  "@kmRestantes": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "periodoHoy": "Hoy",
+  "periodoSemana": "Semana",
+  "periodo30Dias": "30 días",
+  "viajesYPromedio": "{n} viajes · {promedio} por viaje",
+  "@viajesYPromedio": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "promedio": {
+        "type": "String"
+      }
+    }
+  },
+  "listoParaRodar": "¿Listo para rodar?",
+  "deslizaConectarte": "Desliza para conectarte",
+  "ultimos7Dias": "Últimos 7 días",
+  "ganadoHoy": "Ganado hoy",
+  "gpsActivo": "GPS",
+  "gpsSinSenal": "Sin GPS",
+  "llevandoA": "Llevando a {nombre} · {destino}",
+  "@llevandoA": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      },
+      "destino": {
+        "type": "String"
+      }
+    }
+  },
+  "kmRecorridosDe": "{recorridos} de {total} km recorridos",
+  "@kmRecorridosDe": {
+    "placeholders": {
+      "recorridos": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "adminOperacionEtiqueta": "Admin · operación en vivo",
+  "adminOperacionTitulo": "Hoy en NEXA",
+  "adminAlertas": "Alertas",
+  "adminSinAlertas": "Todo en orden: no hay alertas.",
+  "adminViajesHoy": "Viajes hoy",
+  "adminFinalizadosCancelados": "{f} finalizados · {c} cancelados",
+  "@adminFinalizadosCancelados": {
+    "placeholders": {
+      "f": {
+        "type": "int"
+      },
+      "c": {
+        "type": "int"
+      }
+    }
+  },
+  "adminEnCurso": "En curso",
+  "adminYendoAbiertas": "{a} yendo a recoger · {s} sin conductor",
+  "@adminYendoAbiertas": {
+    "placeholders": {
+      "a": {
+        "type": "int"
+      },
+      "s": {
+        "type": "int"
+      }
+    }
+  },
+  "adminEnLinea": "En línea ahora",
+  "llegadaPendiente": "Esperando la hora de llegada",
+  "adminLibres": "{n} libres",
+  "@adminLibres": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "adminPorAprobar": "Por aprobar",
+  "adminVerConductores": "Ver conductores",
+  "adminFlota": "Flota en línea",
+  "adminLibre": "Libre",
+  "adminEnViaje": "En viaje",
+  "revisionPendientes": "Pendientes",
+  "revisionEnRevision": "Con información pedida",
+  "revisionAprobados": "Aprobados",
+  "revisionRechazados": "Rechazados",
+  "revisionVacia": "No hay conductores en este estado",
+  "registradoEl": "Se registró el {fecha}",
+  "@registradoEl": {
+    "placeholders": {
+      "fecha": {
+        "type": "String"
+      }
+    }
+  },
+  "revisionTitulo": "Revisión",
+  "revisionPedido": "Pedido: {mensaje}",
+  "@revisionPedido": {
+    "placeholders": {
+      "mensaje": {
+        "type": "String"
+      }
+    }
+  },
+  "revisionDocumentos": "Documentos",
+  "revisionSinDocumentos": "Aún no ha subido documentos.",
+  "revisionVerificado": "Verificado: ya se puede aprobar.",
+  "revisionSinVerificar": "Sin verificación exitosa: al aprobar confirmas que revisaste los documentos y queda como verificación manual.",
+  "revisionAprobar": "Aprobar",
+  "revisionRechazar": "Rechazar",
+  "revisionPedirInfo": "Pedir información",
+  "revisionQueFalta": "¿Qué le falta enviar?",
+  "revisionAprobarTitulo": "¿Aprobar a {nombre}?",
+  "@revisionAprobarTitulo": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "revisionRechazarTitulo": "¿Rechazar a {nombre}?",
+  "@revisionRechazarTitulo": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "revisionConfirmoDocumentos": "Revisé los documentos y coinciden con lo que declaró.",
+  "revisionNotaManual": "Documentos revisados en la app",
+  "revisionAprobado": "Conductor aprobado",
+  "revisionRechazado": "Conductor rechazado",
+  "revisionInfoPedida": "Le pedimos la información",
+  "revisionMotivo": "Motivo",
+  "revisionNotaOpcional": "Nota (opcional)",
+  "revisionNumero": "N.º {numero}",
+  "@revisionNumero": {
+    "placeholders": {
+      "numero": {
+        "type": "String"
+      }
+    }
+  },
+  "tipoLicencia": "Licencia",
+  "tipoTarjetaPropiedad": "Tarjeta de propiedad",
+  "tipoSoat": "SOAT",
+  "tipoTecnomecanica": "Tecnomecánica",
+  "enviar": "Enviar"
 }

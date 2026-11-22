@@ -1,4 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nexa_mobile/core/rumbo/reglas_rumbo.dart';
+import 'package:nexa_mobile/features/viajes/presentation/widgets/navegacion_conductor.dart';
 import 'package:nexa_mobile/features/auth/domain/auth.dart';
 import 'package:nexa_mobile/features/auth/presentation/controllers/session_controller.dart';
 import 'package:nexa_mobile/features/viajes/presentation/conductor/ganancias_screen.dart';
@@ -29,6 +31,31 @@ Future<void> _ratos(WidgetTester t, int ms) async {
 void main() {
   setUpAll(iniciarFormatos);
 
+  testWidgets(
+    'el velocímetro se actualiza con el GPS y oculta la lectura vencida',
+    (t) async {
+      Future<void> mostrar(double velocidad) => t.pumpWidget(
+        envolver(
+          VelocimetroGps(
+            movimiento: MovimientoGps(
+              rumbo: 0,
+              velocidad: velocidad,
+              en: DateTime.now(),
+            ),
+          ),
+        ),
+      );
+      await mostrar(10);
+      expect(find.text('36'), findsOneWidget);
+      await mostrar(0);
+      expect(find.text('0'), findsOneWidget);
+      await t.pump(const Duration(seconds: 6));
+      expect(find.text('km/h'), findsNothing);
+      await mostrar(-1);
+      expect(find.text('km/h'), findsNothing);
+    },
+  );
+
   for (final tam in [kTamanos[0], kTamanos[1]]) {
     testWidgets(
       'el botón grande conecta y desconecta (${tam.width.toInt()}x${tam.height.toInt()})',
@@ -44,15 +71,17 @@ void main() {
         await _ratos(t, 800);
 
         expect(find.text('Fuera de línea'), findsOneWidget);
-        expect(find.text('Estás fuera de línea'), findsOneWidget);
+        expect(find.text('¿Listo para rodar?'), findsOneWidget);
+        expect(find.text('Desliza para conectarte'), findsOneWidget);
 
         await t.tap(find.bySemanticsLabel('Conectarme'));
         await _ratos(t, 800);
         expect(find.text('En línea'), findsOneWidget);
         expect(find.text('Buscando solicitudes cerca de ti'), findsOneWidget);
-        expect(find.bySemanticsLabel('Desconectarme'), findsOneWidget);
+        // El interruptor de arriba y el botón de la hoja.
+        expect(find.bySemanticsLabel('Desconectarme'), findsWidgets);
 
-        await t.tap(find.bySemanticsLabel('Desconectarme'));
+        await t.tap(find.bySemanticsLabel('Desconectarme').first);
         await _ratos(t, 800);
         expect(find.text('Fuera de línea'), findsOneWidget);
         semantica.dispose();
@@ -69,7 +98,7 @@ void main() {
       ),
     );
     await _ratos(t, 800);
-    expect(find.text('Total ganado'), findsOneWidget);
+    expect(find.text('Semana'), findsOneWidget);
     expect(t.takeException(), isNull);
   });
 }

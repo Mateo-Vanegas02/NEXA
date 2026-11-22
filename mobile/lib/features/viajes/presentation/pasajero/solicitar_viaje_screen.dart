@@ -18,7 +18,6 @@ import '../../../../core/mapa/polyline.dart';
 import '../../../../core/widgets/mapa_nexa.dart';
 import '../../../../core/widgets/nexa_diseno.dart';
 import '../../../../core/widgets/nexa_widgets.dart';
-import '../../domain/estimado_tarifa.dart';
 import '../../domain/servicio.dart';
 import '../controllers/viaje_pasajero_controller.dart';
 import '../widgets/desglose_card.dart';
@@ -326,10 +325,18 @@ class _SolicitarViajeScreenState extends ConsumerState<SolicitarViajeScreen> {
     final destino = _destino;
     final cot = _cot;
     final km = cot?.distanciaKm ?? 0.0;
-    // La duración la da el servidor (OSRM); el estimado local solo si no vino.
-    final minutos = (cot?.duracionMin ?? 0) > 0
-        ? cot!.duracionMin.ceil()
-        : minutosEstimados(km);
+    final minutos = cot != null && cot.duracionMin > 0
+        ? cot.duracionMin.ceil()
+        : null;
+    final hora = minutos == null
+        ? null
+        : DateFormat(
+            'H:mm',
+            'es_CO',
+          ).format(DateTime.now().add(Duration(minutes: minutos)));
+    final nombreDestino = _destinoTxt.trim().isEmpty
+        ? l.destino
+        : _destinoTxt.trim();
     final puedeSolicitar =
         cot != null && !_cotizando && (!cot.tieneDeuda || _aceptaDeuda);
     final kmTxt = NumberFormat('0.0', 'es_CO').format(km);
@@ -344,7 +351,20 @@ class _SolicitarViajeScreenState extends ConsumerState<SolicitarViajeScreen> {
               destino: destino,
               ruta: rutaDe(cot?.rutaGeometria),
               encuadrarRuta: true,
-              etiquetaRuta: cot == null ? null : '$minutos min · $kmTxt km',
+              etiquetaRuta: cot == null
+                  ? null
+                  : [
+                      if (minutos != null) l.minutosValor(minutos),
+                      '$kmTxt km',
+                    ].join(' · '),
+              // El tiempo va sobre la línea y la bandera dice a qué hora
+              // llegas (rediseño 2026).
+              tiempoEnRuta: minutos == null ? null : l.minutosValor(minutos),
+              etiquetaDestino: cot == null || destino == null
+                  ? null
+                  : hora == null
+                  ? nombreDestino
+                  : l.destinoLlegas(nombreDestino, hora),
               onTap: _alTocarMapa,
             ),
           ),
@@ -404,9 +424,11 @@ class _SolicitarViajeScreenState extends ConsumerState<SolicitarViajeScreen> {
               ],
               if (cot != null) ...[
                 _TarjetaPrecio(
-                  detalle:
-                      '$kmTxt km · ${l.minutosValor(minutos)} · '
-                      '${l.llegasALas(DateFormat('H:mm', 'es_CO').format(DateTime.now().add(Duration(minutes: minutos))))}',
+                  detalle: [
+                    '$kmTxt km',
+                    if (minutos != null) l.minutosValor(minutos),
+                    if (hora != null) l.llegasALas(hora),
+                  ].join(' · '),
                   precio: Fmt.cop(cot.totalAPagar),
                   antes: cot.descuento > 0
                       ? Fmt.cop(cot.totalAPagar + cot.descuento)

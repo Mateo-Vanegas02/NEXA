@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers.dart';
 import '../../../../core/utils/selector_imagen.dart';
 import '../../domain/perfil.dart';
+import '../../domain/vehiculo.dart';
 
 /// Perfil del usuario: se carga al abrir la pantalla y se actualiza al guardar.
 class PerfilController extends AsyncNotifier<PerfilUsuario> {
@@ -44,4 +45,18 @@ final fotoPerfilProvider = FutureProvider.autoDispose<Uint8List?>((ref) async {
   final perfil = ref.watch(perfilProvider).asData?.value;
   if (perfil == null || !perfil.tieneFoto) return null;
   return ref.read(perfilRepositoryProvider).descargarFoto(perfil.id);
+});
+
+/// La moto activa del conductor (la primera si ninguna está activa); null si
+/// no tiene o si falla: el perfil no se bloquea por esto.
+final motoActivaProvider = FutureProvider.autoDispose<VehiculoConductor?>((
+  ref,
+) async {
+  try {
+    final lista = await ref.watch(vehiculosRepositoryProvider).listar();
+    if (lista.isEmpty) return null;
+    return lista.firstWhere((v) => v.activo, orElse: () => lista.first);
+  } on Object {
+    return null;
+  }
 });

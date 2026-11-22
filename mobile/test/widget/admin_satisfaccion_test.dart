@@ -258,6 +258,10 @@ void main() {
       UncontrolledProviderScope(container: c, child: const NexaApp()),
     );
     await _asentar(t);
+    // Entra a la operación en vivo; la satisfacción es la segunda pestaña.
+    expect(find.text('Hoy en NEXA'), findsOneWidget);
+    await t.tap(find.text('Satisfacción').first);
+    await _asentar(t);
     expect(find.text('86 %'), findsOneWidget);
     expect(find.text('Satisfacción'), findsWidgets);
     await t.ensureVisible(find.text('Viajes en riesgo'));

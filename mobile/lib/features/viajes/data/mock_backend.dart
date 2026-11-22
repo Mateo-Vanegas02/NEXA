@@ -358,6 +358,7 @@ class MockBackend {
         monto: s.tarifa * (1 - _comisionConductor()),
         montoBruto: s.tarifa,
         descripcion: 'Viaje con ${s.pasajero?.nombre ?? ''}',
+        hora: (s.fechaHora ?? _reloj()).toIso8601String(),
       ),
   ];
 

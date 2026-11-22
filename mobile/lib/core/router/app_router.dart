@@ -18,6 +18,10 @@ import '../../features/viajes/presentation/conductor/ganancias_screen.dart';
 import '../../features/viajes/domain/servicio.dart';
 import '../../features/avisos/notificaciones_screen.dart';
 import '../../features/permisos/presentation/pantallas_permisos.dart';
+import '../../features/admin/domain/admin.dart';
+import '../../features/admin/presentation/screens/conductores_screen.dart';
+import '../../features/admin/presentation/screens/operacion_screen.dart';
+import '../../features/admin/presentation/screens/revision_conductor_screen.dart';
 import '../../features/satisfaccion/presentation/admin_shell.dart';
 import '../../features/satisfaccion/presentation/screens/entrenando_screen.dart';
 import '../../features/satisfaccion/presentation/screens/factores_screen.dart';
@@ -46,7 +50,7 @@ const _publicas = {
 String _inicio(Rol r) => switch (r) {
   Rol.pasajero => '/p/inicio',
   Rol.conductor => '/c/inicio',
-  Rol.admin => '/a/satisfaccion',
+  Rol.admin => '/a/inicio',
 };
 
 String _prefijo(Rol r) => switch (r) {
@@ -214,6 +218,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
       GoRoute(
+        path: '/a/conductores/revision',
+        builder: (_, state) => state.extra is ConductorRevision
+            ? RevisionConductorScreen(
+                conductor: state.extra! as ConductorRevision,
+              )
+            : const ConductoresScreen(),
+      ),
+      GoRoute(
         path: '/a/satisfaccion/factores',
         builder: (_, _) => const FactoresScreen(),
       ),
@@ -237,8 +249,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/a/inicio',
-                builder: (_, _) =>
-                    const AdminProximamenteScreen(seccion: SeccionAdmin.inicio),
+                builder: (_, _) => const OperacionScreen(),
               ),
             ],
           ),
@@ -254,9 +265,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/a/conductores',
-                builder: (_, _) => const AdminProximamenteScreen(
-                  seccion: SeccionAdmin.conductores,
-                ),
+                builder: (_, _) => const ConductoresScreen(),
               ),
             ],
           ),

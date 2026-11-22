@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope;
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexa_mobile/core/network/token_storage.dart';
@@ -218,17 +219,40 @@ void main() {
           overrides: [_sesion(Rol.pasajero), _viaje(EstadoServicio.enCurso)],
         );
         expect(find.text('En viaje'.toUpperCase()), findsOneWidget);
-        expect(find.text('Vas hacia Centro Comercial Plaza'), findsOneWidget);
+        expect(find.text('Llegas a Centro Comercial Plaza'), findsOneWidget);
+        expect(find.text('Esperando la hora de llegada'), findsOneWidget);
+        expect(find.textContaining('km por recorrer'), findsNothing);
         expect(find.text('Carlos Mendoza'), findsOneWidget);
         expect(find.text('ABC 12D'), findsOneWidget);
         expect(find.text('Compartir viaje'), findsOneWidget);
         expect(find.byTooltip('Asistencia en ruta (SOS)'), findsOneWidget);
-        expect(find.textContaining('Llegas en'), findsOneWidget);
         // Regresión: la hoja inferior no debe tapar todo el mapa.
         expect(
           t.getTopLeft(find.text('Carlos Mendoza')).dy,
           greaterThan(tam.height * 0.3),
         );
+        final posicion = ProviderScope.containerOf(
+          t.element(find.byType(ViajeEnCursoScreen)),
+        ).read(posicionConductorProvider.notifier);
+        PosicionViaje lectura(String fase, int minutos, double km) =>
+            PosicionViaje(
+              fase: fase,
+              latitud: 10.41,
+              longitud: -75.51,
+              distanciaRestanteKm: km,
+              etaMinutos: minutos,
+            );
+        posicion.poner(lectura('ACEPTADO', 2, 0.1));
+        await t.pump();
+        expect(find.text('Esperando la hora de llegada'), findsOneWidget);
+        posicion.poner(lectura('EN_CURSO', 7, 2.1));
+        await t.pump();
+        expect(find.text('7 min'), findsOneWidget);
+        expect(find.text('50 %'), findsOneWidget);
+        posicion.poner(lectura('EN_CURSO', 0, 0));
+        await t.pump();
+        expect(find.text('0 min'), findsOneWidget);
+        expect(find.text('100 %'), findsOneWidget);
       });
 
       testWidgets('buscando conductor: extra voluntario y cancelar', (t) async {
@@ -250,7 +274,7 @@ void main() {
           const ViajeEnCursoScreen(),
           overrides: [_sesion(Rol.pasajero), _viaje(EstadoServicio.aceptado)],
         );
-        expect(find.textContaining('Llega en'), findsOneWidget);
+        expect(find.text('Esperando la hora de llegada'), findsOneWidget);
         expect(
           find.text('Carlos va hacia tu punto de recogida'),
           findsOneWidget,

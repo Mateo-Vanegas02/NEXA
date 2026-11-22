@@ -243,9 +243,9 @@ void main() {
     test('solo ve sus rutas /a/', () {
       const admin = Sesion(token: 't', rol: Rol.admin, email: 'a');
       const s = SesionState(sesion: admin, inicializado: true);
-      expect(redirigir(s, '/login'), '/a/satisfaccion');
-      expect(redirigir(s, '/p/inicio'), '/a/satisfaccion');
-      expect(redirigir(s, '/c/ganancias'), '/a/satisfaccion');
+      expect(redirigir(s, '/login'), '/a/inicio');
+      expect(redirigir(s, '/p/inicio'), '/a/inicio');
+      expect(redirigir(s, '/c/ganancias'), '/a/inicio');
       expect(redirigir(s, '/a/satisfaccion/modelo'), isNull);
       const pasajero = Sesion(token: 't', rol: Rol.pasajero, email: 'a');
       expect(

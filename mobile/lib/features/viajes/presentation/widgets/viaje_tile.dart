@@ -5,6 +5,7 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/nexa_texto.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/widgets/mini_ruta.dart';
 import '../../domain/servicio.dart';
 
 /// Fila de viaje (diseño P10): icono, destino, «hora · km · conductor»,
@@ -43,19 +44,29 @@ class ViajeTile extends StatelessWidget {
         padding: const EdgeInsets.all(Sp.md + 2),
         child: Row(
           children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: cancelado ? NexaColors.errorSuave : NexaColors.raised,
-                borderRadius: BorderRadius.circular(Rad.md),
+            // Con trazado del servidor, la miniatura de la ruta (rediseño
+            // 2026); si no, el icono.
+            if (!cancelado && (s.rutaGeometria ?? '').isNotEmpty)
+              SizedBox.square(
+                dimension: 64,
+                child: MiniRuta(geometria: s.rutaGeometria),
+              )
+            else
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: cancelado ? NexaColors.errorSuave : NexaColors.raised,
+                  borderRadius: BorderRadius.circular(Rad.md),
+                ),
+                child: Icon(
+                  cancelado
+                      ? Icons.warning_amber_rounded
+                      : Icons.place_outlined,
+                  color: cancelado ? NexaColors.error : NexaColors.cyan,
+                  size: 22,
+                ),
               ),
-              child: Icon(
-                cancelado ? Icons.warning_amber_rounded : Icons.place_outlined,
-                color: cancelado ? NexaColors.error : NexaColors.cyan,
-                size: 22,
-              ),
-            ),
             const SizedBox(width: Sp.md),
             Expanded(
               child: Column(

@@ -8,6 +8,7 @@ import '../../../../core/mapa/maniobra.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/utils/acciones_externas.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/widgets/mini_ruta.dart';
 import '../../../../core/widgets/nexa_diseno.dart';
 import '../../../../core/widgets/nexa_popup.dart';
 import '../../../../core/widgets/nexa_widgets.dart';
@@ -126,9 +127,9 @@ class _ViajeActivoCardState extends ConsumerState<ViajeActivoCard> {
       FaseConductor.enElPunto => l.iniciarViaje,
       FaseConductor.enViaje => l.finalizarViaje,
     };
-    final km = pos == null
-        ? null
-        : '${pos.distanciaRestanteKm.toStringAsFixed(1)} km';
+    final restante = pos?.distanciaRestanteKm;
+    final minutos = pos?.etaMinutos;
+    final km = restante == null ? null : '${restante.toStringAsFixed(1)} km';
     final nombre = s.pasajero?.nombre ?? '';
     // Un paso hecho sin señal que aún no llega al servidor.
     final pendiente = ref.watch(
@@ -138,10 +139,8 @@ class _ViajeActivoCardState extends ConsumerState<ViajeActivoCard> {
     );
     final detalle = <String>[
       if (s.nivelPasajero > 0) l.pasajeraNivel(s.nivelPasajero),
-      if (fase != FaseConductor.enElPunto &&
-          pos != null &&
-          pos.etaMinutos > 0) ...[
-        l.minutosValor(pos.etaMinutos),
+      if (fase != FaseConductor.enElPunto) ...[
+        if (minutos != null) l.minutosValor(minutos),
         ?km,
       ],
     ];
@@ -162,6 +161,36 @@ class _ViajeActivoCardState extends ConsumerState<ViajeActivoCard> {
           _AvisoPendiente(texto: l.pendienteDeEnviar),
         ],
         const SizedBox(height: Sp.lg),
+        // En viaje, primero a qué hora llega (rediseño 2026; ETA del servidor).
+        if (fase == FaseConductor.enViaje && minutos != null) ...[
+          Text(
+            l.llevandoA(nombre.split(' ').first, s.destino),
+            style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.end,
+            spacing: Sp.sm,
+            children: [
+              Text(
+                DateFormat(
+                  'H:mm',
+                  'es_CO',
+                ).format(DateTime.now().add(Duration(minutes: minutos))),
+                style: NexaTexto.numero.copyWith(fontSize: 30, height: 1.1),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  [l.minutosValor(minutos), ?km].join(' · '),
+                  style: NexaTexto.cuerpo.copyWith(color: NexaColors.muted),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: Sp.lg),
+        ],
         if (fase == FaseConductor.enElPunto && s.fechaLlegada != null) ...[
           _Esperando(nombre: nombre, desde: s.fechaLlegada!),
           const SizedBox(height: Sp.lg),
@@ -249,8 +278,8 @@ class _ViajeActivoCardState extends ConsumerState<ViajeActivoCard> {
         // Guía de cercanía para «Llegué» (el servidor exige estar a 50 m).
         // Solo orienta: el control nunca se bloquea, porque sin señal la
         // distancia del servidor puede estar vieja.
-        if (fase == FaseConductor.aRecoger && pos != null) ...[
-          _GuiaLlegada(km: pos.distanciaRestanteKm),
+        if (fase == FaseConductor.aRecoger && restante != null) ...[
+          _GuiaLlegada(km: restante),
           const SizedBox(height: Sp.sm),
         ],
         NexaDeslizar(texto: boton, onConfirmado: _cargando ? null : _avanzar),
@@ -357,15 +386,99 @@ class ResumenViajeCard extends StatelessWidget {
     final km = NumberFormat('0.0', 'es_CO').format(servicio.distanciaKM);
     final ganancia = desglose?.gananciaConductor ?? 0;
     final extra = desglose?.extraVoluntario ?? servicio.extraVoluntario;
+    final recargo = desglose?.recargoEspera ?? 0;
+    final antes = servicio.finalizadoAntesDelDestino;
+    final fin = servicio.fechaFinalizacion;
+    final horaFin = fin == null
+        ? null
+        : DateFormat('H:mm', 'es_CO').format(fin.toLocal());
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          l.viajeTerminado.toUpperCase(),
-          textAlign: TextAlign.center,
-          style: NexaTexto.etiqueta.copyWith(color: NexaColors.ok),
+        // Un solo estado claro arriba (rediseño 2026): terminado, o terminado
+        // antes del destino con el tramo recorrido en una miniatura.
+        Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: Sp.md,
+              vertical: Sp.xs,
+            ),
+            decoration: BoxDecoration(
+              color: (antes ? NexaColors.gold : NexaColors.ok).withValues(
+                alpha: 0.14,
+              ),
+              borderRadius: BorderRadius.circular(Rad.pill),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  antes ? Icons.flag_outlined : Icons.check,
+                  size: 16,
+                  color: antes ? NexaColors.gold : NexaColors.ok,
+                ),
+                const SizedBox(width: Sp.xs),
+                Flexible(
+                  child: Text(
+                    [
+                      antes ? l.finalizadoAntesTitulo : l.viajeTerminado,
+                      ?horaFin,
+                    ].join(' · '),
+                    style: NexaTexto.pequeno.copyWith(
+                      color: antes ? NexaColors.gold : NexaColors.ok,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
         const SizedBox(height: Sp.md),
+        if (antes && (servicio.rutaGeometria ?? '').isNotEmpty) ...[
+          SizedBox(
+            height: 150,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: MiniRuta(
+                    geometria: servicio.rutaGeometria,
+                    corte: servicio.fraccionCobrada,
+                    radio: Rad.lg,
+                  ),
+                ),
+                if (servicio.fraccionCobrada != null &&
+                    servicio.distanciaKM > 0)
+                  Positioned(
+                    left: Sp.sm,
+                    bottom: Sp.sm,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: Sp.sm,
+                        vertical: Sp.xs,
+                      ),
+                      decoration: BoxDecoration(
+                        color: NexaColors.glass,
+                        borderRadius: BorderRadius.circular(Rad.sm),
+                      ),
+                      child: Text(
+                        l.kmRecorridosDe(
+                          NumberFormat('0.0', 'es_CO').format(
+                            servicio.distanciaKM * servicio.fraccionCobrada!,
+                          ),
+                          km,
+                        ),
+                        style: NexaTexto.pequeno.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: Sp.md),
+        ],
         Container(
           padding: const EdgeInsets.symmetric(
             horizontal: Sp.lg,
@@ -481,6 +594,14 @@ class ResumenViajeCard extends StatelessWidget {
                   valor: Fmt.cop(ganancia),
                   color: NexaColors.ok,
                 ),
+                if (recargo > 0) ...[
+                  const SizedBox(height: Sp.sm),
+                  _Linea(
+                    texto: l.recargoEspera,
+                    valor: '+${Fmt.cop(recargo)}',
+                    color: NexaColors.texto,
+                  ),
+                ],
                 if (extra > 0) ...[
                   const SizedBox(height: Sp.sm),
                   _Linea(

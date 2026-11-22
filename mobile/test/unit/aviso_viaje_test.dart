@@ -50,7 +50,7 @@ void main() {
         l,
         estado(viaje.copyWith(estado: EstadoServicio.enCurso), pos(2.3, 0)),
       ),
-      const AvisoViaje('Llevando a Laura', '1 min · 2,3 km'),
+      const AvisoViaje('Llevando a Laura', '0 min · 2,3 km'),
     );
     expect(
       TextosAvisoViaje.conductor(

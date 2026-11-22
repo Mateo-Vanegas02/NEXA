@@ -102,6 +102,10 @@ class MapaNexa extends ConsumerStatefulWidget {
     this.brujulaArriba = Sp.md,
     this.progreso = false,
     this.alternativas = const [],
+    this.rutaAnterior,
+    this.flota = const [],
+    this.tiempoEnRuta,
+    this.etiquetaDestino,
     this.encuadre,
     this.margenInferior = 360,
     super.key,
@@ -157,6 +161,20 @@ class MapaNexa extends ConsumerStatefulWidget {
 
   /// Otras rutas posibles (al desviarse), en gris debajo de la principal.
   final List<List<LatLng>> alternativas;
+
+  /// La ruta de antes de un cambio (el conductor tomó otra calle): tenue,
+  /// debajo de todo.
+  final List<LatLng>? rutaAnterior;
+
+  /// Motos de la flota (panel del admin): punto y si está libre (cian) o en
+  /// un viaje (gris). Sin datos de quién es.
+  final List<(LatLng, bool)> flota;
+
+  /// Texto sobre la propia línea de la ruta, p. ej. «11 min» (rediseño 2026).
+  final String? tiempoEnRuta;
+
+  /// Rótulo junto a la bandera del destino, p. ej. «La Castellana · 16:15».
+  final String? etiquetaDestino;
 
   /// Puntos que la cámara mantiene a la vista (null = la cámara no se mueve
   /// sola). Se ignora en [navegacion].
@@ -330,6 +348,8 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
     _estructuraLineas = '';
     _simbolos.clear();
     _firmas.clear();
+    _rotulosCargados.clear();
+    _flotaDibujada = 0;
     _solapePermitido = false;
     for (final e in (await _imagenes()).entries) {
       await c.addImage(e.key, e.value);
@@ -366,7 +386,21 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
       falta = partes.falta;
     }
     final oscuro = _oscuro;
+    final anterior = widget.rutaAnterior;
     final capas = <(String, List<LatLng>, ml.LineOptions)>[
+      if (anterior != null && anterior.length >= 2)
+        (
+          'antes',
+          anterior,
+          ml.LineOptions(
+            lineColor: _hex(
+              oscuro ? NexaColors.rutaAlterna : NexaColors.rutaAlternaClara,
+            ),
+            lineWidth: 4,
+            lineOpacity: 0.55,
+            lineJoin: 'round',
+          ),
+        ),
       for (var i = 0; i < widget.alternativas.length; i++)
         if (widget.alternativas[i].length >= 2)
           (
@@ -511,6 +545,87 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
             ),
     );
     await _moto(c, o: o);
+    await _rotulos(c);
+    await _flota(c);
+  }
+
+  int _flotaDibujada = 0;
+
+  Future<void> _flota(ml.MapLibreMapController c) async {
+    final f = widget.flota;
+    for (var i = 0; i < f.length; i++) {
+      final (punto, libre) = f[i];
+      await _simbolo(
+        c,
+        'flota$i',
+        _op(
+          punto,
+          libre ? ImagenMarcador.moto : ImagenMarcador.motoGris,
+          z: 6,
+          escala: 0.8,
+        ),
+      );
+    }
+    for (var i = f.length; i < _flotaDibujada; i++) {
+      await _simbolo(c, 'flota$i', null);
+    }
+    _flotaDibujada = f.length;
+  }
+
+  /// Rótulos ya cargados en el estilo actual (se borran con el estilo).
+  final _rotulosCargados = <String>{};
+
+  /// Carga (una vez por estilo) la imagen de un rótulo y devuelve su nombre.
+  Future<String> _rotulo(
+    ml.MapLibreMapController c,
+    String texto, {
+    bool resaltado = false,
+  }) async {
+    final oscuro = _oscuro;
+    final nombre = 'nx-txt-${oscuro ? 'o' : 'c'}${resaltado ? 'r' : ''}-$texto';
+    if (_rotulosCargados.add(nombre)) {
+      await c.addImage(
+        nombre,
+        await dibujarRotulo(texto, oscuro: oscuro, resaltado: resaltado),
+      );
+    }
+    return nombre;
+  }
+
+  /// Textos sobre el mapa: el tiempo en la mitad de lo que falta de la ruta y
+  /// el nombre (con la hora) junto al destino.
+  Future<void> _rotulos(ml.MapLibreMapController c) async {
+    final tiempo = widget.tiempoEnRuta;
+    final ruta = _puntosRuta;
+    LatLng? mitad;
+    if (tiempo != null && ruta.length >= 2) {
+      final moto = _motoVista ?? widget.conductor;
+      final falta = widget.progreso && moto != null
+          ? ReglasRuta.dividir(ruta, moto).falta
+          : ruta;
+      mitad = falta.length >= 2 ? falta[falta.length ~/ 2] : null;
+    }
+    await _simbolo(
+      c,
+      'tiempoRuta',
+      mitad == null
+          ? null
+          : _op(mitad, await _rotulo(c, tiempo!, resaltado: true), z: 9),
+    );
+    final destino = widget.destino;
+    final nombre = widget.etiquetaDestino;
+    await _simbolo(
+      c,
+      'rotuloDestino',
+      destino == null || nombre == null
+          ? null
+          : _op(
+              destino,
+              await _rotulo(c, nombre),
+              z: 8,
+              ancla: 'top',
+            ).copyWith(ml.SymbolOptions(iconOffset: const Offset(0, 14))),
+    );
   }
 
   /// La moto y su proa (también en cada cuadro de la animación).
@@ -600,6 +715,8 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
       op.iconImage,
       (op.iconRotate ?? 0).round(),
       op.iconSize,
+      op.textField,
+      op.textColor,
     );
     if (actual != null && _firmas[clave] == firma) return;
     _firmas[clave] = firma;
@@ -911,18 +1028,12 @@ Future<void> mostrarCapasMapa(BuildContext context) =>
       builder: (_) => const _HojaCapas(),
     );
 
-class _HojaCapas extends ConsumerWidget {
+class _HojaCapas extends StatelessWidget {
   const _HojaCapas();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final actual = ref.watch(estiloMapaProvider);
-    final opciones = [
-      (EstiloMapa.oscuro, l.mapaOscuro, Icons.dark_mode_outlined),
-      (EstiloMapa.claro, l.mapaClaro, Icons.light_mode_outlined),
-      (EstiloMapa.automatico, l.mapaAutomatico, Icons.brightness_auto_outlined),
-    ];
     return DecoratedBox(
       decoration: const BoxDecoration(
         color: NexaColors.card,
@@ -960,25 +1071,7 @@ class _HojaCapas extends ConsumerWidget {
                 style: const TextStyle(color: NexaColors.muted, fontSize: 14),
               ),
               const SizedBox(height: Sp.lg),
-              Row(
-                children: [
-                  for (final (estilo, nombre, icono) in opciones) ...[
-                    if (estilo != EstiloMapa.oscuro)
-                      const SizedBox(width: Sp.md),
-                    Expanded(
-                      child: _OpcionEstilo(
-                        estilo: estilo,
-                        nombre: nombre,
-                        icono: icono,
-                        elegido: estilo == actual,
-                        onTap: () => ref
-                            .read(estiloMapaProvider.notifier)
-                            .elegir(estilo),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
+              const SelectorEstiloMapa(),
               const SizedBox(height: Sp.md),
               Text(
                 l.mapaAutomaticoTexto,
@@ -1521,4 +1614,37 @@ class _Etiqueta extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// Las tres opciones del estilo del mapa (oscuro, claro, automático) con su
+/// vista previa; se usa en la hoja de capas y en el perfil.
+class SelectorEstiloMapa extends ConsumerWidget {
+  const SelectorEstiloMapa({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final actual = ref.watch(estiloMapaProvider);
+    final opciones = [
+      (EstiloMapa.oscuro, l.mapaOscuro, Icons.dark_mode_outlined),
+      (EstiloMapa.claro, l.mapaClaro, Icons.light_mode_outlined),
+      (EstiloMapa.automatico, l.mapaAutomatico, Icons.brightness_auto_outlined),
+    ];
+    return Row(
+      children: [
+        for (final (estilo, nombre, icono) in opciones) ...[
+          if (estilo != EstiloMapa.oscuro) const SizedBox(width: Sp.md),
+          Expanded(
+            child: _OpcionEstilo(
+              estilo: estilo,
+              nombre: nombre,
+              icono: icono,
+              elegido: estilo == actual,
+              onTap: () => ref.read(estiloMapaProvider.notifier).elegir(estilo),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
 }

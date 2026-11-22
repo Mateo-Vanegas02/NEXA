@@ -87,4 +87,14 @@ jobs:
       # Compila el APK debug (sin firmar con la clave real ni subirlo) para detectar a tiempo errores
       # de Gradle, del manifiesto o de plugins nativos que el análisis de Dart no ve.
       - name: Compilación Android (debug)
-        run: flutter build apk --debug
+        shell: bash
+        run: |
+          registro="$RUNNER_TEMP/compilacion-android.log"
+          flutter build apk --debug 2>&1 | tee "$registro" && exit 0
+          codigo=$?
+          if ! grep -qi 'status code 429' "$registro"; then
+            exit "$codigo"
+          fi
+          echo "::warning::El repositorio de dependencias limitó las descargas. Se reintentará en 60 segundos."
+          sleep 60
+          flutter build apk --debug

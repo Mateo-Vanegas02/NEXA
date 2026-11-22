@@ -70,6 +70,19 @@ final rutaCambiadaProvider = NotifierProvider<RutaCambiadaNotifier, int>(
   RutaCambiadaNotifier.new,
 );
 
+/// La ruta de antes del último cambio (polyline), para dibujarla tenue un
+/// rato y que se entienda por dónde va ahora.
+class RutaAnteriorNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void poner(String? geometria) => state = geometria;
+}
+
+final rutaAnteriorProvider = NotifierProvider<RutaAnteriorNotifier, String?>(
+  RutaAnteriorNotifier.new,
+);
+
 /// Viaje en curso del pasajero (o recién finalizado, hasta que se califica).
 ///
 /// Hace polling cada 5 s SOLO mientras el viaje está activo (el WebSocket del
@@ -162,12 +175,14 @@ class ViajePasajeroController extends AsyncNotifier<Servicio?> {
           actual.rutaGeometria != null &&
           nuevo.rutaGeometria != null &&
           actual.rutaGeometria != nuevo.rutaGeometria) {
+        ref.read(rutaAnteriorProvider.notifier).poner(actual.rutaGeometria);
         ref.read(rutaCambiadaProvider.notifier).avisar();
       }
       state = AsyncData(nuevo);
       if (!nuevo.estado.activo) {
         _detener();
         ref.read(posicionConductorProvider.notifier).poner(null);
+        ref.read(rutaAnteriorProvider.notifier).poner(null);
         if (nuevo.estado == EstadoServicio.finalizado) {
           unawaited(
             ref

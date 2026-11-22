@@ -70,6 +70,56 @@ Future<Map<String, Uint8List>> dibujarMarcadores() async => {
   ImagenMarcador.destino: await _png(64, _destino),
 };
 
+/// Rótulo sobre el mapa (rediseño 2026): una píldora con el texto, dibujada
+/// como imagen para no depender de las fuentes del estilo. [resaltado] = borde
+/// y texto cian (el tiempo sobre la ruta); si no, texto claro.
+Future<Uint8List> dibujarRotulo(
+  String texto, {
+  required bool oscuro,
+  bool resaltado = false,
+}) async {
+  final pintor = TextPainter(
+    text: TextSpan(
+      text: texto,
+      style: TextStyle(
+        fontSize: resaltado ? 15 : 13,
+        fontWeight: FontWeight.w800,
+        color: resaltado
+            ? (oscuro ? NexaColors.cyan : NexaColors.rutaClara)
+            : (oscuro ? NexaColors.texto : NexaColors.bg),
+      ),
+    ),
+    textDirection: TextDirection.ltr,
+    maxLines: 1,
+    ellipsis: '…',
+  )..layout(maxWidth: 220);
+  const hx = 12.0, hy = 6.0;
+  final ancho = pintor.width + hx * 2;
+  final alto = pintor.height + hy * 2;
+  return _png(ancho + 4, (c, s) {
+    final caja = RRect.fromRectAndRadius(
+      Rect.fromLTWH(2, 2, ancho, alto),
+      Radius.circular(alto / 2),
+    );
+    c
+      ..drawRRect(caja.shift(const Offset(0, 1.5)), Paint()..color = _sombra)
+      ..drawRRect(
+        caja,
+        Paint()..color = oscuro ? NexaColors.glass : NexaColors.texto,
+      )
+      ..drawRRect(
+        caja,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5
+          ..color = resaltado
+              ? NexaColors.cyan
+              : (oscuro ? NexaColors.line : NexaColors.mapaClaroCalle),
+      );
+    pintor.paint(c, Offset(2 + hx, 2 + hy));
+  }, alto: alto + 6);
+}
+
 Future<Uint8List> _png(
   double lado,
   void Function(Canvas, Size) pintar, {

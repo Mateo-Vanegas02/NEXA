@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
+import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/nexa_texto.dart';
 import '../../../../core/theme/tokens.dart';
 
@@ -204,6 +206,142 @@ class FasesViaje extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// Tarjeta de arriba durante el viaje (rediseño 2026): a qué hora llegas, en
+/// grande; los minutos y los km que faltan; y una barra con lo recorrido. Los
+/// datos son los del servidor (ETA y distancia restante).
+class TarjetaLlegada extends StatelessWidget {
+  const TarjetaLlegada({
+    required this.destino,
+    required this.hora,
+    required this.minutos,
+    this.kmRestantes,
+    this.avance,
+    super.key,
+  });
+
+  final String destino;
+  final String hora;
+  final int minutos;
+  final double? kmRestantes;
+
+  /// Fracción recorrida (0..1); null = sin barra.
+  final double? avance;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final km = kmRestantes == null
+        ? null
+        : NumberFormat('0.0', 'es_CO').format(kmRestantes);
+    final a = avance;
+    return Semantics(
+      liveRegion: true,
+      container: true,
+      label: [
+        l.llegasAHora(destino, hora),
+        l.minutosValor(minutos),
+        if (km != null) l.kmRestantes(km),
+      ].join('. '),
+      child: ExcludeSemantics(
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(Sp.lg, Sp.md, Sp.lg, Sp.md),
+          decoration: BoxDecoration(
+            color: NexaColors.glass,
+            borderRadius: BorderRadius.circular(Rad.lg),
+            border: Border.all(color: NexaColors.line),
+            boxShadow: NexaShadows.flotante,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                l.llegasA(destino),
+                style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
+              ),
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.end,
+                spacing: Sp.md,
+                runSpacing: Sp.xs,
+                children: [
+                  Text(
+                    hora,
+                    style: NexaTexto.numero.copyWith(fontSize: 30, height: 1.1),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        l.minutosValor(minutos),
+                        style: NexaTexto.numeroMedio.copyWith(fontSize: 18),
+                      ),
+                      if (km != null)
+                        Text(
+                          l.kmRestantes(km),
+                          style: NexaTexto.pequeno.copyWith(
+                            color: NexaColors.muted,
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+              if (a != null) ...[
+                const SizedBox(height: Sp.md),
+                LayoutBuilder(
+                  builder: (context, c) => SizedBox(
+                    height: 18,
+                    child: Stack(
+                      alignment: Alignment.centerLeft,
+                      children: [
+                        Container(
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: NexaColors.line,
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
+                        Container(
+                          width: c.maxWidth * a,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [NexaColors.cyan, NexaColors.azul],
+                            ),
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
+                        Positioned(
+                          left: (c.maxWidth * a - 9).clamp(0, c.maxWidth - 18),
+                          child: Container(
+                            width: 18,
+                            height: 18,
+                            decoration: BoxDecoration(
+                              color: NexaColors.texto,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: NexaColors.cyan.withValues(alpha: 0.4),
+                                  spreadRadius: 4,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// Placa amarilla de la moto (dato principal al recoger).

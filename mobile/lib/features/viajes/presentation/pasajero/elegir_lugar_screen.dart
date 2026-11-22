@@ -10,6 +10,7 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/theme_x.dart';
 import '../../../../core/theme/nexa_texto.dart';
 import '../../../../core/theme/tokens.dart';
+import '../../../../core/utils/resaltar.dart';
 import '../../../../core/widgets/nexa_icono_app.dart';
 
 /// Lo que devuelve [ElegirLugarScreen]: un lugar buscado, o la petición de
@@ -269,8 +270,22 @@ class _Lista extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        lugar.nombre,
+                      // Lo que escribió, resaltado en cian (rediseño 2026).
+                      Text.rich(
+                        TextSpan(
+                          children: [
+                            for (final (t, coincide) in tramosResaltados(
+                              lugar.nombre,
+                              estado._ctrl.text,
+                            ))
+                              TextSpan(
+                                text: t,
+                                style: coincide
+                                    ? const TextStyle(color: NexaColors.cyan)
+                                    : null,
+                              ),
+                          ],
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: context.textos.titleSmall?.copyWith(

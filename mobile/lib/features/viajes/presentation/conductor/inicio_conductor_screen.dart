@@ -1,8 +1,8 @@
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/providers.dart';
 import '../../../../core/rumbo/orientacion_mapa.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/theme_x.dart';
-import '../../../../core/theme/nexa_texto.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/mapa/polyline.dart';
 import '../../../../core/mapa/reglas_marcadores.dart';
@@ -19,6 +19,7 @@ import '../controllers/sin_conexion_controller.dart';
 import '../controllers/viaje_conductor_controller.dart';
 import '../widgets/cuenta_bloqueada.dart';
 import '../widgets/navegacion_conductor.dart';
+import '../widgets/panel_turno.dart';
 import '../widgets/rutas_desvio.dart';
 import '../widgets/solicitud_card.dart';
 import '../widgets/viaje_activo_card.dart';
@@ -253,6 +254,18 @@ class _Panel extends ConsumerWidget {
               ),
             ),
           ),
+        if (activo != null &&
+            estado.fase != FaseConductor.enElPunto &&
+            estado.desvio == EstadoDesvio.ninguno)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(left: Sp.md),
+              child: VelocimetroGps(
+                movimiento: ref.read(rastreadorProvider).movimiento,
+              ),
+            ),
+          ),
         // Con un viaje, la hoja deja ver el mapa (en el video del conductor la
         // hoja tapaba la recogida); el resumen final sí ocupa más.
         NexaHojaArrastrable(
@@ -261,35 +274,18 @@ class _Panel extends ConsumerWidget {
               : (activo != null ? 0.36 : 0.5),
           minimo: activo != null ? 0.2 : 0.3,
           children: [
+            // Sin viaje (rediseño 2026): fuera de línea, deslizar para
+            // conectarse y lo ganado; en línea, lo ganado hoy y el GPS.
             if (!enViaje) ...[
-              Row(
-                children: [
-                  Container(
-                    width: 10,
-                    height: 10,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: estado.enLinea
-                          ? NexaColors.cyan
-                          : NexaColors.tenue,
-                    ),
-                  ),
-                  const SizedBox(width: Sp.md),
-                  Expanded(
-                    child: Text(
-                      estado.enLinea
-                          ? l.buscandoSolicitudes
-                          : l.estasFueraDeLinea,
-                      style: NexaTexto.subtitulo,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: Sp.sm),
-              Text(
-                estado.enLinea ? l.estasEnLinea : l.conectateTexto,
-                style: NexaTexto.pequeno.copyWith(color: NexaColors.muted),
-              ),
+              if (estado.enLinea)
+                PanelEnLinea(onDesconectar: ctrl.alternarLinea)
+              else
+                PanelFueraDeLinea(
+                  onConectar: () async {
+                    if (!await prepararConexion(context, ref)) return;
+                    await ctrl.alternarLinea();
+                  },
+                ),
               const SizedBox(height: Sp.lg),
             ],
             const NivelBanner(rutaNiveles: '/c/niveles', irEnLugar: true),
