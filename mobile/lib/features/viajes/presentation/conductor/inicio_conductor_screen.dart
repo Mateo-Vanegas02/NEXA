@@ -126,6 +126,14 @@ class _Panel extends ConsumerWidget {
       servidor: pos == null ? null : LatLng(pos.latitud, pos.longitud),
       ahora: DateTime.now(),
     );
+    // Zoom de navegación según la velocidad: solo con un dato reciente (con
+    // uno viejo la cámara quedaría alejada aunque la moto esté detenida).
+    final velocidadKmh =
+        enVivo?.velocidad != null &&
+            DateTime.now().difference(enVivo!.en) <
+                ReglasMarcadores.gpsFrescoPor
+        ? enVivo.velocidad! * 3.6
+        : null;
     // Rutas: las que ofrece el servidor al desviarse (la sugerida resaltada),
     // la elegida o la del viaje.
     final opciones = estado.desvio == EstadoDesvio.opciones
@@ -164,6 +172,7 @@ class _Panel extends ConsumerWidget {
             progreso: rutaVigente != null && opciones.isEmpty,
             conductor: moto,
             motoPropia: true,
+            velocidadKmh: velocidadKmh,
             pasajero: estado.pasajero == null
                 ? null
                 : LatLng(estado.pasajero!.latitud, estado.pasajero!.longitud),
