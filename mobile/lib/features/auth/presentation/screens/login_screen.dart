@@ -55,7 +55,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    return AuthScaffold(
+    // Volver lleva a la portada (botón de arriba y atrás del teléfono): al
+    // login se llega con `go`, así que no hay pantalla debajo.
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (hecho, _) {
+        if (!hecho) context.go('/inicio');
+      },
+      child: AuthScaffold(
+      onAtras: () => context.go('/inicio'),
       titulo: l.loginTitulo,
       subtitulo: l.loginSubtitulo,
       children: [
@@ -154,6 +162,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 }
