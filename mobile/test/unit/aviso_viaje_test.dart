@@ -62,6 +62,30 @@ void main() {
     );
   });
 
+  test('en viaje, la barra de avance en pasos de 5 %', () {
+    expect(TextosAvisoViaje.avance(10, 10), 0);
+    expect(TextosAvisoViaje.avance(10, 6.2), 40);
+    expect(TextosAvisoViaje.avance(10, 0), 100);
+    expect(TextosAvisoViaje.avance(10, 12), 0, reason: 'se alejó: no negativo');
+    expect(TextosAvisoViaje.avance(0, 2), isNull, reason: 'sin distancia');
+    expect(TextosAvisoViaje.avance(10, null), isNull);
+    expect(
+      TextosAvisoViaje.conductor(
+        l,
+        estado(
+          viaje.copyWith(estado: EstadoServicio.enCurso, distanciaKM: 4),
+          pos(1, 3),
+        ),
+      ),
+      const AvisoViaje('Llevando a Laura', '3 min · 1,0 km', avance: 75),
+    );
+    expect(
+      TextosAvisoViaje.conductor(l, estado(viaje, pos(0.65, 3)))?.avance,
+      isNull,
+      reason: 'yendo a recoger no hay distancia total del servidor',
+    );
+  });
+
   test('sin viaje no hay texto propio (queda «En línea»)', () {
     expect(
       TextosAvisoViaje.conductor(

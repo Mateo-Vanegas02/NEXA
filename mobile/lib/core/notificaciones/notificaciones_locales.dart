@@ -26,12 +26,15 @@ abstract class NotificacionesLocales {
 
   /// Cambia el texto de la notificación fija del GPS en segundo plano con los
   /// datos del viaje (p. ej. «Recoge a Laura · 3 min · 650 m») y un botón
-  /// «Abrir». Solo mientras el servicio de ubicación está activo.
+  /// «Abrir». Solo mientras el servicio de ubicación está activo. Con
+  /// [avance] (0–100) muestra la barra del viaje, también en la pantalla de
+  /// bloqueo (sin datos sensibles: fase, minutos y distancia).
   Future<void> mostrarViaje({
     required String titulo,
     required String texto,
     required String canal,
     required String abrir,
+    int? avance,
   });
 
   /// Quita la notificación del viaje (al apagarse el GPS en segundo plano).
@@ -104,6 +107,7 @@ class NotificacionesAndroid implements NotificacionesLocales {
     required String texto,
     required String canal,
     required String abrir,
+    int? avance,
   }) async {
     if (kIsWeb || !Platform.isAndroid) return;
     await _plugin.show(
@@ -122,6 +126,10 @@ class NotificacionesAndroid implements NotificacionesLocales {
           silent: true,
           showWhen: false,
           category: AndroidNotificationCategory.navigation,
+          visibility: NotificationVisibility.public,
+          showProgress: avance != null,
+          maxProgress: 100,
+          progress: avance ?? 0,
           actions: [
             AndroidNotificationAction(
               'abrir',
@@ -176,6 +184,7 @@ class NotificacionesInactivas implements NotificacionesLocales {
     required String texto,
     required String canal,
     required String abrir,
+    int? avance,
   }) async {}
 
   @override

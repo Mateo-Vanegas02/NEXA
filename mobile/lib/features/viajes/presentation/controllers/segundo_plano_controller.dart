@@ -105,6 +105,7 @@ class CoordinadorSegundoPlano extends Notifier<ModoSegundoPlano> {
       texto: aviso.texto,
       canal: _textos.segPlanoCanal,
       abrir: _textos.avisoAbrir,
+      avance: aviso.avance,
     );
   }
 
