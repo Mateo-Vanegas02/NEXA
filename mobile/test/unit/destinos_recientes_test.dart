@@ -7,12 +7,8 @@ Servicio _viaje(
   String destino, {
   Coordenada? punto,
   EstadoServicio estado = EstadoServicio.finalizado,
-}) => Servicio(
-  id: id,
-  estado: estado,
-  destino: destino,
-  ubicacionDestino: punto,
-);
+}) =>
+    Servicio(id: id, estado: estado, destino: destino, ubicacionDestino: punto);
 
 void main() {
   const plaza = Coordenada(latitud: 10.4201, longitud: -75.5202);

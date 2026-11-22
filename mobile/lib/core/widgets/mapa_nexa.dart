@@ -288,8 +288,9 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
     if (widget.encuadrarRuta && cambioRuta) _enCola(_encuadrar);
     if (_usaOrientacion &&
         (widget.navegacion != anterior.navegacion ||
-            (widget.navegacion && (moto != anterior.conductor ||
-                widget.velocidadKmh != anterior.velocidadKmh)))) {
+            (widget.navegacion &&
+                (moto != anterior.conductor ||
+                    widget.velocidadKmh != anterior.velocidadKmh)))) {
       _aplicar(ref.read(orientacionMapaProvider));
     }
     if (!widget.navegacion && widget.encuadre != null) _seguir();
@@ -870,7 +871,8 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
       final ahora = DateTime.now();
       final zoom = ReglasCamara.zoomPorVelocidad(widget.velocidadKmh);
       if ((zoom - _zoomNavegacion).abs() >= 0.25 &&
-          (_ultimoZoom == null || ahora.difference(_ultimoZoom!) >= const Duration(seconds: 3))) {
+          (_ultimoZoom == null ||
+              ahora.difference(_ultimoZoom!) >= const Duration(seconds: 3))) {
         _zoomNavegacion = zoom;
         _ultimoZoom = ahora;
       }

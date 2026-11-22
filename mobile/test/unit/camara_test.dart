@@ -3,7 +3,15 @@ import 'package:nexa_mobile/core/mapa/reglas_camara.dart';
 
 void main() {
   test('zoom limitado e interpolado según velocidad', () {
-    for (final (velocidad, zoom) in [(0.0,17.5),(15.0,17.5),(22.5,17.0),(30.0,16.5),(40.0,16.0),(50.0,15.5),(150.0,15.5)]) {
+    for (final (velocidad, zoom) in [
+      (0.0, 17.5),
+      (15.0, 17.5),
+      (22.5, 17.0),
+      (30.0, 16.5),
+      (40.0, 16.0),
+      (50.0, 15.5),
+      (150.0, 15.5),
+    ]) {
       expect(ReglasCamara.zoomPorVelocidad(velocidad), zoom);
     }
   });

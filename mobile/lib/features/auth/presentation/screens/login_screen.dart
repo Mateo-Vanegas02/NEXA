@@ -70,10 +70,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 header: true,
                 child: Align(
                   alignment: Alignment.centerLeft,
-                  child: Text(
-                    l.loginCuenta,
-                    style: context.textos.labelMedium,
-                  ),
+                  child: Text(l.loginCuenta, style: context.textos.labelMedium),
                 ),
               ),
               const SizedBox(height: Sp.xs),

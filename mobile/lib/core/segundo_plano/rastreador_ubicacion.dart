@@ -23,7 +23,13 @@ class AvisoRastreo {
 
 /// Un dato del GPS al llegar (para dibujar la moto propia en vivo).
 class PosicionEnVivo {
-  const PosicionEnVivo({required this.punto, required this.en, this.rumbo, this.velocidad});
+  const PosicionEnVivo({
+    required this.punto,
+    required this.en,
+    this.rumbo,
+    this.velocidad,
+  });
+
   /// Metros por segundo, tal como llegan del GPS.
   final double? velocidad;
   final LatLng punto;

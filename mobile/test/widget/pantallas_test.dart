@@ -148,7 +148,11 @@ void main() {
 
       testWidgets('login: valida campos obligatorios', (t) async {
         await montar(t, const LoginScreen(), esperar: false);
-        await t.tap(find.widgetWithText(FilledButton, 'Entrar'));
+        // En 360×640 el botón queda bajo el selector de cuenta: se desplaza.
+        final entrar = find.widgetWithText(FilledButton, 'Entrar');
+        await t.ensureVisible(entrar);
+        await t.pump();
+        await t.tap(entrar);
         await t.pump();
         expect(find.text('Este campo es obligatorio'), findsNWidgets(2));
         _sinErroresDeLayout(t);
