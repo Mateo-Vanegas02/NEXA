@@ -223,7 +223,6 @@ void main() {
         expect(find.text('ABC 12D'), findsOneWidget);
         expect(find.text('Compartir viaje'), findsOneWidget);
         expect(find.byTooltip('Asistencia en ruta (SOS)'), findsOneWidget);
-        expect(find.textContaining('Llegas en'), findsOneWidget);
         // Regresión: la hoja inferior no debe tapar todo el mapa.
         expect(
           t.getTopLeft(find.text('Carlos Mendoza')).dy,

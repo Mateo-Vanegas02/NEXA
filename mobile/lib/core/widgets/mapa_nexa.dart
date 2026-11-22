@@ -610,11 +610,7 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
       'tiempoRuta',
       mitad == null
           ? null
-          : _op(
-              mitad,
-              await _rotulo(c, tiempo!, resaltado: true),
-              z: 9,
-            ),
+          : _op(mitad, await _rotulo(c, tiempo!, resaltado: true), z: 9),
     );
     final destino = widget.destino;
     final nombre = widget.etiquetaDestino;
@@ -623,10 +619,12 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
       'rotuloDestino',
       destino == null || nombre == null
           ? null
-          : _op(destino, await _rotulo(c, nombre), z: 8, ancla: 'top')
-                .copyWith(
-                  ml.SymbolOptions(iconOffset: const Offset(0, 14)),
-                ),
+          : _op(
+              destino,
+              await _rotulo(c, nombre),
+              z: 8,
+              ancla: 'top',
+            ).copyWith(ml.SymbolOptions(iconOffset: const Offset(0, 14))),
     );
   }
 
