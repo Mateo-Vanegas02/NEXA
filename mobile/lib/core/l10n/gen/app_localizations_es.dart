@@ -2883,4 +2883,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String requisitosCumplidos(int cumplidos, int total) {
     return '$cumplidos de $total';
   }
+
+  @override
+  String get rolAdminCorto => 'Admin';
+
+  @override
+  String get loginCuentaAyuda =>
+      'Opcional: elígelo solo si tu correo tiene más de una cuenta.';
 }

@@ -1805,5 +1805,7 @@
         "type": "int"
       }
     }
-  }
+  },
+  "rolAdminCorto": "Admin",
+  "loginCuentaAyuda": "Opcional: elígelo solo si tu correo tiene más de una cuenta."
 }

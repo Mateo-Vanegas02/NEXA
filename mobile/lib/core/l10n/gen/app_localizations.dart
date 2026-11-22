@@ -5210,6 +5210,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'{cumplidos} de {total}'**
   String requisitosCumplidos(int cumplidos, int total);
+
+  /// No description provided for @rolAdminCorto.
+  ///
+  /// In es, this message translates to:
+  /// **'Admin'**
+  String get rolAdminCorto;
+
+  /// No description provided for @loginCuentaAyuda.
+  ///
+  /// In es, this message translates to:
+  /// **'Opcional: elígelo solo si tu correo tiene más de una cuenta.'**
+  String get loginCuentaAyuda;
 }
 
 class _AppLocalizationsDelegate
