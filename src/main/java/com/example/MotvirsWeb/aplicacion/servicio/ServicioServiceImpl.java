@@ -462,6 +462,9 @@ public class ServicioServiceImpl implements ServicioService {
                 .map(s -> {
                     Map<String, Object> ingreso = new HashMap<>();
                     ingreso.put("fecha", s.getFechaHora().toLocalDate().toString());
+                    // Hora del viaje (la app agrupa lo ganado hoy por hora).
+                    ingreso.put("hora", (s.getFechaFinalizacion() != null ? s.getFechaFinalizacion()
+                            : s.getFechaHora()).toString());
                     boolean neto = s.getDesglose() != null && s.getDesglose().isDefinitivo();
                     ingreso.put("monto", neto ? s.getDesglose().getGananciaConductor() : s.getTarifa());
                     ingreso.put("descripcion", "Viaje con " + s.getPasajero().getNombre());

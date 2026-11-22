@@ -10,6 +10,12 @@ import java.util.List;
 public interface ServicioRepository extends MongoRepository<Servicio, String> {
     List<Servicio> findByEstado(EstadoServicio estado);
 
+    long countByEstado(EstadoServicio estado);
+
+    long countByFechaHoraGreaterThanEqual(java.time.LocalDateTime desde);
+
+    long countByFechaHoraGreaterThanEqualAndEstado(java.time.LocalDateTime desde, EstadoServicio estado);
+
     /**
      * Viajes finalizados después del despliegue de niveles (solicitadoEn presente) cuyo
      * procesamiento no llegó a marcarse como definitivo.
