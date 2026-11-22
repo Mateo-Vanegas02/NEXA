@@ -117,7 +117,7 @@ void main() {
       expect(enLinea.intervalo.inSeconds, lessThan(45));
       expect(enLinea.altaPrecision, isFalse);
       final viaje = ReglasSegundoPlano.ajustes(ModoSegundoPlano.enViaje)!;
-      expect(viaje.intervalo, const Duration(seconds: 3));
+      expect(viaje.intervalo, const Duration(seconds: 1));
       expect(viaje.altaPrecision, isTrue);
       expect(ReglasSegundoPlano.ajustes(ModoSegundoPlano.apagado), isNull);
     });

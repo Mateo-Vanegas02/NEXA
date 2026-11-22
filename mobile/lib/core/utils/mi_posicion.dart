@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../providers.dart';
 import '../segundo_plano/modo_segundo_plano.dart';
+import '../segundo_plano/rastreador_ubicacion.dart';
 
 /// Posición GPS actual del usuario, o `null` si no hay permiso, el GPS está
 /// apagado o tarda demasiado. No pide permisos (eso lo hacen las pantallas de
@@ -34,4 +35,11 @@ final miPosicionProvider = Provider<Future<LatLng?> Function()>(
       return null;
     }
   },
+);
+
+/// Cada dato del GPS apenas llega (solo mientras el rastreador corre: en línea,
+/// con viaje o con el conductor en camino). El mapa del conductor dibuja su
+/// moto con esto, a 1 dato por segundo, sin esperar al servidor.
+final posicionEnVivoProvider = StreamProvider<PosicionEnVivo>(
+  (ref) => ref.watch(rastreadorProvider).posiciones,
 );

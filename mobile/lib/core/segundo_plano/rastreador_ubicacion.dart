@@ -21,6 +21,16 @@ class AvisoRastreo {
   final String canal;
 }
 
+/// Un dato del GPS al llegar (para dibujar la moto propia en vivo).
+class PosicionEnVivo {
+  const PosicionEnVivo({required this.punto, required this.en, this.rumbo});
+  final LatLng punto;
+  final DateTime en;
+
+  /// Rumbo del GPS en grados (null si no es fiable: detenido o sin dato).
+  final double? rumbo;
+}
+
 /// Sigue la posición del teléfono con el ritmo de cada modo y la deja a mano
 /// ([ultima]). En Android corre como servicio en primer plano de tipo
 /// ubicación, con su notificación fija: así sigue con la pantalla apagada.
@@ -32,10 +42,18 @@ abstract class RastreadorUbicacion {
 
   /// Rumbo y velocidad del último dato (para girar el mapa en marcha).
   MovimientoGps? get movimiento;
+
+  /// Cada dato del GPS apenas llega: el mapa del conductor dibuja su moto con
+  /// esto, sin esperar la respuesta del servidor (que puede tardar).
+  Stream<PosicionEnVivo> get posiciones;
 }
 
 class RastreadorGeolocator implements RastreadorUbicacion {
   StreamSubscription<Position>? _sub;
+  final _posiciones = StreamController<PosicionEnVivo>.broadcast();
+
+  @override
+  Stream<PosicionEnVivo> get posiciones => _posiciones.stream;
   LatLng? _ultima;
   DateTime? _ultimaEn;
   MovimientoGps? _movimiento;
@@ -78,6 +96,14 @@ class RastreadorGeolocator implements RastreadorUbicacion {
           precisionRumbo: p.headingAccuracy,
           en: _ultimaEn!,
         );
+        // En moto, el rumbo del GPS vale desde ~8 km/h.
+        _posiciones.add(
+          PosicionEnVivo(
+            punto: _ultima!,
+            en: _ultimaEn!,
+            rumbo: p.speed >= 2.2 && p.heading >= 0 ? p.heading : null,
+          ),
+        );
       },
       // Un error del GPS no detiene el servicio: el siguiente dato lo repone.
       onError: (Object _) {},
@@ -106,6 +132,18 @@ class RastreadorEnMemoria implements RastreadorUbicacion {
 
   @override
   MovimientoGps? movimiento;
+
+  final _posiciones = StreamController<PosicionEnVivo>.broadcast();
+
+  @override
+  Stream<PosicionEnVivo> get posiciones => _posiciones.stream;
+
+  /// Simula un dato del GPS.
+  void emitir(LatLng p, {double? rumbo}) {
+    ultima = p;
+    ultimaEn = DateTime.now();
+    _posiciones.add(PosicionEnVivo(punto: p, en: ultimaEn!, rumbo: rumbo));
+  }
 
   @override
   Future<void> iniciar(ModoSegundoPlano modo, AvisoRastreo aviso) async {

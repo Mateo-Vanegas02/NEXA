@@ -8,10 +8,11 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart' hide Path;
 import 'package:maplibre_gl/maplibre_gl.dart' as ml;
 
-import '../config/env.dart';
 import '../l10n/gen/app_localizations.dart';
+import '../mapa/estilo_mapa.dart';
 import '../mapa/imagenes_marcadores.dart';
 import '../mapa/reglas_marcadores.dart';
+import '../mapa/reglas_ruta.dart';
 import '../rumbo/orientacion_mapa.dart';
 import '../rumbo/reglas_rumbo.dart';
 import '../theme/tokens.dart';
@@ -61,13 +62,19 @@ String _hex(Color c) =>
 /// destino, ruta por calles y conductor.
 ///
 /// Marcadores «Quién es quién» (prototipo M01–M05): personita = pasajero
-/// (celeste si es quien mira, dorada si la ve el conductor), motico = moto
-/// (siempre derecha; la proa del aro gira con su rumbo), pin cian = recogida
-/// y cuadro blanco = destino. El pasajero propio lleva un haz con el rumbo del
-/// teléfono y una marca en el aro que señala dónde está la moto.
+/// (celeste si es quien mira, dorada si la ve el conductor), moto vista desde
+/// arriba (siempre derecha; la proa del aro gira con su rumbo), pin cian =
+/// recogida y bandera a cuadros = destino. El pasajero propio lleva un haz con
+/// el rumbo del teléfono y una marca en el aro que señala dónde está la moto.
 ///
 /// La ruta es [ruta] (el trazado que calculó el servidor con OSRM); sin ella,
-/// la línea recta origen→destino.
+/// la línea recta origen→destino. Rediseño 2026:
+/// - el estilo (claro, oscuro o automático) lo elige cada persona en el botón
+///   de capas, sin depender del tema de la app (`estiloMapaProvider`);
+/// - la ruta lleva borde y, con [progreso], lo recorrido se apaga;
+/// - la moto se desliza entre un dato y el siguiente en vez de saltar;
+/// - con [encuadre], la cámara sigue esos puntos (p. ej. la moto y el destino)
+///   hasta que la persona mueve el mapa; «Recentrar» la devuelve.
 ///
 /// Orientación (fase 4): con [orientable] muestra el botón de brújula (norte
 /// arriba ↔ girar con el teléfono); con [navegacion] sigue a [conductor] de
@@ -93,6 +100,10 @@ class MapaNexa extends ConsumerStatefulWidget {
     this.navegacion = false,
     this.encuadrarRuta = false,
     this.brujulaArriba = Sp.md,
+    this.progreso = false,
+    this.alternativas = const [],
+    this.encuadre,
+    this.margenInferior = 360,
     super.key,
   });
 
@@ -128,7 +139,7 @@ class MapaNexa extends ConsumerStatefulWidget {
   final void Function(LatLng)? onTap;
   final MapaNexaController? controller;
 
-  /// Muestra el botón de brújula.
+  /// Muestra el botón de brújula y el de capas (estilo del mapa).
   final bool orientable;
 
   /// Modo navegación: el mapa sigue a [conductor] y gira con su rumbo.
@@ -141,9 +152,25 @@ class MapaNexa extends ConsumerStatefulWidget {
   /// botones de la pantalla).
   final double brujulaArriba;
 
+  /// La moto va por la ruta: lo que ya recorrió se pinta apagado.
+  final bool progreso;
+
+  /// Otras rutas posibles (al desviarse), en gris debajo de la principal.
+  final List<List<LatLng>> alternativas;
+
+  /// Puntos que la cámara mantiene a la vista (null = la cámara no se mueve
+  /// sola). Se ignora en [navegacion].
+  final List<LatLng>? encuadre;
+
+  /// Espacio que tapa la hoja inferior, para encuadrar por encima de ella.
+  final double margenInferior;
+
   /// Acercamiento e inclinación del modo navegación.
   static const zoomNavegacion = 17.0;
   static const inclinacionNavegacion = 50.0;
+
+  /// Tras mover el mapa con el dedo, la cámara deja de seguir este tiempo.
+  static const pausaTrasGesto = Duration(seconds: 15);
 
   @override
   ConsumerState<MapaNexa> createState() => _MapaNexaState();
@@ -155,10 +182,14 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
   /// Densidad de la pantalla (px por dp), para el tamaño de los marcadores.
   double _densidad = 2.625;
   bool _estiloListo = false;
+  bool _oscuro = true;
   Future<void> _cola = Future.value();
 
-  ml.Line? _linea;
-  List<LatLng> _lineaPuntos = const [];
+  /// Líneas dibujadas por clave (alternativas, recorrido, borde, ruta), en el
+  /// orden en que se apilan.
+  final _lineas = <String, ml.Line>{};
+  final _lineasPuntos = <String, List<LatLng>>{};
+  String _estructuraLineas = '';
   final _simbolos = <String, ml.Symbol>{};
   final _firmas = <String, Object>{};
   bool _solapePermitido = false;
@@ -167,10 +198,30 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
   ModoOrientacion _modoAplicado = ModoOrientacion.norte;
   bool? _rumboPedido;
 
+  // Moto que se desliza entre un dato y el siguiente.
+  LatLng? _motoVista;
+  LatLng? _motoDesde;
+  LatLng? _motoHacia;
+  DateTime _animInicio = DateTime.now();
+  Duration _animDuracion = Duration.zero;
+  DateTime? _ultimoDatoMoto;
+  Timer? _animTimer;
+  bool _moviendoMoto = false;
+
+  // Cámara que sigue y gesto del usuario.
+  DateTime? _gesto;
+  DateTime? _ultimoEncuadre;
+  Timer? _finPausa;
+
   /// El haz necesita el rumbo del teléfono aunque el mapa no gire.
   bool get _conHaz => widget.pasajero != null && widget.pasajeroPropio;
 
   bool get _usaOrientacion => widget.orientable || widget.navegacion || _conHaz;
+
+  bool get _enPausa {
+    final g = _gesto;
+    return g != null && DateTime.now().difference(g) < MapaNexa.pausaTrasGesto;
+  }
 
   /// Los cambios en el mapa nativo van en fila: así nunca se pisan.
   void _enCola(Future<void> Function() tarea) {
@@ -180,29 +231,86 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
   }
 
   @override
+  void dispose() {
+    _animTimer?.cancel();
+    _finPausa?.cancel();
+    super.dispose();
+  }
+
+  @override
   void didUpdateWidget(MapaNexa anterior) {
     super.didUpdateWidget(anterior);
+    final moto = widget.conductor;
+    if (moto != anterior.conductor && moto != null) {
+      final r = ReglasMarcadores.rumboDeAvance(_motoAnterior, moto);
+      if (r != null || _motoAnterior == null) {
+        if (r != null) _rumboMoto = r;
+        _motoAnterior = moto;
+      }
+      _deslizarMotoA(moto);
+    } else if (moto == null) {
+      _animTimer?.cancel();
+      _motoVista = null;
+    }
     _enCola(_sincronizar);
     final cambioRuta =
         widget.origen != anterior.origen ||
         widget.destino != anterior.destino ||
         widget.ruta != anterior.ruta;
-    if (widget.conductor != anterior.conductor && widget.conductor != null) {
-      final r = ReglasMarcadores.rumboDeAvance(
-        _motoAnterior,
-        widget.conductor!,
-      );
-      if (r != null || _motoAnterior == null) {
-        if (r != null) _rumboMoto = r;
-        _motoAnterior = widget.conductor;
-      }
-    }
     if (widget.encuadrarRuta && cambioRuta) _enCola(_encuadrar);
     if (_usaOrientacion &&
         (widget.navegacion != anterior.navegacion ||
-            (widget.navegacion && widget.conductor != anterior.conductor))) {
+            (widget.navegacion && moto != anterior.conductor))) {
       _aplicar(ref.read(orientacionMapaProvider));
     }
+    if (!widget.navegacion && widget.encuadre != null) _seguir();
+  }
+
+  /// La moto llegó a otro punto: se anima desde donde se ve ahora hasta allí
+  /// en lo que tardó el dato (entre 0,3 y 2,5 s). Con «reducir animaciones»
+  /// salta.
+  void _deslizarMotoA(LatLng destino) {
+    // Sin mapa (pruebas) no hay nada que animar.
+    if (!ref.read(mapasHabilitadosProvider)) {
+      _motoVista = destino;
+      return;
+    }
+    final ahora = DateTime.now();
+    final previo = _ultimoDatoMoto;
+    _ultimoDatoMoto = ahora;
+    final desde = _motoVista;
+    if (desde == null ||
+        previo == null ||
+        !mounted ||
+        MediaQuery.disableAnimationsOf(context)) {
+      _animTimer?.cancel();
+      _motoVista = destino;
+      return;
+    }
+    final ms = ahora.difference(previo).inMilliseconds.clamp(300, 2500);
+    _motoDesde = desde;
+    _motoHacia = destino;
+    _animInicio = ahora;
+    _animDuracion = Duration(milliseconds: ms);
+    _animTimer?.cancel();
+    _animTimer = Timer.periodic(const Duration(milliseconds: 50), (t) {
+      final avance =
+          DateTime.now().difference(_animInicio).inMilliseconds /
+          _animDuracion.inMilliseconds;
+      _motoVista = ReglasRuta.interpolar(_motoDesde!, _motoHacia!, avance);
+      if (avance >= 1) t.cancel();
+      final c = _ml;
+      // Si el mapa nativo va atrasado, se salta este cuadro.
+      if (c == null || _moviendoMoto) return;
+      _moviendoMoto = true;
+      _enCola(() async {
+        try {
+          await _moto(c);
+        } finally {
+          _moviendoMoto = false;
+        }
+      });
+    });
   }
 
   List<LatLng> get _puntosRuta {
@@ -217,8 +325,9 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
     final c = _ml;
     if (c == null) return;
     // Un estilo nuevo borra lo dibujado: se vuelve a crear.
-    _linea = null;
-    _lineaPuntos = const [];
+    _lineas.clear();
+    _lineasPuntos.clear();
+    _estructuraLineas = '';
     _simbolos.clear();
     _firmas.clear();
     _solapePermitido = false;
@@ -229,30 +338,108 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
     await _sincronizar();
     if (widget.encuadrarRuta) await _encuadrar();
     if (_usaOrientacion) _aplicar(ref.read(orientacionMapaProvider));
+    if (!widget.navegacion && widget.encuadre != null) {
+      _ultimoEncuadre = null;
+      _seguir();
+    }
   }
 
-  /// Dibuja lo que cambió (ruta, pines, moto) sin rehacer lo demás.
+  /// Dibuja lo que cambió (rutas, pines, moto) sin rehacer lo demás.
   Future<void> _sincronizar() async {
     final c = _ml;
     if (c == null || !_estiloListo || !mounted) return;
+    await _rutas(c);
+    await _marcadores(c);
+  }
+
+  /// La ruta principal con su borde, lo recorrido apagado y las alternativas
+  /// debajo. Si cambia qué líneas hay, se rehacen todas para que se apilen en
+  /// orden; si no, solo se mueven sus puntos.
+  Future<void> _rutas(ml.MapLibreMapController c) async {
     final puntos = _puntosRuta;
-    if (!_mismos(puntos, _lineaPuntos)) {
-      final vieja = _linea;
-      _linea = null;
-      if (vieja != null) await c.removeLine(vieja);
-      if (puntos.length >= 2) {
-        _linea = await c.addLine(
+    final moto = _motoVista ?? widget.conductor;
+    var recorrido = const <LatLng>[];
+    var falta = puntos;
+    if (widget.progreso && moto != null && puntos.length >= 2) {
+      final partes = ReglasRuta.dividir(puntos, moto);
+      recorrido = partes.recorrido;
+      falta = partes.falta;
+    }
+    final oscuro = _oscuro;
+    final capas = <(String, List<LatLng>, ml.LineOptions)>[
+      for (var i = 0; i < widget.alternativas.length; i++)
+        if (widget.alternativas[i].length >= 2)
+          (
+            'alt$i',
+            widget.alternativas[i],
+            ml.LineOptions(
+              lineColor: _hex(
+                oscuro ? NexaColors.rutaAlterna : NexaColors.rutaAlternaClara,
+              ),
+              lineWidth: 5,
+              lineOpacity: 0.9,
+              lineJoin: 'round',
+            ),
+          ),
+      if (recorrido.length >= 2)
+        (
+          'hecha',
+          recorrido,
           ml.LineOptions(
-            geometry: puntos.map(_aMl).toList(),
-            lineColor: _hex(NexaColors.cyan),
+            lineColor: _hex(
+              oscuro ? NexaColors.rutaRecorrida : NexaColors.rutaRecorridaClara,
+            ),
             lineWidth: 6,
             lineJoin: 'round',
           ),
-        );
+        ),
+      if (falta.length >= 2) ...[
+        (
+          'borde',
+          falta,
+          ml.LineOptions(
+            lineColor: _hex(
+              oscuro ? NexaColors.rutaBorde : NexaColors.rutaBordeClara,
+            ),
+            lineWidth: 10,
+            lineJoin: 'round',
+          ),
+        ),
+        (
+          'ruta',
+          falta,
+          ml.LineOptions(
+            lineColor: _hex(oscuro ? NexaColors.cyan : NexaColors.rutaClara),
+            lineWidth: 6,
+            lineJoin: 'round',
+          ),
+        ),
+      ],
+    ];
+    final estructura = capas.map((e) => e.$1).join(',');
+    if (estructura != _estructuraLineas) {
+      for (final l in _lineas.values) {
+        await c.removeLine(l);
       }
-      _lineaPuntos = puntos;
+      _lineas.clear();
+      _lineasPuntos.clear();
+      _estructuraLineas = estructura;
     }
-    await _marcadores(c);
+    for (final (clave, geo, op) in capas) {
+      final actual = _lineas[clave];
+      if (actual != null && _mismos(geo, _lineasPuntos[clave] ?? const [])) {
+        continue;
+      }
+      final conGeo = op.copyWith(
+        ml.LineOptions(geometry: geo.map(_aMl).toList()),
+      );
+      if (actual == null) {
+        _lineas[clave] = await c.addLine(conGeo);
+      } else {
+        await c.updateLine(actual, conGeo);
+      }
+      _lineasPuntos[clave] = geo;
+    }
   }
 
   /// Dibuja (o mueve, o quita) cada marcador; solo toca los que cambiaron.
@@ -281,7 +468,7 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
     );
 
     final pasajero = widget.pasajero;
-    final moto = widget.conductor;
+    final moto = _motoVista ?? widget.conductor;
     final propio = widget.pasajeroPropio;
     final rumboTel = o.rumbo;
     await _simbolo(
@@ -323,7 +510,22 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
               giro: enPantalla(ReglasMarcadores.rumboEntre(pasajero, moto)),
             ),
     );
+    await _moto(c, o: o);
+  }
 
+  /// La moto y su proa (también en cada cuadro de la animación).
+  Future<void> _moto(ml.MapLibreMapController c, {EstadoOrientacion? o}) async {
+    if (!_estiloListo || !mounted) return;
+    final EstadoOrientacion orient;
+    if (o != null) {
+      orient = o;
+    } else if (_usaOrientacion) {
+      orient = ref.read(orientacionMapaProvider);
+    } else {
+      orient = const EstadoOrientacion();
+    }
+    final giroMapa = orient.orientado ? orient.rotacionMapa : 0.0;
+    final moto = _motoVista ?? widget.conductor;
     final gris = widget.conductorSinSenal;
     await _simbolo(
       c,
@@ -342,8 +544,8 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
     );
     // En navegación manda la brújula/GPS del propio conductor; si no, el
     // avance entre posiciones.
-    final rumboMoto = widget.navegacion && o.rumbo != null
-        ? o.rumbo
+    final rumboMoto = widget.navegacion && orient.rumbo != null
+        ? orient.rumbo
         : _rumboMoto;
     await _simbolo(
       c,
@@ -354,7 +556,7 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
               moto,
               gris ? ImagenMarcador.proaGris : ImagenMarcador.proa,
               z: 8,
-              giro: enPantalla(rumboMoto),
+              giro: ReglasRumbo.anguloEnPantalla(rumboMoto, giroMapa),
               escala: widget.motoPropia && !gris ? 1.2 : 1,
             ),
     );
@@ -417,9 +619,15 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
 
   /// Muestra la ruta completa sobre la hoja inferior.
   Future<void> _encuadrar() async {
-    final c = _ml;
     final puntos = _puntosRuta;
-    if (c == null || !_estiloListo || puntos.length < 2) return;
+    if (puntos.length < 2) return;
+    await _mostrar(puntos, duracion: null);
+  }
+
+  /// Lleva la cámara a [puntos] por encima de la hoja inferior.
+  Future<void> _mostrar(List<LatLng> puntos, {Duration? duracion}) async {
+    final c = _ml;
+    if (c == null || !_estiloListo || puntos.isEmpty) return;
     if (ref.read(orientacionMapaProvider).orientado) return;
     var s = puntos.first.latitude;
     var n = s;
@@ -431,15 +639,61 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
       w = math.min(w, p.longitude);
       e = math.max(e, p.longitude);
     }
-    await c.animateCamera(
-      ml.CameraUpdate.newLatLngBounds(
-        ml.LatLngBounds(southwest: ml.LatLng(s, w), northeast: ml.LatLng(n, e)),
-        left: 48,
-        right: 48,
-        top: 140,
-        bottom: 360,
-      ),
+    // Puntos muy juntos (o uno solo): se centra con un acercamiento fijo.
+    final ml.CameraUpdate cambio =
+        (n - s).abs() < 0.0015 && (e - w).abs() < 0.0015
+        ? ml.CameraUpdate.newLatLngZoom(ml.LatLng((n + s) / 2, (e + w) / 2), 16)
+        : ml.CameraUpdate.newLatLngBounds(
+            ml.LatLngBounds(
+              southwest: ml.LatLng(s, w),
+              northeast: ml.LatLng(n, e),
+            ),
+            left: 56,
+            right: 56,
+            top: 150,
+            bottom: widget.margenInferior,
+          );
+    if (duracion == null || MediaQuery.disableAnimationsOf(context)) {
+      await c.animateCamera(cambio);
+    } else {
+      await c.animateCamera(cambio, duration: duracion);
+    }
+  }
+
+  /// Cámara que sigue: mantiene [MapaNexa.encuadre] a la vista, como mucho
+  /// cada 1,5 s y nunca mientras la persona está moviendo el mapa.
+  void _seguir({bool forzar = false}) {
+    final puntos = widget.encuadre;
+    if (puntos == null || puntos.isEmpty || widget.navegacion) return;
+    if (!forzar && _enPausa) return;
+    final ahora = DateTime.now();
+    final ultimo = _ultimoEncuadre;
+    if (!forzar &&
+        ultimo != null &&
+        ahora.difference(ultimo) < const Duration(milliseconds: 1500)) {
+      return;
+    }
+    _ultimoEncuadre = ahora;
+    _enCola(
+      () => _mostrar(puntos, duracion: const Duration(milliseconds: 900)),
     );
+  }
+
+  void _alGesto() {
+    if (widget.encuadre == null || widget.navegacion) return;
+    final primera = !_enPausa;
+    _gesto = DateTime.now();
+    _finPausa?.cancel();
+    _finPausa = Timer(MapaNexa.pausaTrasGesto, () {
+      if (mounted) setState(() {});
+    });
+    if (primera) setState(() {});
+  }
+
+  void _recentrar() {
+    setState(() => _gesto = null);
+    _finPausa?.cancel();
+    _seguir(forzar: true);
   }
 
   void _aplicar(EstadoOrientacion e) {
@@ -466,20 +720,23 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
       }
     }
     _modoAplicado = widget.navegacion ? ModoOrientacion.navegacion : e.modo;
+    // En navegación la cámara viaja con la moto el mismo tiempo que ella tarda
+    // en deslizarse: se ven juntas, sin tirones.
+    final duracion = widget.navegacion && _animDuracion > Duration.zero
+        ? _animDuracion
+        : const Duration(milliseconds: 250);
     _enCola(() async {
       if (sinAnimacion) {
         await c.moveCamera(cambio);
       } else {
-        await c.animateCamera(
-          cambio,
-          duration: const Duration(milliseconds: 250),
-        );
+        await c.animateCamera(cambio, duration: duracion);
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     _densidad = MediaQuery.devicePixelRatioOf(context);
     if (!ref.watch(mapasHabilitadosProvider)) {
       return Container(
@@ -508,18 +765,26 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
         });
       }
     }
-    final oscuro = Theme.of(context).brightness == Brightness.dark;
+    // Estilo elegido por la persona (no el tema de la app).
+    _oscuro = ReglasEstiloMapa.oscuro(
+      ref.watch(estiloMapaProvider),
+      DateTime.now(),
+    );
+    final estilo = ReglasEstiloMapa.url(oscuro: _oscuro);
     final inicio = widget.navegacion
         ? (widget.conductor ?? widget.centro)
         : widget.centro;
     final mapa = ml.MapLibreMap(
-      styleString: oscuro ? Env.estiloMapaOscuro : Env.estiloMapaClaro,
+      // Otro estilo = otro mapa nativo (se redibuja todo al cargar).
+      key: ValueKey(estilo),
+      styleString: estilo,
       initialCameraPosition: ml.CameraPosition(
         target: _aMl(inicio),
         zoom: widget.navegacion ? MapaNexa.zoomNavegacion : widget.zoom,
       ),
       onMapCreated: (c) {
         _ml = c;
+        _estiloListo = false;
         widget.controller?._ml = c;
       },
       onStyleLoadedCallback: () => _enCola(_alCargarEstilo),
@@ -534,9 +799,12 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
           : (_, p) => widget.onTap!(LatLng(p.latitude, p.longitude)),
     );
     final etiqueta = widget.etiquetaRuta;
+    final botonesArriba = widget.brujulaArriba + Sizes.touch + 4 + Sp.sm;
     return Stack(
       children: [
-        Positioned.fill(child: mapa),
+        Positioned.fill(
+          child: Listener(onPointerMove: (_) => _alGesto(), child: mapa),
+        ),
         if (etiqueta != null)
           Positioned(
             top: Sp.md + Sizes.touch + Sp.sm,
@@ -544,11 +812,36 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
             right: 0,
             child: SafeArea(bottom: false, child: _Etiqueta(texto: etiqueta)),
           ),
-        if (orientacion != null && widget.orientable)
+        if (orientacion != null && widget.orientable) ...[
           Positioned(
             top: widget.brujulaArriba,
             right: Sp.md,
             child: SafeArea(child: BotonBrujula(estado: orientacion)),
+          ),
+          Positioned(
+            top: botonesArriba,
+            right: Sp.md,
+            child: SafeArea(
+              child: _BotonMapa(
+                icono: Icons.layers_outlined,
+                etiqueta: l.mapaCapas,
+                onTap: () => mostrarCapasMapa(context),
+              ),
+            ),
+          ),
+        ],
+        if (_enPausa && widget.encuadre != null && !widget.navegacion)
+          Positioned(
+            top: botonesArriba + Sizes.touch + 4 + Sp.sm,
+            right: Sp.md,
+            child: SafeArea(
+              child: _BotonMapa(
+                icono: Icons.center_focus_strong_outlined,
+                etiqueta: l.mapaRecentrar,
+                destacado: true,
+                onTap: _recentrar,
+              ),
+            ),
           ),
         if (orientacion != null &&
             orientacion.orientado &&
@@ -562,6 +855,298 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
       ],
     );
   }
+}
+
+/// Botón redondo de vidrio sobre el mapa (capas, recentrar).
+class _BotonMapa extends StatelessWidget {
+  const _BotonMapa({
+    required this.icono,
+    required this.etiqueta,
+    required this.onTap,
+    this.destacado = false,
+  });
+
+  final IconData icono;
+  final String etiqueta;
+  final VoidCallback onTap;
+  final bool destacado;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: etiqueta,
+    child: Tooltip(
+      message: etiqueta,
+      child: Material(
+        color: destacado ? NexaColors.cyan : NexaColors.glass,
+        shape: CircleBorder(
+          side: BorderSide(
+            color: destacado ? NexaColors.cyan : NexaColors.line,
+          ),
+        ),
+        elevation: 6,
+        shadowColor: Colors.black,
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onTap,
+          child: SizedBox.square(
+            dimension: Sizes.touch + 4,
+            child: Icon(
+              icono,
+              color: destacado ? NexaColors.bg : NexaColors.texto,
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+/// «Capas del mapa»: estilo oscuro, claro o automático, con una miniatura de
+/// cada uno. Solo cambia el mapa, no el tema de la app.
+Future<void> mostrarCapasMapa(BuildContext context) =>
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => const _HojaCapas(),
+    );
+
+class _HojaCapas extends ConsumerWidget {
+  const _HojaCapas();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final actual = ref.watch(estiloMapaProvider);
+    final opciones = [
+      (EstiloMapa.oscuro, l.mapaOscuro, Icons.dark_mode_outlined),
+      (EstiloMapa.claro, l.mapaClaro, Icons.light_mode_outlined),
+      (EstiloMapa.automatico, l.mapaAutomatico, Icons.brightness_auto_outlined),
+    ];
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        color: NexaColors.card,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(Rad.sheet)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(Sp.xl, Sp.md, Sp.xl, Sp.xl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: NexaColors.tenue,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+              const SizedBox(height: Sp.lg),
+              Text(
+                l.mapaEstilo,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: Sp.xs),
+              Text(
+                l.mapaEstiloTexto,
+                style: const TextStyle(color: NexaColors.muted, fontSize: 14),
+              ),
+              const SizedBox(height: Sp.lg),
+              Row(
+                children: [
+                  for (final (estilo, nombre, icono) in opciones) ...[
+                    if (estilo != EstiloMapa.oscuro)
+                      const SizedBox(width: Sp.md),
+                    Expanded(
+                      child: _OpcionEstilo(
+                        estilo: estilo,
+                        nombre: nombre,
+                        icono: icono,
+                        elegido: estilo == actual,
+                        onTap: () => ref
+                            .read(estiloMapaProvider.notifier)
+                            .elegir(estilo),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: Sp.md),
+              Text(
+                l.mapaAutomaticoTexto,
+                style: const TextStyle(color: NexaColors.tenue, fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _OpcionEstilo extends StatelessWidget {
+  const _OpcionEstilo({
+    required this.estilo,
+    required this.nombre,
+    required this.icono,
+    required this.elegido,
+    required this.onTap,
+  });
+
+  final EstiloMapa estilo;
+  final String nombre;
+  final IconData icono;
+  final bool elegido;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    selected: elegido,
+    label: nombre,
+    child: InkWell(
+      borderRadius: BorderRadius.circular(Rad.lg),
+      onTap: onTap,
+      child: ExcludeSemantics(
+        child: Column(
+          children: [
+            Container(
+              height: 104,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(Rad.lg),
+                border: Border.all(
+                  color: elegido ? NexaColors.cyan : NexaColors.line,
+                  width: elegido ? 2.5 : 1,
+                ),
+                boxShadow: elegido ? NexaShadows.glow : null,
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(Rad.lg - 2),
+                child: CustomPaint(
+                  painter: _MiniMapaPainter(estilo: estilo),
+                  child: const SizedBox.expand(),
+                ),
+              ),
+            ),
+            const SizedBox(height: Sp.sm),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icono,
+                  size: 16,
+                  color: elegido ? NexaColors.cyan : NexaColors.muted,
+                ),
+                const SizedBox(width: Sp.xs),
+                Flexible(
+                  child: Text(
+                    nombre,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                      color: elegido ? NexaColors.texto : NexaColors.muted,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+/// Miniatura de cada estilo: manzanas, una avenida, agua y una ruta. El
+/// automático muestra mitad claro y mitad oscuro.
+class _MiniMapaPainter extends CustomPainter {
+  const _MiniMapaPainter({required this.estilo});
+  final EstiloMapa estilo;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    switch (estilo) {
+      case EstiloMapa.oscuro:
+        _pintar(canvas, size, oscuro: true);
+      case EstiloMapa.claro:
+        _pintar(canvas, size, oscuro: false);
+      case EstiloMapa.automatico:
+        _pintar(canvas, size, oscuro: false);
+        canvas
+          ..save()
+          ..clipPath(
+            Path()
+              ..moveTo(size.width, 0)
+              ..lineTo(size.width, size.height)
+              ..lineTo(0, size.height)
+              ..close(),
+          );
+        _pintar(canvas, size, oscuro: true);
+        canvas.restore();
+    }
+  }
+
+  void _pintar(Canvas c, Size s, {required bool oscuro}) {
+    c.drawRect(
+      Offset.zero & s,
+      Paint()
+        ..color = oscuro
+            ? NexaColors.mapaOscuroFondo
+            : NexaColors.mapaClaroFondo,
+    );
+    c.drawPath(
+      Path()
+        ..moveTo(0, 0)
+        ..lineTo(s.width * 0.34, 0)
+        ..quadraticBezierTo(s.width * 0.2, s.height * 0.3, 0, s.height * 0.42)
+        ..close(),
+      Paint()..color = oscuro ? NexaColors.bg : NexaColors.mapaClaroAgua,
+    );
+    final calle = Paint()
+      ..color = oscuro ? NexaColors.mapaOscuroCalle : NexaColors.mapaClaroCalle
+      ..strokeWidth = 3;
+    for (var i = 1; i < 5; i++) {
+      final x = s.width * i / 5;
+      final y = s.height * i / 5;
+      c
+        ..drawLine(Offset(x, 0), Offset(x - 12, s.height), calle)
+        ..drawLine(Offset(0, y), Offset(s.width, y - 10), calle);
+    }
+    c.drawLine(
+      Offset(0, s.height * 0.86),
+      Offset(s.width, s.height * 0.18),
+      Paint()
+        ..color = oscuro ? NexaColors.rutaAlterna : NexaColors.mapaClaroAvenida
+        ..strokeWidth = 6,
+    );
+    c.drawPath(
+      Path()
+        ..moveTo(s.width * 0.2, s.height * 0.75)
+        ..lineTo(s.width * 0.45, s.height * 0.72)
+        ..lineTo(s.width * 0.5, s.height * 0.4)
+        ..lineTo(s.width * 0.8, s.height * 0.35),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 4
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..color = oscuro ? NexaColors.cyan : NexaColors.rutaClara,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _MiniMapaPainter oldDelegate) =>
+      oldDelegate.estilo != estilo;
 }
 
 bool _mismos(List<LatLng> a, List<LatLng> b) {

@@ -67,7 +67,7 @@ Future<Map<String, Uint8List>> dibujarMarcadores() async => {
     (c, s) => _proa(c, s, NexaColors.muted),
   ),
   ImagenMarcador.recogida: await _png(44, _pinRecogida, alto: 56),
-  ImagenMarcador.destino: await _png(34, _destino),
+  ImagenMarcador.destino: await _png(64, _destino),
 };
 
 Future<Uint8List> _png(
@@ -231,19 +231,63 @@ void _moto(Canvas c, Size s, {required double diametro, bool gris = false}) {
       r - 3,
       Paint()..color = gris ? NexaColors.raised : NexaColors.cyan,
     );
-  final glifo = TextPainter(
-    text: TextSpan(
-      text: String.fromCharCode(Icons.two_wheeler.codePoint),
-      style: TextStyle(
-        fontSize: diametro * 0.58,
-        fontFamily: Icons.two_wheeler.fontFamily,
-        package: Icons.two_wheeler.fontPackage,
-        color: gris ? NexaColors.muted : NexaColors.bg,
-      ),
-    ),
-    textDirection: TextDirection.ltr,
-  )..layout();
-  glifo.paint(c, centro - Offset(glifo.width / 2, glifo.height / 2));
+  _motoDesdeArriba(c, centro, diametro * 0.62, gris: gris);
+}
+
+/// Moto vista desde arriba (rediseño 2026): ruedas, tanque, manubrio y el
+/// casco del conductor. Siempre derecha; el rumbo lo marca la proa.
+void _motoDesdeArriba(
+  Canvas c,
+  Offset centro,
+  double alto, {
+  required bool gris,
+}) {
+  final u = alto / 40;
+  final oscuro = Paint()..color = gris ? NexaColors.raised : NexaColors.bg;
+  final claro = Paint()..color = gris ? NexaColors.muted : NexaColors.texto;
+  RRect pieza(double x, double y, double w, double h, double r) =>
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(
+          centro.dx + (x - 12) * u,
+          centro.dy + (y - 20) * u,
+          w * u,
+          h * u,
+        ),
+        Radius.circular(r * u),
+      );
+  c
+    // Ruedas delantera y trasera.
+    ..drawRRect(pieza(9.5, 1, 5, 9, 2.5), oscuro)
+    ..drawRRect(pieza(9.5, 30, 5, 9, 2.5), oscuro)
+    // Tanque y asiento.
+    ..drawPath(
+      Path()
+        ..moveTo(centro.dx - 4 * u, centro.dy - 11 * u)
+        ..quadraticBezierTo(
+          centro.dx,
+          centro.dy - 14 * u,
+          centro.dx + 4 * u,
+          centro.dy - 11 * u,
+        )
+        ..lineTo(centro.dx + 5 * u, centro.dy + 8 * u)
+        ..quadraticBezierTo(
+          centro.dx,
+          centro.dy + 13 * u,
+          centro.dx - 5 * u,
+          centro.dy + 8 * u,
+        )
+        ..close(),
+      claro,
+    )
+    // Manubrio.
+    ..drawRRect(pieza(2, 10.5, 20, 2.6, 1.3), claro)
+    // Casco del conductor.
+    ..drawCircle(centro, 4.6 * u, oscuro)
+    ..drawCircle(
+      centro,
+      3.2 * u,
+      Paint()..color = gris ? NexaColors.muted : NexaColors.cyan,
+    );
 }
 
 /// Proa: punta en el aro de la moto que gira con su rumbo.
@@ -298,26 +342,41 @@ void _pinRecogida(Canvas c, Size s) {
     ..drawCircle(Offset(cx, 21), 6, Paint()..color = NexaColors.bg);
 }
 
-/// Destino: cuadro blanco (nunca se confunde con la recogida).
+/// Destino: bandera a cuadros sobre un asta (nunca se confunde con la
+/// recogida). El ancla va al centro de la imagen, donde nace el asta.
 void _destino(Canvas c, Size s) {
   final centro = s.center(Offset.zero);
-  final cuadro = RRect.fromRectAndRadius(
-    Rect.fromCenter(center: centro, width: 26, height: 26),
-    const Radius.circular(7),
+  final placa = RRect.fromRectAndRadius(
+    Rect.fromLTWH(centro.dx - 15, centro.dy - 26, 30, 22),
+    const Radius.circular(6),
+  );
+  final asta = RRect.fromRectAndRadius(
+    Rect.fromLTWH(centro.dx - 1.5, centro.dy - 6, 3, 8),
+    const Radius.circular(1.5),
   );
   c
     ..drawRRect(
-      cuadro.shift(const Offset(0, 3)),
+      placa.shift(const Offset(0, 3)),
       Paint()
         ..color = _sombra
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
     )
-    ..drawRRect(cuadro, Paint()..color = NexaColors.texto)
-    ..drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromCenter(center: centro, width: 9, height: 9),
-        const Radius.circular(2),
-      ),
-      Paint()..color = NexaColors.bg,
-    );
+    ..drawRRect(placa, Paint()..color = NexaColors.texto)
+    ..drawRRect(asta, Paint()..color = NexaColors.texto)
+    ..drawCircle(centro, 4, Paint()..color = NexaColors.texto)
+    ..drawCircle(centro, 2, Paint()..color = NexaColors.bg);
+  // Cuadros de la bandera (4 x 3).
+  final negro = Paint()..color = NexaColors.bg;
+  const lado = 5.0;
+  final x0 = centro.dx - 10;
+  final y0 = centro.dy - 22.5;
+  for (var f = 0; f < 3; f++) {
+    for (var k = 0; k < 4; k++) {
+      if ((f + k).isOdd) continue;
+      c.drawRect(
+        Rect.fromLTWH(x0 + k * lado, y0 + f * lado, lado, lado),
+        negro,
+      );
+    }
+  }
 }

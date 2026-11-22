@@ -1484,5 +1484,52 @@
         "type": "String"
       }
     }
-  }
+  },
+  "mapaCapas": "Capas del mapa",
+  "mapaEstilo": "Estilo del mapa",
+  "mapaEstiloTexto": "Solo cambia el mapa: el resto de la app sigue igual.",
+  "mapaOscuro": "Oscuro",
+  "mapaClaro": "Claro",
+  "mapaAutomatico": "Automático",
+  "mapaAutomaticoTexto": "Automático: claro de día y oscuro de 6 p. m. a 6 a. m.",
+  "mapaRecentrar": "Recentrar el mapa",
+  "rutaFueraTitulo": "Te saliste de la ruta",
+  "rutaBuscando": "Buscando rutas desde donde estás…",
+  "rutaSinOpciones": "No hay rutas nuevas ahora. Sigue hacia tu destino.",
+  "rutasTitulo": "Rutas desde donde estás",
+  "rutaRapida": "Más rápida",
+  "rutaCorta": "Más corta",
+  "rutaAlternativa": "Otra opción",
+  "rutaSugerida": "Sugerida",
+  "rutaSeguirSugerida": "Seguir por la sugerida · {segundos} s",
+  "@rutaSeguirSugerida": {
+    "placeholders": {
+      "segundos": {
+        "type": "int"
+      }
+    }
+  },
+  "rutaDetalle": "{minutos} min · {km} km",
+  "@rutaDetalle": {
+    "placeholders": {
+      "minutos": {
+        "type": "int"
+      },
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "rutasBoton": "Rutas",
+  "rutaCambiadaTitulo": "{nombre} tomó otra calle",
+  "@rutaCambiadaTitulo": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "rutaCambiadaTexto": "Ruta actualizada. El precio no cambia.",
+  "finalizadoAntesTitulo": "Finalizado antes del destino",
+  "finalizadoAntesCobro": "Se cobra solo lo recorrido."
 }

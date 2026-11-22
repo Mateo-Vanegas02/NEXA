@@ -4514,6 +4514,144 @@ abstract class AppLocalizations {
     String pasajero,
     String conductor,
   );
+
+  /// No description provided for @mapaCapas.
+  ///
+  /// In es, this message translates to:
+  /// **'Capas del mapa'**
+  String get mapaCapas;
+
+  /// No description provided for @mapaEstilo.
+  ///
+  /// In es, this message translates to:
+  /// **'Estilo del mapa'**
+  String get mapaEstilo;
+
+  /// No description provided for @mapaEstiloTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo cambia el mapa: el resto de la app sigue igual.'**
+  String get mapaEstiloTexto;
+
+  /// No description provided for @mapaOscuro.
+  ///
+  /// In es, this message translates to:
+  /// **'Oscuro'**
+  String get mapaOscuro;
+
+  /// No description provided for @mapaClaro.
+  ///
+  /// In es, this message translates to:
+  /// **'Claro'**
+  String get mapaClaro;
+
+  /// No description provided for @mapaAutomatico.
+  ///
+  /// In es, this message translates to:
+  /// **'Automático'**
+  String get mapaAutomatico;
+
+  /// No description provided for @mapaAutomaticoTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Automático: claro de día y oscuro de 6 p. m. a 6 a. m.'**
+  String get mapaAutomaticoTexto;
+
+  /// No description provided for @mapaRecentrar.
+  ///
+  /// In es, this message translates to:
+  /// **'Recentrar el mapa'**
+  String get mapaRecentrar;
+
+  /// No description provided for @rutaFueraTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Te saliste de la ruta'**
+  String get rutaFueraTitulo;
+
+  /// No description provided for @rutaBuscando.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscando rutas desde donde estás…'**
+  String get rutaBuscando;
+
+  /// No description provided for @rutaSinOpciones.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay rutas nuevas ahora. Sigue hacia tu destino.'**
+  String get rutaSinOpciones;
+
+  /// No description provided for @rutasTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Rutas desde donde estás'**
+  String get rutasTitulo;
+
+  /// No description provided for @rutaRapida.
+  ///
+  /// In es, this message translates to:
+  /// **'Más rápida'**
+  String get rutaRapida;
+
+  /// No description provided for @rutaCorta.
+  ///
+  /// In es, this message translates to:
+  /// **'Más corta'**
+  String get rutaCorta;
+
+  /// No description provided for @rutaAlternativa.
+  ///
+  /// In es, this message translates to:
+  /// **'Otra opción'**
+  String get rutaAlternativa;
+
+  /// No description provided for @rutaSugerida.
+  ///
+  /// In es, this message translates to:
+  /// **'Sugerida'**
+  String get rutaSugerida;
+
+  /// No description provided for @rutaSeguirSugerida.
+  ///
+  /// In es, this message translates to:
+  /// **'Seguir por la sugerida · {segundos} s'**
+  String rutaSeguirSugerida(int segundos);
+
+  /// No description provided for @rutaDetalle.
+  ///
+  /// In es, this message translates to:
+  /// **'{minutos} min · {km} km'**
+  String rutaDetalle(int minutos, String km);
+
+  /// No description provided for @rutasBoton.
+  ///
+  /// In es, this message translates to:
+  /// **'Rutas'**
+  String get rutasBoton;
+
+  /// No description provided for @rutaCambiadaTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'{nombre} tomó otra calle'**
+  String rutaCambiadaTitulo(String nombre);
+
+  /// No description provided for @rutaCambiadaTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Ruta actualizada. El precio no cambia.'**
+  String get rutaCambiadaTexto;
+
+  /// No description provided for @finalizadoAntesTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Finalizado antes del destino'**
+  String get finalizadoAntesTitulo;
+
+  /// No description provided for @finalizadoAntesCobro.
+  ///
+  /// In es, this message translates to:
+  /// **'Se cobra solo lo recorrido.'**
+  String get finalizadoAntesCobro;
 }
 
 class _AppLocalizationsDelegate

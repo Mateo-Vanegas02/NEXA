@@ -36,6 +36,24 @@ abstract final class NexaColors {
   static const Color okSuave = Color(0x292FD08A);
   static const Color goldSuave = Color(0x29FFC857);
 
+  // Mapa (rediseño 2026): ruta con borde, tramo recorrido y alternativas, en el
+  // estilo oscuro y en el claro.
+  static const Color rutaBorde = Color(0xFF002B44);
+  static const Color rutaRecorrida = Color(0xFF2A3A52);
+  static const Color rutaAlterna = Color(0xFF5B7598);
+  static const Color rutaClara = Color(0xFF0091FF);
+  static const Color rutaBordeClara = Color(0xFF005EA8);
+  static const Color rutaRecorridaClara = Color(0xFFB9C4D0);
+  static const Color rutaAlternaClara = Color(0xFF8FA3B8);
+
+  // Miniaturas del selector de estilo del mapa.
+  static const Color mapaOscuroFondo = Color(0xFF0B1422);
+  static const Color mapaOscuroCalle = Color(0xFF24395A);
+  static const Color mapaClaroFondo = Color(0xFFECEFF3);
+  static const Color mapaClaroCalle = Color(0xFFFFFFFF);
+  static const Color mapaClaroAvenida = Color(0xFFFFE8A6);
+  static const Color mapaClaroAgua = Color(0xFFAFDDF2);
+
   // Tema claro: mismo cian, texto navy para contraste AA.
   static const Color brand = Color(0xFF0B5A82);
   static const Color lightBg = Color(0xFFF2F7FA);
@@ -86,6 +104,11 @@ abstract final class NexaShadows {
   ];
   static const List<BoxShadow> glow = [
     BoxShadow(color: Color(0x5900C4FF), blurRadius: 24),
+  ];
+
+  /// Tarjetas que flotan sobre el mapa (se leen sobre calles claras u oscuras).
+  static const List<BoxShadow> flotante = [
+    BoxShadow(color: Color(0x99000000), blurRadius: 24, offset: Offset(0, 8)),
   ];
 }
 

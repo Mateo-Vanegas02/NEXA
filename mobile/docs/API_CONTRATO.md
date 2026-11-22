@@ -52,6 +52,8 @@ El pasajero **nunca** finaliza el viaje. Cada rol ve solo su propia calificació
 | `GET /servicios-en-curso`, `GET /historial?fecha=&pasajero=` | — | `[Servicio]` |
 | `GET /ingresos?periodo=&fecha=` | — | `[{fecha, monto, montoBruto, descripcion}]` |
 | `GET /saldo?dias=30` | — | saldo con NEXA (vista sin comisión ni deudas) |
+| `POST /rutas/{id}` | `{latitud, longitud}` | `[{indice, geometria, distanciaKm, duracionMin, etiqueta}]` (hasta 3, la sugerida primero; `etiqueta` = `RAPIDA`/`CORTA`/`ALTERNATIVA`) desde esa posición hasta la recogida (ACEPTADO) o el destino (EN_CURSO). 403 si no es su viaje, 409 si no está activo. Las ofertas valen 10 min |
+| `PUT /rutas/{id}` | `{indice}` | `{geometria}`; con el viaje EN_CURSO cambia `rutaGeometria` (el pasajero la ve). 404 si la oferta venció |
 
 `PosicionViaje` = `{servicioId, fase, latitud, longitud, distanciaRestanteKm, etaMinutos, en}`. ETA y distancia las calcula
 el servidor; la app no las calcula.
@@ -85,4 +87,4 @@ Los campos que no llegan son opcionales en los modelos de la app.
 
 ## Tiempo real
 STOMP en `/ws` (`/topic/pasajero/{id}/posicion`, `/topic/servicios-disponibles`). El socket autentica por sesión web:
-**[VERIFICAR]** si `WebSocketAuthInterceptor` acepta JWT. Mientras tanto la app usa polling (5 s con viaje activo).
+**[VERIFICAR]** si `WebSocketAuthInterceptor` acepta JWT. Mientras tanto la app usa polling (5 s con viaje activo; el conductor envía su posición cada 2 s y el pasajero pide la de la moto cada 2 s).

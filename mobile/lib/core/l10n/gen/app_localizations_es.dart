@@ -2478,4 +2478,82 @@ class AppLocalizationsEs extends AppLocalizations {
   ) {
     return 'Satisfacción $agrupacion. Último tramo con notas, $tramo: pasajeros $pasajero, conductores $conductor.';
   }
+
+  @override
+  String get mapaCapas => 'Capas del mapa';
+
+  @override
+  String get mapaEstilo => 'Estilo del mapa';
+
+  @override
+  String get mapaEstiloTexto =>
+      'Solo cambia el mapa: el resto de la app sigue igual.';
+
+  @override
+  String get mapaOscuro => 'Oscuro';
+
+  @override
+  String get mapaClaro => 'Claro';
+
+  @override
+  String get mapaAutomatico => 'Automático';
+
+  @override
+  String get mapaAutomaticoTexto =>
+      'Automático: claro de día y oscuro de 6 p. m. a 6 a. m.';
+
+  @override
+  String get mapaRecentrar => 'Recentrar el mapa';
+
+  @override
+  String get rutaFueraTitulo => 'Te saliste de la ruta';
+
+  @override
+  String get rutaBuscando => 'Buscando rutas desde donde estás…';
+
+  @override
+  String get rutaSinOpciones =>
+      'No hay rutas nuevas ahora. Sigue hacia tu destino.';
+
+  @override
+  String get rutasTitulo => 'Rutas desde donde estás';
+
+  @override
+  String get rutaRapida => 'Más rápida';
+
+  @override
+  String get rutaCorta => 'Más corta';
+
+  @override
+  String get rutaAlternativa => 'Otra opción';
+
+  @override
+  String get rutaSugerida => 'Sugerida';
+
+  @override
+  String rutaSeguirSugerida(int segundos) {
+    return 'Seguir por la sugerida · $segundos s';
+  }
+
+  @override
+  String rutaDetalle(int minutos, String km) {
+    return '$minutos min · $km km';
+  }
+
+  @override
+  String get rutasBoton => 'Rutas';
+
+  @override
+  String rutaCambiadaTitulo(String nombre) {
+    return '$nombre tomó otra calle';
+  }
+
+  @override
+  String get rutaCambiadaTexto => 'Ruta actualizada. El precio no cambia.';
+
+  @override
+  String get finalizadoAntesTitulo => 'Finalizado antes del destino';
+
+  @override
+  String get finalizadoAntesCobro => 'Se cobra solo lo recorrido.';
 }

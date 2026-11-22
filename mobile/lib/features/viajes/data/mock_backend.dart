@@ -7,6 +7,7 @@ import '../../niveles/domain/niveles_repository.dart';
 import '../../../core/sin_conexion/reglas_sin_conexion.dart';
 import '../domain/perfil_pasajero.dart';
 import '../domain/oferta_activa.dart';
+import '../domain/opcion_ruta.dart';
 import '../domain/servicio.dart';
 import '../domain/viajes_repository.dart';
 
@@ -539,6 +540,12 @@ class MockConductorRepository implements ConductorRepository {
   Future<Servicio?> viajeActivo() => _t(_b.viajeActivoConductor);
   @override
   Future<PosicionPasajero?> ubicacionPasajero(String id) async => null;
+  // La demo no calcula rutas por calles: sin alternativas.
+  @override
+  Future<List<OpcionRuta>> rutasDesde(String id, Coordenada desde) async =>
+      const [];
+  @override
+  Future<String?> elegirRuta(String id, int indice) async => null;
   @override
   Future<Servicio> llegue(
     String id,

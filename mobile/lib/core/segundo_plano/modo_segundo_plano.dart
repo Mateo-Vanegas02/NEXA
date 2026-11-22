@@ -68,10 +68,11 @@ abstract final class ReglasSegundoPlano {
       distanciaMetros: 30,
       altaPrecision: false,
     ),
-    // Igual que viaje-activo.js de la web: cada 3 s o 10 m.
+    // Rediseño 2026: cada segundo o 3 m, para que la moto se deslice en el
+    // mapa en vez de saltar (antes 3 s / 10 m).
     ModoSegundoPlano.enViaje => const AjustesRastreo(
-      intervalo: Duration(seconds: 3),
-      distanciaMetros: 10,
+      intervalo: Duration(seconds: 1),
+      distanciaMetros: 3,
       altaPrecision: true,
     ),
     // Solo mantiene viva la app: el GPS va en su ritmo más económico.
@@ -80,9 +81,10 @@ abstract final class ReglasSegundoPlano {
       distanciaMetros: 50,
       altaPrecision: false,
     ),
+    // El conductor ve al pasajero moverse mientras camina a la esquina.
     ModoSegundoPlano.pasajeroEnCamino => const AjustesRastreo(
-      intervalo: Duration(seconds: 5),
-      distanciaMetros: 10,
+      intervalo: Duration(seconds: 2),
+      distanciaMetros: 5,
       altaPrecision: true,
     ),
   };

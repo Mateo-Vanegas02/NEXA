@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import '../../../core/errors/app_exception.dart';
 import '../domain/perfil_pasajero.dart';
 import '../domain/oferta_activa.dart';
+import '../domain/opcion_ruta.dart';
 import '../domain/servicio.dart';
 import '../../../core/sin_conexion/reglas_sin_conexion.dart';
 import '../domain/viajes_repository.dart';
@@ -259,6 +260,32 @@ class ApiConductorRepository implements ConductorRepository {
     final datos = r.data;
     if (r.statusCode == 204 || datos is! _Json) return null;
     return PosicionPasajero.fromJson(datos);
+  });
+
+  @override
+  Future<List<OpcionRuta>> rutasDesde(String id, Coordenada desde) =>
+      _guard(() async {
+        final r = await _dio.post<Object?>(
+          '/conductor/rutas/$id',
+          data: desde.toJson(),
+        );
+        final datos = r.data;
+        final lista = datos is _Json ? datos['rutas'] : null;
+        if (lista is! List) return const [];
+        return [
+          for (final x in lista)
+            if (x is _Json) OpcionRuta.fromJson(x),
+        ];
+      });
+
+  @override
+  Future<String?> elegirRuta(String id, int indice) => _guard(() async {
+    final r = await _dio.put<Object?>(
+      '/conductor/rutas/$id',
+      data: {'indice': indice},
+    );
+    final datos = r.data;
+    return datos is _Json ? datos['rutaGeometria'] as String? : null;
   });
 
   @override
