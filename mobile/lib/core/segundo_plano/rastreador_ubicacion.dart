@@ -23,7 +23,15 @@ class AvisoRastreo {
 
 /// Un dato del GPS al llegar (para dibujar la moto propia en vivo).
 class PosicionEnVivo {
-  const PosicionEnVivo({required this.punto, required this.en, this.rumbo});
+  const PosicionEnVivo({
+    required this.punto,
+    required this.en,
+    this.rumbo,
+    this.velocidad,
+  });
+
+  /// Metros por segundo, tal como llegan del GPS.
+  final double? velocidad;
   final LatLng punto;
   final DateTime en;
 
@@ -101,6 +109,7 @@ class RastreadorGeolocator implements RastreadorUbicacion {
           PosicionEnVivo(
             punto: _ultima!,
             en: _ultimaEn!,
+            velocidad: p.speed,
             rumbo: p.speed >= 2.2 && p.heading >= 0 ? p.heading : null,
           ),
         );

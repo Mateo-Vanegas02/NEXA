@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexa_mobile/features/auth/domain/auth.dart';
 import 'package:nexa_mobile/features/auth/presentation/controllers/session_controller.dart';
+import 'package:nexa_mobile/features/auth/presentation/screens/portada_screen.dart';
 import 'package:nexa_mobile/features/auth/presentation/screens/login_screen.dart';
 import 'package:nexa_mobile/features/auth/presentation/screens/onboarding_screen.dart';
 import 'package:nexa_mobile/features/auth/presentation/screens/perfil_screen.dart';
@@ -114,6 +115,7 @@ void main() {
 
   final pantallas = <String, (Widget, List<Override>)>{
     'onboarding': (const OnboardingScreen(), const []),
+    'portada': (const PortadaScreen(), const []),
     'login': (const LoginScreen(), const []),
     'registro': (const RegistroScreen(), const []),
     'registro conductor': (const RegistroConductorScreen(), const []),

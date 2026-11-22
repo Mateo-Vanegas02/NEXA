@@ -2883,4 +2883,32 @@ class AppLocalizationsEs extends AppLocalizations {
   String requisitosCumplidos(int cumplidos, int total) {
     return '$cumplidos de $total';
   }
+
+  @override
+  String get rolAdminCorto => 'Admin';
+
+  @override
+  String get loginCuentaAyuda =>
+      'Opcional: elígelo solo si tu correo tiene más de una cuenta.';
+
+  @override
+  String get portadaTitulo => 'Tu moto, a un toque.';
+
+  @override
+  String get portadaTexto =>
+      'Ves el precio antes de pedir y sigues el viaje en vivo, con conductores verificados en Cartagena.';
+
+  @override
+  String get portadaPedir => 'Pide tu primer viaje';
+
+  @override
+  String get portadaConducir => 'Conduce con NEXA';
+
+  @override
+  String get precioHoy => 'hoy';
+
+  @override
+  String precioHoySemantica(String precio) {
+    return 'Ir hoy cuesta cerca de $precio';
+  }
 }

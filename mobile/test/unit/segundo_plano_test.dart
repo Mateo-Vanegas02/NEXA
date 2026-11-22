@@ -64,6 +64,7 @@ class _Avisos implements NotificacionesLocales {
     required String texto,
     required String canal,
     required String abrir,
+    int? avance,
   }) async => mostrados.add('$titulo | $texto');
   @override
   Future<void> cerrarViaje() async => cerrados++;

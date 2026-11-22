@@ -118,3 +118,15 @@ Durante la recogida y el trayecto, el velocímetro flota sobre el mapa incluso c
 - **Casa y Universidad.** Atajos en la búsqueda; se guardan solo en el teléfono (mantener presionado un resultado).
 - **Niveles del conductor.** Comisión actual → siguiente, calificación, aceptación y cancelación, y requisitos con «N de M».
 - **No se hizo:** ruta que evita giros a la izquierda (OSRM no la ofrece) y contactar al pasajero desde «viajes en riesgo» (la Lambda no envía contacto, por privacidad).
+
+## 22-nov-2026 · Cierre del rediseño: puntos 2 a 9
+
+- **Moto quieta (punto 1, PR #13).** Sin viaje el servidor no devuelve posición: la moto propia usa el GPS reciente, luego la del servidor y, si no hay, el último dato del GPS aunque sea viejo (`ReglasMarcadores.motoPropia`).
+- **Zoom según la velocidad (punto 2).** En navegación, `ReglasCamara.zoomPorVelocidad`: 17,5 hasta 15 km/h, 16,5 a 30 km/h y 15,5 desde 50 km/h. Cambia como mucho cada 3 s y con saltos de 0,25 o más; solo con un dato de GPS reciente. Un gesto también pausa el seguimiento en navegación (15 s o «Recentrar»).
+- **Velocímetro (punto 3).** Ya flotaba sobre el mapa (`VelocimetroGps`); no se cambió.
+- **Login (punto 4).** El tipo de cuenta es una píldora arriba (Pasajero | Conductor | Admin), opcional como antes.
+- **Portada (punto 5).** `/inicio` es `PortadaScreen`: mapa de Cartagena oscurecido, «Pide tu primer viaje», «Conduce con NEXA» y «Ya tengo cuenta». La bienvenida de 4 páginas sigue solo la primera vez.
+- **Recientes con precio de hoy (punto 7).** Destinos distintos del historial con «≈ $X hoy» de `POST /pasajero/cotizar` desde la posición actual (guardado 5 min, `precioHoyProvider`). Sin GPS o si falla, el precio pagado. Tocar uno lo pide de nuevo.
+- **Notificación con avance (punto 9).** La notificación fija del viaje del conductor muestra una barra (distancia total y restante del servidor, pasos de 5 %) y es pública en la pantalla de bloqueo. Yendo a recoger no hay barra: el servidor no da la distancia total de ese tramo. El pasajero en viaje no tiene notificación fija (el GPS en segundo plano solo corre mientras el conductor va por él).
+- **Splash (punto 6, decidido por Mateo).** La N de NEXA se dibuja como una ruta: sale de un punto que late, recorre la letra con el degradado cian → azul y termina en un pin de destino; luego el nombre, el lema y la firma. 2,4 s una sola vez; con «reducir animaciones», el cuadro final. Reemplaza la carátula «Pulso» (calle y faro).
+- **«Llegué» (punto 8, decidido por Mateo).** Se queda como está: la guía de distancia orienta y el control no se bloquea; el servidor exige los 50 m.

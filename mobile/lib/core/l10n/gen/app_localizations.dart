@@ -5210,6 +5210,54 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'{cumplidos} de {total}'**
   String requisitosCumplidos(int cumplidos, int total);
+
+  /// No description provided for @rolAdminCorto.
+  ///
+  /// In es, this message translates to:
+  /// **'Admin'**
+  String get rolAdminCorto;
+
+  /// No description provided for @loginCuentaAyuda.
+  ///
+  /// In es, this message translates to:
+  /// **'Opcional: elígelo solo si tu correo tiene más de una cuenta.'**
+  String get loginCuentaAyuda;
+
+  /// No description provided for @portadaTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu moto, a un toque.'**
+  String get portadaTitulo;
+
+  /// No description provided for @portadaTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Ves el precio antes de pedir y sigues el viaje en vivo, con conductores verificados en Cartagena.'**
+  String get portadaTexto;
+
+  /// No description provided for @portadaPedir.
+  ///
+  /// In es, this message translates to:
+  /// **'Pide tu primer viaje'**
+  String get portadaPedir;
+
+  /// No description provided for @portadaConducir.
+  ///
+  /// In es, this message translates to:
+  /// **'Conduce con NEXA'**
+  String get portadaConducir;
+
+  /// No description provided for @precioHoy.
+  ///
+  /// In es, this message translates to:
+  /// **'hoy'**
+  String get precioHoy;
+
+  /// No description provided for @precioHoySemantica.
+  ///
+  /// In es, this message translates to:
+  /// **'Ir hoy cuesta cerca de {precio}'**
+  String precioHoySemantica(String precio);
 }
 
 class _AppLocalizationsDelegate

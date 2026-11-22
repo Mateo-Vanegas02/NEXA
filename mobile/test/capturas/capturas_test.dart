@@ -207,6 +207,7 @@ void main() {
   });
 
   final casos = <(String, String, Rol?, String, List<Override>)>[
+    ('A00', '/inicio', null, '', []),
     ('A02', '/onboarding', null, '', []),
     ('A03', '/login', null, '', []),
     ('A04', '/registro', null, '', []),

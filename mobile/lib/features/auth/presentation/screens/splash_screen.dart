@@ -9,9 +9,11 @@ import '../../../../core/theme/tokens.dart';
 import '../../../../core/widgets/nexa_logo.dart';
 import '../controllers/session_controller.dart';
 
-/// Carátula (NEXA Pulso): un latido, la calle que se acelera y el faro de la
-/// moto que se enciende con el logo adentro. El nombre entra inclinado y abajo
-/// queda la firma «una app de NEXA» mientras se restaura la sesión.
+/// Carátula (rediseño 2026): la N de NEXA es una ruta. Sale de un punto que
+/// late, recorre la letra con el degradado cian → azul y llega a un pin de
+/// destino; es la idea que se repite en toda la app. Luego entra el nombre
+/// inclinado y abajo queda la firma «una app de NEXA» mientras se restaura la
+/// sesión.
 ///
 /// La animación corre una sola vez (2,4 s) y se queda en el cuadro final; con
 /// «reducir animaciones» se muestra ese cuadro desde el principio.
@@ -28,7 +30,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     vsync: this,
     duration: const Duration(milliseconds: 2400),
   );
-  late final Animation<double> _logo = _tramo(0.5, 0.74, Curves.easeOutBack);
   late final Animation<double> _lema = _tramo(0.76, 0.92);
   late final Animation<double> _firma = _tramo(0.8, 1);
   late final Animation<double> _barra = _tramo(0.72, 1, Curves.easeInOut);
@@ -99,13 +100,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // La calle y el destello se pintan desde el centro
-                        // del faro y se salen de su caja a propósito.
-                        CustomPaint(
-                          painter: _CallePainter(_c),
-                          child: ScaleTransition(
-                            scale: _logo,
-                            child: const _Faro(),
+                        Semantics(
+                          label: 'NEXA',
+                          image: true,
+                          child: ExcludeSemantics(
+                            child: CustomPaint(
+                              size: _RutaN.tamano,
+                              painter: _RutaN(_c),
+                            ),
                           ),
                         ),
                         const SizedBox(height: Sp.xl),
@@ -151,65 +153,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       ),
     );
   }
-}
-
-/// El faro: disco blanco con brillo y, adentro, la moto del logo de NEXA
-/// (el recorte deja fuera el nombre que trae la imagen: va más grande abajo).
-class _Faro extends StatelessWidget {
-  const _Faro();
-
-  static const double _d = 132;
-
-  @override
-  Widget build(BuildContext context) => Semantics(
-    label: 'NEXA',
-    image: true,
-    child: ExcludeSemantics(
-      child: Container(
-        width: _d,
-        height: _d,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: NexaColors.cyan.withValues(alpha: 0.18),
-              spreadRadius: 6,
-            ),
-            BoxShadow(
-              color: NexaColors.cyan.withValues(alpha: 0.55),
-              blurRadius: 70,
-              spreadRadius: 10,
-            ),
-          ],
-        ),
-        child: ClipOval(
-          child: Stack(
-            children: [
-              Positioned(
-                left: -_d * 0.231,
-                top: -_d * 0.0735,
-                width: _d * 1.439,
-                height: _d * 1.439,
-                child: Image.asset(
-                  NexaLogo.asset,
-                  fit: BoxFit.fill,
-                  filterQuality: FilterQuality.medium,
-                ),
-              ),
-              const Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                height: _d * 0.2,
-                child: ColoredBox(color: Colors.white),
-              ),
-            ],
-          ),
-        ),
-      ),
-    ),
-  );
 }
 
 /// «NEXA» inclinado, como va la moto: cada letra entra desde la izquierda.
@@ -361,118 +304,152 @@ class _Firma extends StatelessWidget {
   );
 }
 
-/// Un trazo de la calle: sale del centro en [angulo] y avanza hacia afuera.
-typedef _Trazo = ({double angulo, double radio, double largo, double paso});
-
-final List<_Trazo> _trazos = () {
-  final azar = math.Random(5);
-  return [
-    for (var i = 0; i < 96; i++)
-      (
-        angulo: azar.nextDouble() * 2 * math.pi,
-        radio: azar.nextDouble() * 340,
-        largo: 18 + azar.nextDouble() * 70,
-        paso: 0.5 + azar.nextDouble(),
-      ),
-  ];
-}();
-
-/// Lo que pasa detrás del faro, según el avance `t` de 0 a 1:
-/// latido (0–0,24) → calle que se acelera (0,2–0,85) → destello (0,5–0,72) →
-/// aros que se abren (0,56–1). Todo sale de `t`, sin estado entre cuadros.
-class _CallePainter extends CustomPainter {
-  _CallePainter(this.animacion) : super(repaint: animacion);
+/// La N como ruta, según el avance `t` de 0 a 1 (todo sale de `t`):
+/// punto de salida que late (0–0,12) → la línea recorre la N (0,08–0,6) con
+/// una cabeza blanca → el pin de destino cae en la punta (0,58–0,74) → un aro
+/// se abre desde el pin (0,7–1).
+class _RutaN extends CustomPainter {
+  _RutaN(this.animacion) : super(repaint: animacion);
 
   final Animation<double> animacion;
 
-  static const double _alcance = 520;
+  static const Size tamano = Size(150, 176);
+  static const double _grosor = 15;
 
-  /// Empuje de la calle: sube en 0,2–0,5 y se apaga hacia 0,85.
-  static double _empuje(double t) {
-    if (t <= 0.2 || t >= 0.85) return 0;
-    if (t < 0.5) {
-      final u = (t - 0.2) / 0.3;
-      return u * u;
-    }
-    return 1 - (t - 0.5) / 0.35;
-  }
+  /// Vértices de la N (abajo izq. → arriba izq. → abajo der. → arriba der.),
+  /// con margen para el pin y el brillo.
+  static const _a = Offset(22, 158);
+  static const _b = Offset(22, 46);
+  static const _c = Offset(128, 158);
+  static const _d = Offset(128, 46);
 
-  /// Camino recorrido por los trazos hasta `t` (la integral del empuje).
-  static double _recorrido(double t) {
-    if (t <= 0.2) return 0;
-    if (t < 0.5) {
-      final u = (t - 0.2) / 0.3;
-      return 0.1 * u * u * u;
-    }
-    final v = ((t - 0.5) / 0.35).clamp(0.0, 1.0);
-    return 0.1 + 0.35 * (v - v * v / 2);
+  static double _tramo(double t, double desde, double hasta, [Curve? curva]) {
+    final u = ((t - desde) / (hasta - desde)).clamp(0.0, 1.0);
+    return (curva ?? Curves.linear).transform(u);
   }
 
   @override
   void paint(Canvas canvas, Size size) {
     final t = animacion.value;
-    final c = size.center(Offset.zero);
+    final ruta = Path()
+      ..moveTo(_a.dx, _a.dy)
+      ..lineTo(_b.dx, _b.dy)
+      ..lineTo(_c.dx, _c.dy)
+      ..lineTo(_d.dx, _d.dy);
+    final metrica = ruta.computeMetrics().first;
+    final avance = _tramo(t, 0.08, 0.6, Curves.easeInOutCubic);
 
-    if (t < 0.24) {
-      final pulso = math.sin(t / 0.24 * 2 * math.pi).abs();
-      canvas
-        ..drawCircle(
-          c,
-          14 + 12 * pulso,
-          Paint()..color = NexaColors.cyan.withValues(alpha: 0.28 * pulso),
-        )
-        ..drawCircle(c, 5 + 4 * pulso, Paint()..color = NexaColors.texto);
-    }
-
-    final empuje = _empuje(t);
-    if (empuje > 0.01) {
-      final avance = _recorrido(t) * 2280;
-      final trazo = Paint()
+    // La ruta completa, tenue: se ve hacia dónde va.
+    canvas.drawPath(
+      ruta,
+      Paint()
         ..style = PaintingStyle.stroke
-        ..strokeCap = StrokeCap.round;
-      for (final z in _trazos) {
-        final r0 = (z.radio + avance * z.paso) % _alcance;
-        final r1 = r0 + z.largo * (0.25 + empuje) * (r0 / 190);
-        final dir = Offset(math.cos(z.angulo), math.sin(z.angulo));
-        trazo
-          ..strokeWidth = 1 + r0 / 240
-          ..color = NexaColors.sky.withValues(
-            alpha: (empuje * 0.6 * math.min(1, r0 / 130)).clamp(0.0, 1.0),
-          );
-        canvas.drawLine(c + dir * r0, c + dir * r1, trazo);
+        ..strokeWidth = _grosor
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..color = NexaColors.line.withValues(alpha: 0.7),
+    );
+
+    if (avance > 0) {
+      final hecho = metrica.extractPath(0, metrica.length * avance);
+      final zona = Offset.zero & size;
+      const degradado = LinearGradient(
+        begin: Alignment.bottomLeft,
+        end: Alignment.topRight,
+        colors: [NexaColors.cyan, NexaColors.azul],
+      );
+      // Brillo debajo y la línea encima.
+      canvas
+        ..drawPath(
+          hecho,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = _grosor + 10
+            ..strokeCap = StrokeCap.round
+            ..strokeJoin = StrokeJoin.round
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10)
+            ..color = NexaColors.cyan.withValues(alpha: 0.45),
+        )
+        ..drawPath(
+          hecho,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = _grosor
+            ..strokeCap = StrokeCap.round
+            ..strokeJoin = StrokeJoin.round
+            ..shader = degradado.createShader(zona),
+        );
+      // Cabeza de la ruta mientras avanza.
+      if (avance < 1) {
+        final cabeza = metrica
+            .getTangentForOffset(metrica.length * avance)
+            ?.position;
+        if (cabeza != null) {
+          canvas
+            ..drawCircle(
+              cabeza,
+              _grosor * 0.9,
+              Paint()..color = NexaColors.cyan.withValues(alpha: 0.35),
+            )
+            ..drawCircle(cabeza, _grosor * 0.42, Paint()..color = Colors.white);
+        }
       }
     }
 
-    if (t > 0.5 && t < 0.72) {
-      final f = 1 - (t - 0.5) / 0.22;
-      final zona = Rect.fromCircle(center: c, radius: 440);
-      canvas.drawRect(
-        zona,
+    // Punto de salida: late al principio y queda como origen.
+    final pulso = t < 0.12 ? math.sin(t / 0.12 * math.pi) : 0.0;
+    canvas
+      ..drawCircle(
+        _a,
+        _grosor * (0.9 + 0.7 * pulso),
+        Paint()..color = NexaColors.cyan.withValues(alpha: 0.25 + 0.2 * pulso),
+      )
+      ..drawCircle(_a, _grosor * 0.55, Paint()..color = Colors.white)
+      ..drawCircle(_a, _grosor * 0.28, Paint()..color = NexaColors.cyan);
+
+    // Aro que se abre desde el destino.
+    final aro = _tramo(t, 0.7, 1);
+    if (aro > 0 && aro < 1) {
+      canvas.drawCircle(
+        _d,
+        14 + aro * 34,
         Paint()
-          ..shader = RadialGradient(
-            colors: [
-              Colors.white.withValues(alpha: f),
-              NexaColors.cyan.withValues(alpha: f * 0.65),
-              NexaColors.cyan.withValues(alpha: 0),
-            ],
-            stops: const [0, 0.3, 1],
-          ).createShader(zona),
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5
+          ..color = NexaColors.cyan.withValues(alpha: (1 - aro) * 0.5),
       );
     }
 
-    if (t > 0.56 && t < 1) {
-      final aro = Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5;
-      for (var i = 0; i < 2; i++) {
-        final u = (t - 0.56) / 0.44 - i * 0.35;
-        if (u <= 0 || u >= 1) continue;
-        aro.color = NexaColors.cyan.withValues(alpha: (1 - u) * 0.32);
-        canvas.drawCircle(c, 72 + u * 130, aro);
-      }
+    // Pin de destino con la punta en el final de la N.
+    final pin = _tramo(t, 0.58, 0.74, Curves.easeOutBack);
+    if (pin > 0) {
+      canvas
+        ..save()
+        ..translate(_d.dx, _d.dy)
+        ..scale(pin);
+      const r = 13.0;
+      const alto = 34.0;
+      final gota = Path()
+        ..moveTo(0, 0)
+        ..quadraticBezierTo(-r * 1.05, -alto * 0.55, -r, -alto + r)
+        ..arcToPoint(
+          const Offset(r, -alto + r),
+          radius: const Radius.circular(r),
+        )
+        ..quadraticBezierTo(r * 1.05, -alto * 0.55, 0, 0)
+        ..close();
+      canvas
+        ..drawShadow(gota, NexaColors.cyan, 6, false)
+        ..drawPath(gota, Paint()..color = Colors.white)
+        ..drawCircle(
+          const Offset(0, -alto + r),
+          r * 0.45,
+          Paint()..color = NexaColors.azul,
+        )
+        ..restore();
     }
   }
 
   @override
-  bool shouldRepaint(_CallePainter old) => old.animacion != animacion;
+  bool shouldRepaint(_RutaN old) => old.animacion != animacion;
 }

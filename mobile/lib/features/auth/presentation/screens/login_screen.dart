@@ -1,8 +1,10 @@
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../core/theme/theme_x.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/nexa_widgets.dart';
+import '../../../satisfaccion/presentation/widgets/satisfaccion_widgets.dart';
 import '../controllers/session_controller.dart';
 import '../../domain/auth.dart';
 import '../widgets/auth_scaffold.dart';
@@ -61,6 +63,36 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           key: _form,
           child: Column(
             children: [
+              // Tipo de cuenta arriba, como en el rediseño. Es opcional: con
+              // una sola cuenta el servidor sabe cuál es; tocar el elegido lo
+              // quita.
+              Semantics(
+                header: true,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(l.loginCuenta, style: context.textos.labelMedium),
+                ),
+              ),
+              const SizedBox(height: Sp.xs),
+              SelectorSegmentado<Rol?>(
+                opciones: [
+                  (Rol.pasajero, l.rolPasajero),
+                  (Rol.conductor, l.rolConductor),
+                  (Rol.admin, l.rolAdminCorto),
+                ],
+                seleccion: _rol,
+                onSeleccion: (rol) =>
+                    setState(() => _rol = rol == _rol ? null : rol),
+              ),
+              const SizedBox(height: Sp.xs),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  l.loginCuentaAyuda,
+                  style: context.textos.labelSmall,
+                ),
+              ),
+              const SizedBox(height: Sp.lg),
               NexaTextField(
                 controller: _email,
                 label: l.email,
@@ -81,25 +113,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 onSubmitted: (_) => _enviar(),
                 autofillHints: const [AutofillHints.password],
                 validator: (v) => validarRequerido(l, v),
-              ),
-              const SizedBox(height: Sp.md),
-              DropdownButtonFormField<Rol>(
-                isExpanded: true,
-                initialValue: _rol,
-                decoration: InputDecoration(labelText: l.loginCuenta),
-                hint: Text(l.loginCuentaUnica),
-                items: [
-                  DropdownMenuItem(
-                    value: Rol.pasajero,
-                    child: Text(l.rolPasajero),
-                  ),
-                  DropdownMenuItem(
-                    value: Rol.conductor,
-                    child: Text(l.rolConductor),
-                  ),
-                  DropdownMenuItem(value: Rol.admin, child: Text(l.rolAdmin)),
-                ],
-                onChanged: (rol) => setState(() => _rol = rol),
               ),
             ],
           ),

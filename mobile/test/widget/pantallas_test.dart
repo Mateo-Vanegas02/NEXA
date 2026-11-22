@@ -10,6 +10,7 @@ import 'package:nexa_mobile/core/widgets/nexa_widgets.dart';
 import 'package:nexa_mobile/features/auth/data/auth_repository_mock.dart';
 import 'package:nexa_mobile/features/auth/domain/auth.dart';
 import 'package:nexa_mobile/features/auth/presentation/controllers/session_controller.dart';
+import 'package:nexa_mobile/features/auth/presentation/screens/portada_screen.dart';
 import 'package:nexa_mobile/features/auth/presentation/screens/login_screen.dart';
 import 'package:nexa_mobile/features/auth/presentation/screens/perfil_screen.dart';
 import 'package:nexa_mobile/features/auth/presentation/screens/registro_screen.dart';
@@ -138,9 +139,20 @@ void main() {
         expect(find.text('Ya tengo cuenta'), findsOneWidget);
       });
 
+      testWidgets('portada: dos caminos y entrar', (t) async {
+        await montar(t, const PortadaScreen(), esperar: false);
+        expect(find.text('Pide tu primer viaje'), findsOneWidget);
+        expect(find.text('Conduce con NEXA'), findsOneWidget);
+        expect(find.text('Ya tengo cuenta'), findsOneWidget);
+      });
+
       testWidgets('login: valida campos obligatorios', (t) async {
         await montar(t, const LoginScreen(), esperar: false);
-        await t.tap(find.widgetWithText(FilledButton, 'Entrar'));
+        // En 360×640 el botón queda bajo el selector de cuenta: se desplaza.
+        final entrar = find.widgetWithText(FilledButton, 'Entrar');
+        await t.ensureVisible(entrar);
+        await t.pump();
+        await t.tap(entrar);
         await t.pump();
         expect(find.text('Este campo es obligatorio'), findsNWidgets(2));
         _sinErroresDeLayout(t);

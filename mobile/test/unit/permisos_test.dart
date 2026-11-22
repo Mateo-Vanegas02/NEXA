@@ -22,6 +22,7 @@ class _Notificaciones implements NotificacionesLocales {
     required String texto,
     required String canal,
     required String abrir,
+    int? avance,
   }) async {}
   @override
   Future<void> cerrarViaje() async {}

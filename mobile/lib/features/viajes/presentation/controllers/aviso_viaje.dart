@@ -6,16 +6,23 @@ import 'viaje_conductor_controller.dart';
 /// entrega el servidor (fase, ETA y distancia de `PosicionViaje`); la app no
 /// calcula nada.
 class AvisoViaje {
-  const AvisoViaje(this.titulo, this.texto);
+  const AvisoViaje(this.titulo, this.texto, {this.avance});
   final String titulo;
   final String texto;
 
-  @override
-  bool operator ==(Object other) =>
-      other is AvisoViaje && other.titulo == titulo && other.texto == texto;
+  /// Avance del viaje en % (barra en la notificación y en la pantalla de
+  /// bloqueo); null = sin barra.
+  final int? avance;
 
   @override
-  int get hashCode => Object.hash(titulo, texto);
+  bool operator ==(Object other) =>
+      other is AvisoViaje &&
+      other.titulo == titulo &&
+      other.texto == texto &&
+      other.avance == avance;
+
+  @override
+  int get hashCode => Object.hash(titulo, texto, avance);
 }
 
 abstract final class TextosAvisoViaje {
@@ -23,6 +30,17 @@ abstract final class TextosAvisoViaje {
   static String distancia(double km) => km < 1
       ? '${(km * 100).round() * 10} m'
       : '${km.toStringAsFixed(1).replaceAll('.', ',')} km';
+
+  /// Avance en % entre la distancia total del viaje y la que falta, ambas del
+  /// servidor. Va en pasos de 5 % para no republicar la notificación con cada
+  /// dato. Null si falta alguna de las dos.
+  static int? avance(double totalKm, double? restanteKm) {
+    if (restanteKm == null || !restanteKm.isFinite || totalKm <= 0) {
+      return null;
+    }
+    final pct = ((1 - restanteKm / totalKm) * 100).clamp(0.0, 100.0);
+    return (pct / 5).round() * 5;
+  }
 
   static String _primerNombre(String? nombre, String siNoHay) {
     final limpio = nombre?.trim() ?? '';
@@ -53,6 +71,7 @@ abstract final class TextosAvisoViaje {
       FaseConductor.enViaje => AvisoViaje(
         l.avisoLlevando(nombre),
         eta.isEmpty ? viaje.destino : eta,
+        avance: avance(viaje.distanciaKM, pos?.distanciaRestanteKm),
       ),
     };
   }

@@ -15,10 +15,15 @@ class ViajeTile extends StatelessWidget {
     required this.servicio,
     this.onTap,
     this.enTarjeta = true,
+    this.precioHoy,
     super.key,
   });
 
   final Servicio servicio;
+
+  /// Precio aproximado de repetir el viaje hoy (cotizado por el servidor).
+  /// Si llega, reemplaza al precio que se pagó.
+  final double? precioHoy;
   final VoidCallback? onTap;
 
   /// false = sin marco (dentro de una tarjeta que agrupa varias filas).
@@ -118,10 +123,34 @@ class ViajeTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: Sp.sm),
-            Text(
-              cancelado ? '—' : Fmt.cop(s.tarifa + s.extraVoluntario),
-              style: NexaTexto.cuerpo.copyWith(fontWeight: FontWeight.w700),
-            ),
+            if (precioHoy != null)
+              Semantics(
+                label: l.precioHoySemantica(Fmt.cop(precioHoy!)),
+                child: ExcludeSemantics(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '≈ ${Fmt.cop(precioHoy!)}',
+                        style: NexaTexto.cuerpo.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Text(
+                        l.precioHoy,
+                        style: NexaTexto.pequeno.copyWith(
+                          color: NexaColors.muted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              Text(
+                cancelado ? '—' : Fmt.cop(s.tarifa + s.extraVoluntario),
+                style: NexaTexto.cuerpo.copyWith(fontWeight: FontWeight.w700),
+              ),
           ],
         ),
       ),

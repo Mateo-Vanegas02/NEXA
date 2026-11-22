@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:latlong2/latlong.dart';
+
+import '../../../../core/geocoding/geocoding_service.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
@@ -13,7 +16,9 @@ import '../../../../core/widgets/nexa_diseno.dart';
 import '../../../../core/widgets/nexa_widgets.dart';
 import '../../../niveles/presentation/controllers/niveles_controller.dart';
 import '../../../niveles/presentation/widgets/nivel_banner.dart';
+import '../../domain/agrupar_viajes.dart';
 import '../../domain/perfil_pasajero.dart';
+import '../controllers/precio_hoy.dart';
 import '../controllers/viaje_pasajero_controller.dart';
 import '../widgets/estado_texto.dart';
 import '../widgets/viaje_tile.dart';
@@ -349,7 +354,9 @@ class _ViajesRecientes extends ConsumerWidget {
             onReintentar: () => ref.invalidate(historialPasajeroProvider),
           ),
           data: (lista) {
-            final recientes = lista.where((s) => !s.estado.activo).take(3);
+            // Destinos distintos con lo que costaría ir hoy (rediseño 2026);
+            // al tocarlos se pide de nuevo ese destino.
+            final recientes = destinosRecientes(lista);
             if (recientes.isEmpty) {
               return EstadoVacio(
                 titulo: l.vacioHistorial,
@@ -360,7 +367,27 @@ class _ViajesRecientes extends ConsumerWidget {
             return Column(
               children: [
                 for (final s in recientes) ...[
-                  ViajeTile(servicio: s),
+                  ViajeTile(
+                    servicio: s,
+                    precioHoy: s.ubicacionDestino == null
+                        ? null
+                        : ref
+                              .watch(precioHoyProvider(s.ubicacionDestino!))
+                              .value,
+                    onTap: s.ubicacionDestino == null
+                        ? null
+                        : () => context.go(
+                            '/p/pedir',
+                            extra: Lugar(
+                              nombre: s.destino,
+                              detalle: '',
+                              punto: LatLng(
+                                s.ubicacionDestino!.latitud,
+                                s.ubicacionDestino!.longitud,
+                              ),
+                            ),
+                          ),
+                  ),
                   const SizedBox(height: Sp.sm),
                 ],
               ],

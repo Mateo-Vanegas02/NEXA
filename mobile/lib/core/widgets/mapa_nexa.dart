@@ -11,6 +11,7 @@ import 'package:maplibre_gl/maplibre_gl.dart' as ml;
 import '../l10n/gen/app_localizations.dart';
 import '../mapa/estilo_mapa.dart';
 import '../mapa/imagenes_marcadores.dart';
+import '../mapa/reglas_camara.dart';
 import '../mapa/reglas_marcadores.dart';
 import '../mapa/reglas_ruta.dart';
 import '../rumbo/orientacion_mapa.dart';
@@ -94,6 +95,7 @@ class MapaNexa extends ConsumerStatefulWidget {
     this.pasajeroSinSenal = false,
     this.etiquetaRuta,
     this.zoom = 14,
+    this.velocidadKmh,
     this.onTap,
     this.controller,
     this.orientable = false,
@@ -113,6 +115,7 @@ class MapaNexa extends ConsumerStatefulWidget {
   });
 
   final LatLng centro;
+  final double? velocidadKmh;
   final LatLng? origen;
   final LatLng? destino;
 
@@ -235,6 +238,8 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
   DateTime? _gesto;
   DateTime? _ultimoEncuadre;
   Timer? _finPausa;
+  double _zoomNavegacion = MapaNexa.zoomNavegacion;
+  DateTime? _ultimoZoom;
 
   /// El haz necesita el rumbo del teléfono aunque el mapa no gire.
   bool get _conHaz => widget.pasajero != null && widget.pasajeroPropio;
@@ -283,7 +288,9 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
     if (widget.encuadrarRuta && cambioRuta) _enCola(_encuadrar);
     if (_usaOrientacion &&
         (widget.navegacion != anterior.navegacion ||
-            (widget.navegacion && moto != anterior.conductor))) {
+            (widget.navegacion &&
+                (moto != anterior.conductor ||
+                    widget.velocidadKmh != anterior.velocidadKmh)))) {
       _aplicar(ref.read(orientacionMapaProvider));
     }
     if (!widget.navegacion && widget.encuadre != null) _seguir();
@@ -835,12 +842,12 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
   }
 
   void _alGesto() {
-    if (widget.encuadre == null || widget.navegacion) return;
+    if (widget.encuadre == null && !widget.navegacion) return;
     final primera = !_enPausa;
     _gesto = DateTime.now();
     _finPausa?.cancel();
     _finPausa = Timer(MapaNexa.pausaTrasGesto, () {
-      if (mounted) setState(() {});
+      if (mounted) _recentrar();
     });
     if (primera) setState(() {});
   }
@@ -849,6 +856,7 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
     setState(() => _gesto = null);
     _finPausa?.cancel();
     _seguir(forzar: true);
+    if (widget.navegacion) _aplicar(ref.read(orientacionMapaProvider));
   }
 
   void _aplicar(EstadoOrientacion e) {
@@ -859,10 +867,19 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
     final rumbo = e.orientado ? (e.rumbo ?? 0.0) : 0.0;
     final ml.CameraUpdate cambio;
     if (widget.navegacion && seguir != null) {
+      if (_enPausa) return;
+      final ahora = DateTime.now();
+      final zoom = ReglasCamara.zoomPorVelocidad(widget.velocidadKmh);
+      if ((zoom - _zoomNavegacion).abs() >= 0.25 &&
+          (_ultimoZoom == null ||
+              ahora.difference(_ultimoZoom!) >= const Duration(seconds: 3))) {
+        _zoomNavegacion = zoom;
+        _ultimoZoom = ahora;
+      }
       cambio = ml.CameraUpdate.newCameraPosition(
         ml.CameraPosition(
           target: _aMl(seguir),
-          zoom: MapaNexa.zoomNavegacion,
+          zoom: _zoomNavegacion,
           bearing: rumbo,
           tilt: sinAnimacion ? 0 : MapaNexa.inclinacionNavegacion,
         ),
@@ -985,7 +1002,7 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
             ),
           ),
         ],
-        if (_enPausa && widget.encuadre != null && !widget.navegacion)
+        if (_enPausa && (widget.encuadre != null || widget.navegacion))
           Positioned(
             top: botonesArriba + Sizes.touch + 4 + Sp.sm,
             right: Sp.md,
