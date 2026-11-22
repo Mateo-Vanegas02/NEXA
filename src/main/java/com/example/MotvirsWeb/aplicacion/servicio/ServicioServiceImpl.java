@@ -515,6 +515,7 @@ public class ServicioServiceImpl implements ServicioService {
         servicio.setDesglose(desglose);
         servicio.setDistanciaKM(cotizacion.ruta().distanciaKm());
         servicio.setRutaGeometria(cotizacion.ruta().geometria());
+        servicio.setPasosRuta(cotizacion.ruta().pasos());
         servicio.setDuracionEstimadaMin(cotizacion.ruta().duracionMin());
         servicio.setNivelPasajero(Math.max(1, pasajero.getNivel()));
         servicio.setSolicitadoEn(nivelesService.momentoActual());

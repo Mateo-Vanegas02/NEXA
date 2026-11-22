@@ -129,4 +129,35 @@ class RutaOsrmTest {
         assertEquals(1, rutas.size());
         assertEquals("recta", rutas.get(0).fuente());
     }
+
+    @Test
+    void leeLasManiobrasConElNombreDeLaCalle() {
+        String cuerpo = """
+                {"code":"Ok","routes":[{"distance":1200,"duration":240,"geometry":"_p~iF~ps|U",
+                 "legs":[{"steps":[
+                   {"name":"Carrera 2","distance":300,"maneuver":{"type":"depart","location":[-75.55,10.42]}},
+                   {"name":"Calle 30","distance":900,"maneuver":{"type":"turn","modifier":"right","location":[-75.548,10.421]}},
+                   {"name":"","distance":0,"maneuver":{"type":"arrive","location":[-75.54,10.43]}},
+                   {"name":"rota","maneuver":{"type":"turn"}}
+                 ]}]}]}""";
+        Ruta r = new RutaOsrm("https://osrm.test", uri -> cuerpo, respaldo).calcular(A, B);
+        assertEquals(3, r.pasos().size());
+        var giro = r.pasos().get(1);
+        assertEquals("turn", giro.maniobra());
+        assertEquals("right", giro.modificador());
+        assertEquals("Calle 30", giro.calle());
+        assertEquals(10.421, giro.latitud(), 1e-9);
+        assertEquals(-75.548, giro.longitud(), 1e-9);
+        assertEquals(900, giro.metros(), 1e-9);
+    }
+
+    @Test
+    void pideLosPasosAOsrm() {
+        java.util.List<java.net.URI> pedidas = new java.util.ArrayList<>();
+        new RutaOsrm("https://osrm.test", uri -> {
+            pedidas.add(uri);
+            return OK;
+        }, respaldo).calcular(A, B);
+        assertTrue(pedidas.get(0).toString().contains("steps=true"));
+    }
 }

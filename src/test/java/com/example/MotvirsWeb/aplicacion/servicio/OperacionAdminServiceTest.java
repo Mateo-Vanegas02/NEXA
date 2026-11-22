@@ -28,6 +28,8 @@ class OperacionAdminServiceTest {
     private AdminService admin;
     private UbicacionConductorService ubicaciones;
     private OperacionAdminService operacion;
+    private DocumentosConductorService documentos;
+    private com.example.MotvirsWeb.dominio.repositorio.UsuarioRepository usuarios;
 
     @BeforeEach
     void preparar() {
@@ -35,7 +37,9 @@ class OperacionAdminServiceTest {
         servicios = mock(ServicioRepository.class);
         admin = mock(AdminService.class);
         ubicaciones = new UbicacionConductorService(ModeloNexaPropertiesTestSupport.cargar(), reloj);
-        operacion = new OperacionAdminService(servicios, ubicaciones, admin, reloj);
+        documentos = mock(DocumentosConductorService.class);
+        usuarios = mock(com.example.MotvirsWeb.dominio.repositorio.UsuarioRepository.class);
+        operacion = new OperacionAdminService(servicios, ubicaciones, admin, documentos, usuarios, reloj);
     }
 
     private Servicio solicitud(String id, int minutosAtras) {
@@ -92,5 +96,23 @@ class OperacionAdminServiceTest {
         assertEquals(0, r.conductoresEnLinea());
         assertTrue(r.flota().isEmpty());
         assertTrue(r.alertas().isEmpty());
+    }
+
+    @Test
+    void avisaLosDocumentosVencidos() {
+        when(admin.obtenerConductoresPorEstado(any())).thenReturn(List.of());
+        var soat = com.example.MotvirsWeb.dominio.modelo.DocumentoConductor.builder()
+                .conductorId("c1").tipo(com.example.MotvirsWeb.dominio.modelo.TipoDocumento.SOAT)
+                .venceEl(java.time.LocalDate.of(2026, 10, 1)).build();
+        when(documentos.vencidos(any())).thenReturn(List.of(soat));
+        Conductor c = new Conductor();
+        c.setEmail("ana@nexa.co");
+        when(usuarios.findById("c1")).thenReturn(java.util.Optional.of(c));
+
+        var a = operacion.resumen().alertas();
+
+        assertEquals(1, a.size());
+        assertEquals("DOCUMENTO_VENCIDO", a.get(0).tipo());
+        assertEquals("SOAT de ana@nexa.co venció el 2026-10-01", a.get(0).texto());
     }
 }

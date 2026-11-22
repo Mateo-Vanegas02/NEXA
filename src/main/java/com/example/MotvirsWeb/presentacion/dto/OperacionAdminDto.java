@@ -21,7 +21,7 @@ public record OperacionAdminDto(
         List<PosicionFlota> flota,
         List<Alerta> alertas) {
 
-    /** Algo que el admin debería mirar. {@code tipo}: SOLICITUD_SIN_CONDUCTOR o CONDUCTORES_POR_APROBAR. */
+    /** Algo que el admin debería mirar. {@code tipo}: SOLICITUD_SIN_CONDUCTOR, DOCUMENTO_VENCIDO o CONDUCTORES_POR_APROBAR. */
     public record Alerta(String tipo, String texto, String servicioId, long minutos) {
     }
 }

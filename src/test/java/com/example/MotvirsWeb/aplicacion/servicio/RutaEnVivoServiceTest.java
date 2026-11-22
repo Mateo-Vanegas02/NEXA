@@ -88,17 +88,17 @@ class RutaEnVivoServiceTest {
         RutasEnVivoDto.Elegida e = servicio.elegir(conductor, "v1", 0);
         assertFalse(e.compartidaConPasajero());
         assertEquals("rapida", e.rutaGeometria());
-        verify(repo, never()).cambiarRutaEnCurso(any(), any(), any());
+        verify(repo, never()).cambiarRutaEnCurso(any(), any(), any(), any());
     }
 
     @Test
     void elegirEnCursoGuardaElTrazadoParaElPasajero() {
         servicio.alternativas(conductor, "v1", AQUI);
-        when(repo.cambiarRutaEnCurso("v1", conductor.getId(), "corta")).thenReturn(1L);
+        when(repo.cambiarRutaEnCurso(eq("v1"), eq(conductor.getId()), eq("corta"), any())).thenReturn(1L);
         RutasEnVivoDto.Elegida e = servicio.elegir(conductor, "v1", 1);
         assertTrue(e.compartidaConPasajero());
         assertEquals("corta", e.rutaGeometria());
-        verify(repo).cambiarRutaEnCurso(eq("v1"), eq(conductor.getId()), eq("corta"));
+        verify(repo).cambiarRutaEnCurso(eq("v1"), eq(conductor.getId()), eq("corta"), any());
     }
 
     @Test

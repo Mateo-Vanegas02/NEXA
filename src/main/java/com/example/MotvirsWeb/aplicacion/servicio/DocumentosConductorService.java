@@ -161,6 +161,30 @@ public class DocumentosConductorService {
                 .orElse(List.of());
     }
 
+    public List<DocumentoConductor> listarPorConductor(String conductorId) {
+        return repositorio.findByConductorId(conductorId);
+    }
+
+    /**
+     * Anota (o borra, con null) la fecha de vencimiento que el admin leyó en la foto. Un documento que no vence (la
+     * tarjeta de propiedad) no acepta fecha.
+     */
+    public DocumentoConductor fijarVencimiento(String documentoId, java.time.LocalDate venceEl) {
+        DocumentoConductor d = repositorio.findById(documentoId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Documento no encontrado"));
+        if (venceEl != null && !com.example.MotvirsWeb.dominio.regla.VigenciaDocumento.vence(d.getTipo())) {
+            throw new IllegalArgumentException("Este documento no tiene vencimiento");
+        }
+        d.setVenceEl(venceEl);
+        return repositorio.save(d);
+    }
+
+    /** Documentos ya vencidos antes de [hoy]. */
+    public List<DocumentoConductor> vencidos(java.time.LocalDate hoy) {
+        return repositorio.findByVenceElBefore(hoy);
+    }
+
     public Optional<Contenido> abrir(String documentoId) {
         return repositorio.findById(documentoId)
                 .flatMap(d -> almacen.abrir(d.getArchivoId()).map(f -> new Contenido(d, f)));

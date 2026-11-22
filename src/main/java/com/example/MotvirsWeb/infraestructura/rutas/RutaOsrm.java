@@ -2,6 +2,7 @@ package com.example.MotvirsWeb.infraestructura.rutas;
 
 import com.example.MotvirsWeb.aplicacion.puerto.ProveedorRutas;
 import com.example.MotvirsWeb.dominio.regla.ModeloNexaProperties;
+import com.example.MotvirsWeb.dominio.regla.PasoRuta;
 import com.example.MotvirsWeb.dominio.regla.PuntoGeo;
 import com.example.MotvirsWeb.dominio.regla.Ruta;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -68,7 +69,7 @@ public class RutaOsrm implements ProveedorRutas {
                 throw new IllegalStateException("nexa.rutas.osrm-url no está configurada");
             }
             URI uri = URI.create(String.format(Locale.ROOT,
-                    "%s/route/v1/driving/%.6f,%.6f;%.6f,%.6f?overview=full&geometries=polyline&steps=false",
+                    "%s/route/v1/driving/%.6f,%.6f;%.6f,%.6f?overview=full&geometries=polyline&steps=true",
                     base, origen.longitud(), origen.latitud(), destino.longitud(), destino.latitud()));
             Ruta ruta = parsear(http.apply(uri), origen.distanciaKm(destino));
             if (cache.size() >= MAX_CACHE) {
@@ -93,7 +94,7 @@ public class RutaOsrm implements ProveedorRutas {
                 throw new IllegalStateException("nexa.rutas.osrm-url no está configurada");
             }
             URI uri = URI.create(String.format(Locale.ROOT,
-                    "%s/route/v1/driving/%.6f,%.6f;%.6f,%.6f?overview=full&geometries=polyline&steps=false&alternatives=2",
+                    "%s/route/v1/driving/%.6f,%.6f;%.6f,%.6f?overview=full&geometries=polyline&steps=true&alternatives=2",
                     base, origen.longitud(), origen.latitud(), destino.longitud(), destino.latitud()));
             return parsearTodas(http.apply(uri), origen.distanciaKm(destino));
         } catch (RuntimeException e) {
@@ -126,7 +127,7 @@ public class RutaOsrm implements ProveedorRutas {
                 double minutos = Math.max(0, r.path("duration").asDouble(0) / 60.0);
                 String geometria = r.path("geometry").asText(null);
                 // Por calle nunca es menos que la línea recta; si OSRM "ajusta" los puntos y da menos, manda la recta
-                rutas.add(new Ruta(Math.max(km, rectaKm), rectaKm, FUENTE, minutos, geometria));
+                rutas.add(new Ruta(Math.max(km, rectaKm), rectaKm, FUENTE, minutos, geometria, pasos(r)));
             }
             if (rutas.isEmpty()) {
                 throw new IllegalStateException("sin rutas");
@@ -135,6 +136,24 @@ public class RutaOsrm implements ProveedorRutas {
         } catch (java.io.IOException e) {
             throw new IllegalStateException("respuesta ilegible", e);
         }
+    }
+
+    /** Maniobras de todos los tramos ({@code legs[].steps[]}); las que no se pueden leer se omiten. */
+    static java.util.List<PasoRuta> pasos(JsonNode ruta) {
+        java.util.List<PasoRuta> pasos = new java.util.ArrayList<>();
+        for (JsonNode tramo : ruta.path("legs")) {
+            for (JsonNode paso : tramo.path("steps")) {
+                JsonNode m = paso.path("maneuver");
+                JsonNode punto = m.path("location");
+                if (!punto.isArray() || punto.size() < 2) {
+                    continue;
+                }
+                pasos.add(new PasoRuta(punto.get(1).asDouble(), punto.get(0).asDouble(),
+                        m.path("type").asText(""), m.path("modifier").asText(""),
+                        paso.path("name").asText("").trim(), Math.max(0, paso.path("distance").asDouble(0))));
+            }
+        }
+        return pasos;
     }
 
     private static String clave(PuntoGeo a, PuntoGeo b) {

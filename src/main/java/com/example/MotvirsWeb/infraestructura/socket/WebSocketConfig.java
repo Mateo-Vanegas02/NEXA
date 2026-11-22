@@ -21,9 +21,15 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private String baseUrl;
 
     private final Environment environment;
+    private final com.example.MotvirsWeb.infraestructura.seguridad.JwtService jwtService;
+    private final com.example.MotvirsWeb.infraestructura.seguridad.CustomUserDetailsService usuarios;
 
-    public WebSocketConfig(Environment environment) {
+    public WebSocketConfig(Environment environment,
+                           com.example.MotvirsWeb.infraestructura.seguridad.JwtService jwtService,
+                           com.example.MotvirsWeb.infraestructura.seguridad.CustomUserDetailsService usuarios) {
         this.environment = environment;
+        this.jwtService = jwtService;
+        this.usuarios = usuarios;
     }
 
     /** Solo el origen público de la app; en dev también localhost. Nunca "*". */
@@ -41,7 +47,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(new WebSocketAuthInterceptor());
+        registration.interceptors(new WebSocketAuthInterceptor(new AutenticadorStompJwt(jwtService, usuarios)));
     }
 
     @Override
@@ -56,5 +62,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .addEndpoint("/ws")
                 .setAllowedOriginPatterns(origenesPermitidos())
                 .withSockJS();
+        // La app móvil: WebSocket nativo (sin SockJS), autenticada en el CONNECT con su JWT. Una app nativa no
+        // envía cabecera Origin; un navegador de otro origen sigue rechazado.
+        registry
+                .addEndpoint("/ws-app")
+                .setAllowedOriginPatterns(origenesPermitidos());
     }
 }

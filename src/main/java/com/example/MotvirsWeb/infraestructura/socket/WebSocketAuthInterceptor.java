@@ -19,6 +19,17 @@ import com.example.MotvirsWeb.infraestructura.seguridad.CustomUserDetails;
  */
 public class WebSocketAuthInterceptor implements ChannelInterceptor {
 
+    private final AutenticadorStompJwt autenticador;
+
+    /** Solo sesión web (sin JWT). */
+    public WebSocketAuthInterceptor() {
+        this(null);
+    }
+
+    public WebSocketAuthInterceptor(AutenticadorStompJwt autenticador) {
+        this.autenticador = autenticador;
+    }
+
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
@@ -26,6 +37,13 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
             return message;
         }
         StompCommand comando = accessor.getCommand();
+        // La app no tiene sesión web: se autentica en el CONNECT con su JWT. Queda como usuario de la conexión.
+        if (StompCommand.CONNECT.equals(comando) && accessor.getUser() == null && autenticador != null) {
+            Authentication auth = autenticador.autenticar(accessor.getFirstNativeHeader("Authorization"));
+            if (auth != null) {
+                accessor.setUser(auth);
+            }
+        }
         if (StompCommand.SUBSCRIBE.equals(comando)
                 && !suscripcionPermitida(accessor.getDestination(),
                         accessor.getUser() instanceof Authentication a ? a : null)) {

@@ -38,6 +38,8 @@ public class Servicio {
     private double distanciaKM;
     /** Trazado de la ruta cotizada (polyline precisión 5); null si el proveedor de rutas no lo entrega. */
     private String rutaGeometria;
+    /** Maniobras de esa ruta con el nombre de la calle (OSRM); vacío si la ruta es en línea recta. */
+    private java.util.List<com.example.MotvirsWeb.dominio.regla.PasoRuta> pasosRuta;
     /** Duración estimada de la ruta cotizada, en minutos (0 si no se conoce). */
     private double duracionEstimadaMin;
     /** Kilómetros realmente recorridos con el viaje en curso (suma de la posición del conductor). */

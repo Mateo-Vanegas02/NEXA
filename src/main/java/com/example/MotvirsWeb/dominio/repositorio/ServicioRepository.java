@@ -14,6 +14,8 @@ public interface ServicioRepository extends MongoRepository<Servicio, String> {
 
     long countByFechaHoraGreaterThanEqual(java.time.LocalDateTime desde);
 
+    List<Servicio> findByFechaHoraGreaterThanEqual(java.time.LocalDateTime desde);
+
     long countByFechaHoraGreaterThanEqualAndEstado(java.time.LocalDateTime desde, EstadoServicio estado);
 
     /**
@@ -141,8 +143,9 @@ public interface ServicioRepository extends MongoRepository<Servicio, String> {
      * conductor (atómico: 0 si ya terminó o no es suyo). No toca el precio: se cobra por lo recorrido.
      */
     @org.springframework.data.mongodb.repository.Query("{ '_id': ?0, 'estado': 'EN_CURSO', 'conductor._id': ?1 }")
-    @org.springframework.data.mongodb.repository.Update("{ '$set': { 'rutaGeometria': ?2 } }")
-    long cambiarRutaEnCurso(String servicioId, ObjectId conductorId, String rutaGeometria);
+    @org.springframework.data.mongodb.repository.Update("{ '$set': { 'rutaGeometria': ?2, 'pasosRuta': ?3 } }")
+    long cambiarRutaEnCurso(String servicioId, ObjectId conductorId, String rutaGeometria,
+            List<com.example.MotvirsWeb.dominio.regla.PasoRuta> pasosRuta);
 
     List<Servicio> findByConductorIdAndCalificacionPasajeroIsNotNull(ObjectId conductorId);
     List<Servicio> findByPasajeroIdAndCalificacionConductorIsNotNull(ObjectId pasajeroId);

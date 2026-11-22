@@ -30,13 +30,19 @@ public class OperacionAdminService {
     private final ServicioRepository servicios;
     private final UbicacionConductorService ubicaciones;
     private final AdminService admin;
+    private final DocumentosConductorService documentos;
+    private final com.example.MotvirsWeb.dominio.repositorio.UsuarioRepository usuarios;
     private final Clock clock;
 
     public OperacionAdminService(ServicioRepository servicios, UbicacionConductorService ubicaciones,
-                                 AdminService admin, Clock clock) {
+                                 AdminService admin, DocumentosConductorService documentos,
+                                 com.example.MotvirsWeb.dominio.repositorio.UsuarioRepository usuarios,
+                                 Clock clock) {
         this.servicios = servicios;
         this.ubicaciones = ubicaciones;
         this.admin = admin;
+        this.documentos = documentos;
+        this.usuarios = usuarios;
         this.clock = clock;
     }
 
@@ -58,6 +64,19 @@ public class OperacionAdminService {
                     alertas.add(new Alerta("SOLICITUD_SIN_CONDUCTOR",
                             "Solicitud desde " + s.getOrigen() + " sin conductor hace " + min + " min",
                             s.getId(), min));
+                });
+        // Documentos vencidos (fecha anotada por el admin al revisar): SOAT, tecnomecánica o licencia.
+        documentos.vencidos(LocalDate.now(clock)).stream()
+                .sorted(Comparator.comparing(com.example.MotvirsWeb.dominio.modelo.DocumentoConductor::getVenceEl))
+                .limit(MAX_ALERTAS)
+                .forEach(d -> {
+                    String quien = usuarios.findById(d.getConductorId())
+                            .map(u -> u.getEmail()).orElse("un conductor");
+                    String doc = d.getTipo().etiqueta();
+                    alertas.add(new Alerta("DOCUMENTO_VENCIDO",
+                            Character.toUpperCase(doc.charAt(0)) + doc.substring(1) + " de " + quien
+                                    + " venció el " + d.getVenceEl(),
+                            null, 0));
                 });
         if (pendientes > 0) {
             alertas.add(new Alerta("CONDUCTORES_POR_APROBAR",

@@ -31,7 +31,8 @@ public final class RutasEnVivoDto {
      *
      * @param etiqueta {@code RAPIDA}, {@code CORTA} o {@code ALTERNATIVA}; la app la traduce
      */
-    public record Opcion(int indice, String geometria, double distanciaKm, double duracionMin, String etiqueta) {
+    public record Opcion(int indice, String geometria, double distanciaKm, double duracionMin, String etiqueta,
+                         List<com.example.MotvirsWeb.dominio.regla.PasoRuta> pasos) {
     }
 
     /**
@@ -42,6 +43,7 @@ public final class RutasEnVivoDto {
     }
 
     /** Resultado de elegir: si quedó guardada para el pasajero (solo con el viaje en curso). */
-    public record Elegida(String servicioId, String rutaGeometria, boolean compartidaConPasajero) {
+    public record Elegida(String servicioId, String rutaGeometria, boolean compartidaConPasajero,
+                          List<com.example.MotvirsWeb.dominio.regla.PasoRuta> pasos) {
     }
 }

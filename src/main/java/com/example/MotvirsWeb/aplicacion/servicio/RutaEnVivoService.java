@@ -31,7 +31,7 @@ public class RutaEnVivoService {
     static final long VIGENCIA_OFERTA_MS = 10 * 60 * 1000L;
     private static final int MAX_OFERTAS = 2000;
 
-    private record Oferta(String conductorId, List<String> geometrias, long vence) {
+    private record Oferta(String conductorId, List<RutasEnVivoDto.Opcion> opciones, long vence) {
     }
 
     private final ServicioRepository servicios;
@@ -58,8 +58,7 @@ public class RutaEnVivoService {
         if (ofertas.size() >= MAX_OFERTAS) {
             ofertas.values().removeIf(o -> o.vence() <= ahora);
         }
-        ofertas.put(servicioId, new Oferta(conductor.getIdString(),
-                opciones.stream().map(RutasEnVivoDto.Opcion::geometria).toList(), ahora + VIGENCIA_OFERTA_MS));
+        ofertas.put(servicioId, new Oferta(conductor.getIdString(), opciones, ahora + VIGENCIA_OFERTA_MS));
         return new RutasEnVivoDto.Alternativas(servicioId, enCurso ? "EN_CURSO" : "ACEPTADO", opciones);
     }
 
@@ -67,16 +66,17 @@ public class RutaEnVivoService {
         Servicio s = viajeDe(conductor, servicioId);
         Oferta o = ofertas.get(servicioId);
         if (o == null || o.vence() <= clock.millis() || !o.conductorId().equals(conductor.getIdString())
-                || indice < 0 || indice >= o.geometrias().size()) {
+                || indice < 0 || indice >= o.opciones().size()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Pide las rutas otra vez");
         }
-        String geometria = o.geometrias().get(indice);
+        RutasEnVivoDto.Opcion elegida = o.opciones().get(indice);
+        String geometria = elegida.geometria();
         if (geometria == null || geometria.isBlank()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Esa ruta no tiene trazado");
         }
         boolean compartida = s.getEstado() == EstadoServicio.EN_CURSO
-                && servicios.cambiarRutaEnCurso(servicioId, conductor.getId(), geometria) > 0;
-        return new RutasEnVivoDto.Elegida(servicioId, geometria, compartida);
+                && servicios.cambiarRutaEnCurso(servicioId, conductor.getId(), geometria, elegida.pasos()) > 0;
+        return new RutasEnVivoDto.Elegida(servicioId, geometria, compartida, elegida.pasos());
     }
 
     /** Ordena la más rápida primero y marca la más rápida y la más corta. */
@@ -92,7 +92,7 @@ public class RutaEnVivoService {
             Ruta r = conTrazado.get(i);
             String etiqueta = i == 0 ? "RAPIDA" : r == corta ? "CORTA" : "ALTERNATIVA";
             lista.add(new RutasEnVivoDto.Opcion(i, r.geometria(), redondear(r.distanciaKm()),
-                    redondear(r.duracionMin()), etiqueta));
+                    redondear(r.duracionMin()), etiqueta, r.pasos()));
         }
         return lista;
     }

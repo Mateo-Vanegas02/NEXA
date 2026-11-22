@@ -62,10 +62,27 @@ public class ApiAdminVerificacionController {
 
     /** Foto de documento subida por el conductor, con el número que declaró para contrastarlos. */
     public record DocumentoResumen(String id, String tipo, String numeroDeclarado, String vehiculoId,
-                                   String contentType, long tamano, LocalDateTime subidoEn) {
+                                   String contentType, long tamano, LocalDateTime subidoEn,
+                                   java.time.LocalDate venceEl, String vigencia) {
         static DocumentoResumen de(DocumentoConductor d) {
             return new DocumentoResumen(d.getId(), d.getTipo().name(), d.getNumeroDeclarado(), d.getVehiculoId(),
-                    d.getContentType(), d.getTamano(), d.getSubidoEn());
+                    d.getContentType(), d.getTamano(), d.getSubidoEn(), d.getVenceEl(),
+                    com.example.MotvirsWeb.dominio.regla.VigenciaDocumento
+                            .de(d.getTipo(), d.getVenceEl(), java.time.LocalDate.now()).name());
+        }
+    }
+
+    /** Fecha de vencimiento leída en la foto ({@code venceEl} null la borra). */
+    public record VencimientoRequest(java.time.LocalDate venceEl) {
+    }
+
+    @PutMapping("/documentos/{id}/vencimiento")
+    public DocumentoResumen vencimiento(@PathVariable String id, @RequestBody VencimientoRequest req) {
+        try {
+            return DocumentoResumen.de(documentosService.fijarVencimiento(id, req == null ? null : req.venceEl()));
+        } catch (IllegalArgumentException e) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 
