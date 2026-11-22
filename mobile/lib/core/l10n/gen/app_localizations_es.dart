@@ -2556,4 +2556,95 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get finalizadoAntesCobro => 'Se cobra solo lo recorrido.';
+
+  @override
+  String get esteMes => 'Este mes';
+
+  @override
+  String viajesCuenta(int n) {
+    return 'Viajes: $n';
+  }
+
+  @override
+  String get recorridoMes => 'Recorrido del mes';
+
+  @override
+  String get enMoto => 'en moto';
+
+  @override
+  String get seccionMapa => 'Mapa';
+
+  @override
+  String get mapaIndependiente => 'Independiente del tema de la app';
+
+  @override
+  String get tuMoto => 'Tu moto';
+
+  @override
+  String get motoVerificada => 'Verificada';
+
+  @override
+  String get motoEnRevision => 'En revisión';
+
+  @override
+  String destinoLlegas(String destino, String hora) {
+    return '$destino · llegas $hora';
+  }
+
+  @override
+  String llegasA(String destino) {
+    return 'Llegas a $destino';
+  }
+
+  @override
+  String llegasAHora(String destino, String hora) {
+    return 'Llegas a $destino a las $hora';
+  }
+
+  @override
+  String kmRestantes(String km) {
+    return '$km km restantes';
+  }
+
+  @override
+  String get periodoHoy => 'Hoy';
+
+  @override
+  String get periodoSemana => 'Semana';
+
+  @override
+  String get periodo30Dias => '30 días';
+
+  @override
+  String viajesYPromedio(int n, String promedio) {
+    return '$n viajes · $promedio por viaje';
+  }
+
+  @override
+  String get listoParaRodar => '¿Listo para rodar?';
+
+  @override
+  String get deslizaConectarte => 'Desliza para conectarte';
+
+  @override
+  String get ultimos7Dias => 'Últimos 7 días';
+
+  @override
+  String get ganadoHoy => 'Ganado hoy';
+
+  @override
+  String get gpsActivo => 'GPS';
+
+  @override
+  String get gpsSinSenal => 'Sin GPS';
+
+  @override
+  String llevandoA(String nombre, String destino) {
+    return 'Llevando a $nombre · $destino';
+  }
+
+  @override
+  String kmRecorridosDe(String recorridos, String total) {
+    return '$recorridos de $total km recorridos';
+  }
 }

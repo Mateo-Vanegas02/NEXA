@@ -345,6 +345,19 @@ class _SolicitarViajeScreenState extends ConsumerState<SolicitarViajeScreen> {
               ruta: rutaDe(cot?.rutaGeometria),
               encuadrarRuta: true,
               etiquetaRuta: cot == null ? null : '$minutos min · $kmTxt km',
+              // El tiempo va sobre la línea y la bandera dice a qué hora
+              // llegas (rediseño 2026).
+              tiempoEnRuta: cot == null ? null : '$minutos min',
+              etiquetaDestino: cot == null || destino == null
+                  ? null
+                  : AppLocalizations.of(context).destinoLlegas(
+                      _destinoTxt.trim().isEmpty
+                          ? AppLocalizations.of(context).destino
+                          : _destinoTxt.trim(),
+                      DateFormat('H:mm', 'es_CO').format(
+                        DateTime.now().add(Duration(minutes: minutos)),
+                      ),
+                    ),
               onTap: _alTocarMapa,
             ),
           ),

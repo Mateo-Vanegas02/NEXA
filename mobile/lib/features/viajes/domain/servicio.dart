@@ -150,6 +150,9 @@ abstract class Ingreso with _$Ingreso {
     @Default(0) double monto,
     @Default(0) double montoBruto,
     @Default('') String descripcion,
+
+    /// Fecha y hora del viaje (ISO 8601); los servidores viejos no la envían.
+    String? hora,
   }) = _Ingreso;
 
   factory Ingreso.fromJson(Map<String, dynamic> json) =>

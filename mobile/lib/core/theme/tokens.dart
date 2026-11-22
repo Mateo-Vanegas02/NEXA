@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 /// (archivo 9q1xR3WvWNOReyqi5S9mIK) y del prototipo HTML.
 abstract final class NexaColors {
   static const Color cyan = Color(0xFF00C4FF);
+
+  /// Final del degradado eléctrico de la marca (cian → azul).
+  static const Color azul = Color(0xFF3D6BFF);
   static const Color navy = Color(0xFF004F78);
 
   /// «Cielo»: la personita del pasajero y acentos suaves.

@@ -122,6 +122,10 @@ class _Seguimiento extends ConsumerWidget {
         ),
       );
     });
+    final anteriorGeo = ref.watch(rutaAnteriorProvider);
+    final rutaAnterior = anteriorGeo == null
+        ? null
+        : decodificarPolyline(anteriorGeo);
     // La cámara sigue a la moto con lo que importa en cada fase: viniendo por
     // ti, tú y la moto; en viaje, la moto y el destino.
     final List<LatLng>? encuadre = moto == null
@@ -189,10 +193,16 @@ class _Seguimiento extends ConsumerWidget {
         detalle: lado ?? l.vaHaciaTuPunto(nombre),
         colorDetalle: lado == null ? null : NexaColors.cyan,
       ),
-      EstadoServicio.enCurso => TarjetaFlotante(
-        icono: Icons.flag_outlined,
-        titulo: l.llegasEnMinHora(restantes, llegada),
-        detalle: l.vasHacia(s.destino),
+      // En viaje, lo importante arriba: hora de llegada, minutos, km que
+      // faltan y una barra con lo recorrido (rediseño 2026; todo del servidor).
+      EstadoServicio.enCurso => TarjetaLlegada(
+        destino: s.destino,
+        hora: llegada,
+        minutos: restantes,
+        kmRestantes: pos?.distanciaRestanteKm,
+        avance: s.distanciaKM > 0 && pos != null
+            ? (1 - pos.distanciaRestanteKm / s.distanciaKM).clamp(0.0, 1.0)
+            : null,
       ),
       _ => null,
     };
@@ -209,6 +219,15 @@ class _Seguimiento extends ConsumerWidget {
             pasajero: yo,
             orientable: true,
             progreso: s.estado == EstadoServicio.enCurso,
+            rutaAnterior: s.estado == EstadoServicio.enCurso
+                ? rutaAnterior
+                : null,
+            tiempoEnRuta: s.estado == EstadoServicio.enCurso
+                ? l.minutosValor(restantes)
+                : null,
+            etiquetaDestino: s.estado == EstadoServicio.enCurso
+                ? '${s.destino} · $llegada'
+                : null,
             encuadre: encuadre,
             margenInferior: MediaQuery.sizeOf(context).height * 0.48,
           ),

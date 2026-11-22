@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/app_exception.dart';
@@ -65,6 +66,7 @@ class _HistorialPasajeroScreenState
               0,
               (a, s) => a + s.tarifa + s.extraVoluntario,
             );
+            final kmMes = delMes.fold<double>(0, (a, s) => a + s.distanciaKM);
             return RefreshIndicator(
               onRefresh: () => ref.refresh(historialPasajeroProvider.future),
               child: ListView(
@@ -84,34 +86,49 @@ class _HistorialPasajeroScreenState
                           style: NexaTexto.titulo.copyWith(fontSize: 28),
                         ),
                         const SizedBox(height: Sp.lg),
-                        NexaCard(
-                          child: Row(
-                            children: [
-                              _Cifra(
-                                valor: '${delMes.length}',
-                                texto: l.viajesN,
-                              ),
-                              const SizedBox(width: Sp.xl),
-                              Expanded(
+                        // Dos cifras del mes (rediseño 2026): lo gastado y
+                        // lo recorrido, ambas con datos del servidor.
+                        Row(
+                          children: [
+                            Expanded(
+                              child: NexaCard(
                                 child: _Cifra(
+                                  titulo: l.esteMes,
                                   valor: Fmt.cop(gastado),
-                                  texto: l.gastadoEsteMes,
+                                  texto: l.viajesCuenta(delMes.length),
+                                  color: NexaColors.ok,
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(width: Sp.md),
+                            Expanded(
+                              child: NexaCard(
+                                child: _Cifra(
+                                  titulo: l.recorridoMes,
+                                  valor:
+                                      '${NumberFormat('0.#', 'es_CO').format(kmMes)} km',
+                                  texto: l.enMoto,
+                                  color: NexaColors.cyan,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: Sp.lg),
-                        Wrap(
-                          spacing: Sp.sm,
-                          runSpacing: Sp.sm,
+                        // En una sola línea (se desliza si la letra es grande).
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
                           children: [
                             for (final (f, texto) in [
                               (_Filtro.todos, l.filtroTodos),
                               (_Filtro.completados, l.filtroCompletados),
                               (_Filtro.cancelados, l.filtroCancelados),
                             ])
-                              ChoiceChip(
+                              Padding(
+                                padding: const EdgeInsets.only(right: Sp.sm),
+                                child: ChoiceChip(
+                                visualDensity: VisualDensity.compact,
                                 label: Text(texto),
                                 selected: _filtro == f,
                                 showCheckmark: false,
@@ -127,7 +144,9 @@ class _HistorialPasajeroScreenState
                                       : NexaColors.texto,
                                 ),
                               ),
+                              ),
                           ],
+                          ),
                         ),
                         const SizedBox(height: Sp.lg),
                         if (grupos.isEmpty)
@@ -173,20 +192,28 @@ class _HistorialPasajeroScreenState
 }
 
 class _Cifra extends StatelessWidget {
-  const _Cifra({required this.valor, required this.texto});
+  const _Cifra({
+    required this.titulo,
+    required this.valor,
+    required this.texto,
+    required this.color,
+  });
+  final String titulo;
   final String valor;
   final String texto;
+  final Color color;
 
   @override
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
+      Text(titulo, style: NexaTexto.pequeno.copyWith(color: NexaColors.muted)),
       FittedBox(
         fit: BoxFit.scaleDown,
         alignment: Alignment.centerLeft,
         child: Text(valor, style: NexaTexto.numeroMedio),
       ),
-      Text(texto, style: NexaTexto.pequeno.copyWith(color: NexaColors.muted)),
+      Text(texto, style: NexaTexto.pequeno.copyWith(color: color)),
     ],
   );
 }

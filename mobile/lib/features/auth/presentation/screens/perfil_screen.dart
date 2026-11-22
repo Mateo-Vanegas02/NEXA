@@ -9,11 +9,13 @@ import '../../../../core/theme/tokens.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/utils/selector_imagen.dart';
 import '../../../../core/utils/validators.dart';
+import '../../../../core/widgets/mapa_nexa.dart';
 import '../../../../core/widgets/nexa_diseno.dart';
 import '../../../../core/widgets/nexa_widgets.dart';
 import '../../../../core/widgets/opciones_foto.dart';
 import '../../../niveles/presentation/controllers/niveles_controller.dart';
 import '../../../viajes/presentation/controllers/viaje_pasajero_controller.dart';
+import '../../../viajes/presentation/widgets/piezas_viaje.dart';
 import '../../domain/auth.dart';
 import '../controllers/perfil_controller.dart';
 import '../controllers/session_controller.dart';
@@ -117,7 +119,40 @@ class PerfilScreen extends ConsumerWidget {
                         ),
                       ],
                     ),
+                    if (esConductor) ...[
+                      const SizedBox(height: Sp.xl),
+                      const _TarjetaMoto(),
+                    ],
                     const SizedBox(height: Sp.xl),
+                    // Estilo del mapa, aparte del tema de la app (rediseño 2026).
+                    _Seccion(texto: l.seccionMapa),
+                    NexaCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            l.mapaEstilo,
+                            style: NexaTexto.subtitulo,
+                          ),
+                          Text(
+                            l.mapaIndependiente,
+                            style: NexaTexto.pequeno.copyWith(
+                              color: NexaColors.muted,
+                            ),
+                          ),
+                          const SizedBox(height: Sp.md),
+                          const SelectorEstiloMapa(),
+                          const SizedBox(height: Sp.sm),
+                          Text(
+                            l.mapaAutomaticoTexto,
+                            style: NexaTexto.pequeno.copyWith(
+                              color: NexaColors.tenue,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: Sp.lg),
                     _Seccion(texto: l.seccionCuenta),
                     NexaCard(
                       padding: const EdgeInsets.symmetric(
@@ -480,6 +515,63 @@ class _EditarPerfilDialogState extends ConsumerState<_EditarPerfilDialog> {
           child: Text(l.guardar),
         ),
       ],
+    );
+  }
+}
+
+/// La moto del conductor con su placa (rediseño 2026).
+class _TarjetaMoto extends ConsumerWidget {
+  const _TarjetaMoto();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final moto = ref.watch(motoActivaProvider).value;
+    if (moto == null) return const SizedBox.shrink();
+    final nombre = [moto.marca, moto.modelo].where((e) => e.isNotEmpty).join(' ');
+    return NexaCard(
+      child: Row(
+        children: [
+          Container(
+            width: 64,
+            height: 48,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(Rad.md),
+              gradient: const LinearGradient(
+                colors: [NexaColors.raised, NexaColors.card],
+              ),
+            ),
+            child: const Icon(
+              Icons.two_wheeler,
+              color: NexaColors.cyan,
+              size: 30,
+            ),
+          ),
+          const SizedBox(width: Sp.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  nombre.isEmpty ? l.tuMoto : nombre,
+                  style: NexaTexto.subtitulo,
+                ),
+                Text(
+                  [
+                    if (moto.color.isNotEmpty) moto.color,
+                    moto.verificado ? l.motoVerificada : l.motoEnRevision,
+                  ].join(' · '),
+                  style: NexaTexto.pequeno.copyWith(
+                    color: moto.verificado ? NexaColors.ok : NexaColors.gold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: Sp.sm),
+          PlacaMoto(placa: moto.placa),
+        ],
+      ),
     );
   }
 }

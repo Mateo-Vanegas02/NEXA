@@ -102,6 +102,9 @@ class MapaNexa extends ConsumerStatefulWidget {
     this.brujulaArriba = Sp.md,
     this.progreso = false,
     this.alternativas = const [],
+    this.rutaAnterior,
+    this.tiempoEnRuta,
+    this.etiquetaDestino,
     this.encuadre,
     this.margenInferior = 360,
     super.key,
@@ -157,6 +160,16 @@ class MapaNexa extends ConsumerStatefulWidget {
 
   /// Otras rutas posibles (al desviarse), en gris debajo de la principal.
   final List<List<LatLng>> alternativas;
+
+  /// La ruta de antes de un cambio (el conductor tomó otra calle): tenue,
+  /// debajo de todo.
+  final List<LatLng>? rutaAnterior;
+
+  /// Texto sobre la propia línea de la ruta, p. ej. «11 min» (rediseño 2026).
+  final String? tiempoEnRuta;
+
+  /// Rótulo junto a la bandera del destino, p. ej. «La Castellana · 16:15».
+  final String? etiquetaDestino;
 
   /// Puntos que la cámara mantiene a la vista (null = la cámara no se mueve
   /// sola). Se ignora en [navegacion].
@@ -366,7 +379,21 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
       falta = partes.falta;
     }
     final oscuro = _oscuro;
+    final anterior = widget.rutaAnterior;
     final capas = <(String, List<LatLng>, ml.LineOptions)>[
+      if (anterior != null && anterior.length >= 2)
+        (
+          'antes',
+          anterior,
+          ml.LineOptions(
+            lineColor: _hex(
+              oscuro ? NexaColors.rutaAlterna : NexaColors.rutaAlternaClara,
+            ),
+            lineWidth: 4,
+            lineOpacity: 0.55,
+            lineJoin: 'round',
+          ),
+        ),
       for (var i = 0; i < widget.alternativas.length; i++)
         if (widget.alternativas[i].length >= 2)
           (
@@ -511,6 +538,72 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
             ),
     );
     await _moto(c, o: o);
+    await _rotulos(c);
+  }
+
+  /// Textos sobre el mapa: el tiempo en la mitad de lo que falta de la ruta y
+  /// el nombre (con la hora) junto al destino. Usan la tipografía del estilo
+  /// de OpenFreeMap.
+  Future<void> _rotulos(ml.MapLibreMapController c) async {
+    final oscuro = _oscuro;
+    final texto = _hex(oscuro ? NexaColors.texto : NexaColors.bg);
+    final halo = _hex(oscuro ? NexaColors.bg : NexaColors.texto);
+    ml.SymbolOptions rotulo(
+      LatLng en,
+      String t, {
+      required double tamano,
+      String ancla = 'center',
+      Offset desplazado = Offset.zero,
+      String? color,
+    }) => ml.SymbolOptions(
+      geometry: _aMl(en),
+      textField: t,
+      textFont: const ['Noto Sans Bold'],
+      textSize: tamano,
+      textColor: color ?? texto,
+      textHaloColor: halo,
+      textHaloWidth: 2.2,
+      textAnchor: ancla,
+      textOffset: desplazado,
+      zIndex: 9,
+    );
+    final tiempo = widget.tiempoEnRuta;
+    final ruta = _puntosRuta;
+    LatLng? mitad;
+    if (tiempo != null && ruta.length >= 2) {
+      final moto = _motoVista ?? widget.conductor;
+      final falta = widget.progreso && moto != null
+          ? ReglasRuta.dividir(ruta, moto).falta
+          : ruta;
+      mitad = falta.length >= 2 ? falta[falta.length ~/ 2] : null;
+    }
+    await _simbolo(
+      c,
+      'tiempoRuta',
+      mitad == null
+          ? null
+          : rotulo(
+              mitad,
+              tiempo!,
+              tamano: 15,
+              color: _hex(oscuro ? NexaColors.cyan : NexaColors.rutaClara),
+            ),
+    );
+    final destino = widget.destino;
+    final nombre = widget.etiquetaDestino;
+    await _simbolo(
+      c,
+      'rotuloDestino',
+      destino == null || nombre == null
+          ? null
+          : rotulo(
+              destino,
+              nombre,
+              tamano: 13,
+              ancla: 'top',
+              desplazado: const Offset(0, 1.4),
+            ),
+    );
   }
 
   /// La moto y su proa (también en cada cuadro de la animación).
@@ -600,6 +693,8 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
       op.iconImage,
       (op.iconRotate ?? 0).round(),
       op.iconSize,
+      op.textField,
+      op.textColor,
     );
     if (actual != null && _firmas[clave] == firma) return;
     _firmas[clave] = firma;
@@ -911,18 +1006,12 @@ Future<void> mostrarCapasMapa(BuildContext context) =>
       builder: (_) => const _HojaCapas(),
     );
 
-class _HojaCapas extends ConsumerWidget {
+class _HojaCapas extends StatelessWidget {
   const _HojaCapas();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final actual = ref.watch(estiloMapaProvider);
-    final opciones = [
-      (EstiloMapa.oscuro, l.mapaOscuro, Icons.dark_mode_outlined),
-      (EstiloMapa.claro, l.mapaClaro, Icons.light_mode_outlined),
-      (EstiloMapa.automatico, l.mapaAutomatico, Icons.brightness_auto_outlined),
-    ];
     return DecoratedBox(
       decoration: const BoxDecoration(
         color: NexaColors.card,
@@ -960,25 +1049,7 @@ class _HojaCapas extends ConsumerWidget {
                 style: const TextStyle(color: NexaColors.muted, fontSize: 14),
               ),
               const SizedBox(height: Sp.lg),
-              Row(
-                children: [
-                  for (final (estilo, nombre, icono) in opciones) ...[
-                    if (estilo != EstiloMapa.oscuro)
-                      const SizedBox(width: Sp.md),
-                    Expanded(
-                      child: _OpcionEstilo(
-                        estilo: estilo,
-                        nombre: nombre,
-                        icono: icono,
-                        elegido: estilo == actual,
-                        onTap: () => ref
-                            .read(estiloMapaProvider.notifier)
-                            .elegir(estilo),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
+              const SelectorEstiloMapa(),
               const SizedBox(height: Sp.md),
               Text(
                 l.mapaAutomaticoTexto,
@@ -1521,4 +1592,38 @@ class _Etiqueta extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// Las tres opciones del estilo del mapa (oscuro, claro, automático) con su
+/// vista previa; se usa en la hoja de capas y en el perfil.
+class SelectorEstiloMapa extends ConsumerWidget {
+  const SelectorEstiloMapa({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final actual = ref.watch(estiloMapaProvider);
+    final opciones = [
+      (EstiloMapa.oscuro, l.mapaOscuro, Icons.dark_mode_outlined),
+      (EstiloMapa.claro, l.mapaClaro, Icons.light_mode_outlined),
+      (EstiloMapa.automatico, l.mapaAutomatico, Icons.brightness_auto_outlined),
+    ];
+    return Row(
+      children: [
+        for (final (estilo, nombre, icono) in opciones) ...[
+          if (estilo != EstiloMapa.oscuro) const SizedBox(width: Sp.md),
+          Expanded(
+            child: _OpcionEstilo(
+              estilo: estilo,
+              nombre: nombre,
+              icono: icono,
+              elegido: estilo == actual,
+              onTap: () =>
+                  ref.read(estiloMapaProvider.notifier).elegir(estilo),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
 }

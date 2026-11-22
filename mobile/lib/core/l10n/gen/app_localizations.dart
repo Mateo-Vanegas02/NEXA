@@ -4652,6 +4652,156 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Se cobra solo lo recorrido.'**
   String get finalizadoAntesCobro;
+
+  /// No description provided for @esteMes.
+  ///
+  /// In es, this message translates to:
+  /// **'Este mes'**
+  String get esteMes;
+
+  /// No description provided for @viajesCuenta.
+  ///
+  /// In es, this message translates to:
+  /// **'Viajes: {n}'**
+  String viajesCuenta(int n);
+
+  /// No description provided for @recorridoMes.
+  ///
+  /// In es, this message translates to:
+  /// **'Recorrido del mes'**
+  String get recorridoMes;
+
+  /// No description provided for @enMoto.
+  ///
+  /// In es, this message translates to:
+  /// **'en moto'**
+  String get enMoto;
+
+  /// No description provided for @seccionMapa.
+  ///
+  /// In es, this message translates to:
+  /// **'Mapa'**
+  String get seccionMapa;
+
+  /// No description provided for @mapaIndependiente.
+  ///
+  /// In es, this message translates to:
+  /// **'Independiente del tema de la app'**
+  String get mapaIndependiente;
+
+  /// No description provided for @tuMoto.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu moto'**
+  String get tuMoto;
+
+  /// No description provided for @motoVerificada.
+  ///
+  /// In es, this message translates to:
+  /// **'Verificada'**
+  String get motoVerificada;
+
+  /// No description provided for @motoEnRevision.
+  ///
+  /// In es, this message translates to:
+  /// **'En revisión'**
+  String get motoEnRevision;
+
+  /// No description provided for @destinoLlegas.
+  ///
+  /// In es, this message translates to:
+  /// **'{destino} · llegas {hora}'**
+  String destinoLlegas(String destino, String hora);
+
+  /// No description provided for @llegasA.
+  ///
+  /// In es, this message translates to:
+  /// **'Llegas a {destino}'**
+  String llegasA(String destino);
+
+  /// No description provided for @llegasAHora.
+  ///
+  /// In es, this message translates to:
+  /// **'Llegas a {destino} a las {hora}'**
+  String llegasAHora(String destino, String hora);
+
+  /// No description provided for @kmRestantes.
+  ///
+  /// In es, this message translates to:
+  /// **'{km} km restantes'**
+  String kmRestantes(String km);
+
+  /// No description provided for @periodoHoy.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy'**
+  String get periodoHoy;
+
+  /// No description provided for @periodoSemana.
+  ///
+  /// In es, this message translates to:
+  /// **'Semana'**
+  String get periodoSemana;
+
+  /// No description provided for @periodo30Dias.
+  ///
+  /// In es, this message translates to:
+  /// **'30 días'**
+  String get periodo30Dias;
+
+  /// No description provided for @viajesYPromedio.
+  ///
+  /// In es, this message translates to:
+  /// **'{n} viajes · {promedio} por viaje'**
+  String viajesYPromedio(int n, String promedio);
+
+  /// No description provided for @listoParaRodar.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Listo para rodar?'**
+  String get listoParaRodar;
+
+  /// No description provided for @deslizaConectarte.
+  ///
+  /// In es, this message translates to:
+  /// **'Desliza para conectarte'**
+  String get deslizaConectarte;
+
+  /// No description provided for @ultimos7Dias.
+  ///
+  /// In es, this message translates to:
+  /// **'Últimos 7 días'**
+  String get ultimos7Dias;
+
+  /// No description provided for @ganadoHoy.
+  ///
+  /// In es, this message translates to:
+  /// **'Ganado hoy'**
+  String get ganadoHoy;
+
+  /// No description provided for @gpsActivo.
+  ///
+  /// In es, this message translates to:
+  /// **'GPS'**
+  String get gpsActivo;
+
+  /// No description provided for @gpsSinSenal.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin GPS'**
+  String get gpsSinSenal;
+
+  /// No description provided for @llevandoA.
+  ///
+  /// In es, this message translates to:
+  /// **'Llevando a {nombre} · {destino}'**
+  String llevandoA(String nombre, String destino);
+
+  /// No description provided for @kmRecorridosDe.
+  ///
+  /// In es, this message translates to:
+  /// **'{recorridos} de {total} km recorridos'**
+  String kmRecorridosDe(String recorridos, String total);
 }
 
 class _AppLocalizationsDelegate

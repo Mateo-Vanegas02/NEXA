@@ -757,7 +757,7 @@ final ingresosProvider = FutureProvider<List<Ingreso>>(
   (ref) => ref.watch(conductorRepositoryProvider).ingresos(),
 );
 
-/// Saldo con NEXA de los últimos 30 días (vista del conductor: sin comisión).
-final saldoProvider = FutureProvider<SaldoConductor>(
-  (ref) => ref.watch(conductorRepositoryProvider).saldo(),
+/// Saldo con NEXA de los últimos N días (vista del conductor: sin comisión).
+final saldoProvider = FutureProvider.family<SaldoConductor, int>(
+  (ref, dias) => ref.watch(conductorRepositoryProvider).saldo(dias: dias),
 );

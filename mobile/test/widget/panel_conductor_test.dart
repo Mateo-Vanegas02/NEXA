@@ -44,15 +44,17 @@ void main() {
         await _ratos(t, 800);
 
         expect(find.text('Fuera de línea'), findsOneWidget);
-        expect(find.text('Estás fuera de línea'), findsOneWidget);
+        expect(find.text('¿Listo para rodar?'), findsOneWidget);
+        expect(find.text('Desliza para conectarte'), findsOneWidget);
 
         await t.tap(find.bySemanticsLabel('Conectarme'));
         await _ratos(t, 800);
         expect(find.text('En línea'), findsOneWidget);
         expect(find.text('Buscando solicitudes cerca de ti'), findsOneWidget);
-        expect(find.bySemanticsLabel('Desconectarme'), findsOneWidget);
+        // El interruptor de arriba y el botón de la hoja.
+        expect(find.bySemanticsLabel('Desconectarme'), findsWidgets);
 
-        await t.tap(find.bySemanticsLabel('Desconectarme'));
+        await t.tap(find.bySemanticsLabel('Desconectarme').first);
         await _ratos(t, 800);
         expect(find.text('Fuera de línea'), findsOneWidget);
         semantica.dispose();
@@ -69,7 +71,7 @@ void main() {
       ),
     );
     await _ratos(t, 800);
-    expect(find.text('Total ganado'), findsOneWidget);
+    expect(find.text('Semana'), findsOneWidget);
     expect(t.takeException(), isNull);
   });
 }
