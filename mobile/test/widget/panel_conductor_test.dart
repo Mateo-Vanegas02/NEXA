@@ -78,6 +78,13 @@ void main() {
         await _ratos(t, 800);
         expect(find.text('En línea'), findsOneWidget);
         expect(find.text('Buscando solicitudes cerca de ti'), findsOneWidget);
+        // Una solicitud nueva ocupa la pantalla; «Ver en el mapa» la deja en
+        // la lista y vuelve al panel.
+        if (find.text('Ver en el mapa').evaluate().isNotEmpty) {
+          await t.tap(find.text('Ver en el mapa'));
+          await _ratos(t, 400);
+          expect(find.text('Ver en el mapa'), findsNothing);
+        }
         // El interruptor de arriba y el botón de la hoja.
         expect(find.bySemanticsLabel('Desconectarme'), findsWidgets);
 

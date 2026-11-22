@@ -5084,6 +5084,132 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Enviar'**
   String get enviar;
+
+  /// No description provided for @navGiroEnCalle.
+  ///
+  /// In es, this message translates to:
+  /// **'{giro} en {calle}'**
+  String navGiroEnCalle(String giro, String calle);
+
+  /// No description provided for @zonasMasSolicitudes.
+  ///
+  /// In es, this message translates to:
+  /// **'Las manchas doradas del mapa son las zonas con más solicitudes en las últimas 2 horas.'**
+  String get zonasMasSolicitudes;
+
+  /// No description provided for @tusDocumentos.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus documentos'**
+  String get tusDocumentos;
+
+  /// No description provided for @docNoVence.
+  ///
+  /// In es, this message translates to:
+  /// **'No vence'**
+  String get docNoVence;
+
+  /// No description provided for @docSinFecha.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin fecha de vencimiento'**
+  String get docSinFecha;
+
+  /// No description provided for @docVencio.
+  ///
+  /// In es, this message translates to:
+  /// **'Venció el {fecha}'**
+  String docVencio(String fecha);
+
+  /// No description provided for @docVenceEnDias.
+  ///
+  /// In es, this message translates to:
+  /// **'Vence en {dias} días'**
+  String docVenceEnDias(int dias);
+
+  /// No description provided for @docVence.
+  ///
+  /// In es, this message translates to:
+  /// **'Vence el {fecha}'**
+  String docVence(String fecha);
+
+  /// No description provided for @revisionVenceEl.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha de vencimiento en la foto'**
+  String get revisionVenceEl;
+
+  /// No description provided for @revisionAnotarVencimiento.
+  ///
+  /// In es, this message translates to:
+  /// **'Anotar vencimiento'**
+  String get revisionAnotarVencimiento;
+
+  /// No description provided for @solicitudNueva.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva solicitud'**
+  String get solicitudNueva;
+
+  /// No description provided for @solicitudVerEnMapa.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver en el mapa'**
+  String get solicitudVerEnMapa;
+
+  /// No description provided for @atajoCasa.
+  ///
+  /// In es, this message translates to:
+  /// **'Casa'**
+  String get atajoCasa;
+
+  /// No description provided for @atajoUniversidad.
+  ///
+  /// In es, this message translates to:
+  /// **'Universidad'**
+  String get atajoUniversidad;
+
+  /// No description provided for @atajoComoGuardar.
+  ///
+  /// In es, this message translates to:
+  /// **'Busca el lugar y mantenlo presionado para guardarlo.'**
+  String get atajoComoGuardar;
+
+  /// No description provided for @atajoGuardarComo.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar en este teléfono como'**
+  String get atajoGuardarComo;
+
+  /// No description provided for @atajoGuardado.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardado como {nombre}'**
+  String atajoGuardado(String nombre);
+
+  /// No description provided for @indicadorCalificacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Calificación'**
+  String get indicadorCalificacion;
+
+  /// No description provided for @indicadorAceptacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Aceptación'**
+  String get indicadorAceptacion;
+
+  /// No description provided for @indicadorCancelacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelación'**
+  String get indicadorCancelacion;
+
+  /// No description provided for @requisitosCumplidos.
+  ///
+  /// In es, this message translates to:
+  /// **'{cumplidos} de {total}'**
+  String requisitosCumplidos(int cumplidos, int total);
 }
 
 class _AppLocalizationsDelegate

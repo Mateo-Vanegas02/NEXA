@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'paso_ruta.dart';
+
 part 'servicio.freezed.dart';
 part 'servicio.g.dart';
 
@@ -89,6 +91,9 @@ abstract class Servicio with _$Servicio {
     @Default(0) double duracionEstimadaMin,
     // Trazado por calles (polyline codificada de OSRM); null = línea recta.
     String? rutaGeometria,
+
+    /// Maniobras de la ruta con el nombre de la calle (OSRM).
+    @Default(<PasoRuta>[]) List<PasoRuta> pasosRuta,
     @Default(0) double tarifa,
     @Default(0) double extraVoluntario,
     @Default(0) double deudaCobrada,

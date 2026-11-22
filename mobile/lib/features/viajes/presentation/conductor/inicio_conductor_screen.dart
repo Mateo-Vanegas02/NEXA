@@ -12,6 +12,7 @@ import '../../../../core/widgets/nexa_widgets.dart';
 import '../../../../core/utils/mi_posicion.dart';
 import '../../../niveles/presentation/widgets/nivel_banner.dart';
 import '../../domain/opcion_ruta.dart';
+import '../../domain/zonas_documentos.dart';
 import '../../domain/servicio.dart';
 import '../../../../core/sin_conexion/reglas_sin_conexion.dart';
 import '../controllers/avisos_push_controller.dart';
@@ -19,7 +20,9 @@ import '../controllers/sin_conexion_controller.dart';
 import '../controllers/viaje_conductor_controller.dart';
 import '../widgets/cuenta_bloqueada.dart';
 import '../widgets/navegacion_conductor.dart';
+import '../controllers/zonas_documentos_controller.dart';
 import '../widgets/panel_turno.dart';
+import '../widgets/solicitud_entrante.dart';
 import '../widgets/rutas_desvio.dart';
 import '../widgets/solicitud_card.dart';
 import '../widgets/viaje_activo_card.dart';
@@ -108,6 +111,10 @@ class _Panel extends ConsumerWidget {
             activo!.ubicacionDestino!.latitud,
             activo.ubicacionDestino!.longitud,
           );
+    final vistas = ref.watch(solicitudesVistasProvider);
+    final entrante = activo == null && estado.terminado == null
+        ? estado.solicitudes.where((s) => !vistas.contains(s.id)).firstOrNull
+        : null;
     // Su propia moto sale del GPS del teléfono apenas llega cada dato (1 por
     // segundo en viaje), sin esperar al servidor; si el dato es viejo, la
     // última posición que confirmó el servidor.
@@ -165,6 +172,15 @@ class _Panel extends ConsumerWidget {
                 ReglasMarcadores.sinSenal(estado.pasajero!.haceSegundos),
             orientable: true,
             navegacion: navegando,
+            // En línea y sin viaje: dónde se está pidiendo más (rediseño 2026).
+            zonas: estado.enLinea && activo == null
+                ? [
+                    for (final z
+                        in ref.watch(zonasDemandaProvider).value ??
+                            const <ZonaDemanda>[])
+                      (LatLng(z.latitud, z.longitud), z.intensidad),
+                  ]
+                : const [],
           ),
         ),
         if (puedeNavegar)
@@ -224,6 +240,7 @@ class _Panel extends ConsumerWidget {
                 moto: moto,
                 ruta: rutaVigente ?? rutaDe(activo.rutaGeometria),
                 conRutaRecogida: conRutaRecogida,
+                pasos: estado.pasosVigentes,
                 recogida: recogida,
                 destino: activo.destino,
                 pasajero: activo.pasajero?.nombre ?? '',
@@ -366,13 +383,21 @@ class _Panel extends ConsumerWidget {
                   ),
                 )
               else
-                for (final s in estado.solicitudes) ...[
-                  SolicitudCard(servicio: s),
-                  const SizedBox(height: Sp.sm),
-                ],
+                for (final s in estado.solicitudes)
+                  if (s.id != entrante?.id) ...[
+                    SolicitudCard(servicio: s),
+                    const SizedBox(height: Sp.sm),
+                  ],
             ],
           ],
         ),
+        // Una solicitud nueva ocupa la pantalla (rediseño 2026) hasta que la
+        // acepta o la manda a la lista con «Ver en el mapa».
+        if (entrante != null)
+          SolicitudEntrante(
+            servicio: entrante,
+            pendientes: [for (final s in estado.solicitudes) s.id],
+          ),
       ],
     );
   }

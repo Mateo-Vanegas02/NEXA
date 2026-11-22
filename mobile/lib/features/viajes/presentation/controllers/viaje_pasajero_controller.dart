@@ -1,6 +1,7 @@
 import '../../../../core/config/env.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/providers.dart';
+import '../../../../core/tiempo_real/tiempo_real_provider.dart';
 import '../../../../core/utils/mi_posicion.dart';
 import '../../../auth/presentation/controllers/session_controller.dart';
 import '../../../niveles/presentation/controllers/niveles_controller.dart';
@@ -97,6 +98,10 @@ class ViajePasajeroController extends AsyncNotifier<Servicio?> {
   bool _sondeando = false;
   bool _siguiendo = false;
 
+  /// Suscripciones al canal en vivo (posición de la moto y cambios del viaje).
+  final _enVivo = <void Function()>[];
+  DateTime? _ultimoPush;
+
   @override
   Future<Servicio?> build() async {
     ref.onDispose(_detener);
@@ -126,9 +131,45 @@ class ViajePasajeroController extends AsyncNotifier<Servicio?> {
     // mapa la mueva fluida.
     _timerPosicion?.cancel();
     _timerPosicion = Timer.periodic(Env.pollingPosicion, (_) => seguirMoto());
+    _escucharEnVivo();
+  }
+
+  /// Con el canal en vivo, la moto llega apenas el conductor la envía y un
+  /// cambio del viaje se consulta al instante; el sondeo queda de respaldo.
+  void _escucharEnVivo() {
+    if (_enVivo.isNotEmpty) return;
+    final canal = ref.read(canalTiempoRealProvider);
+    final uid = ref.read(sesionProvider).sesion?.userId;
+    if (canal == null || uid == null) return;
+    _enVivo
+      ..add(
+        canal.suscribir('/topic/pasajero/$uid/posicion', (json) {
+          final actual = state.value;
+          if (json is! Map<String, dynamic> ||
+              actual == null ||
+              json['servicioId'] != actual.id) {
+            return;
+          }
+          try {
+            ref
+                .read(posicionConductorProvider.notifier)
+                .poner(PosicionViaje.fromJson(json));
+            _ultimoPush = DateTime.now();
+          } on Object {
+            // Mensaje incompleto: lo cubre el sondeo.
+          }
+        }),
+      )
+      ..add(
+        canal.suscribir('/topic/pasajero/$uid', (_) => unawaited(sondear())),
+      );
   }
 
   void _detener() {
+    for (final cancelar in _enVivo) {
+      cancelar();
+    }
+    _enVivo.clear();
     _timer?.cancel();
     _timer = null;
     _timerPosicion?.cancel();
@@ -138,6 +179,12 @@ class ViajePasajeroController extends AsyncNotifier<Servicio?> {
   /// Con el conductor asignado, solo la posición de la moto (cada 2 s).
   Future<void> seguirMoto() async {
     final actual = state.value;
+    // Si el canal en vivo acaba de traerla, no hace falta preguntar.
+    final push = _ultimoPush;
+    if (push != null &&
+        DateTime.now().difference(push) < const Duration(seconds: 3)) {
+      return;
+    }
     if (actual == null ||
         _sondeando ||
         _siguiendo ||

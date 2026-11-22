@@ -8,6 +8,8 @@ import '../features/auth/data/auth_repository_impl.dart';
 import '../features/auth/data/auth_repository_mock.dart';
 import '../features/auth/data/perfil_repository_impl.dart';
 import '../features/auth/data/vehiculos_repository_impl.dart';
+import '../features/viajes/data/zonas_documentos_repository.dart';
+import '../features/viajes/domain/zonas_documentos.dart';
 import '../features/auth/domain/auth.dart';
 import '../features/auth/domain/perfil.dart';
 import '../features/auth/domain/vehiculo.dart';
@@ -165,6 +167,12 @@ final adminRepositoryProvider = Provider<AdminRepository>(
   (ref) => ref.watch(useMocksProvider)
       ? MockAdminRepository()
       : ApiAdminRepository(ref.watch(dioProvider)),
+);
+
+final zonasDocumentosRepositoryProvider = Provider<ZonasDocumentosRepository>(
+  (ref) => ref.watch(useMocksProvider)
+      ? const MockZonasDocumentosRepository()
+      : ApiZonasDocumentosRepository(ref.watch(dioProvider)),
 );
 
 final vehiculosRepositoryProvider = Provider<VehiculosRepository>(

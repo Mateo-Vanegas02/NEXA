@@ -1,3 +1,5 @@
+import 'paso_ruta.dart';
+
 /// Qué tiene de especial una ruta ofrecida (lo marca el servidor).
 enum EtiquetaRuta { rapida, corta, alternativa }
 
@@ -11,6 +13,7 @@ class OpcionRuta {
     required this.distanciaKm,
     required this.duracionMin,
     required this.etiqueta,
+    this.pasos = const [],
   });
 
   factory OpcionRuta.fromJson(Map<String, dynamic> j) => OpcionRuta(
@@ -23,6 +26,10 @@ class OpcionRuta {
       'CORTA' => EtiquetaRuta.corta,
       _ => EtiquetaRuta.alternativa,
     },
+    pasos: [
+      for (final p in (j['pasos'] as List<dynamic>? ?? const []))
+        PasoRuta.fromJson(p as Map<String, dynamic>),
+    ],
   );
 
   /// Índice que se envía al elegirla.
@@ -33,4 +40,7 @@ class OpcionRuta {
   final double distanciaKm;
   final double duracionMin;
   final EtiquetaRuta etiqueta;
+
+  /// Maniobras con nombre de calle (vacío si el servidor no las envía).
+  final List<PasoRuta> pasos;
 }

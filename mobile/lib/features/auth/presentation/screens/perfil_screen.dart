@@ -15,12 +15,15 @@ import '../../../../core/widgets/nexa_widgets.dart';
 import '../../../../core/widgets/opciones_foto.dart';
 import '../../../niveles/presentation/controllers/niveles_controller.dart';
 import '../../../viajes/presentation/controllers/viaje_pasajero_controller.dart';
+import '../../../viajes/domain/zonas_documentos.dart';
+import '../../../viajes/presentation/controllers/zonas_documentos_controller.dart';
 import '../../../viajes/presentation/widgets/piezas_viaje.dart';
 import '../../domain/auth.dart';
 import '../controllers/perfil_controller.dart';
 import '../controllers/session_controller.dart';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -122,6 +125,8 @@ class PerfilScreen extends ConsumerWidget {
                     if (esConductor) ...[
                       const SizedBox(height: Sp.xl),
                       const _TarjetaMoto(),
+                      const SizedBox(height: Sp.md),
+                      const _TarjetaDocumentos(),
                     ],
                     const SizedBox(height: Sp.xl),
                     // Estilo del mapa, aparte del tema de la app (rediseño 2026).
@@ -574,4 +579,86 @@ class _TarjetaMoto extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Documentos del conductor con su vencimiento (rediseño 2026): la fecha la
+/// anota el admin al revisar la foto; si falta, se dice.
+class _TarjetaDocumentos extends ConsumerWidget {
+  const _TarjetaDocumentos();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final docs = ref.watch(misDocumentosProvider).value ?? const [];
+    if (docs.isEmpty) return const SizedBox.shrink();
+    final fecha = DateFormat('d MMM y', 'es_CO');
+    return NexaCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(l.tusDocumentos, style: NexaTexto.subtitulo),
+          const SizedBox(height: Sp.sm),
+          for (final d in docs) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: Sp.xs),
+              child: Row(
+                children: [
+                  Icon(
+                    switch (d.vigencia) {
+                      Vigencia.vencido => Icons.error_outline,
+                      Vigencia.porVencer => Icons.schedule,
+                      Vigencia.sinFecha => Icons.help_outline,
+                      _ => Icons.check_circle_outline,
+                    },
+                    size: 20,
+                    color: _color(d.vigencia),
+                  ),
+                  const SizedBox(width: Sp.md),
+                  Expanded(
+                    child: Text(switch (d.tipo) {
+                      'LICENCIA' => l.tipoLicencia,
+                      'TARJETA_PROPIEDAD' => l.tipoTarjetaPropiedad,
+                      'SOAT' => l.tipoSoat,
+                      'TECNOMECANICA' => l.tipoTecnomecanica,
+                      _ => d.tipo,
+                    }, style: NexaTexto.cuerpo),
+                  ),
+                  const SizedBox(width: Sp.sm),
+                  Flexible(
+                    child: Text(
+                      switch (d.vigencia) {
+                        Vigencia.noVence => l.docNoVence,
+                        Vigencia.sinFecha => l.docSinFecha,
+                        Vigencia.vencido => l.docVencio(
+                          fecha.format(d.venceEl!),
+                        ),
+                        Vigencia.porVencer => l.docVenceEnDias(
+                          d.diasRestantes ?? 0,
+                        ),
+                        Vigencia.vigente => l.docVence(
+                          fecha.format(d.venceEl!),
+                        ),
+                      },
+                      textAlign: TextAlign.end,
+                      style: NexaTexto.pequeno.copyWith(
+                        color: _color(d.vigencia),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  static Color _color(Vigencia v) => switch (v) {
+    Vigencia.vencido => NexaColors.error,
+    Vigencia.porVencer => NexaColors.gold,
+    Vigencia.sinFecha => NexaColors.muted,
+    _ => NexaColors.ok,
+  };
 }

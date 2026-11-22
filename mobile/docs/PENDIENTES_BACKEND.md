@@ -38,9 +38,9 @@ Lo que el diseño Pulso muestra y la app **no** implementó porque depende del s
 
 | # | Necesidad | Qué falta en el servidor | Estado en la app |
 |---|-----------|--------------------------|------------------|
-| V1 | Posición en vivo por WebSocket | Autenticar el STOMP de `/ws` con el JWT de la app y publicar la posición del conductor | Sondeo cada 2 s (conductor envía, pasajero consulta) |
-| V2 | Vencimiento de SOAT y tecnomecánica | Guardar la fecha de vencimiento de cada documento | El perfil del conductor muestra la moto, sin vencimientos; el admin ve las fotos y números |
-| V3 | Zonas con más solicitudes (mapa de calor del conductor) | Agregado de solicitudes recientes por zona | No se muestra |
+| V1 | Posición en vivo por WebSocket | **Hecho** en `feat/rediseno-servidor` (`/ws-app` con JWT) | Canal en vivo con el sondeo de respaldo |
+| V2 | Vencimiento de SOAT y tecnomecánica | **Hecho**: el admin anota la fecha | Perfil del conductor y alertas del admin |
+| V3 | Zonas con más solicitudes | **Hecho**: `GET /api/conductor/zonas` | Manchas doradas en el mapa en línea |
 | V4 | Ruta que evita giros a la izquierda | OSRM no lo ofrece; haría falta otro perfil de ruteo | Se ofrecen la más rápida, la más corta y una alternativa |
-| V5 | Nombres de calle en la maniobra | Instrucciones paso a paso de OSRM (`steps=true`) | Giro y distancia, sin calle |
+| V5 | Nombres de calle en la maniobra | **Hecho**: `pasosRuta` | «Gira … en Calle X» |
 | V6 | Contactar al pasajero desde «viajes en riesgo» | La Lambda no envía datos de contacto (privacidad) | Solo la razón probable |
