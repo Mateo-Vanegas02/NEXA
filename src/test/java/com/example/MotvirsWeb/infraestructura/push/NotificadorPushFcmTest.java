@@ -26,18 +26,30 @@ class NotificadorPushFcmTest {
     }
 
     @Test
-    void unAvisoDelViajeLlevaNotificacionCanalYVigencia() throws Exception {
+    void unAvisoDelViajeViajaComoDatosParaQueLaAppLoDibuje() throws Exception {
         JsonNode m = mensaje(new Aviso("VIAJE_ACEPTADO:s1", "VIAJE_ACEPTADO", Canal.VIAJE, "Carlos va por ti",
-                "KZT 38F", Map.of("servicioId", "s1"), Duration.ofMinutes(10)));
+                "KZT 38F", Map.of("servicioId", "s1", "placa", "KZT 38F"), Duration.ofMinutes(10)));
 
         assertEquals("tok", m.path("token").asText());
-        assertEquals("Carlos va por ti", m.path("notification").path("title").asText());
-        assertEquals("HIGH", m.path("android").path("priority").asText());
+        assertTrue(m.path("notification").isMissingNode(), "la app arma la notificación con su diseño");
+        assertEquals("HIGH", m.path("android").path("priority").asText(), "llega con la app cerrada");
         assertEquals("600s", m.path("android").path("ttl").asText());
-        assertEquals("nexa_viaje", m.path("android").path("notification").path("channel_id").asText());
-        assertEquals("viaje-s1", m.path("android").path("notification").path("tag").asText());
+        assertEquals("nexa_viaje", m.path("data").path("canal").asText());
+        assertEquals("Carlos va por ti", m.path("data").path("titulo").asText());
+        assertEquals("KZT 38F", m.path("data").path("placa").asText());
         assertEquals("VIAJE_ACEPTADO:s1", m.path("data").path("eventoId").asText());
         assertEquals("s1", m.path("data").path("servicioId").asText());
+    }
+
+    @Test
+    void losAvisosDeLaCuentaLlevanNotificacionDelSistema() throws Exception {
+        JsonNode m = mensaje(new Aviso("DEUDA:s1", "DEUDA", Canal.CUENTA, "Tienes un cargo pendiente",
+                "Se cobra en tu próximo viaje", Map.of("servicioId", "s1"), Duration.ofDays(1)));
+
+        assertEquals("Tienes un cargo pendiente", m.path("notification").path("title").asText());
+        assertEquals("nexa_cuenta", m.path("android").path("notification").path("channel_id").asText());
+        assertEquals("viaje-s1", m.path("android").path("notification").path("tag").asText());
+        assertEquals("NORMAL", m.path("android").path("priority").asText());
     }
 
     @Test

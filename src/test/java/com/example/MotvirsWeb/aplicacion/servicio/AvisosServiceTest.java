@@ -213,6 +213,62 @@ class AvisosServiceTest {
     }
 
     @Test
+    void laNotificacionDelPasajeroTraeConductorMotoPlacaYNota() {
+        Servicio s = solicitud(CanalServicio.APP, 0);
+        Servicio.ConductorEmbedded c = new Servicio.ConductorEmbedded(cerca);
+        c.setVehiculo("Yamaha NMAX · gris");
+        c.setPlaca("KZT 38F");
+        c.setCalificacion(4.25);
+        s.setConductor(c);
+        s.setEstado(EstadoServicio.EN_CURSO);
+        when(dispositivos.tokensDe(s.getPasajero().getId())).thenReturn(List.of("tok-pasajero"));
+
+        avisos.viajeIniciado(s);
+
+        ArgumentCaptor<Aviso> aviso = ArgumentCaptor.forClass(Aviso.class);
+        verify(push).enviar(any(), aviso.capture());
+        Aviso a = aviso.getValue();
+        assertEquals("VIAJE_INICIADO", a.tipo());
+        assertEquals("Vas camino a C.C. Unicentro", a.titulo());
+        assertEquals("Yamaha NMAX · gris", a.datos().get("vehiculo"));
+        assertEquals("KZT 38F", a.datos().get("placa"));
+        assertEquals("4,3", a.datos().get("calificacion"));
+        assertEquals("C.C. Unicentro", a.datos().get("destino"));
+        assertFalse(a.datos().containsKey("total"), "el total va solo al terminar");
+    }
+
+    @Test
+    void alTerminarElPasajeroVeElTotalEnLaNotificacion() {
+        Servicio s = solicitud(CanalServicio.APP, 0);
+        s.setConductor(new Servicio.ConductorEmbedded(cerca));
+        s.setEstado(EstadoServicio.FINALIZADO);
+        s.setTarifa(4400);
+        when(dispositivos.tokensDe(s.getPasajero().getId())).thenReturn(List.of("tok-pasajero"));
+
+        avisos.viajeFinalizado(s);
+
+        ArgumentCaptor<Aviso> aviso = ArgumentCaptor.forClass(Aviso.class);
+        verify(push).enviar(any(), aviso.capture());
+        assertEquals("$4.400", aviso.getValue().datos().get("total"));
+    }
+
+    @Test
+    void elPasajeroVeLaBusquedaYCadaOlaQueSeAmplia() {
+        Servicio s = solicitud(CanalServicio.APP, 30);
+        when(dispositivos.tokensDe(s.getPasajero().getId())).thenReturn(List.of("tok-pasajero"));
+
+        avisos.olaAmpliada(s, 1, 2);
+
+        Aviso a = enviados().get("tok-pasajero");
+        assertEquals("BUSQUEDA_AMPLIADA", a.tipo());
+        assertEquals(Canal.VIAJE, a.canal());
+        assertEquals("2", a.datos().get("ola"));
+        assertTrue(Integer.parseInt(a.datos().get("olas")) >= 2);
+        assertTrue(a.datos().get("radio").endsWith(" km"), a.datos().get("radio"));
+        assertEquals("BUSQUEDA_AMPLIADA:s1:2", a.eventoId(), "cada ola es un evento distinto");
+    }
+
+    @Test
     void laCancelacionLeLlegaAlOtroLado() {
         Servicio s = solicitud(CanalServicio.APP, 0);
         s.setConductor(new Servicio.ConductorEmbedded(cerca));

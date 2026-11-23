@@ -468,6 +468,8 @@ public class ServicioServiceImpl implements ServicioService {
                     boolean neto = s.getDesglose() != null && s.getDesglose().isDefinitivo();
                     ingreso.put("monto", neto ? s.getDesglose().getGananciaConductor() : s.getTarifa());
                     ingreso.put("descripcion", "Viaje con " + s.getPasajero().getNombre());
+                    // La app abre el detalle del viaje desde su ganancia.
+                    ingreso.put("servicioId", s.getId());
                     return ingreso;
                 })
                 .collect(Collectors.toList());

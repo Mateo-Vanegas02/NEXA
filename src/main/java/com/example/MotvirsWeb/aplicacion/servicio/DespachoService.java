@@ -99,6 +99,10 @@ public class DespachoService {
     }
 
     /** Radio en km de una ola (infinito en la última si no tiene tope). */
+    public int totalOlas() {
+        return olas.totalOlas();
+    }
+
     public double radioKm(int ola) {
         return olas.radioKm(ola);
     }

@@ -48,7 +48,8 @@ public interface NotificadorPush {
      */
     enum Canal {
         SOLICITUDES("nexa_solicitudes", true, true),
-        VIAJE("nexa_viaje", true, false),
+        /** Solo datos: la app dibuja la notificación del viaje con su diseño (conductor, moto, etapa). */
+        VIAJE("nexa_viaje", true, true),
         CUENTA("nexa_cuenta", false, false),
         SILENCIOSO(null, false, true);
 

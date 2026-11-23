@@ -46,12 +46,20 @@ push vistos durante 48 h (máximo 256) para cubrir reinicios.
 | `SOLICITUD_NUEVA` | conductores de la app que entran en la ola (incluye, en la última, los que tienen la pantalla bloqueada) | `nexa_solicitudes` | solo datos (la app arma la notificación con «Ver» / «Aceptar» y la cuenta regresiva); vence a los 45 s | Nueva solicitud · Ganas $6.964 — A 700 m · 3,4 km de viaje · C.C. Unicentro | tarjeta de la solicitud |
 | `SOLICITUD_EXTRA` | quienes ya la ven | `nexa_solicitudes` | solo datos | Ahora ganas $7.964 (+$1.000) | tarjeta |
 | `SOLICITUD_RETIRADA` | conductores avisados (menos el que la tomó) | — | silencioso; `motivo` = `TOMADO` o `CANCELADO` | — | quita la tarjeta |
-| `VIAJE_ACEPTADO` | pasajero | `nexa_viaje` | notificación | Carlos va por ti — Yamaha NMAX · gris · KZT 38F | conductor en camino |
-| `CONDUCTOR_LLEGO` | pasajero | `nexa_viaje` | notificación | Carlos está en el punto — Busca la placa KZT 38F | conductor llegó |
-| `VIAJE_FINALIZADO` | pasajero | `nexa_viaje` | notificación | Llegaste a tu destino — Toca para ver el total y calificar | llegaste + calificar |
-| `VIAJE_CANCELADO` | el otro lado | `nexa_viaje` | notificación | Laura canceló el viaje / Tu conductor canceló el viaje | inicio |
-| `SIN_CONDUCTORES` | pasajero (una vez, 45 s después del inicio de la última ola) | `nexa_viaje` | notificación | Sin conductores cerca por ahora | buscando conductor (E03) |
-| `SOLICITUD_VENCIDA` | pasajero (la solicitud esperó `nexa.despacho.vencimiento-solicitud-minutos` y se canceló sola, sin cargo; a los conductores avisados les llega `SOLICITUD_RETIRADA` con motivo `VENCIDA`) | `nexa_viaje` | notificación | No encontramos conductor | inicio |
+| `SOLICITUD_RECIBIDA` | pasajero, al pedir | `nexa_viaje` | solo datos; la app dibuja «Buscando tu conductor» fija, con barra en movimiento | Ola 1 de 4 · radio de 1,5 km | buscando conductor |
+| `BUSQUEDA_AMPLIADA` | pasajero, en cada ola | `nexa_viaje` | solo datos; actualiza la misma notificación sin sonar (`eventoId` con la ola) | Ola 2 de 4 · radio de 2,5 km | buscando conductor |
+| `VIAJE_ACEPTADO` | pasajero | `nexa_viaje` | solo datos (la app arma la notificación) | Carlos va por ti — Yamaha NMAX · gris · Placa KZT 38F · ★ 4,3 | conductor en camino |
+| `CONDUCTOR_LLEGO` | pasajero | `nexa_viaje` | solo datos | Carlos está en tu punto — Yamaha NMAX · gris · Placa KZT 38F | conductor llegó |
+| `VIAJE_INICIADO` | pasajero | `nexa_viaje` | solo datos, sin sonar | Vas camino a C.C. Unicentro | viaje en curso |
+| `VIAJE_FINALIZADO` | pasajero | `nexa_viaje` | solo datos | ¡Llegaste a tu destino! — $4.400 · Toca para ver el total y calificar a Carlos | llegaste + calificar |
+| `VIAJE_CANCELADO` | el otro lado | `nexa_viaje` | solo datos | Laura canceló el viaje / Tu conductor canceló el viaje | inicio |
+| `SIN_CONDUCTORES` | pasajero (una vez, 45 s después del inicio de la última ola) | `nexa_viaje` | solo datos | Sin conductores cerca por ahora | buscando conductor (E03) |
+| `SOLICITUD_VENCIDA` | pasajero (la solicitud esperó `nexa.despacho.vencimiento-solicitud-minutos` y se canceló sola, sin cargo; a los conductores avisados les llega `SOLICITUD_RETIRADA` con motivo `VENCIDA`) | `nexa_viaje` | solo datos | No encontramos conductor | inicio |
+
+Desde el 23-nov-2026 el canal `nexa_viaje` viaja **solo como datos**: la app (desde la versión que trae
+`mostrarAvisoViaje`) dibuja cada etapa con su diseño, con estos datos además de `titulo` y `cuerpo`:
+`conductor`, `vehiculo`, `placa`, `calificacion`, `destino`, `total` (al terminar) y, en la búsqueda, `ola`,
+`olas` y `radio`. Una app vieja no muestra estos avisos: hay que instalar la app nueva junto con este despliegue.
 
 Los avisos del mismo viaje usan `tag = viaje-<servicioId>`: uno nuevo reemplaza al anterior en la bandeja.
 Vigencias en `modelo-nexa.properties` (`nexa.avisos.*`): solicitud 45 s, viaje 10 min, cuenta 24 h.
