@@ -146,3 +146,11 @@ Durante la recogida y el trayecto, el velocímetro flota sobre el mapa incluso c
 - **Brújula.** Las lecturas que llegan seguidas (cono y cámara) ya no se encolan: solo cuenta la última (`_ultimoGana`). La cámara de la brújula se mueve sin animar; el giroscopio lee a ~50 por segundo y la brújula corrige la deriva en ~0,5 s.
 - **Notificaciones del viaje.** El servidor manda las etapas solo como datos y la app las dibuja (`mostrarAvisoViaje`, `disenoAvisoViaje`): quién va, moto, placa, nota, destino, etapa como barra, color y botón. Una por viaje (mismo id y `tag`), la búsqueda queda fija y se actualiza sin sonar. Requiere el servidor de este mismo cambio y `FIREBASE_CREDENCIALES` en el servidor.
 - **Métodos de pago.** Hoja «¿Cómo vas a pagar?» con diseño; solo el efectivo se puede elegir. Tarjeta y billetera quedan como «Próximamente» hasta la pasarela de pago (otro compañero la va a definir).
+
+## 23-nov-2026 · Búsqueda de destinos solo en Cartagena
+
+- `ZonaServicio` (`core/mapa/zona_servicio.dart`) copia el polígono del servidor (`nexa.zona.poligono`); las pruebas usan los mismos puntos que `ZonaServicioTest`. Si la zona cambia en el servidor, se cambia aquí.
+- Nominatim se consulta solo en el rectángulo de la zona con `bounded=1` (sin él el `viewbox` solo ordenaba y salían otras ciudades) y la app descarta lo que quede fuera del polígono (el rectángulo deja pasar Turbaco).
+- Se busca al tocar «Buscar» (teclado o botón), no mientras se escribe: la política de uso de Nominatim prohíbe el autocompletado y limita a 1 petición por segundo (la app espera entre búsquedas).
+- «Fijar en el mapa» no acepta un punto fuera de la zona y avisa en el momento; los recientes fuera de la zona no se muestran.
+- Pendiente (opciones 2 y 4): búsqueda por el servidor con caché y filtro de `ZonaServicio`, y lista propia de lugares frecuentes de Cartagena.

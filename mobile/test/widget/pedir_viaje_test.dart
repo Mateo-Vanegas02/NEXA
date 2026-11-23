@@ -73,7 +73,12 @@ void main() {
         expect(find.text('Planea tu viaje'), findsOneWidget);
         expect(find.text('Mi ubicación'), findsOneWidget);
         await t.enterText(find.byType(TextField), 'Bocagrande');
-        await _ratos(t, 900); // debounce de 700 ms + respuesta
+        await _ratos(t, 900);
+        // No busca mientras se escribe (política de Nominatim): pide tocar Buscar.
+        expect(find.text('Centro Comercial Plaza'), findsNothing);
+        expect(find.text('Escribe el lugar y toca Buscar.'), findsOneWidget);
+        await t.testTextInput.receiveAction(TextInputAction.search);
+        await _ratos(t, 900);
         expect(find.text('Centro Comercial Plaza'), findsOneWidget);
 
         await t.tap(find.text('Centro Comercial Plaza'));
@@ -94,8 +99,26 @@ void main() {
     await t.tap(find.text('abrir'));
     await _ratos(t, 400);
     await t.enterText(find.byType(TextField), 'ab');
+    await t.testTextInput.receiveAction(TextInputAction.search);
     await _ratos(t, 1000);
     expect(geo.consultas, isEmpty);
+    expect(find.byTooltip('Buscar'), findsNothing);
+  });
+
+  testWidgets('tu ruta: escribir no busca; el botón Buscar sí', (t) async {
+    usarTamano(t, kTamanos[1]);
+    final geo = GeocodingFalso();
+    await t.pumpWidget(
+      envolver(const _Anfitrion(esOrigen: false), geocoding: geo),
+    );
+    await t.tap(find.text('abrir'));
+    await _ratos(t, 400);
+    await t.enterText(find.byType(TextField), 'Unicentro');
+    await _ratos(t, 2000);
+    expect(geo.consultas, isEmpty);
+    await t.tap(find.byTooltip('Buscar'));
+    await _ratos(t, 900);
+    expect(geo.consultas, ['Unicentro']);
   });
 
   testWidgets('tu ruta: fijar en el mapa se devuelve como petición', (t) async {

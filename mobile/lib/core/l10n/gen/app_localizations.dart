@@ -5588,6 +5588,30 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Elegido'**
   String get pagoElegido;
+
+  /// No description provided for @buscarAlTocar.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe el lugar y toca Buscar.'**
+  String get buscarAlTocar;
+
+  /// No description provided for @buscarBoton.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar'**
+  String get buscarBoton;
+
+  /// No description provided for @sinResultadosZona.
+  ///
+  /// In es, this message translates to:
+  /// **'No encontramos ese lugar en Cartagena. Prueba con otro nombre o fíjalo en el mapa.'**
+  String get sinResultadosZona;
+
+  /// No description provided for @puntoFueraDeZona.
+  ///
+  /// In es, this message translates to:
+  /// **'Ese punto está fuera de la zona de servicio. Por ahora NEXA funciona solo en Cartagena.'**
+  String get puntoFueraDeZona;
 }
 
 class _AppLocalizationsDelegate

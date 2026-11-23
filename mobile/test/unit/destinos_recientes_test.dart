@@ -45,4 +45,16 @@ void main() {
     ]);
     expect(r.map((s) => s.id), ['1']);
   });
+
+  test('omite los destinos fuera de Cartagena (no se pueden pedir)', () {
+    final r = destinosRecientes([
+      _viaje(
+        't',
+        'Turbaco',
+        punto: const Coordenada(latitud: 10.3325, longitud: -75.4142),
+      ),
+      _viaje('p', 'C.C. Plaza', punto: plaza),
+    ]);
+    expect(r.map((s) => s.id), ['p']);
+  });
 }

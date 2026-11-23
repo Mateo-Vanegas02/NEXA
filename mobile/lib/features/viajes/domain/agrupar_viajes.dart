@@ -1,3 +1,6 @@
+import 'package:latlong2/latlong.dart';
+
+import '../../../core/mapa/zona_servicio.dart';
 import 'servicio.dart';
 
 /// Tramos del historial (diseño P10): hoy, esta semana (desde el lunes) y
@@ -30,14 +33,18 @@ Map<TramoFecha, List<Servicio>> agruparPorTramo(
 }
 
 /// Destinos recientes distintos para el inicio del pasajero (rediseño 2026):
-/// en el orden del historial, sin viajes activos y sin repetir destino (por
-/// coordenadas a ~100 m, o por nombre si no las hay).
+/// en el orden del historial, sin viajes activos, sin repetir destino (por
+/// coordenadas a ~100 m, o por nombre si no las hay) y sin los que quedan
+/// fuera de la zona de servicio (no se podrían pedir de nuevo).
 List<Servicio> destinosRecientes(List<Servicio> viajes, {int maximo = 3}) {
   final vistos = <String>{};
   final recientes = <Servicio>[];
   for (final s in viajes) {
     if (s.estado.activo) continue;
     final d = s.ubicacionDestino;
+    if (d != null && !ZonaServicio.contiene(LatLng(d.latitud, d.longitud))) {
+      continue;
+    }
     final clave = d == null
         ? s.destino.trim().toLowerCase()
         : '${d.latitud.toStringAsFixed(3)},${d.longitud.toStringAsFixed(3)}';

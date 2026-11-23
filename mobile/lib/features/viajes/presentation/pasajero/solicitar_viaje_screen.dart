@@ -22,6 +22,7 @@ import '../../domain/servicio.dart';
 import '../controllers/viaje_pasajero_controller.dart';
 import '../widgets/desglose_card.dart';
 import 'elegir_lugar_screen.dart';
+import '../../../../core/mapa/zona_servicio.dart';
 import '../../../permisos/presentation/con_ubicacion.dart';
 import '../widgets/metodos_pago.dart';
 import '../../../permisos/presentation/flujo_permisos.dart';
@@ -202,6 +203,14 @@ class _SolicitarViajeScreenState extends ConsumerState<SolicitarViajeScreen> {
 
   Future<void> _alTocarMapa(LatLng p) async {
     final l = AppLocalizations.of(context);
+    // Fuera de Cartagena no se acepta el punto: se avisa ya, en vez de que el
+    // servidor lo rechace al cotizar. Sigue en modo «fijar» para tocar otro.
+    if (!ZonaServicio.contiene(p)) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(l.puntoFueraDeZona)));
+      return;
+    }
     final campo = _fijando ?? _Campo.destino;
     setState(() {
       if (campo == _Campo.origen) {
