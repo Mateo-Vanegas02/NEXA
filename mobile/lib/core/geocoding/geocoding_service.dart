@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../mapa/zona_servicio.dart';
+
 /// Un lugar encontrado: nombre corto para mostrar y coordenadas.
 class Lugar {
   const Lugar({
@@ -17,7 +19,9 @@ class Lugar {
 
 /// Búsqueda de direcciones (geocodificación) y su inversa.
 abstract interface class GeocodingService {
-  /// Busca [consulta] priorizando resultados cercanos a [cerca].
+  /// Busca [consulta] solo dentro de la zona de servicio (Cartagena). [cerca]
+  /// es la posición del usuario (la pantalla muestra a cuántos km queda cada
+  /// lugar).
   Future<List<Lugar>> buscar(String consulta, {LatLng? cerca});
 
   /// Nombre legible de un punto del mapa, o `null` si no se encuentra.
@@ -27,7 +31,9 @@ abstract interface class GeocodingService {
 /// Implementación con Nominatim (OpenStreetMap): gratuita y sin API key.
 ///
 /// Política de uso: https://operations.osmfoundation.org/policies/nominatim/
-/// (máx. 1 petición/segundo, User-Agent identificable; la app usa debounce).
+/// (máx. 1 petición/segundo, User-Agent identificable y sin autocompletar: la
+/// app busca solo al tocar «Buscar»). Pide solo el rectángulo de la zona
+/// (`bounded=1`, filtro estricto) y descarta lo que quede fuera del polígono.
 /// Usa su propio [Dio]: nunca debe enviarse el token de NEXA a terceros.
 class NominatimGeocoding implements GeocodingService {
   NominatimGeocoding([Dio? dio])
@@ -57,22 +63,43 @@ class NominatimGeocoding implements GeocodingService {
         queryParameters: {
           'format': 'jsonv2',
           'q': q,
-          'limit': 5,
+          // Más de los que se muestran: el polígono descarta los del borde.
+          'limit': 10,
           'countrycodes': 'co',
           'addressdetails': 0,
-          if (cerca != null)
-            'viewbox':
-                '${cerca.longitude - 0.6},${cerca.latitude + 0.6},'
-                '${cerca.longitude + 0.6},${cerca.latitude - 0.6}',
+          // Solo el rectángulo de Cartagena: con bounded=1 es un filtro, no
+          // una preferencia (antes salían lugares de otras ciudades).
+          'viewbox':
+              '${ZonaServicio.oeste},${ZonaServicio.norte},'
+              '${ZonaServicio.este},${ZonaServicio.sur}',
+          'bounded': 1,
         },
       );
-      return [
+      return filtrarEnZona([
         for (final e in r.data ?? const <dynamic>[])
           if (e is Map<String, dynamic>) _aLugar(e),
-      ];
+      ]);
     } on DioException {
       return const [];
     }
+  }
+
+  /// Deja solo los lugares dentro de la zona (el rectángulo deja pasar, p. ej.,
+  /// Turbaco), sin repetir el mismo lugar, en el orden de relevancia del
+  /// buscador y como mucho [maximo].
+  static List<Lugar> filtrarEnZona(List<Lugar> lugares, {int maximo = 6}) {
+    final vistos = <String>{};
+    final enZona = [
+      for (final l in lugares)
+        if (ZonaServicio.contiene(l.punto) &&
+            vistos.add(
+              '${l.nombre.toLowerCase()}|'
+              '${l.punto.latitude.toStringAsFixed(4)},'
+              '${l.punto.longitude.toStringAsFixed(4)}',
+            ))
+          l,
+    ];
+    return enZona.take(maximo).toList();
   }
 
   @override

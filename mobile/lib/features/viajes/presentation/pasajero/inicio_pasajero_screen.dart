@@ -152,63 +152,63 @@ class _Encabezado extends ConsumerWidget {
                 shadows: NexaShadows.card,
               ),
               child: Material(
-              color: NexaColors.glass,
-              shape: const StadiumBorder(
-                side: BorderSide(color: NexaColors.line),
-              ),
-              child: InkWell(
-                customBorder: const StadiumBorder(),
-                onTap: () => context.go('/p/perfil'),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    Sp.sm,
-                    Sp.sm,
-                    Sp.xl,
-                    Sp.sm,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      NexaAvatarAnillo(
-                        iniciales: p?.iniciales ?? '·',
-                        progreso: nivel?.progreso ?? 0,
-                        diametro: 46,
-                      ),
-                      const SizedBox(width: Sp.md),
-                      Flexible(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              _saludo(l, DateTime.now().hour),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: context.textos.bodySmall?.copyWith(
-                                color: context.muted,
-                              ),
-                            ),
-                            Text(
-                              p?.nombre ?? '',
-                              style: context.textos.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            if (perfil.hasError)
-                              Text(AppException.from(perfil.error!).mensaje)
-                            else if (nivel == null)
-                              _Reputacion(perfil: p, viajes: viajes),
-                          ],
+                color: NexaColors.glass,
+                shape: const StadiumBorder(
+                  side: BorderSide(color: NexaColors.line),
+                ),
+                child: InkWell(
+                  customBorder: const StadiumBorder(),
+                  onTap: () => context.go('/p/perfil'),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      Sp.sm,
+                      Sp.sm,
+                      Sp.xl,
+                      Sp.sm,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        NexaAvatarAnillo(
+                          iniciales: p?.iniciales ?? '·',
+                          progreso: nivel?.progreso ?? 0,
+                          diametro: 46,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: Sp.md),
+                        Flexible(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                _saludo(l, DateTime.now().hour),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: context.textos.bodySmall?.copyWith(
+                                  color: context.muted,
+                                ),
+                              ),
+                              Text(
+                                p?.nombre ?? '',
+                                style: context.textos.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (perfil.hasError)
+                                Text(AppException.from(perfil.error!).mensaje)
+                              else if (nivel == null)
+                                _Reputacion(perfil: p, viajes: viajes),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
           ),
         ),
         const SizedBox(width: Sp.md),

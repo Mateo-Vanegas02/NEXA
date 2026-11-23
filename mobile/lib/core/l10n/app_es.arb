@@ -1958,5 +1958,9 @@
   "pagoBilleteraDetalle": "Nequi o Daviplata desde la app.",
   "pagoProximamente": "Próximamente",
   "pagoNota": "Muy pronto podrás pagar con tarjeta o billetera digital sin sacar efectivo.",
-  "pagoElegido": "Elegido"
+  "pagoElegido": "Elegido",
+  "buscarAlTocar": "Escribe el lugar y toca Buscar.",
+  "buscarBoton": "Buscar",
+  "sinResultadosZona": "No encontramos ese lugar en Cartagena. Prueba con otro nombre o fíjalo en el mapa.",
+  "puntoFueraDeZona": "Ese punto está fuera de la zona de servicio. Por ahora NEXA funciona solo en Cartagena."
 }

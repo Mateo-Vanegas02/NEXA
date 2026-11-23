@@ -3104,4 +3104,18 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get pagoElegido => 'Elegido';
+
+  @override
+  String get buscarAlTocar => 'Escribe el lugar y toca Buscar.';
+
+  @override
+  String get buscarBoton => 'Buscar';
+
+  @override
+  String get sinResultadosZona =>
+      'No encontramos ese lugar en Cartagena. Prueba con otro nombre o fíjalo en el mapa.';
+
+  @override
+  String get puntoFueraDeZona =>
+      'Ese punto está fuera de la zona de servicio. Por ahora NEXA funciona solo en Cartagena.';
 }

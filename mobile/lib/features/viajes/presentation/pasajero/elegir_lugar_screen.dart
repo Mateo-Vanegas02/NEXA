@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -28,8 +26,9 @@ class ResultadoLugar {
   final bool miUbicacion;
 }
 
-/// Pantalla "Tu ruta": busca direcciones mientras se escribe y devuelve el lugar
-/// elegido con `Navigator.pop`. Máx. 1 petición cada 700 ms (política de Nominatim).
+/// Pantalla "Tu ruta": busca direcciones dentro de Cartagena al tocar «Buscar»
+/// (la política de Nominatim no permite autocompletar mientras se escribe y
+/// pide máx. 1 petición por segundo) y devuelve el lugar con `Navigator.pop`.
 class ElegirLugarScreen extends ConsumerStatefulWidget {
   const ElegirLugarScreen({
     required this.esOrigen,
@@ -56,41 +55,44 @@ class ElegirLugarScreen extends ConsumerStatefulWidget {
 class _ElegirLugarScreenState extends ConsumerState<ElegirLugarScreen> {
   final _ctrl = TextEditingController();
   final _foco = FocusNode();
-  Timer? _debounce;
   int _token = 0;
+  DateTime? _ultimaBusqueda;
   List<Lugar> _resultados = const [];
   bool _buscando = false;
   bool _busquedaHecha = false;
 
   @override
   void dispose() {
-    _debounce?.cancel();
     _ctrl.dispose();
     _foco.dispose();
     super.dispose();
   }
 
+  /// Al escribir solo se limpian los resultados viejos: se busca al tocar
+  /// «Buscar» (teclado o botón).
   void _alEscribir(String texto) {
-    setState(() {});
-    _debounce?.cancel();
-    if (texto.trim().length < 3) {
-      _token++;
-      setState(() {
-        _resultados = const [];
-        _buscando = false;
-        _busquedaHecha = false;
-      });
-      return;
-    }
-    _debounce = Timer(const Duration(milliseconds: 700), () => _buscar(texto));
+    _token++;
+    setState(() {
+      _resultados = const [];
+      _buscando = false;
+      _busquedaHecha = false;
+    });
   }
 
-  Future<void> _buscar(String texto) async {
+  Future<void> _buscar([String? texto]) async {
+    final q = (texto ?? _ctrl.text).trim();
+    if (q.length < 3 || _buscando) return;
     final token = ++_token;
     setState(() => _buscando = true);
-    final r = await ref
-        .read(geocodingProvider)
-        .buscar(texto, cerca: widget.cerca);
+    // Nunca más de una petición por segundo.
+    final antes = _ultimaBusqueda;
+    if (antes != null) {
+      final espera =
+          const Duration(seconds: 1) - DateTime.now().difference(antes);
+      if (espera > Duration.zero) await Future<void>.delayed(espera);
+    }
+    _ultimaBusqueda = DateTime.now();
+    final r = await ref.read(geocodingProvider).buscar(q, cerca: widget.cerca);
     if (!mounted || token != _token) return;
     setState(() {
       _resultados = r;
@@ -156,6 +158,7 @@ class _ElegirLugarScreenState extends ConsumerState<ElegirLugarScreen> {
       foco: _foco,
       hint: widget.esOrigen ? l.origenHint : l.buscarLugarHint,
       onChanged: _alEscribir,
+      onBuscar: _buscar,
       onBorrar: () {
         _ctrl.clear();
         _alEscribir('');
@@ -298,15 +301,19 @@ class _Lista extends StatelessWidget {
       );
     }
     if (estado._resultados.isEmpty) {
-      return estado._busquedaHecha
-          ? Padding(
+      final listo = estado._ctrl.text.trim().length >= 3;
+      final texto = estado._busquedaHecha
+          ? l.sinResultadosZona
+          : (listo ? l.buscarAlTocar : null);
+      return texto == null
+          ? const SizedBox.shrink()
+          : Padding(
               padding: const EdgeInsets.only(top: Sp.sm),
               child: Text(
-                l.sinResultados,
+                texto,
                 style: context.textos.bodySmall?.copyWith(color: context.muted),
               ),
-            )
-          : const SizedBox.shrink();
+            );
     }
     const distancia = Distance();
     final km = NumberFormat('0.0', 'es_CO');
@@ -497,6 +504,7 @@ class _Campo extends StatelessWidget {
     required this.foco,
     required this.hint,
     required this.onChanged,
+    required this.onBuscar,
     required this.onBorrar,
   });
 
@@ -505,6 +513,7 @@ class _Campo extends StatelessWidget {
   final FocusNode foco;
   final String hint;
   final ValueChanged<String> onChanged;
+  final ValueChanged<String> onBuscar;
   final VoidCallback onBorrar;
 
   @override
@@ -533,6 +542,7 @@ class _Campo extends StatelessWidget {
                   focusNode: foco,
                   autofocus: true,
                   onChanged: onChanged,
+                  onSubmitted: onBuscar,
                   maxLength: 100,
                   textInputAction: TextInputAction.search,
                   decoration: InputDecoration(
@@ -557,6 +567,12 @@ class _Campo extends StatelessWidget {
               tooltip: l.borrar,
               onPressed: onBorrar,
               icon: const Icon(Icons.close, size: 18),
+            ),
+          if (controller.text.trim().length >= 3)
+            IconButton.filledTonal(
+              tooltip: l.buscarBoton,
+              onPressed: () => onBuscar(controller.text),
+              icon: const Icon(Icons.search, size: 20),
             ),
         ],
       ),
