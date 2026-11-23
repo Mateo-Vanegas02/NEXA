@@ -112,7 +112,7 @@ void main() {
       expect(fuente(gps(1), EstadoBrujula.sinSensor), FuenteRumbo.ninguna);
     });
 
-    test('solo gira el mapa con un cambio visible y a 15 por segundo', () {
+    test('solo gira el mapa con un cambio visible y a ~30 por segundo', () {
       final t = DateTime(2026, 11, 12, 10);
       bool debe(double? a, double? b, {int ms = 100, bool sinAnim = false}) =>
           ReglasRumbo.debeActualizar(

@@ -7,7 +7,11 @@ import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/widgets/nexa_diseno.dart';
 import '../../../../core/widgets/nexa_widgets.dart';
+import '../../../../core/providers.dart';
+import '../../domain/agrupar_viajes.dart';
 import '../../domain/resumen_ganancias.dart';
+import '../../domain/servicio.dart';
+import '../widgets/detalle_viaje_screen.dart';
 import '../controllers/viaje_conductor_controller.dart';
 
 import 'package:flutter/material.dart';
@@ -391,6 +395,8 @@ class _GananciasScreenState extends ConsumerState<GananciasScreen> {
                                     descripcion: lista[k].descripcion,
                                     fecha: lista[k].fecha,
                                     monto: lista[k].monto,
+                                    onTap: () =>
+                                        _abrirDetalle(context, ref, lista[k]),
                                   ),
                                 ],
                               ],
@@ -416,57 +422,93 @@ String _fecha(String iso) {
   return f == null ? iso : DateFormat('EEE d MMM', 'es_CO').format(f);
 }
 
+/// Historial del conductor (para abrir el detalle de un ingreso).
+final historialConductorProvider = FutureProvider.autoDispose<List<Servicio>>(
+  (ref) => ref.watch(conductorRepositoryProvider).historial(),
+);
+
+/// Abre el detalle del viaje de un ingreso (lo busca en el historial).
+Future<void> _abrirDetalle(
+  BuildContext context,
+  WidgetRef ref,
+  Ingreso ingreso,
+) async {
+  final mensajero = ScaffoldMessenger.of(context);
+  final l = AppLocalizations.of(context);
+  try {
+    final viajes = await ref.read(historialConductorProvider.future);
+    final s = servicioDeIngreso(ingreso, viajes);
+    if (s != null && context.mounted) {
+      await abrirDetalleViaje(context, s, conductor: true);
+      return;
+    }
+  } on Object catch (e) {
+    debugPrint('Historial del conductor: $e');
+  }
+  mensajero.showSnackBar(SnackBar(content: Text(l.detalleNoEncontrado)));
+}
+
 class _FilaIngreso extends StatelessWidget {
   const _FilaIngreso({
     required this.descripcion,
     required this.fecha,
     required this.monto,
+    this.onTap,
   });
   final String descripcion;
   final String fecha;
   final double monto;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: Sp.md),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: NexaColors.cyan.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(12),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(Rad.md),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: Sp.md),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: NexaColors.cyan.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.place_outlined,
+                size: 18,
+                color: context.acento,
+              ),
             ),
-            child: Icon(Icons.place_outlined, size: 18, color: context.acento),
-          ),
-          const SizedBox(width: Sp.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  descripcion,
-                  style: t.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-                ),
-                Text(
-                  _fecha(fecha),
-                  style: t.bodySmall?.copyWith(color: context.muted),
-                ),
-              ],
+            const SizedBox(width: Sp.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    descripcion,
+                    style: t.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                  Text(
+                    _fecha(fecha),
+                    style: t.bodySmall?.copyWith(color: context.muted),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: Sp.sm),
-          Text(
-            Fmt.cop(monto),
-            style: t.titleSmall?.copyWith(
-              color: NexaColors.ok,
-              fontWeight: FontWeight.w700,
+            const SizedBox(width: Sp.sm),
+            Text(
+              Fmt.cop(monto),
+              style: t.titleSmall?.copyWith(
+                color: NexaColors.ok,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

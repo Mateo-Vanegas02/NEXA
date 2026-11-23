@@ -47,3 +47,22 @@ List<Servicio> destinosRecientes(List<Servicio> viajes, {int maximo = 3}) {
   }
   return recientes;
 }
+
+/// El viaje de un ingreso del conductor: por su id o, si el servidor no lo
+/// envía (versiones viejas), por la hora en que terminó (±1 min).
+Servicio? servicioDeIngreso(Ingreso ingreso, List<Servicio> viajes) {
+  final id = ingreso.servicioId;
+  if (id != null && id.isNotEmpty) {
+    for (final s in viajes) {
+      if (s.id == id) return s;
+    }
+    return null;
+  }
+  final hora = DateTime.tryParse(ingreso.hora ?? '');
+  if (hora == null) return null;
+  for (final s in viajes) {
+    final fin = s.fechaFinalizacion ?? s.fechaHora;
+    if (fin != null && fin.difference(hora).inSeconds.abs() <= 60) return s;
+  }
+  return null;
+}

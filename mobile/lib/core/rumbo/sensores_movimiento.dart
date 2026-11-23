@@ -13,12 +13,14 @@ abstract class SensoresMovimiento {
   Stream<Vector3> giroscopio();
 }
 
-/// Sensores reales (`sensors_plus`), a ~15 lecturas por segundo: basta para
-/// girar el mapa y gasta poca batería.
+/// Sensores reales (`sensors_plus`): brújula y acelerómetro a ~15 lecturas
+/// por segundo y el giroscopio a ~50 (es el que hace que el cono siga al
+/// teléfono sin retraso; la brújula solo corrige su deriva).
 class SensoresPlus implements SensoresMovimiento {
   const SensoresPlus();
 
   static const _ritmo = SensorInterval.uiInterval;
+  static const _ritmoGiro = SensorInterval.gameInterval;
 
   @override
   Stream<Vector3> acelerometro() =>
@@ -32,7 +34,7 @@ class SensoresPlus implements SensoresMovimiento {
 
   @override
   Stream<Vector3> giroscopio() =>
-      gyroscopeEventStream(samplingPeriod: _ritmo)
+      gyroscopeEventStream(samplingPeriod: _ritmoGiro)
           .map((e) => (x: e.x, y: e.y, z: e.z));
 }
 

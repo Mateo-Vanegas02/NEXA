@@ -22,9 +22,9 @@ import '../../domain/servicio.dart';
 import '../controllers/viaje_pasajero_controller.dart';
 import '../widgets/desglose_card.dart';
 import 'elegir_lugar_screen.dart';
+import '../../../permisos/presentation/con_ubicacion.dart';
+import '../widgets/metodos_pago.dart';
 import '../../../permisos/presentation/flujo_permisos.dart';
-
-const _metodos = ['efectivo', 'tarjeta', 'billetera'];
 
 enum _Campo { origen, destino }
 
@@ -52,7 +52,7 @@ class _SolicitarViajeScreenState extends ConsumerState<SolicitarViajeScreen> {
 
   /// Campo que recibirá el próximo toque en el mapa.
   _Campo? _fijando;
-  String _metodo = _metodos.first;
+  String _metodo = MetodoPago.efectivo.codigo;
 
   /// Origen con el que se pidió el último precio (evita cotizar dos veces
   /// cuando el GPS llega con la misma posición que ya se usó).
@@ -110,6 +110,13 @@ class _SolicitarViajeScreenState extends ConsumerState<SolicitarViajeScreen> {
   /// Se descartan las respuestas viejas si el usuario cambió el origen o el destino.
   Future<void> _cotizar() async {
     final destino = _destino;
+    // Desde «Mi ubicación» solo se cotiza con el GPS real: el precio desde el
+    // centro de la ciudad no sirve (al llegar el GPS se cotiza solo).
+    if (destino != null &&
+        _origen == null &&
+        !ConUbicacion.esReal(ref.read(ubicacionProvider).value)) {
+      return;
+    }
     final token = ++_tokenCot;
     if (destino == null) {
       setState(() {
@@ -233,33 +240,9 @@ class _SolicitarViajeScreenState extends ConsumerState<SolicitarViajeScreen> {
     unawaited(_cotizar());
   }
 
-  String _nombreMetodo(AppLocalizations l, String m) => switch (m) {
-    'tarjeta' => l.metodoTarjeta,
-    'billetera' => l.metodoBilletera,
-    _ => l.efectivo,
-  };
-
   Future<void> _elegirMetodo() async {
-    final l = AppLocalizations.of(context);
-    final elegido = await showModalBottomSheet<String>(
-      context: context,
-      showDragHandle: true,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (final m in _metodos)
-              ListTile(
-                minTileHeight: Sizes.touch,
-                title: Text(_nombreMetodo(l, m)),
-                trailing: m == _metodo ? const Icon(Icons.check) : null,
-                onTap: () => Navigator.of(ctx).pop(m),
-              ),
-          ],
-        ),
-      ),
-    );
-    if (elegido != null) setState(() => _metodo = elegido);
+    final elegido = await elegirMetodoPago(context, _metodo);
+    if (elegido != null && mounted) setState(() => _metodo = elegido);
   }
 
   Future<void> _solicitar() async {
@@ -561,8 +544,8 @@ class _SolicitarViajeScreenState extends ConsumerState<SolicitarViajeScreen> {
                         color: NexaColors.raised,
                         borderRadius: BorderRadius.circular(Rad.md),
                       ),
-                      child: const Icon(
-                        Icons.payments_outlined,
+                      child: Icon(
+                        MetodoPago.de(_metodo).icono,
                         color: NexaColors.cyan,
                         size: 20,
                       ),
@@ -573,7 +556,7 @@ class _SolicitarViajeScreenState extends ConsumerState<SolicitarViajeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _nombreMetodo(l, _metodo),
+                            MetodoPago.de(_metodo).nombre(l),
                             style: NexaTexto.cuerpo.copyWith(
                               fontWeight: FontWeight.w600,
                             ),

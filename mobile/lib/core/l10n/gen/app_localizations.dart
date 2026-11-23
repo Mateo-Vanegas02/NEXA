@@ -5258,6 +5258,336 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ir hoy cuesta cerca de {precio}'**
   String precioHoySemantica(String precio);
+
+  /// No description provided for @ubicandoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Ubicándote en el mapa'**
+  String get ubicandoTitulo;
+
+  /// No description provided for @ubicandoTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Leemos el GPS de tu teléfono para mostrarte justo donde estás.'**
+  String get ubicandoTexto;
+
+  /// No description provided for @sinUbicacionTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'No encontramos tu ubicación'**
+  String get sinUbicacionTitulo;
+
+  /// No description provided for @sinUbicacionTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Activa la ubicación (GPS) del teléfono y dale permiso a NEXA. Lo seguimos intentando solos.'**
+  String get sinUbicacionTexto;
+
+  /// No description provided for @activarUbicacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Activar ubicación'**
+  String get activarUbicacion;
+
+  /// No description provided for @detalleViaje.
+  ///
+  /// In es, this message translates to:
+  /// **'Detalle del viaje'**
+  String get detalleViaje;
+
+  /// No description provided for @detalleRecorrido.
+  ///
+  /// In es, this message translates to:
+  /// **'Recorrido'**
+  String get detalleRecorrido;
+
+  /// No description provided for @detalleLineaTiempo.
+  ///
+  /// In es, this message translates to:
+  /// **'Cómo fue'**
+  String get detalleLineaTiempo;
+
+  /// No description provided for @detallePedido.
+  ///
+  /// In es, this message translates to:
+  /// **'Pediste el viaje'**
+  String get detallePedido;
+
+  /// No description provided for @detallePedidoConductor.
+  ///
+  /// In es, this message translates to:
+  /// **'Se pidió el viaje'**
+  String get detallePedidoConductor;
+
+  /// No description provided for @detalleAceptado.
+  ///
+  /// In es, this message translates to:
+  /// **'Viaje aceptado'**
+  String get detalleAceptado;
+
+  /// No description provided for @detalleRecogida.
+  ///
+  /// In es, this message translates to:
+  /// **'Recogida, inicia el viaje'**
+  String get detalleRecogida;
+
+  /// No description provided for @detalleLlegada.
+  ///
+  /// In es, this message translates to:
+  /// **'Llegada al destino'**
+  String get detalleLlegada;
+
+  /// No description provided for @detalleTerminoAntes.
+  ///
+  /// In es, this message translates to:
+  /// **'Terminó antes del destino'**
+  String get detalleTerminoAntes;
+
+  /// No description provided for @detalleCancelado.
+  ///
+  /// In es, this message translates to:
+  /// **'Viaje cancelado'**
+  String get detalleCancelado;
+
+  /// No description provided for @detalleDuracion.
+  ///
+  /// In es, this message translates to:
+  /// **'{min} min de viaje'**
+  String detalleDuracion(int min);
+
+  /// No description provided for @detalleTuConductor.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu conductor'**
+  String get detalleTuConductor;
+
+  /// No description provided for @detalleTuPasajero.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu pasajero'**
+  String get detalleTuPasajero;
+
+  /// No description provided for @detallePago.
+  ///
+  /// In es, this message translates to:
+  /// **'Pago'**
+  String get detallePago;
+
+  /// No description provided for @detalleTarifa.
+  ///
+  /// In es, this message translates to:
+  /// **'Tarifa'**
+  String get detalleTarifa;
+
+  /// No description provided for @detalleTotal.
+  ///
+  /// In es, this message translates to:
+  /// **'Total'**
+  String get detalleTotal;
+
+  /// No description provided for @detalleCobrado.
+  ///
+  /// In es, this message translates to:
+  /// **'Cobraste en efectivo'**
+  String get detalleCobrado;
+
+  /// No description provided for @detalleComision.
+  ///
+  /// In es, this message translates to:
+  /// **'Comisión de NEXA'**
+  String get detalleComision;
+
+  /// No description provided for @detalleTuCalificacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu calificación'**
+  String get detalleTuCalificacion;
+
+  /// No description provided for @detalleSinCalificar.
+  ///
+  /// In es, this message translates to:
+  /// **'No calificaste este viaje.'**
+  String get detalleSinCalificar;
+
+  /// No description provided for @detalleNotaSemantica.
+  ///
+  /// In es, this message translates to:
+  /// **'{n} de 5 estrellas'**
+  String detalleNotaSemantica(int n);
+
+  /// No description provided for @detalleEstadoFinalizado.
+  ///
+  /// In es, this message translates to:
+  /// **'Finalizado'**
+  String get detalleEstadoFinalizado;
+
+  /// No description provided for @detalleEstadoCancelado.
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelado'**
+  String get detalleEstadoCancelado;
+
+  /// No description provided for @detalleEstadoEnCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'En curso'**
+  String get detalleEstadoEnCurso;
+
+  /// No description provided for @detalleXp.
+  ///
+  /// In es, this message translates to:
+  /// **'+{n} XP'**
+  String detalleXp(int n);
+
+  /// No description provided for @detalleDesgloseError.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos cargar el desglose.'**
+  String get detalleDesgloseError;
+
+  /// No description provided for @detalleAbrir.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver detalle del viaje a {destino}'**
+  String detalleAbrir(String destino);
+
+  /// No description provided for @detalleNivel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nivel {n}'**
+  String detalleNivel(int n);
+
+  /// No description provided for @detalleNoEncontrado.
+  ///
+  /// In es, this message translates to:
+  /// **'No encontramos el detalle de ese viaje.'**
+  String get detalleNoEncontrado;
+
+  /// No description provided for @abrirPerfil.
+  ///
+  /// In es, this message translates to:
+  /// **'Abrir tu perfil'**
+  String get abrirPerfil;
+
+  /// No description provided for @avisoViajeSub.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu viaje NEXA'**
+  String get avisoViajeSub;
+
+  /// No description provided for @avisoBuscandoOla.
+  ///
+  /// In es, this message translates to:
+  /// **'Ola {ola} de {total} · radio de {radio}'**
+  String avisoBuscandoOla(String ola, String total, String radio);
+
+  /// No description provided for @avisoAceptadoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'{nombre} va por ti'**
+  String avisoAceptadoTitulo(String nombre);
+
+  /// No description provided for @avisoLlegoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'{nombre} está en tu punto'**
+  String avisoLlegoTitulo(String nombre);
+
+  /// No description provided for @avisoLlegoTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Sal a su encuentro. Tienes unos minutos sin costo de espera.'**
+  String get avisoLlegoTexto;
+
+  /// No description provided for @avisoIniciadoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Vas camino a {destino}'**
+  String avisoIniciadoTitulo(String destino);
+
+  /// No description provided for @avisoIniciadoTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Sigue el recorrido en vivo desde la app.'**
+  String get avisoIniciadoTexto;
+
+  /// No description provided for @avisoFinalizadoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Llegaste a tu destino!'**
+  String get avisoFinalizadoTitulo;
+
+  /// No description provided for @avisoFinalizadoTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Toca para ver el total y calificar a {nombre}.'**
+  String avisoFinalizadoTexto(String nombre);
+
+  /// No description provided for @avisoPlaca.
+  ///
+  /// In es, this message translates to:
+  /// **'Placa {placa}'**
+  String avisoPlaca(String placa);
+
+  /// No description provided for @avisoConductorGenerico.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu conductor'**
+  String get avisoConductorGenerico;
+
+  /// No description provided for @avisoVerViaje.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver viaje'**
+  String get avisoVerViaje;
+
+  /// No description provided for @avisoCalificar.
+  ///
+  /// In es, this message translates to:
+  /// **'Calificar'**
+  String get avisoCalificar;
+
+  /// No description provided for @pagoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Cómo vas a pagar?'**
+  String get pagoTitulo;
+
+  /// No description provided for @pagoEfectivoDetalle.
+  ///
+  /// In es, this message translates to:
+  /// **'Le pagas al conductor al llegar. Sin recargos.'**
+  String get pagoEfectivoDetalle;
+
+  /// No description provided for @pagoTarjetaDetalle.
+  ///
+  /// In es, this message translates to:
+  /// **'Crédito o débito, cobrado al terminar el viaje.'**
+  String get pagoTarjetaDetalle;
+
+  /// No description provided for @pagoBilleteraDetalle.
+  ///
+  /// In es, this message translates to:
+  /// **'Nequi o Daviplata desde la app.'**
+  String get pagoBilleteraDetalle;
+
+  /// No description provided for @pagoProximamente.
+  ///
+  /// In es, this message translates to:
+  /// **'Próximamente'**
+  String get pagoProximamente;
+
+  /// No description provided for @pagoNota.
+  ///
+  /// In es, this message translates to:
+  /// **'Muy pronto podrás pagar con tarjeta o billetera digital sin sacar efectivo.'**
+  String get pagoNota;
+
+  /// No description provided for @pagoElegido.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegido'**
+  String get pagoElegido;
 }
 
 class _AppLocalizationsDelegate

@@ -1820,5 +1820,143 @@
         "type": "String"
       }
     }
-  }
+  },
+  "ubicandoTitulo": "Ubicándote en el mapa",
+  "ubicandoTexto": "Leemos el GPS de tu teléfono para mostrarte justo donde estás.",
+  "sinUbicacionTitulo": "No encontramos tu ubicación",
+  "sinUbicacionTexto": "Activa la ubicación (GPS) del teléfono y dale permiso a NEXA. Lo seguimos intentando solos.",
+  "activarUbicacion": "Activar ubicación",
+  "detalleViaje": "Detalle del viaje",
+  "detalleRecorrido": "Recorrido",
+  "detalleLineaTiempo": "Cómo fue",
+  "detallePedido": "Pediste el viaje",
+  "detallePedidoConductor": "Se pidió el viaje",
+  "detalleAceptado": "Viaje aceptado",
+  "detalleRecogida": "Recogida, inicia el viaje",
+  "detalleLlegada": "Llegada al destino",
+  "detalleTerminoAntes": "Terminó antes del destino",
+  "detalleCancelado": "Viaje cancelado",
+  "detalleDuracion": "{min} min de viaje",
+  "@detalleDuracion": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "detalleTuConductor": "Tu conductor",
+  "detalleTuPasajero": "Tu pasajero",
+  "detallePago": "Pago",
+  "detalleTarifa": "Tarifa",
+  "detalleTotal": "Total",
+  "detalleCobrado": "Cobraste en efectivo",
+  "detalleComision": "Comisión de NEXA",
+  "detalleTuCalificacion": "Tu calificación",
+  "detalleSinCalificar": "No calificaste este viaje.",
+  "detalleNotaSemantica": "{n} de 5 estrellas",
+  "@detalleNotaSemantica": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "detalleEstadoFinalizado": "Finalizado",
+  "detalleEstadoCancelado": "Cancelado",
+  "detalleEstadoEnCurso": "En curso",
+  "detalleXp": "+{n} XP",
+  "@detalleXp": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "detalleDesgloseError": "No pudimos cargar el desglose.",
+  "detalleAbrir": "Ver detalle del viaje a {destino}",
+  "@detalleAbrir": {
+    "placeholders": {
+      "destino": {
+        "type": "String"
+      }
+    }
+  },
+  "detalleNivel": "Nivel {n}",
+  "@detalleNivel": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "detalleNoEncontrado": "No encontramos el detalle de ese viaje.",
+  "abrirPerfil": "Abrir tu perfil",
+  "avisoViajeSub": "Tu viaje NEXA",
+  "avisoBuscandoOla": "Ola {ola} de {total} · radio de {radio}",
+  "@avisoBuscandoOla": {
+    "placeholders": {
+      "ola": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      },
+      "radio": {
+        "type": "String"
+      }
+    }
+  },
+  "avisoAceptadoTitulo": "{nombre} va por ti",
+  "@avisoAceptadoTitulo": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "avisoLlegoTitulo": "{nombre} está en tu punto",
+  "@avisoLlegoTitulo": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "avisoLlegoTexto": "Sal a su encuentro. Tienes unos minutos sin costo de espera.",
+  "avisoIniciadoTitulo": "Vas camino a {destino}",
+  "@avisoIniciadoTitulo": {
+    "placeholders": {
+      "destino": {
+        "type": "String"
+      }
+    }
+  },
+  "avisoIniciadoTexto": "Sigue el recorrido en vivo desde la app.",
+  "avisoFinalizadoTitulo": "¡Llegaste a tu destino!",
+  "avisoFinalizadoTexto": "Toca para ver el total y calificar a {nombre}.",
+  "@avisoFinalizadoTexto": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "avisoPlaca": "Placa {placa}",
+  "@avisoPlaca": {
+    "placeholders": {
+      "placa": {
+        "type": "String"
+      }
+    }
+  },
+  "avisoConductorGenerico": "Tu conductor",
+  "avisoVerViaje": "Ver viaje",
+  "avisoCalificar": "Calificar",
+  "pagoTitulo": "¿Cómo vas a pagar?",
+  "pagoEfectivoDetalle": "Le pagas al conductor al llegar. Sin recargos.",
+  "pagoTarjetaDetalle": "Crédito o débito, cobrado al terminar el viaje.",
+  "pagoBilleteraDetalle": "Nequi o Daviplata desde la app.",
+  "pagoProximamente": "Próximamente",
+  "pagoNota": "Muy pronto podrás pagar con tarjeta o billetera digital sin sacar efectivo.",
+  "pagoElegido": "Elegido"
 }

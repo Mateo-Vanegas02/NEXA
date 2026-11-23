@@ -108,11 +108,14 @@ class AvisosPushController extends Notifier<String?> {
             .reservar('recibido:${aviso.eventoId}')) {
       return;
     }
-    try {
-      await ref.read(bandejaAvisosProvider).registrar(aviso);
-      ref.invalidate(bandejaProvider);
-    } on Object catch (e) {
-      debugPrint('Bandeja de avisos: $e');
+    // La búsqueda que se amplía no es un aviso para la bandeja.
+    if (!aviso.esDeBusqueda) {
+      try {
+        await ref.read(bandejaAvisosProvider).registrar(aviso);
+        ref.invalidate(bandejaProvider);
+      } on Object catch (e) {
+        debugPrint('Bandeja de avisos: $e');
+      }
     }
     if (aviso.tipo == TipoAviso.solicitudRetirada) {
       await ref

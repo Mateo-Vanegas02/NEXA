@@ -20,6 +20,7 @@ import 'package:nexa_mobile/core/segundo_plano/rastreador_ubicacion.dart';
 import 'package:nexa_mobile/core/utils/mi_posicion.dart';
 import 'package:nexa_mobile/core/theme/app_theme.dart';
 import 'package:nexa_mobile/core/widgets/mapa_nexa.dart';
+import 'package:nexa_mobile/features/viajes/presentation/controllers/precio_hoy.dart';
 
 /// Tamaños de prueba: móvil pequeño, móvil base y tablet.
 const List<Size> kTamanos = [Size(360, 640), Size(390, 844), Size(800, 1280)];
@@ -37,6 +38,9 @@ void usarTamano(WidgetTester t, Size s, {double textScale = 1}) {
 
 Future<void> iniciarFormatos() => initializeDateFormatting('es_CO');
 
+/// Posición del teléfono en las pruebas (Manga, Cartagena).
+const kUbicacionPrueba = LatLng(10.4125, -75.5367);
+
 /// Overrides comunes: memoria en vez de secure storage, mocks, sin mapa ni GPS.
 List<Override> overridesTest({
   SecureStore? store,
@@ -50,7 +54,11 @@ List<Override> overridesTest({
   splashMinimoProvider.overrideWithValue(splash),
   geocodingProvider.overrideWithValue(geocoding ?? GeocodingFalso()),
   mapasHabilitadosProvider.overrideWithValue(false),
-  ubicacionProvider.overrideWith((ref) async => kCentroPorDefecto),
+  // Una ubicación real en Cartagena (el centro por defecto significa «sin
+  // GPS» y el inicio esperaría la ubicación).
+  ubicacionProvider.overrideWith((ref) async => kUbicacionPrueba),
+  // Sin cotizar los recientes en las pruebas de pantalla.
+  precioHoyProvider.overrideWith((ref, _) async => null),
   // Sin GPS real en los tests (evita el canal de la plataforma).
   miPosicionProvider.overrideWithValue(miPosicion ?? () async => null),
   // Permisos ya concedidos: las pantallas de permisos tienen sus propias pruebas.

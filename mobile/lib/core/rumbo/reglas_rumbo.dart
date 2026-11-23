@@ -69,18 +69,19 @@ abstract final class ReglasRumbo {
   static const campoMaximo = 70.0;
 
   /// Se gira el mapa solo si el rumbo cambió más que esto…
-  static const cambioMinimo = 3.0;
+  static const cambioMinimo = 2.0;
 
   /// …o esto con «reducir movimiento» (menos giros, sin animación).
   static const cambioMinimoSinAnimacion = 15.0;
 
-  /// Máximo 15 actualizaciones por segundo.
-  static const intervaloMinimo = Duration(milliseconds: 66);
+  /// Máximo ~30 actualizaciones por segundo (fluido sin gastar de más).
+  static const intervaloMinimo = Duration(milliseconds: 33);
 
-  /// Cuánto pesa la brújula en cada lectura frente al giroscopio (filtro
-  /// complementario): el giroscopio sigue los giros rápidos y la brújula
-  /// corrige poco a poco su deriva.
-  static const pesoBrujulaConGiroscopio = 0.04;
+  /// Con giroscopio, en cuánto tiempo la brújula corrige su deriva (filtro
+  /// complementario): el giroscopio sigue los giros rápidos al instante y la
+  /// brújula lleva el rumbo a su valor real en ~medio segundo, sea cual sea el
+  /// ritmo de las lecturas.
+  static const correccionBrujula = Duration(milliseconds: 500);
 
   /// Sin giroscopio solo se suaviza la brújula.
   static const pesoBrujulaSola = 0.2;
@@ -241,9 +242,10 @@ class FusionRumbo {
     final integrado = giroscopio == null
         ? previo
         : previo + ReglasRumbo.giroRumbo(giroscopio, gravedad) * paso;
+    final tau = ReglasRumbo.correccionBrujula.inMicroseconds / 1e6;
     final peso = giroscopio == null || paso == 0
         ? ReglasRumbo.pesoBrujulaSola
-        : ReglasRumbo.pesoBrujulaConGiroscopio;
+        : paso / (tau + paso);
     _rumbo = ReglasRumbo.normalizar(
       integrado + peso * ReglasRumbo.diferencia(integrado, brujula),
     );

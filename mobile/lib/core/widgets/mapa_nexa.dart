@@ -268,6 +268,28 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
     });
   }
 
+  final _ultimas = <String, Future<void> Function()>{};
+  final _corriendo = <String>{};
+
+  /// Como [_enCola], pero para cambios que llegan seguidos (brújula a ~30
+  /// por segundo): solo cuenta el último. Antes cada lectura esperaba en la
+  /// fila a la anterior y el cono y el mapa iban cada vez más atrasados.
+  void _ultimoGana(String clave, Future<void> Function() tarea) {
+    _ultimas[clave] = tarea;
+    if (!_corriendo.add(clave)) return;
+    _enCola(() async {
+      try {
+        while (mounted) {
+          final t = _ultimas.remove(clave);
+          if (t == null) break;
+          await t();
+        }
+      } finally {
+        _corriendo.remove(clave);
+      }
+    });
+  }
+
   @override
   void dispose() {
     _animTimer?.cancel();
@@ -920,11 +942,15 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
     final duracion = widget.navegacion && _animDuracion > Duration.zero
         ? _animDuracion
         : const Duration(milliseconds: 250);
-    _enCola(() async {
-      if (sinAnimacion) {
-        await c.moveCamera(cambio);
-      } else {
+    // Con la brújula el giro llega ~30 veces por segundo ya suavizado: se
+    // mueve la cámara directo (una animación de 250 ms por lectura se
+    // quedaba atrás). En navegación sí se anima, al ritmo del GPS.
+    final animar = !sinAnimacion && widget.navegacion;
+    _ultimoGana('camara', () async {
+      if (animar) {
         await c.animateCamera(cambio, duration: duracion);
+      } else {
+        await c.moveCamera(cambio);
       }
     });
   }
@@ -949,7 +975,7 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
       ref.listen(orientacionMapaProvider, (_, e) {
         _aplicar(e);
         final c = _ml;
-        if (c != null) _enCola(() => _marcadores(c));
+        if (c != null) _ultimoGana('marcadores', () => _marcadores(c));
       });
       if (_rumboPedido != _conHaz) {
         _rumboPedido = _conHaz;

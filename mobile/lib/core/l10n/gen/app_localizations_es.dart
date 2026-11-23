@@ -2911,4 +2911,197 @@ class AppLocalizationsEs extends AppLocalizations {
   String precioHoySemantica(String precio) {
     return 'Ir hoy cuesta cerca de $precio';
   }
+
+  @override
+  String get ubicandoTitulo => 'Ubicándote en el mapa';
+
+  @override
+  String get ubicandoTexto =>
+      'Leemos el GPS de tu teléfono para mostrarte justo donde estás.';
+
+  @override
+  String get sinUbicacionTitulo => 'No encontramos tu ubicación';
+
+  @override
+  String get sinUbicacionTexto =>
+      'Activa la ubicación (GPS) del teléfono y dale permiso a NEXA. Lo seguimos intentando solos.';
+
+  @override
+  String get activarUbicacion => 'Activar ubicación';
+
+  @override
+  String get detalleViaje => 'Detalle del viaje';
+
+  @override
+  String get detalleRecorrido => 'Recorrido';
+
+  @override
+  String get detalleLineaTiempo => 'Cómo fue';
+
+  @override
+  String get detallePedido => 'Pediste el viaje';
+
+  @override
+  String get detallePedidoConductor => 'Se pidió el viaje';
+
+  @override
+  String get detalleAceptado => 'Viaje aceptado';
+
+  @override
+  String get detalleRecogida => 'Recogida, inicia el viaje';
+
+  @override
+  String get detalleLlegada => 'Llegada al destino';
+
+  @override
+  String get detalleTerminoAntes => 'Terminó antes del destino';
+
+  @override
+  String get detalleCancelado => 'Viaje cancelado';
+
+  @override
+  String detalleDuracion(int min) {
+    return '$min min de viaje';
+  }
+
+  @override
+  String get detalleTuConductor => 'Tu conductor';
+
+  @override
+  String get detalleTuPasajero => 'Tu pasajero';
+
+  @override
+  String get detallePago => 'Pago';
+
+  @override
+  String get detalleTarifa => 'Tarifa';
+
+  @override
+  String get detalleTotal => 'Total';
+
+  @override
+  String get detalleCobrado => 'Cobraste en efectivo';
+
+  @override
+  String get detalleComision => 'Comisión de NEXA';
+
+  @override
+  String get detalleTuCalificacion => 'Tu calificación';
+
+  @override
+  String get detalleSinCalificar => 'No calificaste este viaje.';
+
+  @override
+  String detalleNotaSemantica(int n) {
+    return '$n de 5 estrellas';
+  }
+
+  @override
+  String get detalleEstadoFinalizado => 'Finalizado';
+
+  @override
+  String get detalleEstadoCancelado => 'Cancelado';
+
+  @override
+  String get detalleEstadoEnCurso => 'En curso';
+
+  @override
+  String detalleXp(int n) {
+    return '+$n XP';
+  }
+
+  @override
+  String get detalleDesgloseError => 'No pudimos cargar el desglose.';
+
+  @override
+  String detalleAbrir(String destino) {
+    return 'Ver detalle del viaje a $destino';
+  }
+
+  @override
+  String detalleNivel(int n) {
+    return 'Nivel $n';
+  }
+
+  @override
+  String get detalleNoEncontrado => 'No encontramos el detalle de ese viaje.';
+
+  @override
+  String get abrirPerfil => 'Abrir tu perfil';
+
+  @override
+  String get avisoViajeSub => 'Tu viaje NEXA';
+
+  @override
+  String avisoBuscandoOla(String ola, String total, String radio) {
+    return 'Ola $ola de $total · radio de $radio';
+  }
+
+  @override
+  String avisoAceptadoTitulo(String nombre) {
+    return '$nombre va por ti';
+  }
+
+  @override
+  String avisoLlegoTitulo(String nombre) {
+    return '$nombre está en tu punto';
+  }
+
+  @override
+  String get avisoLlegoTexto =>
+      'Sal a su encuentro. Tienes unos minutos sin costo de espera.';
+
+  @override
+  String avisoIniciadoTitulo(String destino) {
+    return 'Vas camino a $destino';
+  }
+
+  @override
+  String get avisoIniciadoTexto => 'Sigue el recorrido en vivo desde la app.';
+
+  @override
+  String get avisoFinalizadoTitulo => '¡Llegaste a tu destino!';
+
+  @override
+  String avisoFinalizadoTexto(String nombre) {
+    return 'Toca para ver el total y calificar a $nombre.';
+  }
+
+  @override
+  String avisoPlaca(String placa) {
+    return 'Placa $placa';
+  }
+
+  @override
+  String get avisoConductorGenerico => 'Tu conductor';
+
+  @override
+  String get avisoVerViaje => 'Ver viaje';
+
+  @override
+  String get avisoCalificar => 'Calificar';
+
+  @override
+  String get pagoTitulo => '¿Cómo vas a pagar?';
+
+  @override
+  String get pagoEfectivoDetalle =>
+      'Le pagas al conductor al llegar. Sin recargos.';
+
+  @override
+  String get pagoTarjetaDetalle =>
+      'Crédito o débito, cobrado al terminar el viaje.';
+
+  @override
+  String get pagoBilleteraDetalle => 'Nequi o Daviplata desde la app.';
+
+  @override
+  String get pagoProximamente => 'Próximamente';
+
+  @override
+  String get pagoNota =>
+      'Muy pronto podrás pagar con tarjeta o billetera digital sin sacar efectivo.';
+
+  @override
+  String get pagoElegido => 'Elegido';
 }
