@@ -38,12 +38,12 @@ void main() {
         await t.pump(const Duration(seconds: 1));
         expect(find.text('Detalle del viaje'), findsOneWidget);
         expect(find.text('Torres de La Plazuela'), findsWidgets);
-        expect(find.text('Viaje aceptado'), findsOneWidget);
+        await t.scrollUntilVisible(find.text('Viaje aceptado'), 200);
         expect(find.textContaining('8 min de viaje'), findsOneWidget);
         expect(find.text('Quintero'), findsOneWidget);
         expect(find.text('DTE54H'), findsOneWidget);
         await t.scrollUntilVisible(find.text('«Muy amable»'), 200);
-        expect(find.text('Tu calificación'), findsOneWidget);
+        expect(find.text('TU CALIFICACIÓN'), findsOneWidget);
         expect(t.takeException(), isNull);
       },
     );
@@ -55,8 +55,8 @@ void main() {
       envolver(DetalleViajeScreen(servicio: _viaje, conductor: true)),
     );
     await t.pump(const Duration(seconds: 1));
-    expect(find.text('Tu pasajero'), findsOneWidget);
-    expect(find.text('Juan'), findsOneWidget);
+    await t.scrollUntilVisible(find.text('Juan'), 200);
+    expect(find.text('TU PASAJERO'), findsOneWidget);
     await t.scrollUntilVisible(find.text('No calificaste este viaje.'), 200);
     expect(t.takeException(), isNull);
   });

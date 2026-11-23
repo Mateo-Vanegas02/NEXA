@@ -148,7 +148,9 @@ class OrientacionMapaController extends Notifier<EstadoOrientacion> {
         s.magnetometro().listen(
           (v) {
             _magnetico = v;
-            if (!_conGiroVivo) _calcular();
+            // Con giroscopio el cálculo va a su ritmo; la brújula igual
+            // calcula si aún no hay un primer rumbo.
+            if (!_conGiroVivo || _fusion.rumbo == null) _calcular();
           },
           onError: (Object _) {
             _sinMagnetometro = true;

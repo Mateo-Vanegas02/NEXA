@@ -123,11 +123,19 @@ class _UbicandoteState extends State<_Ubicandote>
     final color = widget.buscando ? NexaColors.cyan : NexaColors.gold;
     return ColoredBox(
       color: NexaColors.bg,
-      child: Align(
+      // Desplazable: con la letra grande el texto no cabe en pantallas chicas.
+      child: LayoutBuilder(
+        builder: (context, caja) => SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: caja.maxHeight),
+            child: Align(
         // En la mitad de arriba: la hoja inferior tapa el resto.
         alignment: const Alignment(0, -0.45),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: Sp.xl),
+          padding: const EdgeInsets.symmetric(
+            horizontal: Sp.xl,
+            vertical: Sp.xxl,
+          ),
           child: Semantics(
             liveRegion: true,
             child: Column(
@@ -169,6 +177,9 @@ class _UbicandoteState extends State<_Ubicandote>
                 ],
               ],
             ),
+          ),
+        ),
+      ),
           ),
         ),
       ),

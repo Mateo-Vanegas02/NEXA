@@ -22,6 +22,7 @@ import '../../domain/servicio.dart';
 import '../controllers/viaje_pasajero_controller.dart';
 import '../widgets/desglose_card.dart';
 import 'elegir_lugar_screen.dart';
+import '../../../permisos/presentation/con_ubicacion.dart';
 import '../../../permisos/presentation/flujo_permisos.dart';
 
 const _metodos = ['efectivo', 'tarjeta', 'billetera'];
@@ -110,6 +111,13 @@ class _SolicitarViajeScreenState extends ConsumerState<SolicitarViajeScreen> {
   /// Se descartan las respuestas viejas si el usuario cambió el origen o el destino.
   Future<void> _cotizar() async {
     final destino = _destino;
+    // Desde «Mi ubicación» solo se cotiza con el GPS real: el precio desde el
+    // centro de la ciudad no sirve (al llegar el GPS se cotiza solo).
+    if (destino != null &&
+        _origen == null &&
+        !ConUbicacion.esReal(ref.read(ubicacionProvider).value)) {
+      return;
+    }
     final token = ++_tokenCot;
     if (destino == null) {
       setState(() {
