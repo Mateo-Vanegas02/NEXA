@@ -14,6 +14,7 @@ import '../notificaciones/canales_notificacion.dart';
 import '../network/token_storage.dart';
 import 'aviso_push.dart';
 import 'bandeja_avisos.dart';
+import 'diseno_aviso_viaje.dart';
 import 'eventos_vistos.dart';
 import 'servicio_push.dart';
 
@@ -34,14 +35,29 @@ Future<void> avisoEnSegundoPlano(RemoteMessage mensaje) async {
       .reservar('recibido:${aviso.eventoId}')) {
     return;
   }
-  // Los avisos del viaje ya traen su notificación: solo van a la bandeja.
+  // Avisos del viaje: a la bandeja (menos la búsqueda, que solo actualiza su
+  // notificación) y, si el servidor los manda solo como datos, la app arma la
+  // notificación con diseño. Los servidores viejos traen la suya del sistema.
   if (!aviso.esSolicitud && aviso.tipo != TipoAviso.solicitudRetirada) {
-    try {
-      WidgetsFlutterBinding.ensureInitialized();
-      DartPluginRegistrant.ensureInitialized();
-      await const BandejaAvisos(FlutterSecureStore()).registrar(aviso);
-    } on Object catch (e) {
-      debugPrint('Bandeja de avisos: $e');
+    if (!aviso.esDeBusqueda) {
+      try {
+        await const BandejaAvisos(FlutterSecureStore()).registrar(aviso);
+      } on Object catch (e) {
+        debugPrint('Bandeja de avisos: $e');
+      }
+    }
+    if (mensaje.notification == null) {
+      try {
+        final plugin = FlutterLocalNotificationsPlugin();
+        await plugin.initialize(
+          settings: const InitializationSettings(
+            android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+          ),
+        );
+        await mostrarAvisoViaje(plugin, aviso);
+      } catch (e, pila) {
+        debugPrint('Aviso ${aviso.tipo.codigo} del viaje falló: $e\n$pila');
+      }
     }
     return;
   }
@@ -109,6 +125,66 @@ Future<void> mostrarAvisoSolicitud(
     ),
   );
 }
+
+/// Muestra la notificación de una etapa del viaje con el diseño de NEXA
+/// ([disenoAvisoViaje]): título con el conductor, moto y placa, la etapa como
+/// barra y el color de la etapa. Una por viaje: cada etapa reemplaza a la
+/// anterior (mismo id y la misma etiqueta que usa el servidor).
+Future<void> mostrarAvisoViaje(
+  FlutterLocalNotificationsPlugin plugin,
+  AvisoPush aviso,
+) async {
+  if (kIsWeb || !Platform.isAndroid) return;
+  final t = lookupAppLocalizations(const Locale('es'));
+  final d = disenoAvisoViaje(aviso, t);
+  if (d.titulo.isEmpty && d.texto.isEmpty) return;
+  final largo = [d.texto, ...d.lineas].where((x) => x.isNotEmpty).join('\n');
+  await plugin.show(
+    id: aviso.idNotificacion,
+    title: d.titulo,
+    body: d.texto,
+    payload: jsonEncode(aviso.datos),
+    notificationDetails: NotificationDetails(
+      android: AndroidNotificationDetails(
+        IdsCanal.viaje,
+        t.notiCanalViaje,
+        tag: aviso.servicioId == null ? null : 'viaje-${aviso.servicioId}',
+        importance: Importance.high,
+        priority: Priority.high,
+        category: AndroidNotificationCategory.transport,
+        visibility: NotificationVisibility.public,
+        color: d.color,
+        largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+        subText: t.avisoViajeSub,
+        styleInformation: BigTextStyleInformation(
+          largo,
+          contentTitle: '<b>${_html(d.titulo)}</b>',
+          htmlFormatContentTitle: true,
+          summaryText: t.avisoViajeSub,
+        ),
+        showProgress: d.buscando || d.avance != null,
+        indeterminate: d.buscando,
+        maxProgress: 100,
+        progress: d.avance ?? 0,
+        ongoing: d.fija,
+        autoCancel: !d.fija,
+        onlyAlertOnce: d.silenciosa,
+        silent: d.silenciosa,
+        actions: [
+          if (d.accion != null)
+            AndroidNotificationAction(
+              AccionAviso.ver,
+              d.accion!,
+              showsUserInterface: true,
+            ),
+        ],
+      ),
+    ),
+  );
+}
+
+String _html(String t) =>
+    t.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 
 /// Lee el aviso guardado en una notificación local tocada.
 AvisoPush? avisoDeRespuesta(NotificationResponse r) {

@@ -3028,4 +3028,56 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get abrirPerfil => 'Abrir tu perfil';
+
+  @override
+  String get avisoViajeSub => 'Tu viaje NEXA';
+
+  @override
+  String avisoBuscandoOla(String ola, String total, String radio) {
+    return 'Ola $ola de $total · radio de $radio';
+  }
+
+  @override
+  String avisoAceptadoTitulo(String nombre) {
+    return '$nombre va por ti';
+  }
+
+  @override
+  String avisoLlegoTitulo(String nombre) {
+    return '$nombre está en tu punto';
+  }
+
+  @override
+  String get avisoLlegoTexto =>
+      'Sal a su encuentro. Tienes unos minutos sin costo de espera.';
+
+  @override
+  String avisoIniciadoTitulo(String destino) {
+    return 'Vas camino a $destino';
+  }
+
+  @override
+  String get avisoIniciadoTexto => 'Sigue el recorrido en vivo desde la app.';
+
+  @override
+  String get avisoFinalizadoTitulo => '¡Llegaste a tu destino!';
+
+  @override
+  String avisoFinalizadoTexto(String nombre) {
+    return 'Toca para ver el total y calificar a $nombre.';
+  }
+
+  @override
+  String avisoPlaca(String placa) {
+    return 'Placa $placa';
+  }
+
+  @override
+  String get avisoConductorGenerico => 'Tu conductor';
+
+  @override
+  String get avisoVerViaje => 'Ver viaje';
+
+  @override
+  String get avisoCalificar => 'Calificar';
 }

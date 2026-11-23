@@ -5,8 +5,11 @@ enum TipoAviso {
   solicitudNueva('SOLICITUD_NUEVA'),
   solicitudExtra('SOLICITUD_EXTRA'),
   solicitudRetirada('SOLICITUD_RETIRADA'),
+  solicitudRecibida('SOLICITUD_RECIBIDA'),
+  busquedaAmpliada('BUSQUEDA_AMPLIADA'),
   viajeAceptado('VIAJE_ACEPTADO'),
   conductorLlego('CONDUCTOR_LLEGO'),
+  viajeIniciado('VIAJE_INICIADO'),
   viajeFinalizado('VIAJE_FINALIZADO'),
   viajeCancelado('VIAJE_CANCELADO'),
   sinConductores('SIN_CONDUCTORES'),
@@ -38,7 +41,17 @@ class AvisoPush {
     this.titulo,
     this.cuerpo,
     this.accion,
+    this.extra = const {},
   });
+
+  static const _claves = {
+    'tipo',
+    'eventoId',
+    'servicioId',
+    'titulo',
+    'cuerpo',
+    'canal',
+  };
 
   /// Lee los `data` de FCM (o el payload de una notificación local).
   factory AvisoPush.desdeDatos(Map<String, dynamic> datos, {String? accion}) {
@@ -55,6 +68,11 @@ class AvisoPush {
       titulo: texto('titulo'),
       cuerpo: texto('cuerpo'),
       accion: accion,
+      extra: {
+        for (final e in datos.entries)
+          if (!_claves.contains(e.key) && e.value != null && '${e.value}' != '')
+            e.key: '${e.value}',
+      },
     );
   }
 
@@ -67,6 +85,15 @@ class AvisoPush {
   /// Botón tocado en la notificación ([AccionAviso]); null si se tocó el aviso.
   final String? accion;
 
+  /// Lo demás que envía el servidor para armar la notificación del viaje
+  /// (conductor, vehiculo, placa, calificacion, destino, ola, radioKm…).
+  final Map<String, String> extra;
+
+  /// Avisos que solo actualizan la notificación de la búsqueda (no van a la
+  /// bandeja de avisos).
+  bool get esDeBusqueda =>
+      tipo == TipoAviso.solicitudRecibida || tipo == TipoAviso.busquedaAmpliada;
+
   bool get esSolicitud =>
       tipo == TipoAviso.solicitudNueva || tipo == TipoAviso.solicitudExtra;
 
@@ -77,6 +104,7 @@ class AvisoPush {
     'servicioId': ?servicioId,
     'titulo': ?titulo,
     'cuerpo': ?cuerpo,
+    ...extra,
   };
 
   /// Id estable de la notificación de un viaje: el aviso nuevo de una misma
@@ -100,6 +128,7 @@ class AvisoPush {
     titulo: titulo,
     cuerpo: cuerpo,
     accion: accion,
+    extra: extra,
   );
 
   /// Pantalla que se abre al tocar el aviso.
@@ -107,8 +136,11 @@ class AvisoPush {
     Rol.conductor => '/c/inicio',
     Rol.admin => '/a/satisfaccion',
     Rol.pasajero => switch (tipo) {
+      TipoAviso.solicitudRecibida ||
+      TipoAviso.busquedaAmpliada ||
       TipoAviso.viajeAceptado ||
       TipoAviso.conductorLlego ||
+      TipoAviso.viajeIniciado ||
       TipoAviso.viajeFinalizado ||
       TipoAviso.sinConductores => '/p/viaje',
       _ => '/p/inicio',

@@ -160,6 +160,7 @@ class _Aviso extends StatelessWidget {
     final (icono, color) = switch (aviso.tipo) {
       TipoAviso.conductorLlego => (Icons.place_outlined, NexaColors.cyan),
       TipoAviso.viajeAceptado => (Icons.two_wheeler, NexaColors.cyan),
+      TipoAviso.viajeIniciado => (Icons.route_outlined, NexaColors.cyan),
       TipoAviso.viajeFinalizado => (Icons.check_rounded, NexaColors.ok),
       TipoAviso.viajeCancelado ||
       TipoAviso.solicitudVencida => (Icons.close_rounded, NexaColors.error),

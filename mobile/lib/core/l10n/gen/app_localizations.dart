@@ -5468,6 +5468,84 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Abrir tu perfil'**
   String get abrirPerfil;
+
+  /// No description provided for @avisoViajeSub.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu viaje NEXA'**
+  String get avisoViajeSub;
+
+  /// No description provided for @avisoBuscandoOla.
+  ///
+  /// In es, this message translates to:
+  /// **'Ola {ola} de {total} · radio de {radio}'**
+  String avisoBuscandoOla(String ola, String total, String radio);
+
+  /// No description provided for @avisoAceptadoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'{nombre} va por ti'**
+  String avisoAceptadoTitulo(String nombre);
+
+  /// No description provided for @avisoLlegoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'{nombre} está en tu punto'**
+  String avisoLlegoTitulo(String nombre);
+
+  /// No description provided for @avisoLlegoTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Sal a su encuentro. Tienes unos minutos sin costo de espera.'**
+  String get avisoLlegoTexto;
+
+  /// No description provided for @avisoIniciadoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Vas camino a {destino}'**
+  String avisoIniciadoTitulo(String destino);
+
+  /// No description provided for @avisoIniciadoTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Sigue el recorrido en vivo desde la app.'**
+  String get avisoIniciadoTexto;
+
+  /// No description provided for @avisoFinalizadoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Llegaste a tu destino!'**
+  String get avisoFinalizadoTitulo;
+
+  /// No description provided for @avisoFinalizadoTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Toca para ver el total y calificar a {nombre}.'**
+  String avisoFinalizadoTexto(String nombre);
+
+  /// No description provided for @avisoPlaca.
+  ///
+  /// In es, this message translates to:
+  /// **'Placa {placa}'**
+  String avisoPlaca(String placa);
+
+  /// No description provided for @avisoConductorGenerico.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu conductor'**
+  String get avisoConductorGenerico;
+
+  /// No description provided for @avisoVerViaje.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver viaje'**
+  String get avisoVerViaje;
+
+  /// No description provided for @avisoCalificar.
+  ///
+  /// In es, this message translates to:
+  /// **'Calificar'**
+  String get avisoCalificar;
 }
 
 class _AppLocalizationsDelegate

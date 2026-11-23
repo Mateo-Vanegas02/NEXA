@@ -1890,5 +1890,66 @@
     }
   },
   "detalleNoEncontrado": "No encontramos el detalle de ese viaje.",
-  "abrirPerfil": "Abrir tu perfil"
+  "abrirPerfil": "Abrir tu perfil",
+  "avisoViajeSub": "Tu viaje NEXA",
+  "avisoBuscandoOla": "Ola {ola} de {total} · radio de {radio}",
+  "@avisoBuscandoOla": {
+    "placeholders": {
+      "ola": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      },
+      "radio": {
+        "type": "String"
+      }
+    }
+  },
+  "avisoAceptadoTitulo": "{nombre} va por ti",
+  "@avisoAceptadoTitulo": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "avisoLlegoTitulo": "{nombre} está en tu punto",
+  "@avisoLlegoTitulo": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "avisoLlegoTexto": "Sal a su encuentro. Tienes unos minutos sin costo de espera.",
+  "avisoIniciadoTitulo": "Vas camino a {destino}",
+  "@avisoIniciadoTitulo": {
+    "placeholders": {
+      "destino": {
+        "type": "String"
+      }
+    }
+  },
+  "avisoIniciadoTexto": "Sigue el recorrido en vivo desde la app.",
+  "avisoFinalizadoTitulo": "¡Llegaste a tu destino!",
+  "avisoFinalizadoTexto": "Toca para ver el total y calificar a {nombre}.",
+  "@avisoFinalizadoTexto": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "avisoPlaca": "Placa {placa}",
+  "@avisoPlaca": {
+    "placeholders": {
+      "placa": {
+        "type": "String"
+      }
+    }
+  },
+  "avisoConductorGenerico": "Tu conductor",
+  "avisoVerViaje": "Ver viaje",
+  "avisoCalificar": "Calificar"
 }
