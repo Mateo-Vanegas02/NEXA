@@ -260,7 +260,7 @@ public class AvisosPendientesService {
                 push.solicitudRetiradaA(s, "TOMADO", destinatarios);
             });
             case LLEGADA -> push.ejecutarConfirmado(soloTokens, () -> push.conductorLlego(s));
-            case INICIADO -> { }
+            case INICIADO -> push.ejecutarConfirmado(soloTokens, () -> push.viajeIniciado(s));
             case FINALIZADO -> push.ejecutarConfirmado(soloTokens, () -> push.viajeFinalizado(s));
             case CANCELADO -> push.ejecutarConfirmado(soloTokens, () -> {
                 push.viajeCancelado(s);

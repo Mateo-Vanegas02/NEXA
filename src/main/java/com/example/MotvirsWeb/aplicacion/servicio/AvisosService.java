@@ -5,6 +5,7 @@ import com.example.MotvirsWeb.aplicacion.puerto.NotificadorPush.Aviso;
 import com.example.MotvirsWeb.aplicacion.puerto.NotificadorPush.Canal;
 import com.example.MotvirsWeb.dominio.modelo.CanalServicio;
 import com.example.MotvirsWeb.dominio.modelo.Conductor;
+import com.example.MotvirsWeb.dominio.modelo.EstadoServicio;
 import com.example.MotvirsWeb.dominio.modelo.Servicio;
 import com.example.MotvirsWeb.dominio.modelo.Usuario;
 import com.example.MotvirsWeb.dominio.regla.ModeloNexaProperties;
@@ -129,6 +130,7 @@ public class AvisosService {
             }
             int ola = despacho.olaDe(s);
             avisarSolicitud(s, conductoresEntre(s, 0, ola), "SOLICITUD_NUEVA", ola);
+            busquedaAlPasajero(s, "SOLICITUD_RECIBIDA", ola);
         });
     }
 
@@ -143,6 +145,7 @@ public class AvisosService {
             List<ObjectId> nuevos = conductoresEntre(s, olaAnterior, ola).stream()
                     .filter(id -> !yaAvisados.contains(id)).toList();
             avisarSolicitud(s, nuevos, "SOLICITUD_NUEVA", ola);
+            busquedaAlPasajero(s, "BUSQUEDA_AMPLIADA", ola);
         });
     }
 
@@ -191,6 +194,18 @@ public class AvisosService {
             Servicio.ConductorEmbedded c = s.getConductor();
             alPasajero(s, "CONDUCTOR_LLEGO", primerNombre(c.getNombre(), "Tu conductor") + " está en el punto",
                     c.getPlaca() == null || c.getPlaca().isBlank() ? "Sal a su encuentro" : "Busca la placa " + c.getPlaca());
+        });
+    }
+
+    /** El conductor recogió al pasajero y arrancó: la notificación del viaje pasa a «en camino». */
+    public void viajeIniciado(Servicio s) {
+        seguro("viaje iniciado", () -> {
+            if (deApp(s)) {
+                alPasajero(s, "VIAJE_INICIADO",
+                        s.getDestino() == null || s.getDestino().isBlank() ? "Vas en camino"
+                                : "Vas camino a " + s.getDestino(),
+                        "Sigue el recorrido en vivo desde la app");
+            }
         });
     }
 
@@ -294,7 +309,63 @@ public class AvisosService {
             return;
         }
         enviarPush(dispositivos.tokensDe(s.getPasajero().getId()), new Aviso(tipo + ":" + s.getId(), tipo,
-                Canal.VIAJE, titulo, cuerpo, Map.of("servicioId", s.getId()), vigenciaViaje()));
+                Canal.VIAJE, titulo, cuerpo, datosParaPasajero(s), vigenciaViaje()));
+    }
+
+    /**
+     * Lo que la app necesita para dibujar la notificación del viaje (rediseño 2026): su conductor (nombre, moto,
+     * placa y nota), el destino y, al terminar, el total. Solo lo que el pasajero ya ve en la app.
+     */
+    static Map<String, String> datosParaPasajero(Servicio s) {
+        Map<String, String> datos = new HashMap<>();
+        datos.put("servicioId", s.getId());
+        if (s.getDestino() != null && !s.getDestino().isBlank()) {
+            datos.put("destino", s.getDestino());
+        }
+        Servicio.ConductorEmbedded c = s.getConductor();
+        if (c != null) {
+            if (c.getNombre() != null && !c.getNombre().isBlank()) {
+                datos.put("conductor", c.getNombre());
+            }
+            if (c.getVehiculo() != null && !c.getVehiculo().isBlank()) {
+                datos.put("vehiculo", c.getVehiculo());
+            }
+            if (c.getPlaca() != null && !c.getPlaca().isBlank()) {
+                datos.put("placa", c.getPlaca());
+            }
+            if (c.getCalificacion() != null) {
+                datos.put("calificacion", String.format(ES_CO, "%.1f", c.getCalificacion()));
+            }
+        }
+        if (s.getEstado() == EstadoServicio.FINALIZADO) {
+            Servicio.DesgloseTarifa d = s.getDesglose();
+            double total = d != null && d.getTotalPasajero() > 0 ? d.getTotalPasajero() + d.getExtraVoluntario()
+                    : s.getTarifa() + s.getExtraVoluntario();
+            if (total > 0) {
+                datos.put("total", pesos(Math.round(total + s.getDeudaCobrada())));
+            }
+        }
+        return datos;
+    }
+
+    /** La búsqueda de conductor en la notificación del pasajero: qué ola va y hasta dónde llega. */
+    private void busquedaAlPasajero(Servicio s, String tipo, int ola) {
+        if (s.getPasajero() == null || s.getPasajero().getId() == null) {
+            return;
+        }
+        List<String> tokens = dispositivos.tokensDe(s.getPasajero().getId());
+        if (tokens == null || tokens.isEmpty()) {
+            return;
+        }
+        Map<String, String> datos = datosParaPasajero(s);
+        datos.put("ola", Integer.toString(Math.max(1, ola)));
+        datos.put("olas", Integer.toString(despacho.totalOlas()));
+        double radio = despacho.radioKm(ola);
+        if (Double.isFinite(radio)) {
+            datos.put("radio", km(radio));
+        }
+        enviarPush(tokens, new Aviso(tipo + ":" + s.getId() + ":" + ola, tipo, Canal.VIAJE,
+                "Buscando tu conductor", "Avisamos a los conductores más cerca", datos, vigenciaSolicitud()));
     }
 
     private List<String> tokens(Collection<ObjectId> usuarios) {
