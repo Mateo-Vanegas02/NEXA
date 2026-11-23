@@ -5462,6 +5462,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No encontramos el detalle de ese viaje.'**
   String get detalleNoEncontrado;
+
+  /// No description provided for @abrirPerfil.
+  ///
+  /// In es, this message translates to:
+  /// **'Abrir tu perfil'**
+  String get abrirPerfil;
 }
 
 class _AppLocalizationsDelegate

@@ -141,15 +141,22 @@ class _Encabezado extends ConsumerWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+        // Tocar el saludo abre el perfil.
         Flexible(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
+          child: Semantics(
+            button: true,
+            hint: l.abrirPerfil,
+            child: Material(
               color: NexaColors.glass,
-              borderRadius: BorderRadius.circular(Rad.pill),
-              border: Border.all(color: NexaColors.line),
-              boxShadow: NexaShadows.card,
-            ),
-            child: Padding(
+              shape: const StadiumBorder(
+                side: BorderSide(color: NexaColors.line),
+              ),
+              shadowColor: Colors.black,
+              elevation: 4,
+              child: InkWell(
+                customBorder: const StadiumBorder(),
+                onTap: () => context.go('/p/perfil'),
+                child: Padding(
               padding: const EdgeInsets.fromLTRB(Sp.sm, Sp.sm, Sp.xl, Sp.sm),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -190,6 +197,8 @@ class _Encabezado extends ConsumerWidget {
                   ),
                 ],
               ),
+            ),
+          ),
             ),
           ),
         ),

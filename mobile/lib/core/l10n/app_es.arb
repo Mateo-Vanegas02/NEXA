@@ -1889,5 +1889,6 @@
       }
     }
   },
-  "detalleNoEncontrado": "No encontramos el detalle de ese viaje."
+  "detalleNoEncontrado": "No encontramos el detalle de ese viaje.",
+  "abrirPerfil": "Abrir tu perfil"
 }

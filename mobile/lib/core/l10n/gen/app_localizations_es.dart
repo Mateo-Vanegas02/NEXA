@@ -3025,4 +3025,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get detalleNoEncontrado => 'No encontramos el detalle de ese viaje.';
+
+  @override
+  String get abrirPerfil => 'Abrir tu perfil';
 }
