@@ -166,41 +166,43 @@ class _Panel extends ConsumerWidget {
           child: ConUbicacion(
             omitir: moto != null || activo != null,
             child: MapaNexa(
-            centro: moto ?? recogida,
-            // Sin viaje no hay recogida: solo su moto (antes salía un pin viejo).
-            origen: activo == null ? null : recogida,
-            destino: destino,
-            ruta: rutaMapa,
-            alternativas: [
-              for (final o in opciones.skip(1)) rutaDe(o.geometria),
-            ],
-            progreso: rutaVigente != null && opciones.isEmpty,
-            // Fuera de línea su moto queda donde dice el GPS del teléfono, para
-            // ubicarse apenas entra (antes solo aparecía al conectarse).
-            conductor:
-                moto ??
-                (activo == null && centro != kCentroPorDefecto ? centro : null),
-            motoPropia: true,
-            velocidadKmh: velocidadKmh,
-            pasajero: estado.pasajero == null
-                ? null
-                : LatLng(estado.pasajero!.latitud, estado.pasajero!.longitud),
-            pasajeroPropio: false,
-            pasajeroSinSenal:
-                estado.pasajero != null &&
-                ReglasMarcadores.sinSenal(estado.pasajero!.haceSegundos),
-            orientable: true,
-            navegacion: navegando,
-            // En línea y sin viaje: dónde se está pidiendo más (rediseño 2026).
-            zonas: estado.enLinea && activo == null
-                ? [
-                    for (final z
-                        in ref.watch(zonasDemandaProvider).value ??
-                            const <ZonaDemanda>[])
-                      (LatLng(z.latitud, z.longitud), z.intensidad),
-                  ]
-                : const [],
-          ),
+              centro: moto ?? recogida,
+              // Sin viaje no hay recogida: solo su moto (antes salía un pin viejo).
+              origen: activo == null ? null : recogida,
+              destino: destino,
+              ruta: rutaMapa,
+              alternativas: [
+                for (final o in opciones.skip(1)) rutaDe(o.geometria),
+              ],
+              progreso: rutaVigente != null && opciones.isEmpty,
+              // Fuera de línea su moto queda donde dice el GPS del teléfono, para
+              // ubicarse apenas entra (antes solo aparecía al conectarse).
+              conductor:
+                  moto ??
+                  (activo == null && centro != kCentroPorDefecto
+                      ? centro
+                      : null),
+              motoPropia: true,
+              velocidadKmh: velocidadKmh,
+              pasajero: estado.pasajero == null
+                  ? null
+                  : LatLng(estado.pasajero!.latitud, estado.pasajero!.longitud),
+              pasajeroPropio: false,
+              pasajeroSinSenal:
+                  estado.pasajero != null &&
+                  ReglasMarcadores.sinSenal(estado.pasajero!.haceSegundos),
+              orientable: true,
+              navegacion: navegando,
+              // En línea y sin viaje: dónde se está pidiendo más (rediseño 2026).
+              zonas: estado.enLinea && activo == null
+                  ? [
+                      for (final z
+                          in ref.watch(zonasDemandaProvider).value ??
+                              const <ZonaDemanda>[])
+                        (LatLng(z.latitud, z.longitud), z.intensidad),
+                    ]
+                  : const [],
+            ),
           ),
         ),
         if (puedeNavegar)

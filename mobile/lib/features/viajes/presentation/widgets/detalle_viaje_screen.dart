@@ -32,7 +32,8 @@ Future<void> abrirDetalleViaje(
   bool conductor = false,
 }) => Navigator.of(context, rootNavigator: true).push(
   MaterialPageRoute<void>(
-    builder: (_) => DetalleViajeScreen(servicio: servicio, conductor: conductor),
+    builder: (_) =>
+        DetalleViajeScreen(servicio: servicio, conductor: conductor),
   ),
 );
 
@@ -163,7 +164,9 @@ class _Estado extends StatelessWidget {
     return DecoratedBox(
       decoration: ShapeDecoration(
         color: color.withValues(alpha: 0.14),
-        shape: StadiumBorder(side: BorderSide(color: color.withValues(alpha: 0.4))),
+        shape: StadiumBorder(
+          side: BorderSide(color: color.withValues(alpha: 0.4)),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: Sp.md, vertical: Sp.xs),
@@ -263,9 +266,7 @@ class _Punto extends StatelessWidget {
                 decoration: BoxDecoration(color: color, shape: BoxShape.circle),
               ),
               if (linea)
-                Expanded(
-                  child: Container(width: 2, color: NexaColors.line),
-                ),
+                Expanded(child: Container(width: 2, color: NexaColors.line)),
             ],
           ),
         ),
@@ -307,7 +308,9 @@ class _LineaTiempo extends StatelessWidget {
         (l.detalleCancelado, s.fechaCancelacion, NexaColors.error)
       else if (s.fechaFinalizacion != null)
         (
-          s.finalizadoAntesDelDestino ? l.detalleTerminoAntes : l.detalleLlegada,
+          s.finalizadoAntesDelDestino
+              ? l.detalleTerminoAntes
+              : l.detalleLlegada,
           s.fechaFinalizacion,
           s.finalizadoAntesDelDestino ? NexaColors.gold : NexaColors.ok,
         ),
@@ -383,7 +386,10 @@ class _Persona extends StatelessWidget {
     final l = AppLocalizations.of(context);
     final p = (conductor ? servicio.pasajero : servicio.conductor)!;
     final detalle = conductor
-        ? [if (servicio.nivelPasajero > 0) l.detalleNivel(servicio.nivelPasajero)]
+        ? [
+            if (servicio.nivelPasajero > 0)
+              l.detalleNivel(servicio.nivelPasajero),
+          ]
         : [
             if ((p.vehiculo ?? '').isNotEmpty) p.vehiculo!,
             if (p.calificacion != null)
@@ -524,7 +530,9 @@ class _PagoPasajero extends ConsumerWidget {
               _Fila(
                 l.totalPagado,
                 Fmt.cop(
-                  value.totalAPagar > 0 ? value.totalAPagar : value.totalPasajero,
+                  value.totalAPagar > 0
+                      ? value.totalAPagar
+                      : value.totalPasajero,
                 ),
                 fuerte: true,
               ),

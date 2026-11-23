@@ -87,9 +87,7 @@ DisenoAvisoViaje disenoAvisoViaje(AvisoPush aviso, AppLocalizations l) {
       titulo: dato('conductor') == null
           ? (aviso.titulo ?? l.avisoAceptadoTitulo(nombre))
           : l.avisoAceptadoTitulo(nombre),
-      texto: conductor.isEmpty
-          ? (aviso.cuerpo ?? '')
-          : conductor.join(' · '),
+      texto: conductor.isEmpty ? (aviso.cuerpo ?? '') : conductor.join(' · '),
       lineas: [?destino],
       color: NexaColors.cyan,
       avance: 25,
@@ -118,17 +116,13 @@ DisenoAvisoViaje disenoAvisoViaje(AvisoPush aviso, AppLocalizations l) {
     ),
     TipoAviso.viajeFinalizado => DisenoAvisoViaje(
       titulo: l.avisoFinalizadoTitulo,
-      texto: [
-        ?dato('total'),
-        l.avisoFinalizadoTexto(nombre),
-      ].join(' · '),
+      texto: [?dato('total'), l.avisoFinalizadoTexto(nombre)].join(' · '),
       lineas: [?destino],
       color: NexaColors.ok,
       avance: 100,
       accion: l.avisoCalificar,
     ),
-    TipoAviso.viajeCancelado ||
-    TipoAviso.solicitudVencida => DisenoAvisoViaje(
+    TipoAviso.viajeCancelado || TipoAviso.solicitudVencida => DisenoAvisoViaje(
       titulo: aviso.titulo ?? '',
       texto: aviso.cuerpo ?? '',
       color: NexaColors.error,

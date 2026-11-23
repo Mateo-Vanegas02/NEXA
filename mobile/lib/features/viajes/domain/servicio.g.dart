@@ -90,7 +90,25 @@ _Servicio _$ServicioFromJson(Map<String, dynamic> json) => _Servicio(
   fraccionCobrada: (json['fraccionCobrada'] as num?)?.toDouble(),
   metodoPago: json['metodoPago'] as String?,
   calificacionConductor: (json['calificacionConductor'] as num?)?.toDouble(),
+  comentariosConductor: json['comentariosConductor'] as String?,
+  factoresConductor:
+      (json['factoresConductor'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const <String>[],
   calificacionPasajero: (json['calificacionPasajero'] as num?)?.toDouble(),
+  comentariosPasajero: json['comentariosPasajero'] as String?,
+  factoresPasajero:
+      (json['factoresPasajero'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const <String>[],
+  fechaAceptacion: json['fechaAceptacion'] == null
+      ? null
+      : DateTime.parse(json['fechaAceptacion'] as String),
+  fechaCancelacion: json['fechaCancelacion'] == null
+      ? null
+      : DateTime.parse(json['fechaCancelacion'] as String),
   nivelPasajero: (json['nivelPasajero'] as num?)?.toInt() ?? 0,
   xpGanadoPasajero: (json['xpGanadoPasajero'] as num?)?.toInt() ?? 0,
   xpGanadoConductor: (json['xpGanadoConductor'] as num?)?.toInt() ?? 0,
@@ -121,7 +139,13 @@ Map<String, dynamic> _$ServicioToJson(_Servicio instance) => <String, dynamic>{
   'fraccionCobrada': instance.fraccionCobrada,
   'metodoPago': instance.metodoPago,
   'calificacionConductor': instance.calificacionConductor,
+  'comentariosConductor': instance.comentariosConductor,
+  'factoresConductor': instance.factoresConductor,
   'calificacionPasajero': instance.calificacionPasajero,
+  'comentariosPasajero': instance.comentariosPasajero,
+  'factoresPasajero': instance.factoresPasajero,
+  'fechaAceptacion': instance.fechaAceptacion?.toIso8601String(),
+  'fechaCancelacion': instance.fechaCancelacion?.toIso8601String(),
   'nivelPasajero': instance.nivelPasajero,
   'xpGanadoPasajero': instance.xpGanadoPasajero,
   'xpGanadoConductor': instance.xpGanadoConductor,
@@ -180,6 +204,7 @@ _Ingreso _$IngresoFromJson(Map<String, dynamic> json) => _Ingreso(
   montoBruto: (json['montoBruto'] as num?)?.toDouble() ?? 0,
   descripcion: json['descripcion'] as String? ?? '',
   hora: json['hora'] as String?,
+  servicioId: json['servicioId'] as String?,
 );
 
 Map<String, dynamic> _$IngresoToJson(_Ingreso instance) => <String, dynamic>{
@@ -188,4 +213,5 @@ Map<String, dynamic> _$IngresoToJson(_Ingreso instance) => <String, dynamic>{
   'montoBruto': instance.montoBruto,
   'descripcion': instance.descripcion,
   'hora': instance.hora,
+  'servicioId': instance.servicioId,
 };

@@ -30,22 +30,23 @@ final _viaje = Servicio(
 
 void main() {
   for (final escala in [1.0, 2.0]) {
-    testWidgets('pasajero: ruta, tiempos, conductor, pago y su nota ($escala)', (
-      t,
-    ) async {
-      usarTamano(t, const Size(360, 640), textScale: escala);
-      await t.pumpWidget(envolver(DetalleViajeScreen(servicio: _viaje)));
-      await t.pump(const Duration(seconds: 1));
-      expect(find.text('Detalle del viaje'), findsOneWidget);
-      expect(find.text('Torres de La Plazuela'), findsWidgets);
-      expect(find.text('Viaje aceptado'), findsOneWidget);
-      expect(find.textContaining('8 min de viaje'), findsOneWidget);
-      expect(find.text('Quintero'), findsOneWidget);
-      expect(find.text('DTE54H'), findsOneWidget);
-      await t.scrollUntilVisible(find.text('«Muy amable»'), 200);
-      expect(find.text('Tu calificación'), findsOneWidget);
-      expect(t.takeException(), isNull);
-    });
+    testWidgets(
+      'pasajero: ruta, tiempos, conductor, pago y su nota ($escala)',
+      (t) async {
+        usarTamano(t, const Size(360, 640), textScale: escala);
+        await t.pumpWidget(envolver(DetalleViajeScreen(servicio: _viaje)));
+        await t.pump(const Duration(seconds: 1));
+        expect(find.text('Detalle del viaje'), findsOneWidget);
+        expect(find.text('Torres de La Plazuela'), findsWidgets);
+        expect(find.text('Viaje aceptado'), findsOneWidget);
+        expect(find.textContaining('8 min de viaje'), findsOneWidget);
+        expect(find.text('Quintero'), findsOneWidget);
+        expect(find.text('DTE54H'), findsOneWidget);
+        await t.scrollUntilVisible(find.text('«Muy amable»'), 200);
+        expect(find.text('Tu calificación'), findsOneWidget);
+        expect(t.takeException(), isNull);
+      },
+    );
   }
 
   testWidgets('conductor: su pasajero y sin calificar', (t) async {

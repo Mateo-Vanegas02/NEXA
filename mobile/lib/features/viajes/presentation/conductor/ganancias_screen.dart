@@ -467,45 +467,49 @@ class _FilaIngreso extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(Rad.md),
       child: Padding(
-      padding: const EdgeInsets.symmetric(vertical: Sp.md),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: NexaColors.cyan.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(12),
+        padding: const EdgeInsets.symmetric(vertical: Sp.md),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: NexaColors.cyan.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.place_outlined,
+                size: 18,
+                color: context.acento,
+              ),
             ),
-            child: Icon(Icons.place_outlined, size: 18, color: context.acento),
-          ),
-          const SizedBox(width: Sp.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  descripcion,
-                  style: t.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-                ),
-                Text(
-                  _fecha(fecha),
-                  style: t.bodySmall?.copyWith(color: context.muted),
-                ),
-              ],
+            const SizedBox(width: Sp.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    descripcion,
+                    style: t.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                  Text(
+                    _fecha(fecha),
+                    style: t.bodySmall?.copyWith(color: context.muted),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: Sp.sm),
-          Text(
-            Fmt.cop(monto),
-            style: t.titleSmall?.copyWith(
-              color: NexaColors.ok,
-              fontWeight: FontWeight.w700,
+            const SizedBox(width: Sp.sm),
+            Text(
+              Fmt.cop(monto),
+              style: t.titleSmall?.copyWith(
+                color: NexaColors.ok,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
     );
   }
 }
