@@ -68,6 +68,14 @@ class OrientacionMapaController extends Notifier<EstadoOrientacion> {
   bool _sinMagnetometro = false;
   DateTime? _publicadoEn;
 
+  /// Último dato del giroscopio: mientras llegue, el cálculo va a su ritmo
+  /// (más seguido que la brújula).
+  DateTime? _giroEn;
+
+  bool get _conGiroVivo =>
+      _giroEn != null &&
+      DateTime.now().difference(_giroEn!) < const Duration(milliseconds: 250);
+
   /// Con «reducir movimiento» se gira menos seguido (lo pone la pantalla).
   bool sinAnimacion = false;
 
@@ -129,6 +137,7 @@ class OrientacionMapaController extends Notifier<EstadoOrientacion> {
     if (_subs.isNotEmpty) return;
     _fusion = FusionRumbo();
     _gravedad = _magnetico = _giroscopio = null;
+    _giroEn = null;
     _sinMagnetometro = false;
     final s = ref.read(sensoresProvider);
     _subs
@@ -139,7 +148,7 @@ class OrientacionMapaController extends Notifier<EstadoOrientacion> {
         s.magnetometro().listen(
           (v) {
             _magnetico = v;
-            _calcular();
+            if (!_conGiroVivo) _calcular();
           },
           onError: (Object _) {
             _sinMagnetometro = true;
@@ -148,7 +157,11 @@ class OrientacionMapaController extends Notifier<EstadoOrientacion> {
         ),
       )
       ..add(
-        s.giroscopio().listen((v) => _giroscopio = v, onError: (Object _) {}),
+        s.giroscopio().listen((v) {
+          _giroscopio = v;
+          _giroEn = DateTime.now();
+          _calcular();
+        }, onError: (Object _) {}),
       );
     // Sin brújula (o con el teléfono quieto) el GPS igual puede dar rumbo.
     _latido = Timer.periodic(const Duration(seconds: 1), (_) => _calcular());
