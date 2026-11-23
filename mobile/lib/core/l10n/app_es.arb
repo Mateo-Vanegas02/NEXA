@@ -1820,5 +1820,10 @@
         "type": "String"
       }
     }
-  }
+  },
+  "ubicandoTitulo": "Ubicándote en el mapa",
+  "ubicandoTexto": "Leemos el GPS de tu teléfono para mostrarte justo donde estás.",
+  "sinUbicacionTitulo": "No encontramos tu ubicación",
+  "sinUbicacionTexto": "Activa la ubicación (GPS) del teléfono y dale permiso a NEXA. Lo seguimos intentando solos.",
+  "activarUbicacion": "Activar ubicación"
 }

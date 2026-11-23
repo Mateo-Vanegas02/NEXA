@@ -5258,6 +5258,36 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ir hoy cuesta cerca de {precio}'**
   String precioHoySemantica(String precio);
+
+  /// No description provided for @ubicandoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Ubicándote en el mapa'**
+  String get ubicandoTitulo;
+
+  /// No description provided for @ubicandoTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Leemos el GPS de tu teléfono para mostrarte justo donde estás.'**
+  String get ubicandoTexto;
+
+  /// No description provided for @sinUbicacionTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'No encontramos tu ubicación'**
+  String get sinUbicacionTitulo;
+
+  /// No description provided for @sinUbicacionTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Activa la ubicación (GPS) del teléfono y dale permiso a NEXA. Lo seguimos intentando solos.'**
+  String get sinUbicacionTexto;
+
+  /// No description provided for @activarUbicacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Activar ubicación'**
+  String get activarUbicacion;
 }
 
 class _AppLocalizationsDelegate

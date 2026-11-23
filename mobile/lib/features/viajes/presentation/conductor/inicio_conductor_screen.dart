@@ -26,6 +26,7 @@ import '../widgets/solicitud_entrante.dart';
 import '../widgets/rutas_desvio.dart';
 import '../widgets/solicitud_card.dart';
 import '../widgets/viaje_activo_card.dart';
+import '../../../permisos/presentation/con_ubicacion.dart';
 import '../../../permisos/presentation/flujo_permisos.dart';
 
 import 'package:flutter/material.dart';
@@ -159,8 +160,12 @@ class _Panel extends ConsumerWidget {
     }
     return Stack(
       children: [
+        // Sin viaje ni moto en vivo, el mapa espera la ubicación real (nada de
+        // abrir en el centro de la ciudad y saltar después).
         Positioned.fill(
-          child: MapaNexa(
+          child: ConUbicacion(
+            omitir: moto != null || activo != null,
+            child: MapaNexa(
             centro: moto ?? recogida,
             // Sin viaje no hay recogida: solo su moto (antes salía un pin viejo).
             origen: activo == null ? null : recogida,
@@ -195,6 +200,7 @@ class _Panel extends ConsumerWidget {
                       (LatLng(z.latitud, z.longitud), z.intensidad),
                   ]
                 : const [],
+          ),
           ),
         ),
         if (puedeNavegar)

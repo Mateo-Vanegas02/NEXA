@@ -22,6 +22,7 @@ import '../controllers/precio_hoy.dart';
 import '../controllers/viaje_pasajero_controller.dart';
 import '../widgets/estado_texto.dart';
 import '../widgets/viaje_tile.dart';
+import '../../../permisos/presentation/con_ubicacion.dart';
 import '../../../permisos/presentation/flujo_permisos.dart';
 import 'elegir_lugar_screen.dart';
 
@@ -56,13 +57,17 @@ class InicioPasajeroScreen extends ConsumerWidget {
       child: Scaffold(
         body: Stack(
           children: [
+            // Sin la ubicación real no se dibuja el centro de la ciudad: el
+            // mapa abre justo donde está el pasajero.
             Positioned.fill(
-              child: MapaNexa(
-                centro: centro,
-                pasajero: centro,
-                orientable: true,
-                // Debajo del encabezado.
-                brujulaArriba: Sp.md + Sizes.boton + Sp.md,
+              child: ConUbicacion(
+                child: MapaNexa(
+                  centro: centro,
+                  pasajero: centro,
+                  orientable: true,
+                  // Debajo del encabezado.
+                  brujulaArriba: Sp.md + Sizes.boton + Sp.md,
+                ),
               ),
             ),
             const SafeArea(

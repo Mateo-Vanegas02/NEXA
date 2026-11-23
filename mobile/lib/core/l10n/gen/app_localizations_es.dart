@@ -2911,4 +2911,21 @@ class AppLocalizationsEs extends AppLocalizations {
   String precioHoySemantica(String precio) {
     return 'Ir hoy cuesta cerca de $precio';
   }
+
+  @override
+  String get ubicandoTitulo => 'Ubicándote en el mapa';
+
+  @override
+  String get ubicandoTexto =>
+      'Leemos el GPS de tu teléfono para mostrarte justo donde estás.';
+
+  @override
+  String get sinUbicacionTitulo => 'No encontramos tu ubicación';
+
+  @override
+  String get sinUbicacionTexto =>
+      'Activa la ubicación (GPS) del teléfono y dale permiso a NEXA. Lo seguimos intentando solos.';
+
+  @override
+  String get activarUbicacion => 'Activar ubicación';
 }
