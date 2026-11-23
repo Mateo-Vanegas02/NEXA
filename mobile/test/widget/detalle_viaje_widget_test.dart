@@ -40,11 +40,12 @@ void main() {
         expect(find.text('Torres de La Plazuela'), findsWidgets);
         await t.scrollUntilVisible(find.text('Viaje aceptado'), 200);
         expect(find.textContaining('8 min de viaje'), findsOneWidget);
+        await t.scrollUntilVisible(find.text('DTE54H'), 200);
         expect(find.text('Quintero'), findsOneWidget);
-        expect(find.text('DTE54H'), findsOneWidget);
         await t.scrollUntilVisible(find.text('«Muy amable»'), 200);
         expect(find.text('TU CALIFICACIÓN'), findsOneWidget);
         expect(t.takeException(), isNull);
+        await t.pump(const Duration(seconds: 3));
       },
     );
   }
@@ -59,5 +60,6 @@ void main() {
     expect(find.text('TU PASAJERO'), findsOneWidget);
     await t.scrollUntilVisible(find.text('No calificaste este viaje.'), 200);
     expect(t.takeException(), isNull);
+    await t.pump(const Duration(seconds: 3));
   });
 }
