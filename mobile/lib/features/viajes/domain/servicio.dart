@@ -100,8 +100,17 @@ abstract class Servicio with _$Servicio {
     @Default(false) bool finalizadoAntesDelDestino,
     double? fraccionCobrada,
     String? metodoPago,
+    // Calificaciones: el servidor solo envía la que puso quien pregunta
+    // (`VisibilidadServicio`): el pasajero ve la «Conductor» (la que le dio al
+    // conductor) y el conductor, la «Pasajero».
     double? calificacionConductor,
+    String? comentariosConductor,
+    @Default(<String>[]) List<String> factoresConductor,
     double? calificacionPasajero,
+    String? comentariosPasajero,
+    @Default(<String>[]) List<String> factoresPasajero,
+    DateTime? fechaAceptacion,
+    DateTime? fechaCancelacion,
     @Default(0) int nivelPasajero,
     @Default(0) int xpGanadoPasajero,
     @Default(0) int xpGanadoConductor,
@@ -158,6 +167,10 @@ abstract class Ingreso with _$Ingreso {
 
     /// Fecha y hora del viaje (ISO 8601); los servidores viejos no la envían.
     String? hora,
+
+    /// Viaje de este ingreso (para abrir su detalle); los servidores viejos
+    /// no lo envían y se busca por la hora.
+    String? servicioId,
   }) = _Ingreso;
 
   factory Ingreso.fromJson(Map<String, dynamic> json) =>

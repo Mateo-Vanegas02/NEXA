@@ -2928,4 +2928,101 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get activarUbicacion => 'Activar ubicación';
+
+  @override
+  String get detalleViaje => 'Detalle del viaje';
+
+  @override
+  String get detalleRecorrido => 'Recorrido';
+
+  @override
+  String get detalleLineaTiempo => 'Cómo fue';
+
+  @override
+  String get detallePedido => 'Pediste el viaje';
+
+  @override
+  String get detallePedidoConductor => 'Se pidió el viaje';
+
+  @override
+  String get detalleAceptado => 'Viaje aceptado';
+
+  @override
+  String get detalleRecogida => 'Recogida, inicia el viaje';
+
+  @override
+  String get detalleLlegada => 'Llegada al destino';
+
+  @override
+  String get detalleTerminoAntes => 'Terminó antes del destino';
+
+  @override
+  String get detalleCancelado => 'Viaje cancelado';
+
+  @override
+  String detalleDuracion(int min) {
+    return '$min min de viaje';
+  }
+
+  @override
+  String get detalleTuConductor => 'Tu conductor';
+
+  @override
+  String get detalleTuPasajero => 'Tu pasajero';
+
+  @override
+  String get detallePago => 'Pago';
+
+  @override
+  String get detalleTarifa => 'Tarifa';
+
+  @override
+  String get detalleTotal => 'Total';
+
+  @override
+  String get detalleCobrado => 'Cobraste en efectivo';
+
+  @override
+  String get detalleComision => 'Comisión de NEXA';
+
+  @override
+  String get detalleTuCalificacion => 'Tu calificación';
+
+  @override
+  String get detalleSinCalificar => 'No calificaste este viaje.';
+
+  @override
+  String detalleNotaSemantica(int n) {
+    return '$n de 5 estrellas';
+  }
+
+  @override
+  String get detalleEstadoFinalizado => 'Finalizado';
+
+  @override
+  String get detalleEstadoCancelado => 'Cancelado';
+
+  @override
+  String get detalleEstadoEnCurso => 'En curso';
+
+  @override
+  String detalleXp(int n) {
+    return '+$n XP';
+  }
+
+  @override
+  String get detalleDesgloseError => 'No pudimos cargar el desglose.';
+
+  @override
+  String detalleAbrir(String destino) {
+    return 'Ver detalle del viaje a $destino';
+  }
+
+  @override
+  String detalleNivel(int n) {
+    return 'Nivel $n';
+  }
+
+  @override
+  String get detalleNoEncontrado => 'No encontramos el detalle de ese viaje.';
 }

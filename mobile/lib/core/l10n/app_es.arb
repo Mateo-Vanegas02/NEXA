@@ -1825,5 +1825,69 @@
   "ubicandoTexto": "Leemos el GPS de tu teléfono para mostrarte justo donde estás.",
   "sinUbicacionTitulo": "No encontramos tu ubicación",
   "sinUbicacionTexto": "Activa la ubicación (GPS) del teléfono y dale permiso a NEXA. Lo seguimos intentando solos.",
-  "activarUbicacion": "Activar ubicación"
+  "activarUbicacion": "Activar ubicación",
+  "detalleViaje": "Detalle del viaje",
+  "detalleRecorrido": "Recorrido",
+  "detalleLineaTiempo": "Cómo fue",
+  "detallePedido": "Pediste el viaje",
+  "detallePedidoConductor": "Se pidió el viaje",
+  "detalleAceptado": "Viaje aceptado",
+  "detalleRecogida": "Recogida, inicia el viaje",
+  "detalleLlegada": "Llegada al destino",
+  "detalleTerminoAntes": "Terminó antes del destino",
+  "detalleCancelado": "Viaje cancelado",
+  "detalleDuracion": "{min} min de viaje",
+  "@detalleDuracion": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "detalleTuConductor": "Tu conductor",
+  "detalleTuPasajero": "Tu pasajero",
+  "detallePago": "Pago",
+  "detalleTarifa": "Tarifa",
+  "detalleTotal": "Total",
+  "detalleCobrado": "Cobraste en efectivo",
+  "detalleComision": "Comisión de NEXA",
+  "detalleTuCalificacion": "Tu calificación",
+  "detalleSinCalificar": "No calificaste este viaje.",
+  "detalleNotaSemantica": "{n} de 5 estrellas",
+  "@detalleNotaSemantica": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "detalleEstadoFinalizado": "Finalizado",
+  "detalleEstadoCancelado": "Cancelado",
+  "detalleEstadoEnCurso": "En curso",
+  "detalleXp": "+{n} XP",
+  "@detalleXp": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "detalleDesgloseError": "No pudimos cargar el desglose.",
+  "detalleAbrir": "Ver detalle del viaje a {destino}",
+  "@detalleAbrir": {
+    "placeholders": {
+      "destino": {
+        "type": "String"
+      }
+    }
+  },
+  "detalleNivel": "Nivel {n}",
+  "@detalleNivel": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "detalleNoEncontrado": "No encontramos el detalle de ese viaje."
 }

@@ -12,6 +12,7 @@ import '../../../../core/widgets/nexa_widgets.dart';
 import '../../domain/agrupar_viajes.dart';
 import '../../domain/servicio.dart';
 import '../controllers/viaje_pasajero_controller.dart';
+import '../widgets/detalle_viaje_screen.dart';
 import '../widgets/viaje_tile.dart';
 
 enum _Filtro { todos, completados, cancelados }
@@ -177,7 +178,10 @@ class _HistorialPasajeroScreenState
                             ),
                           ),
                           for (final s in g.value) ...[
-                            ViajeTile(servicio: s),
+                            ViajeTile(
+                              servicio: s,
+                              onTap: () => abrirDetalleViaje(context, s),
+                            ),
                             const SizedBox(height: Sp.sm),
                           ],
                         ],
