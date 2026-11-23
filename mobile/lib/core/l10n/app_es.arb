@@ -1951,5 +1951,12 @@
   },
   "avisoConductorGenerico": "Tu conductor",
   "avisoVerViaje": "Ver viaje",
-  "avisoCalificar": "Calificar"
+  "avisoCalificar": "Calificar",
+  "pagoTitulo": "¿Cómo vas a pagar?",
+  "pagoEfectivoDetalle": "Le pagas al conductor al llegar. Sin recargos.",
+  "pagoTarjetaDetalle": "Crédito o débito, cobrado al terminar el viaje.",
+  "pagoBilleteraDetalle": "Nequi o Daviplata desde la app.",
+  "pagoProximamente": "Próximamente",
+  "pagoNota": "Muy pronto podrás pagar con tarjeta o billetera digital sin sacar efectivo.",
+  "pagoElegido": "Elegido"
 }

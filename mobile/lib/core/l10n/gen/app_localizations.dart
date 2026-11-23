@@ -5546,6 +5546,48 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Calificar'**
   String get avisoCalificar;
+
+  /// No description provided for @pagoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Cómo vas a pagar?'**
+  String get pagoTitulo;
+
+  /// No description provided for @pagoEfectivoDetalle.
+  ///
+  /// In es, this message translates to:
+  /// **'Le pagas al conductor al llegar. Sin recargos.'**
+  String get pagoEfectivoDetalle;
+
+  /// No description provided for @pagoTarjetaDetalle.
+  ///
+  /// In es, this message translates to:
+  /// **'Crédito o débito, cobrado al terminar el viaje.'**
+  String get pagoTarjetaDetalle;
+
+  /// No description provided for @pagoBilleteraDetalle.
+  ///
+  /// In es, this message translates to:
+  /// **'Nequi o Daviplata desde la app.'**
+  String get pagoBilleteraDetalle;
+
+  /// No description provided for @pagoProximamente.
+  ///
+  /// In es, this message translates to:
+  /// **'Próximamente'**
+  String get pagoProximamente;
+
+  /// No description provided for @pagoNota.
+  ///
+  /// In es, this message translates to:
+  /// **'Muy pronto podrás pagar con tarjeta o billetera digital sin sacar efectivo.'**
+  String get pagoNota;
+
+  /// No description provided for @pagoElegido.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegido'**
+  String get pagoElegido;
 }
 
 class _AppLocalizationsDelegate

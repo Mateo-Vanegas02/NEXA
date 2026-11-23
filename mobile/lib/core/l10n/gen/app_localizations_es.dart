@@ -3080,4 +3080,28 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get avisoCalificar => 'Calificar';
+
+  @override
+  String get pagoTitulo => '¿Cómo vas a pagar?';
+
+  @override
+  String get pagoEfectivoDetalle =>
+      'Le pagas al conductor al llegar. Sin recargos.';
+
+  @override
+  String get pagoTarjetaDetalle =>
+      'Crédito o débito, cobrado al terminar el viaje.';
+
+  @override
+  String get pagoBilleteraDetalle => 'Nequi o Daviplata desde la app.';
+
+  @override
+  String get pagoProximamente => 'Próximamente';
+
+  @override
+  String get pagoNota =>
+      'Muy pronto podrás pagar con tarjeta o billetera digital sin sacar efectivo.';
+
+  @override
+  String get pagoElegido => 'Elegido';
 }
