@@ -146,13 +146,16 @@ class _Encabezado extends ConsumerWidget {
           child: Semantics(
             button: true,
             hint: l.abrirPerfil,
-            child: Material(
+            child: DecoratedBox(
+              decoration: const ShapeDecoration(
+                shape: StadiumBorder(),
+                shadows: NexaShadows.card,
+              ),
+              child: Material(
               color: NexaColors.glass,
               shape: const StadiumBorder(
                 side: BorderSide(color: NexaColors.line),
               ),
-              shadowColor: Colors.black,
-              elevation: 4,
               child: InkWell(
                 customBorder: const StadiumBorder(),
                 onTap: () => context.go('/p/perfil'),
@@ -205,6 +208,7 @@ class _Encabezado extends ConsumerWidget {
                 ),
               ),
             ),
+          ),
           ),
         ),
         const SizedBox(width: Sp.md),

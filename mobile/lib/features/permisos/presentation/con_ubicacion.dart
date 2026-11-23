@@ -129,57 +129,63 @@ class _UbicandoteState extends State<_Ubicandote>
           child: ConstrainedBox(
             constraints: BoxConstraints(minHeight: caja.maxHeight),
             child: Align(
-        // En la mitad de arriba: la hoja inferior tapa el resto.
-        alignment: const Alignment(0, -0.45),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: Sp.xl,
-            vertical: Sp.xxl,
-          ),
-          child: Semantics(
-            liveRegion: true,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox.square(
-                  dimension: 120,
-                  child: CustomPaint(
-                    painter: _Ondas(_ondas, color),
-                    child: Center(
-                      child: Icon(
-                        widget.buscando
-                            ? Icons.my_location
-                            : Icons.location_disabled,
-                        color: color,
-                        size: 34,
+              // En la mitad de arriba: la hoja inferior tapa el resto.
+              alignment: const Alignment(0, -0.45),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: Sp.xl,
+                  vertical: Sp.xxl,
+                ),
+                child: Semantics(
+                  liveRegion: true,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox.square(
+                        dimension: 120,
+                        child: CustomPaint(
+                          painter: _Ondas(_ondas, color),
+                          child: Center(
+                            child: Icon(
+                              widget.buscando
+                                  ? Icons.my_location
+                                  : Icons.location_disabled,
+                              color: color,
+                              size: 34,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: Sp.md),
+                      Text(
+                        widget.buscando
+                            ? l.ubicandoTitulo
+                            : l.sinUbicacionTitulo,
+                        textAlign: TextAlign.center,
+                        style: NexaTexto.titulo.copyWith(
+                          color: NexaColors.texto,
+                        ),
+                      ),
+                      const SizedBox(height: Sp.xs),
+                      Text(
+                        widget.buscando ? l.ubicandoTexto : l.sinUbicacionTexto,
+                        textAlign: TextAlign.center,
+                        style: NexaTexto.cuerpo.copyWith(
+                          color: NexaColors.muted,
+                        ),
+                      ),
+                      if (!widget.buscando) ...[
+                        const SizedBox(height: Sp.lg),
+                        NexaButton(
+                          label: l.activarUbicacion,
+                          onPressed: widget.onActivar,
+                        ),
+                      ],
+                    ],
                   ),
                 ),
-                const SizedBox(height: Sp.md),
-                Text(
-                  widget.buscando ? l.ubicandoTitulo : l.sinUbicacionTitulo,
-                  textAlign: TextAlign.center,
-                  style: NexaTexto.titulo.copyWith(color: NexaColors.texto),
-                ),
-                const SizedBox(height: Sp.xs),
-                Text(
-                  widget.buscando ? l.ubicandoTexto : l.sinUbicacionTexto,
-                  textAlign: TextAlign.center,
-                  style: NexaTexto.cuerpo.copyWith(color: NexaColors.muted),
-                ),
-                if (!widget.buscando) ...[
-                  const SizedBox(height: Sp.lg),
-                  NexaButton(
-                    label: l.activarUbicacion,
-                    onPressed: widget.onActivar,
-                  ),
-                ],
-              ],
+              ),
             ),
-          ),
-        ),
-      ),
           ),
         ),
       ),

@@ -26,7 +26,6 @@ import '../../../permisos/presentation/con_ubicacion.dart';
 import '../widgets/metodos_pago.dart';
 import '../../../permisos/presentation/flujo_permisos.dart';
 
-
 enum _Campo { origen, destino }
 
 /// Confirmar viaje: mapa con la ruta y hoja inferior con origen y destino (se

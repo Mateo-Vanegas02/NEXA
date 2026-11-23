@@ -31,7 +31,11 @@ void main() {
 
       await t.tap(find.text('Tarjeta'));
       await t.pumpAndSettle();
-      expect(find.text('¿Cómo vas a pagar?'), findsOneWidget, reason: 'no cierra');
+      expect(
+        find.text('¿Cómo vas a pagar?'),
+        findsOneWidget,
+        reason: 'no cierra',
+      );
 
       await t.tap(find.text('Efectivo'));
       await t.pumpAndSettle();
