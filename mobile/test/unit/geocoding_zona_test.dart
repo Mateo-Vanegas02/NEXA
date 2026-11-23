@@ -34,22 +34,25 @@ void main() {
     expect(p['countrycodes'], 'co');
   });
 
-  test('descarta lo que queda fuera de la zona aunque esté en el rectángulo', () async {
-    final geo = NominatimGeocoding(
-      Dio()
-        ..interceptors.add(
-          _Nominatim([
-            _lugar('Parque de Turbaco', 10.3325, -75.4142),
-            _lugar('C.C. Caribe Plaza', 10.4136, -75.5307),
-            _lugar('C.C. Caribe Plaza', 10.4136, -75.5307),
-            _lugar('Playa Blanca', 10.2300, -75.6000),
-            _lugar('Bocagrande', 10.3997, -75.5580),
-          ]),
-        ),
-    );
-    final r = await geo.buscar('plaza');
-    expect(r.map((l) => l.nombre), ['C.C. Caribe Plaza', 'Bocagrande']);
-  });
+  test(
+    'descarta lo que queda fuera de la zona aunque esté en el rectángulo',
+    () async {
+      final geo = NominatimGeocoding(
+        Dio()
+          ..interceptors.add(
+            _Nominatim([
+              _lugar('Parque de Turbaco', 10.3325, -75.4142),
+              _lugar('C.C. Caribe Plaza', 10.4136, -75.5307),
+              _lugar('C.C. Caribe Plaza', 10.4136, -75.5307),
+              _lugar('Playa Blanca', 10.2300, -75.6000),
+              _lugar('Bocagrande', 10.3997, -75.5580),
+            ]),
+          ),
+      );
+      final r = await geo.buscar('plaza');
+      expect(r.map((l) => l.nombre), ['C.C. Caribe Plaza', 'Bocagrande']);
+    },
+  );
 
   test('como mucho 6 resultados', () {
     final muchos = [

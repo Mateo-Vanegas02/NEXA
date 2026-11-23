@@ -42,8 +42,14 @@ void main() {
 
   test('el rectángulo envuelve todo el polígono', () {
     for (final p in ZonaServicio.poligono) {
-      expect(p.latitude, inInclusiveRange(ZonaServicio.sur, ZonaServicio.norte));
-      expect(p.longitude, inInclusiveRange(ZonaServicio.oeste, ZonaServicio.este));
+      expect(
+        p.latitude,
+        inInclusiveRange(ZonaServicio.sur, ZonaServicio.norte),
+      );
+      expect(
+        p.longitude,
+        inInclusiveRange(ZonaServicio.oeste, ZonaServicio.este),
+      );
     }
   });
 }
