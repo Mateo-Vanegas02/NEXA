@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ícono pequeño de las notificaciones: la N de NEXA dibujada como una ruta (punto → N → pin). Android solo usa el canal alfa. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M5.76,18.72 L5.76,7.2 Q5.76,5.28 7.44,6.48 L16.56,17.52 Q18.24,19.2 18.24,16.8 L18.24,7.92"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3.12"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M2.796,19.2 a2.964,2.964 0 1,0 5.928,0 a2.964,2.964 0 1,0 -5.928,0 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M18.24,1.68 c2.04,0 3.12,1.44 3.12,2.88 c0,1.8 -3.12,4.56 -3.12,4.56 c0,0 -3.12,-2.76 -3.12,-4.56 c0,-1.44 1.08,-2.88 3.12,-2.88 Z M17.232,4.56 a1.008,1.008 0 1,0 2.016,0 a1.008,1.008 0 1,0 -2.016,0 Z" />
+</vector>

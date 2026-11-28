@@ -5,7 +5,9 @@ import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../notificaciones/canales_notificacion.dart';
 import '../rumbo/reglas_rumbo.dart';
+import '../theme/tokens.dart';
 import 'modo_segundo_plano.dart';
 
 /// Texto de la notificación fija mientras se usa el GPS en segundo plano
@@ -90,6 +92,8 @@ class RastreadorGeolocator implements RastreadorUbicacion {
         notificationTitle: aviso.titulo,
         notificationText: aviso.texto,
         notificationChannelName: aviso.canal,
+        notificationIcon: const AndroidResource(name: IconosAviso.pequeno),
+        color: NexaColors.cyan,
         enableWakeLock: true,
         setOngoing: true,
       ),

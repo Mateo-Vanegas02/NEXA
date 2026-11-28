@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Los íconos de las notificaciones se piden por nombre desde Dart: que la reducción de
+     recursos del release no los quite. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/ic_stat_nexa,@drawable/ic_aviso_nexa" />

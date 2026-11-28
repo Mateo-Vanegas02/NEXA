@@ -154,3 +154,8 @@ Durante la recogida y el trayecto, el velocímetro flota sobre el mapa incluso c
 - Se busca al tocar «Buscar» (teclado o botón), no mientras se escribe: la política de uso de Nominatim prohíbe el autocompletado y limita a 1 petición por segundo (la app espera entre búsquedas).
 - «Fijar en el mapa» no acepta un punto fuera de la zona y avisa en el momento; los recientes fuera de la zona no se muestran.
 - Pendiente (opciones 2 y 4): búsqueda por el servidor con caché y filtro de `ZonaServicio`, y lista propia de lugares frecuentes de Cartagena.
+
+## 28-nov-2026 · Propuesta «Estela», punto 1: ícono propio
+
+- **Launcher.** Ícono adaptable (`mipmap-anydpi-v26/ic_launcher.xml`): fondo con el degradado cian → azul y, al frente, la N de NEXA como ruta (punto → N → pin), la misma del splash. Trae capa monocroma para los íconos temáticos de Android 13+. Los PNG de `mipmap-*dpi` (Android 7) se redibujaron con la misma N; ya no queda el logo de Flutter.
+- **Notificaciones.** Ícono pequeño `ic_stat_nexa` (vector blanco; Android solo usa su forma) con acento cian en las locales, los push que dibuja la app, la notificación fija del GPS (`ForegroundNotificationConfig.notificationIcon`) y los push que muestra Android directamente (`default_notification_icon` y `default_notification_color` en el manifiesto). El ícono grande de los avisos del viaje es `ic_aviso_nexa`. Los nombres viven en `IconosAviso` y `res/raw/keep.xml` evita que el release los quite.

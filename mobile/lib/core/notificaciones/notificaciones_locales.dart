@@ -3,6 +3,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+import '../theme/tokens.dart';
 import 'canales_notificacion.dart';
 
 /// Notificaciones que muestra el propio teléfono: canales, permiso y la
@@ -78,7 +79,7 @@ class NotificacionesAndroid implements NotificacionesLocales {
     if (kIsWeb || !Platform.isAndroid) return;
     await _plugin.initialize(
       settings: const InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        android: AndroidInitializationSettings(IconosAviso.pequeno),
       ),
       onDidReceiveNotificationResponse: alTocar,
     );
@@ -127,6 +128,8 @@ class NotificacionesAndroid implements NotificacionesLocales {
           showWhen: false,
           category: AndroidNotificationCategory.navigation,
           visibility: NotificationVisibility.public,
+          icon: IconosAviso.pequeno,
+          color: NexaColors.cyan,
           showProgress: avance != null,
           maxProgress: 100,
           progress: avance ?? 0,

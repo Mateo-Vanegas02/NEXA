@@ -12,6 +12,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../l10n/gen/app_localizations.dart';
 import '../notificaciones/canales_notificacion.dart';
 import '../network/token_storage.dart';
+import '../theme/tokens.dart';
 import 'aviso_push.dart';
 import 'bandeja_avisos.dart';
 import 'diseno_aviso_viaje.dart';
@@ -51,7 +52,7 @@ Future<void> avisoEnSegundoPlano(RemoteMessage mensaje) async {
         final plugin = FlutterLocalNotificationsPlugin();
         await plugin.initialize(
           settings: const InitializationSettings(
-            android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+            android: AndroidInitializationSettings(IconosAviso.pequeno),
           ),
         );
         await mostrarAvisoViaje(plugin, aviso);
@@ -67,7 +68,7 @@ Future<void> avisoEnSegundoPlano(RemoteMessage mensaje) async {
     final plugin = FlutterLocalNotificationsPlugin();
     await plugin.initialize(
       settings: const InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        android: AndroidInitializationSettings(IconosAviso.pequeno),
       ),
     );
     await mostrarAvisoSolicitud(plugin, aviso);
@@ -102,6 +103,8 @@ Future<void> mostrarAvisoSolicitud(
         importance: Importance.high,
         priority: Priority.high,
         category: AndroidNotificationCategory.recommendation,
+        icon: IconosAviso.pequeno,
+        color: NexaColors.cyan,
         autoCancel: true,
         timeoutAfter: vigenciaSolicitud.inMilliseconds,
         // Cuenta regresiva hasta que vence.
@@ -153,8 +156,9 @@ Future<void> mostrarAvisoViaje(
         priority: Priority.high,
         category: AndroidNotificationCategory.transport,
         visibility: NotificationVisibility.public,
+        icon: IconosAviso.pequeno,
         color: d.color,
-        largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+        largeIcon: const DrawableResourceAndroidBitmap(IconosAviso.grande),
         subText: t.avisoViajeSub,
         styleInformation: BigTextStyleInformation(
           largo,
