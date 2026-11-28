@@ -11,6 +11,23 @@ const _ruta = [LatLng(10.4, -75.50), LatLng(10.4, -75.49)];
 
 void main() {
   group('ReglasRuta', () {
+    test('el círculo de una ola queda a su radio y cerrado', () {
+      const centro = LatLng(10.4055, -75.5503);
+      const metros = 2500.0;
+      final c = ReglasRuta.circulo(centro, metros, lados: 36);
+      expect(c, hasLength(37));
+      expect(c.first.latitude, closeTo(c.last.latitude, 1e-12));
+      expect(c.first.longitude, closeTo(c.last.longitude, 1e-12));
+      // Sobre la esfera; con el elipsoide (Vincenty) difiere menos del 1 %.
+      const d = Distance();
+      for (final p in c) {
+        expect(d.as(LengthUnit.Meter, centro, p), closeTo(metros, 25));
+      }
+      // Empieza al norte y gira en el sentido del reloj (luego al este).
+      expect(c.first.latitude, greaterThan(centro.latitude));
+      expect(c[9].longitude, greaterThan(centro.longitude));
+    });
+
     test('proyecta sobre el tramo y mide la distancia en metros', () {
       // ≈ 55 m al norte de la mitad de la ruta.
       final p = ReglasRuta.proyectar(_ruta, const LatLng(10.4005, -75.495))!;

@@ -166,3 +166,10 @@ Durante la recogida y el trayecto, el velocímetro flota sobre el mapa incluso c
 - **Tarjeta abajo y compacta.** `SolicitudEntrante` pone la tarjeta en el borde inferior (si no cabe con letra grande, se desplaza y se ve primero «Desliza para aceptar»). A pantalla completa `SolicitudCard` no dibuja el anillo: «Nueva solicitud» con los segundos en una píldora, «Ganas $X» grande, etiquetas, recogida y destino en dos líneas, deslizar, y «Ahora no» y «Ver en el mapa» juntos. En la lista la tarjeta sigue con su anillo.
 - **Cuenta regresiva en el borde.** Los 45 s recorren el borde de la pantalla (`BordeCuenta`): sale de arriba al centro, cian y dorada en el último cuarto; al terminar la solicitud sigue disponible (como antes). La hoja del panel baja mientras la solicitud está a la vista y vuelve al cerrarla.
 - **Una cuenta por solicitud.** `SolicitudEntrante` lleva la clave del id: si llega otra solicitud, su cuenta empieza de cero (antes podía heredar la anterior).
+
+## 28-nov-2026 · Propuesta «Estela», punto 3: la ola del despacho en el mapa
+
+- **La ola a escala real.** Mientras busca conductor, el mapa del pasajero dibuja alrededor de la recogida el radio de la ola que manda el servidor (`AvisoDespacho.radioKm`): relleno cian translúcido y aro (`MapaNexa.ola`, círculo de `ReglasRuta.circulo`). Cuando ya no se amplía (`ultima`) se pinta apagado. La app no calcula radios ni olas: solo los dibuja.
+- **La cámara sigue a la ola.** Con radio, el encuadre es el círculo completo por encima de la hoja; al pasar a la siguiente ola la cámara se aleja hasta mostrarla entera.
+- **Hoja más baja.** Buscando, la hoja abre en el 44 % de la pantalla (antes 62 %); se arrastra para ver el extra voluntario y «Cancelar solicitud».
+- **Orden de capas del mapa.** De abajo hacia arriba: rellenos, manchas de demanda, rutas y marcadores (`annotationOrder`). Antes los rellenos y las manchas quedaban encima de las rutas y los marcadores.

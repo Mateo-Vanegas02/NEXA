@@ -107,6 +107,32 @@ abstract final class ReglasRuta {
     final d = ((b - a + 540) % 360) - 180;
     return ((a + d * t.clamp(0.0, 1.0)) % 360 + 360) % 360;
   }
+
+  /// Contorno cerrado (el último punto repite el primero) de un círculo de
+  /// [metros] alrededor de [centro], sobre la esfera. Sirve para dibujar a
+  /// escala real el radio de una ola del despacho, que decide el servidor.
+  static List<LatLng> circulo(LatLng centro, double metros, {int lados = 72}) {
+    const radioTierra = 6371008.8;
+    final d = metros / radioTierra;
+    final lat1 = centro.latitude * math.pi / 180;
+    final lon1 = centro.longitude * math.pi / 180;
+    LatLng punto(int i) {
+      final rumbo = 2 * math.pi * (i % lados) / lados;
+      final lat2 = math.asin(
+        math.sin(lat1) * math.cos(d) +
+            math.cos(lat1) * math.sin(d) * math.cos(rumbo),
+      );
+      final lon2 =
+          lon1 +
+          math.atan2(
+            math.sin(rumbo) * math.sin(d) * math.cos(lat1),
+            math.cos(d) - math.sin(lat1) * math.sin(lat2),
+          );
+      return LatLng(lat2 * 180 / math.pi, lon2 * 180 / math.pi);
+    }
+
+    return [for (var i = 0; i <= lados; i++) punto(i)];
+  }
 }
 
 /// Decide cuándo la moto se salió de la ruta: [ReglasRuta.lecturasDesvio]

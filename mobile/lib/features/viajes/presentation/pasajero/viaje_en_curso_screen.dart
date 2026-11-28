@@ -11,6 +11,7 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/nexa_texto.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/mapa/reglas_marcadores.dart';
+import '../../../../core/mapa/reglas_ruta.dart';
 import '../../../../core/rumbo/orientacion_mapa.dart';
 import '../../../../core/utils/acciones_externas.dart';
 import '../../../../core/utils/formatters.dart';
@@ -165,6 +166,16 @@ class _Seguimiento extends ConsumerWidget {
         : null;
     final topeExtra = ref.watch(ofertaActivaProvider)?.topeExtra;
     final kmFmt = NumberFormat('0.#', 'es_CO');
+    // La ola a escala real alrededor de la recogida (propuesta «Estela»): el
+    // radio lo decide el servidor; la app solo lo dibuja y lo encuadra.
+    final ola = despacho?.radioKm == null || s.ubicacionOrigen == null
+        ? null
+        : (
+            centro: origen,
+            metros: despacho!.radioKm! * 1000,
+            activa: !despacho.ultima,
+          );
+    final buscando = s.estado == EstadoServicio.solicitado;
     final Widget? arriba = switch (s.estado) {
       EstadoServicio.solicitado when despacho != null => Align(
         alignment: Alignment.topCenter,
@@ -234,8 +245,13 @@ class _Seguimiento extends ConsumerWidget {
             etiquetaDestino: s.estado == EstadoServicio.enCurso
                 ? [s.destino, ?llegada].join(' · ')
                 : null,
-            encuadre: encuadre,
-            margenInferior: MediaQuery.sizeOf(context).height * 0.48,
+            // Buscando: la cámara muestra la ola completa sobre la hoja.
+            encuadre: ola == null
+                ? encuadre
+                : ReglasRuta.circulo(ola.centro, ola.metros, lados: 8),
+            ola: ola,
+            margenInferior:
+                MediaQuery.sizeOf(context).height * (buscando ? 0.46 : 0.48),
           ),
         ),
         if (arriba != null)
@@ -251,8 +267,9 @@ class _Seguimiento extends ConsumerWidget {
               child: Align(alignment: Alignment.topLeft, child: arriba),
             ),
           ),
+        // Buscando, la hoja deja ver la ola en el mapa (antes ocupaba el 62 %).
         NexaHojaArrastrable(
-          inicial: s.estado == EstadoServicio.solicitado ? 0.62 : 0.46,
+          inicial: buscando ? 0.44 : 0.46,
           minimo: 0.3,
           children: [
             if (s.estado == EstadoServicio.solicitado) ...[

@@ -121,6 +121,7 @@ class MapaNexa extends ConsumerStatefulWidget {
     this.etiquetaDestino,
     this.encuadre,
     this.margenInferior = 360,
+    this.ola,
     super.key,
   });
 
@@ -201,6 +202,11 @@ class MapaNexa extends ConsumerStatefulWidget {
   /// Espacio que tapa la hoja inferior, para encuadrar por encima de ella.
   final double margenInferior;
 
+  /// Radio de la ola del despacho a escala real (propuesta «Estela»): relleno
+  /// translúcido y aro alrededor de [centro]. El radio lo decide el servidor;
+  /// `activa` en false (ya no se amplía) lo pinta apagado.
+  final ({LatLng centro, double metros, bool activa})? ola;
+
   /// Acercamiento e inclinación del modo navegación.
   static const zoomNavegacion = 17.0;
   static const inclinacionNavegacion = 50.0;
@@ -225,6 +231,10 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
   /// orden en que se apilan.
   final _lineas = <String, ml.Line>{};
   final _lineasPuntos = <String, List<LatLng>>{};
+
+  /// Relleno de la ola del despacho y lo que dibuja (para no rehacerlo).
+  ml.Fill? _rellenoOla;
+  String _firmaOla = '';
   String _estructuraLineas = '';
   final _simbolos = <String, ml.Symbol>{};
   final _firmas = <String, Object>{};
@@ -408,6 +418,8 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
     _rotulosCargados.clear();
     _circulosZonas.clear();
     _firmaZonas = '';
+    _rellenoOla = null;
+    _firmaOla = '';
     _flotaDibujada = 0;
     _solapePermitido = false;
     for (final e in (await _imagenes()).entries) {
@@ -427,8 +439,31 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
   Future<void> _sincronizar() async {
     final c = _ml;
     if (c == null || !_estiloListo || !mounted) return;
+    await _ola(c);
     await _rutas(c);
     await _marcadores(c);
+  }
+
+  /// Relleno translúcido de la ola: queda debajo de todo (ver
+  /// `annotationOrder`), así no tiñe la ruta ni los marcadores.
+  Future<void> _ola(ml.MapLibreMapController c) async {
+    final o = widget.ola;
+    final firma = o == null
+        ? ''
+        : '${o.centro.latitude},${o.centro.longitude},${o.metros},${o.activa}';
+    if (firma == _firmaOla) return;
+    _firmaOla = firma;
+    final previo = _rellenoOla;
+    _rellenoOla = null;
+    if (previo != null) await c.removeFill(previo);
+    if (o == null) return;
+    _rellenoOla = await c.addFill(
+      ml.FillOptions(
+        geometry: [ReglasRuta.circulo(o.centro, o.metros).map(_aMl).toList()],
+        fillColor: _hex(o.activa ? NexaColors.cyan : NexaColors.tenue),
+        fillOpacity: o.activa ? 0.12 : 0.08,
+      ),
+    );
   }
 
   /// La ruta principal con su borde, lo recorrido apagado y las alternativas
@@ -446,7 +481,20 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
     }
     final oscuro = _oscuro;
     final anterior = widget.rutaAnterior;
+    final ola = widget.ola;
     final capas = <(String, List<LatLng>, ml.LineOptions)>[
+      // El aro de la ola va debajo de las rutas. La clave cambia al apagarse
+      // para que se vuelva a dibujar con su color.
+      if (ola != null)
+        (
+          ola.activa ? 'ola' : 'olaFin',
+          ReglasRuta.circulo(ola.centro, ola.metros),
+          ml.LineOptions(
+            lineColor: _hex(ola.activa ? NexaColors.cyan : NexaColors.tenue),
+            lineWidth: 2,
+            lineOpacity: 0.85,
+          ),
+        ),
       if (anterior != null && anterior.length >= 2)
         (
           'antes',
@@ -1014,6 +1062,14 @@ class _MapaNexaState extends ConsumerState<MapaNexa> {
       rotateGesturesEnabled: false,
       tiltGesturesEnabled: false,
       compassEnabled: false,
+      // De abajo hacia arriba: rellenos (la ola), manchas de demanda, rutas y
+      // marcadores. Por defecto los rellenos quedaban encima de todo.
+      annotationOrder: const [
+        ml.AnnotationType.fill,
+        ml.AnnotationType.circle,
+        ml.AnnotationType.line,
+        ml.AnnotationType.symbol,
+      ],
       attributionButtonPosition: ml.AttributionButtonPosition.bottomLeft,
       onMapClick: widget.onTap == null
           ? null
