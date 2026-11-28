@@ -116,6 +116,20 @@ class _Panel extends ConsumerWidget {
     final entrante = activo == null && estado.terminado == null
         ? estado.solicitudes.where((s) => !vistas.contains(s.id)).firstOrNull
         : null;
+    // Con una solicitud a pantalla completa (propuesta «Estela») el mapa
+    // muestra dónde recoge y a dónde va, encuadrados junto a la moto.
+    final recogidaSolicitud = entrante?.ubicacionOrigen == null
+        ? null
+        : LatLng(
+            entrante!.ubicacionOrigen!.latitud,
+            entrante.ubicacionOrigen!.longitud,
+          );
+    final destinoSolicitud = entrante?.ubicacionDestino == null
+        ? null
+        : LatLng(
+            entrante!.ubicacionDestino!.latitud,
+            entrante.ubicacionDestino!.longitud,
+          );
     // Su propia moto sale del GPS del teléfono apenas llega cada dato (1 por
     // segundo en viaje), sin esperar al servidor. Quieto, el GPS no manda
     // datos nuevos: se conserva el último para que la moto no desaparezca.
@@ -150,6 +164,11 @@ class _Panel extends ConsumerWidget {
     final puedeNavegar = estado.enLinea || activo != null;
     final modoMapa = ref.watch(orientacionMapaProvider.select((o) => o.modo));
     final navegando = puedeNavegar && modoMapa == ModoOrientacion.navegacion;
+    final encuadreSolicitud = [
+      if (moto != null) moto,
+      if (recogidaSolicitud != null) recogidaSolicitud,
+      if (destinoSolicitud != null) destinoSolicitud,
+    ];
     if (!puedeNavegar && modoMapa == ModoOrientacion.navegacion) {
       // Se desconectó o terminó el viaje: vuelve el norte arriba.
       Future.microtask(
@@ -167,10 +186,13 @@ class _Panel extends ConsumerWidget {
             omitir: moto != null || activo != null,
             child: MapaNexa(
               centro: moto ?? recogida,
-              // Sin viaje no hay recogida: solo su moto (antes salía un pin viejo).
-              origen: activo == null ? null : recogida,
-              destino: destino,
-              ruta: rutaMapa,
+              // Sin viaje no hay recogida: solo su moto (antes salía un pin
+              // viejo), salvo la de la solicitud que está a pantalla completa.
+              origen: activo == null ? recogidaSolicitud : recogida,
+              destino: destino ?? destinoSolicitud,
+              ruta: entrante != null
+                  ? rutaDe(entrante.rutaGeometria)
+                  : rutaMapa,
               alternativas: [
                 for (final o in opciones.skip(1)) rutaDe(o.geometria),
               ],
@@ -192,9 +214,15 @@ class _Panel extends ConsumerWidget {
                   estado.pasajero != null &&
                   ReglasMarcadores.sinSenal(estado.pasajero!.haceSegundos),
               orientable: true,
-              navegacion: navegando,
+              // La solicitud manda sobre la navegación: la cámara la encuadra
+              // por encima de la tarjeta y vuelve a seguir la moto al cerrarla.
+              navegacion: navegando && entrante == null,
+              encuadre: entrante == null || encuadreSolicitud.isEmpty
+                  ? null
+                  : encuadreSolicitud,
+              margenInferior: MediaQuery.sizeOf(context).height * 0.5,
               // En línea y sin viaje: dónde se está pidiendo más (rediseño 2026).
-              zonas: estado.enLinea && activo == null
+              zonas: estado.enLinea && activo == null && entrante == null
                   ? [
                       for (final z
                           in ref.watch(zonasDemandaProvider).value ??
@@ -295,117 +323,133 @@ class _Panel extends ConsumerWidget {
             ),
           ),
         // Con un viaje, la hoja deja ver el mapa (en el video del conductor la
-        // hoja tapaba la recogida); el resumen final sí ocupa más.
-        NexaHojaArrastrable(
-          inicial: estado.terminado != null
-              ? 0.62
-              : (activo != null ? 0.36 : 0.5),
-          minimo: activo != null ? 0.2 : 0.3,
-          children: [
-            // Sin viaje (rediseño 2026): fuera de línea, deslizar para
-            // conectarse y lo ganado; en línea, lo ganado hoy y el GPS.
-            if (!enViaje) ...[
-              if (estado.enLinea)
-                PanelEnLinea(onDesconectar: ctrl.alternarLinea)
-              else
-                PanelFueraDeLinea(
-                  onConectar: () async {
-                    if (!await prepararConexion(context, ref)) return;
-                    await ctrl.alternarLinea();
-                  },
-                ),
-              const SizedBox(height: Sp.lg),
-            ],
-            const NivelBanner(rutaNiveles: '/c/niveles', irEnLugar: true),
-            const SizedBox(height: Sp.md),
-            if (estado.pasajeroCancelo && estado.terminado == null) ...[
-              NexaCard(
-                child: Row(
-                  children: [
-                    const Icon(Icons.info_outline),
-                    const SizedBox(width: Sp.md),
-                    Expanded(child: Text(l.pasajeroCancelo)),
-                    TextButton(
-                      onPressed: ctrl.descartarAvisoCancelacion,
-                      child: Text(l.listo),
+        // hoja tapaba la recogida); el resumen final sí ocupa más. Con una
+        // solicitud a pantalla completa la hoja baja y deja el mapa a la vista.
+        IgnorePointer(
+          ignoring: entrante != null,
+          child: ExcludeSemantics(
+            excluding: entrante != null,
+            child: AnimatedSlide(
+              offset: entrante != null ? const Offset(0, 1) : Offset.zero,
+              duration: MediaQuery.disableAnimationsOf(context)
+                  ? Duration.zero
+                  : const Duration(milliseconds: 280),
+              curve: Curves.easeOutCubic,
+              child: NexaHojaArrastrable(
+                inicial: estado.terminado != null
+                    ? 0.62
+                    : (activo != null ? 0.36 : 0.5),
+                minimo: activo != null ? 0.2 : 0.3,
+                children: [
+                  // Sin viaje (rediseño 2026): fuera de línea, deslizar para
+                  // conectarse y lo ganado; en línea, lo ganado hoy y el GPS.
+                  if (!enViaje) ...[
+                    if (estado.enLinea)
+                      PanelEnLinea(onDesconectar: ctrl.alternarLinea)
+                    else
+                      PanelFueraDeLinea(
+                        onConectar: () async {
+                          if (!await prepararConexion(context, ref)) return;
+                          await ctrl.alternarLinea();
+                        },
+                      ),
+                    const SizedBox(height: Sp.lg),
+                  ],
+                  const NivelBanner(rutaNiveles: '/c/niveles', irEnLugar: true),
+                  const SizedBox(height: Sp.md),
+                  if (estado.pasajeroCancelo && estado.terminado == null) ...[
+                    NexaCard(
+                      child: Row(
+                        children: [
+                          const Icon(Icons.info_outline),
+                          const SizedBox(width: Sp.md),
+                          Expanded(child: Text(l.pasajeroCancelo)),
+                          TextButton(
+                            onPressed: ctrl.descartarAvisoCancelacion,
+                            child: Text(l.listo),
+                          ),
+                        ],
+                      ),
                     ),
+                    const SizedBox(height: Sp.md),
                   ],
-                ),
-              ),
-              const SizedBox(height: Sp.md),
-            ],
-            if (estado.copiaDe != null && estado.activo != null) ...[
-              NexaCard(
-                child: Row(
-                  children: [
-                    const Icon(Icons.wifi_off),
-                    const SizedBox(width: Sp.md),
-                    Expanded(child: Text(l.copiaDelViaje)),
+                  if (estado.copiaDe != null && estado.activo != null) ...[
+                    NexaCard(
+                      child: Row(
+                        children: [
+                          const Icon(Icons.wifi_off),
+                          const SizedBox(width: Sp.md),
+                          Expanded(child: Text(l.copiaDelViaje)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: Sp.md),
                   ],
-                ),
-              ),
-              const SizedBox(height: Sp.md),
-            ],
-            if (estado.terminado != null &&
-                ref
-                    .watch(sinConexionProvider)
-                    .tienePendiente(
-                      estado.terminado!.id,
-                      TipoPendiente.finalizar,
-                    )) ...[
-              NexaCard(
-                child: Row(
-                  children: [
-                    const Icon(Icons.cloud_upload_outlined),
-                    const SizedBox(width: Sp.md),
-                    Expanded(child: Text(l.finalPendienteTexto)),
+                  if (estado.terminado != null &&
+                      ref
+                          .watch(sinConexionProvider)
+                          .tienePendiente(
+                            estado.terminado!.id,
+                            TipoPendiente.finalizar,
+                          )) ...[
+                    NexaCard(
+                      child: Row(
+                        children: [
+                          const Icon(Icons.cloud_upload_outlined),
+                          const SizedBox(width: Sp.md),
+                          Expanded(child: Text(l.finalPendienteTexto)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: Sp.md),
                   ],
-                ),
-              ),
-              const SizedBox(height: Sp.md),
-            ],
-            if (estado.terminado != null)
-              ResumenViajeCard(
-                servicio: estado.terminado!,
-                desglose: estado.desgloseTerminado,
-                onCerrar: ctrl.cerrarResumen,
-              )
-            else if (estado.activo != null)
-              ViajeActivoCard(
-                servicio: estado.activo!,
-                fase: estado.fase,
-                posicion: estado.posicion,
-                pasajero: estado.pasajero,
-              )
-            else ...[
-              Text(
-                l.solicitudesEntrantes,
-                style: context.textos.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: Sp.sm),
-              if (!estado.enLinea || estado.solicitudes.isEmpty)
-                SizedBox(
-                  height: 160,
-                  child: EstadoVacio(
-                    titulo: l.sinSolicitudes,
-                    icon: Icons.notifications_none,
-                  ),
-                )
-              else
-                for (final s in estado.solicitudes)
-                  if (s.id != entrante?.id) ...[
-                    SolicitudCard(servicio: s),
+                  if (estado.terminado != null)
+                    ResumenViajeCard(
+                      servicio: estado.terminado!,
+                      desglose: estado.desgloseTerminado,
+                      onCerrar: ctrl.cerrarResumen,
+                    )
+                  else if (estado.activo != null)
+                    ViajeActivoCard(
+                      servicio: estado.activo!,
+                      fase: estado.fase,
+                      posicion: estado.posicion,
+                      pasajero: estado.pasajero,
+                    )
+                  else ...[
+                    Text(
+                      l.solicitudesEntrantes,
+                      style: context.textos.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                     const SizedBox(height: Sp.sm),
+                    if (!estado.enLinea || estado.solicitudes.isEmpty)
+                      SizedBox(
+                        height: 160,
+                        child: EstadoVacio(
+                          titulo: l.sinSolicitudes,
+                          icon: Icons.notifications_none,
+                        ),
+                      )
+                    else
+                      for (final s in estado.solicitudes)
+                        if (s.id != entrante?.id) ...[
+                          SolicitudCard(servicio: s),
+                          const SizedBox(height: Sp.sm),
+                        ],
                   ],
-            ],
-          ],
+                ],
+              ),
+            ),
+          ),
         ),
-        // Una solicitud nueva ocupa la pantalla (rediseño 2026) hasta que la
-        // acepta o la manda a la lista con «Ver en el mapa».
+        // Una solicitud nueva ocupa la pantalla hasta que la acepta o la manda
+        // a la lista con «Ver en el mapa». La clave por id le da a cada una su
+        // propia cuenta regresiva.
         if (entrante != null)
           SolicitudEntrante(
+            key: ValueKey(entrante.id),
             servicio: entrante,
             pendientes: [for (final s in estado.solicitudes) s.id],
           ),

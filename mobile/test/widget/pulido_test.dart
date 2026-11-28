@@ -19,6 +19,7 @@ import 'package:nexa_mobile/features/viajes/presentation/pasajero/inicio_pasajer
 import 'package:nexa_mobile/features/viajes/presentation/pasajero/solicitar_viaje_screen.dart';
 import 'package:nexa_mobile/features/viajes/presentation/pasajero/viaje_en_curso_screen.dart';
 import 'package:nexa_mobile/features/viajes/presentation/widgets/solicitud_card.dart';
+import 'package:nexa_mobile/features/viajes/presentation/widgets/solicitud_entrante.dart';
 import 'package:nexa_mobile/features/viajes/presentation/widgets/viaje_activo_card.dart';
 import 'package:nexa_mobile/features/viajes/presentation/controllers/viaje_conductor_controller.dart';
 
@@ -147,6 +148,14 @@ void main() {
     'solicitud entrante': (
       const Scaffold(
         body: SingleChildScrollView(child: SolicitudCard(servicio: _servicio)),
+      ),
+      [_sesion(Rol.conductor)],
+    ),
+    // Propuesta «Estela»: tarjeta abajo, mapa a la vista y la cuenta
+    // regresiva en el borde de la pantalla.
+    'solicitud a pantalla completa': (
+      const Scaffold(
+        body: Stack(children: [SolicitudEntrante(servicio: _servicio)]),
       ),
       [_sesion(Rol.conductor)],
     ),

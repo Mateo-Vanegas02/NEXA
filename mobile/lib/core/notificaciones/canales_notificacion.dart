@@ -24,8 +24,8 @@ class CanalNotificacion {
   final Prioridad prioridad;
 }
 
-/// Íconos de las notificaciones (recursos de Android, `res/drawable*`). Se piden
-/// por nombre, así que `res/raw/keep.xml` evita que el release los quite.
+/// Íconos de las notificaciones (recursos de Android en `res/drawable*`). Se
+/// piden por nombre, así que `res/raw/keep.xml` evita que el release los quite.
 abstract final class IconosAviso {
   /// Ícono pequeño (barra de estado y cabecera): la N de NEXA como una ruta.
   static const pequeno = 'ic_stat_nexa';

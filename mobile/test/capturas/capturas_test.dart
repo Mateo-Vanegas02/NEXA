@@ -103,6 +103,32 @@ class _OfertaFija extends OfertaActivaNotifier {
   );
 }
 
+/// Conductor en línea con una solicitud nueva (C02, propuesta «Estela»).
+class _ConSolicitud extends ConductorController {
+  @override
+  Future<ConductorState> build() async => const ConductorState(
+    aprobacion: EstadoAprobacion.aprobado,
+    enLinea: true,
+    solicitudes: [
+      Servicio(
+        id: 'sol-1',
+        estado: EstadoServicio.solicitado,
+        origen: 'Bocagrande, Cra. 3 #6-120',
+        destino: 'Castillo San Felipe',
+        distanciaKM: 4.1,
+        ubicacionOrigen: Coordenada(latitud: 10.40, longitud: -75.55),
+        ubicacionDestino: Coordenada(latitud: 10.4226, longitud: -75.5393),
+        tarifa: 7600,
+        extraVoluntario: 1000,
+        metodoPago: 'efectivo',
+        nivelPasajero: 3,
+        gananciaEstimada: 6800,
+        pasajero: Participante(id: 'p1', nombre: 'Laura Gómez'),
+      ),
+    ],
+  );
+}
+
 Override _ola(int ola) =>
     ofertaActivaProvider.overrideWith(() => _OfertaFija(ola));
 
@@ -289,6 +315,13 @@ void main() {
     ('P11', '/p/niveles', Rol.pasajero, '', []),
     ('P12', '/p/perfil', Rol.pasajero, '', []),
     ('C01', '/c/inicio', Rol.conductor, 'conductor@nexa.co', [_ingresos]),
+    (
+      'C02',
+      '/c/inicio',
+      Rol.conductor,
+      'conductor@nexa.co',
+      [_ingresos, conductorProvider.overrideWith(_ConSolicitud.new)],
+    ),
     (
       'C08',
       '/c/ganancias',
