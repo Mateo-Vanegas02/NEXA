@@ -74,10 +74,8 @@ class _SolicitudCardState extends ConsumerState<SolicitudCard>
 
   void _crearRelojSiFalta() {
     if (widget.reloj != null || _propio != null) return;
-    _propio = AnimationController(
-      vsync: this,
-      duration: SolicitudCard.ventana,
-    )..forward();
+    _propio = AnimationController(vsync: this, duration: SolicitudCard.ventana)
+      ..forward();
   }
 
   @override
@@ -382,8 +380,7 @@ class _SolicitudCardState extends ConsumerState<SolicitudCard>
                 onPressed: _aceptando ? null : () => ctrl.rechazar(servicio),
                 child: Text(
                   l.ahoraNo,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
                 ),
               ),
             ),
@@ -398,8 +395,7 @@ class _SolicitudCardState extends ConsumerState<SolicitudCard>
                   icon: const Icon(Icons.map_outlined, size: 18),
                   label: Text(
                     l.solicitudVerEnMapa,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
                   ),
                 ),
               ),
