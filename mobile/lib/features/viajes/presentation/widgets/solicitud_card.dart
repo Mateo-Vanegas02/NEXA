@@ -378,10 +378,7 @@ class _SolicitudCardState extends ConsumerState<SolicitudCard>
                   minimumSize: const Size(0, Sizes.touch),
                 ),
                 onPressed: _aceptando ? null : () => ctrl.rechazar(servicio),
-                child: Text(
-                  l.ahoraNo,
-                  textAlign: TextAlign.center,
-                ),
+                child: Text(l.ahoraNo, textAlign: TextAlign.center),
               ),
             ),
             if (widget.onVerEnMapa != null)
